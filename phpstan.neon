@@ -1,0 +1,38 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/pestphp/pest/phpstan-pest-extension.neon
+
+parameters:
+    level: 8
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # tests/ is deliberately absent. PHPStan resolves `$this` inside a Pest
+    # closure to Pest\PendingCalls\TestCall rather than to the bound TestCase,
+    # so every `$this->getJson(...)` reports a false "undefined method". The
+    # test suite is covered by Pint, Rector and its own architecture tests
+    # instead. Revisit when Pest ships a PHPStan scope extension.
+
+    excludePaths:
+        - bootstrap/cache
+
+    # Fail on anything the analyser cannot prove, rather than silently
+    # widening types. A genuinely unavoidable case gets an inline ignore with
+    # a comment explaining why.
+    treatPhpDocTypesAsCertain: false
+    checkModelProperties: true
+    reportUnmatchedIgnoredErrors: true
+
+    ignoreErrors:
+        # The storefront renderer resolves template names at runtime — that is
+        # the whole point of the theme precedence chain — so the name cannot be
+        # a literal `view-string`. Existence is verified with `exists()` before
+        # `make()` is ever called, and `render()` throws when it is missing.
+        -
+            identifier: argument.type
+            path: app/Support/View/BladeStorefrontRenderer.php
+            message: '#expects view-string, string given#'

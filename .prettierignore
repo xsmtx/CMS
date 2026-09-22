@@ -1,0 +1,20 @@
+# Prettier owns the front-end sources only. PHP is formatted by Pint, and
+# Markdown/JSON in this repository follow conventions Prettier would fight
+# (hand-wrapped docs, Composer's own key ordering).
+*.md
+*.json
+!package.json
+!tsconfig.json
+!.prettierrc.json
+
+vendor
+node_modules
+public/build
+public/hot
+storage
+bootstrap/cache
+docker
+lang
+resources/views
+composer.lock
+package-lock.json
