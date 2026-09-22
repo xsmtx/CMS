@@ -113,6 +113,68 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Ordering
+    |--------------------------------------------------------------------------
+    |
+    | Tax and risk are contracts, not rules. Core never implements a
+    | country's tax law or names a fraud vendor; this is where an
+    | installation says which implementation it wants and on what terms.
+    |
+    */
+
+    'ordering' => [
+        'terms_version' => env('ORDER_TERMS_VERSION', '1'),
+        'cart_lifetime_days' => (int) env('CART_LIFETIME_DAYS', 30),
+
+        'numbering' => [
+            'prefix' => env('ORDER_NUMBER_PREFIX', 'ORD-'),
+            'padding' => (int) env('ORDER_NUMBER_PADDING', 6),
+        ],
+    ],
+
+    'tax' => [
+        // 'none' or 'flat'. A module registers its own implementation.
+        'driver' => env('TAX_DRIVER', 'none'),
+
+        'flat' => [
+            // A decimal string, never a float.
+            'rate' => env('TAX_RATE', '0'),
+            'name' => env('TAX_NAME', 'VAT'),
+            'country' => env('TAX_COUNTRY'),
+            'exempt_businesses_abroad' => (bool) env('TAX_EXEMPT_BUSINESSES_ABROAD', false),
+        ],
+    ],
+
+    'risk' => [
+        'enabled' => (bool) env('RISK_ENABLED', true),
+
+        'rules' => [
+            // Zero disables a rule. Nothing denies outright unless an
+            // operator sets deny_score, because an untuned installation
+            // should hold an order rather than turn a customer away.
+            'high_value_minor' => (int) env('RISK_HIGH_VALUE_MINOR', 0),
+            'high_value_weight' => 2,
+            'new_account_days' => (int) env('RISK_NEW_ACCOUNT_DAYS', 0),
+            'new_account_weight' => 1,
+            'flag_first_order' => (bool) env('RISK_FLAG_FIRST_ORDER', false),
+            'first_order_weight' => 1,
+            'velocity_orders' => (int) env('RISK_VELOCITY_ORDERS', 0),
+            'velocity_hours' => (int) env('RISK_VELOCITY_HOURS', 24),
+            'velocity_weight' => 2,
+            'failed_payments' => (int) env('RISK_FAILED_PAYMENTS', 0),
+            'failed_payments_weight' => 2,
+            'flag_country_mismatch' => (bool) env('RISK_FLAG_COUNTRY_MISMATCH', true),
+            'country_mismatch_weight' => 1,
+            'flag_unverified_email' => (bool) env('RISK_FLAG_UNVERIFIED_EMAIL', false),
+            'unverified_email_weight' => 1,
+
+            'review_score' => (int) env('RISK_REVIEW_SCORE', 2),
+            'deny_score' => (int) env('RISK_DENY_SCORE', 0),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Licensing client
     |--------------------------------------------------------------------------
     |
