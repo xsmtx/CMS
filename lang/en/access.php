@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    'roles_saved' => 'Role saved.',
+    'roles_deleted' => 'Role deleted.',
+
     'scopes' => [
         'staff' => 'Staff',
         'customer' => 'Customer',

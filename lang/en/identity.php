@@ -17,6 +17,14 @@ return [
         'signed_out_others' => 'Signed out of :count other session(s).',
     ],
 
+    'staff' => [
+        'created' => 'Staff account created. They can set a password through the reset link.',
+        'updated' => 'Staff account updated.',
+        'deleted' => 'Staff account deleted.',
+        'last_super_admin' => 'This is the last super administrator; the installation would have no one who can administer it.',
+        'self_delete' => 'You cannot delete your own account.',
+    ],
+
     'statuses' => [
         'active' => 'Active',
         'suspended' => 'Suspended',

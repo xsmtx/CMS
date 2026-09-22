@@ -14,6 +14,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -50,6 +51,17 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Ordering matters more than it looks. Route-model binding runs
+        // inside SubstituteBindings, and a binding resolved before the
+        // boundary exists is an unscoped query: it would hand a reseller
+        // another reseller's record by id and leave the policy as the only
+        // thing standing between them. The boundary is therefore forced
+        // ahead of binding rather than merely appended to the group.
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: ResolveOrganizationContext::class,
+        );
 
         $middleware->api(append: [
             ResolveOrganizationContext::class,

@@ -15,6 +15,14 @@ return [
         'signed_out_others' => 'Diger :count oturum kapatildi.',
     ],
 
+    'staff' => [
+        'created' => 'Personel hesabi olusturuldu. Sifre sifirlama baglantisi ile sifre belirleyebilirler.',
+        'updated' => 'Personel hesabi guncellendi.',
+        'deleted' => 'Personel hesabi silindi.',
+        'last_super_admin' => 'Bu son super yonetici; kurulumu yonetebilecek kimse kalmaz.',
+        'self_delete' => 'Kendi hesabinizi silemezsiniz.',
+    ],
+
     'statuses' => [
         'active' => 'Aktif',
         'suspended' => 'Askida',

@@ -38,8 +38,22 @@ final class AccessServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->resolvePolicies();
         $this->defineAbilities();
         $this->grantSuperAdmins();
+    }
+
+    /**
+     * Models live in per-context namespaces rather than App\Models, so
+     * Laravel's convention-based policy discovery does not find them. The
+     * rule here is the same one, expressed for this layout: the policy for
+     * App\Infrastructure\Crm\Models\Customer is App\Policies\CustomerPolicy.
+     */
+    private function resolvePolicies(): void
+    {
+        Gate::guessPolicyNamesUsing(
+            static fn (string $modelClass): string => 'App\\Policies\\'.class_basename($modelClass).'Policy',
+        );
     }
 
     private function defineAbilities(): void

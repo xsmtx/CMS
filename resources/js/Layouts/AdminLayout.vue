@@ -47,6 +47,13 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'People',
+    items: [
+      { label: 'Customers', href: '/admin/customers', permission: 'crm.customers.view' },
+      { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
+    ],
+  },
+  {
     label: 'System',
     items: [
       { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
@@ -127,6 +134,20 @@ function isCurrent(href: string): boolean {
           class="border-line flex h-16 shrink-0 items-center justify-end gap-3 border-b px-5 sm:px-8"
         >
           <span v-if="user" class="text-content-muted text-sm">{{ user.email }}</span>
+          <Link
+            href="/admin/security"
+            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-sm transition-colors duration-(--duration-fast)"
+          >
+            Security
+          </Link>
+          <Link
+            href="/admin/logout"
+            method="post"
+            as="button"
+            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-sm transition-colors duration-(--duration-fast)"
+          >
+            Sign out
+          </Link>
         </header>
 
         <main id="main" class="flex-1 px-5 py-8 sm:px-8 sm:py-10">
