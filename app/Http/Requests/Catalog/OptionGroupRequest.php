@@ -76,14 +76,14 @@ final class OptionGroupRequest extends FormRequest
             minQuantity: (int) $this->input('min_quantity', 0),
             maxQuantity: $this->input('max_quantity') === null ? null : (int) $this->input('max_quantity'),
             position: (int) $this->input('position', 0),
-            options: array_values(array_map(self::option(...), $options)),
+            options: array_values(array_map($this->option(...), $options)),
         );
     }
 
     /**
      * @param  array<string, mixed>  $row
      */
-    private static function option(array $row): OptionAttributes
+    private function option(array $row): OptionAttributes
     {
         /** @var list<array<string, mixed>> $prices */
         $prices = $row['prices'] ?? [];
