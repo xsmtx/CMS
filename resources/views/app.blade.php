@@ -21,6 +21,12 @@
         }
     </script>
 
+    {{-- Rendered once per document rather than shared on every Inertia
+         navigation: the locale does not change between two clicks. --}}
+    <script type="application/json" id="translations">
+        @json(app(\App\Support\View\FrontEndTranslations::class)->forLocale(app()->getLocale()))
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>

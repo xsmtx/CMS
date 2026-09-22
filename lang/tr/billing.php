@@ -3,6 +3,43 @@
 declare(strict_types=1);
 
 return [
+
+    'not_permitted' => 'Bu hesabın faturalandırma bölümüne erişiminiz yok.',
+    'details_saved' => 'Fatura bilgileri kaydedildi. Bir sonraki faturanızda kullanılacak.',
+
+    'portal' => [
+        'invoices_title' => 'Faturalar',
+        'invoices_description' => 'Bu hesap için düzenlenen her şey, en yenisi önce.',
+        'outstanding' => 'Ödenmemiş',
+        'nothing_owed' => 'Ödenmemiş tutar yok. Teşekkürler.',
+        'no_invoices' => 'Henüz fatura yok.',
+        'due' => 'Son ödeme :date',
+        'past_due' => 'Gecikmiş',
+        'view' => 'Görüntüle',
+        'bill_to' => 'Fatura sahibi',
+        'transactions_title' => 'İşlemler',
+        'transactions_description' => 'Bu hesaptaki her para hareketi, en yenisi önce.',
+        'no_transactions' => 'Bu hesapta henüz bir hareket yok.',
+        'credit_balance' => 'Hesap bakiyesi',
+        'credit_explained' => 'Bakiye, herhangi bir tahsilat yapılmadan önce faturalarınıza otomatik olarak uygulanır.',
+        'running_balance' => 'Sonraki bakiye',
+        'against' => 'İlgili belge',
+        'details_title' => 'Fatura bilgileri',
+        'details_description' => 'Bir sonraki faturanın kime düzenleneceği.',
+        'details_note' => 'Düzenlenmiş faturalar, düzenlendikleri bilgilerle kalır. Buradaki değişiklikler bir sonraki faturaya işler.',
+        'address' => 'Fatura adresi',
+        'methods_title' => 'Ödeme yöntemleri',
+        'methods_none' => 'Kayıtlı ödeme yöntemi yok.',
+        'methods_add_note' => 'Kart, ilk kez onunla ödeme yaptığınızda kaydedilir. Bu platform kart numarasını hiçbir zaman görmez veya saklamaz.',
+        'default' => 'Varsayılan',
+        'make_default' => 'Varsayılan yap',
+        'remove' => 'Kaldır',
+    ],
+
+    'methods' => [
+        'default_set' => 'Varsayılan ödeme yöntemi değiştirildi.',
+        'removed' => 'Ödeme yöntemi kaldırıldı.',
+    ],
     'statuses' => [
         'draft' => 'Taslak',
         'unpaid' => 'Ödenmemiş',
@@ -22,6 +59,10 @@ return [
         'partially_refunded' => 'Kısmen iade edildi',
     ],
 
+    'transactions' => [
+        'kind' => 'Tür',
+    ],
+
     'transaction_kinds' => [
         'payment' => 'Ödeme',
         'refund' => 'İade',
@@ -37,6 +78,7 @@ return [
     ],
 
     'invoices' => [
+        'all' => 'Tümü',
         'raised' => 'Bu sipariş için :number numaralı fatura oluşturuldu.',
         'title' => 'Faturalar',
         'subtitle' => 'Kesilen fatura bir daha değişmez. Düzeltmeler iade faturasıyla yapılır.',

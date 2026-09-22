@@ -72,10 +72,15 @@ final class SystemRoleSeeder extends Seeder
                 'settings.view',
             ],
             SystemRole::AccountOwner => array_keys($registry->forScope(RoleScope::Customer)),
+            // A technical contact or an employee: enough to see what was
+            // ordered and to look after their own sign-in, and nothing
+            // financial. The WHMCS idea of contact permissions, expressed
+            // as a role rather than as eight checkboxes on a contact.
             SystemRole::PortalMember => [
                 'portal.dashboard.view',
                 'portal.profile.view',
                 'portal.security.manage',
+                'portal.orders.view',
             ],
         };
     }

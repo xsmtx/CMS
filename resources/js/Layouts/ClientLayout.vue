@@ -2,6 +2,8 @@
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import { useTranslations } from '../composables/useTranslations'
+
 /**
  * Client area shell.
  *
@@ -22,19 +24,33 @@ function stopImpersonating(): void {
   router.delete('/client/impersonation')
 }
 
-// Destinations land with the phases that build them; the shell already
-// reserves their place so the information architecture does not shift under
-// customers later.
-const items = [
-  { label: 'Overview', href: '/client' },
-  { label: 'Services', href: '/client/services' },
-  { label: 'Domains', href: '/client/domains' },
-  { label: 'Billing', href: '/client/billing' },
-  { label: 'Support', href: '/client/support' },
-  { label: 'Contacts', href: '/client/contacts' },
-  { label: 'Profile', href: '/client/profile' },
-  { label: 'Security', href: '/security' },
-]
+const { t } = useTranslations()
+
+const can = computed(() => new Set(page.props.auth.permissions))
+
+// Destinations land with the phases that build them. A row is here when
+// the screen behind it exists: a nav item that leads to "coming soon"
+// teaches a customer that the navigation lies. Services, Domains and
+// Support arrive in Phases 6, 7 and 8.
+const items = computed(() =>
+  [
+    { label: t('portal.nav.overview'), href: '/client', permission: null },
+    { label: t('portal.nav.orders'), href: '/client/orders', permission: 'portal.orders.view' },
+    { label: t('portal.nav.billing'), href: '/client/billing', permission: 'portal.billing.view' },
+    {
+      label: t('portal.nav.contacts'),
+      href: '/client/contacts',
+      permission: 'portal.contacts.manage',
+    },
+    {
+      label: t('portal.nav.developer'),
+      href: '/client/developer/tokens',
+      permission: 'portal.tokens.manage',
+    },
+    { label: t('portal.nav.profile'), href: '/client/profile', permission: null },
+    { label: t('portal.nav.security'), href: '/security', permission: null },
+  ].filter((item) => item.permission === null || can.value.has(item.permission)),
+)
 
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
 

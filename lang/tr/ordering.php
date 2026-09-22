@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 return [
+
+    'not_permitted' => 'Bu hesabın siparişlerine erişiminiz yok.',
+
+    'portal' => [
+        'title' => 'Siparişler',
+        'description' => 'Verdiğiniz siparişler, en yenisi önce.',
+        'none' => 'Henüz sipariş yok.',
+        'placed' => ':date tarihinde verildi',
+        'invoice' => 'Fatura',
+        'pay' => 'Bu faturayı öde',
+        'what_you_ordered' => 'Sipariş içeriği',
+        'view' => 'Görüntüle',
+    ],
     'statuses' => [
         'draft' => 'Taslak',
         'pending' => 'Beklemede',
@@ -72,6 +85,7 @@ return [
     ],
 
     'cart' => [
+        'recurring_label' => 'Sonraki her yenilemede',
         'title' => 'Sepetiniz',
         'empty' => 'Sepetiniz boş.',
         'empty_hint' => 'Bir paket seçin, burada görünsün.',

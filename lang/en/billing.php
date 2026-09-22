@@ -3,6 +3,43 @@
 declare(strict_types=1);
 
 return [
+
+    'not_permitted' => 'You do not have access to billing on this account.',
+    'details_saved' => 'Billing details saved. They will be used on your next invoice.',
+
+    'portal' => [
+        'invoices_title' => 'Invoices',
+        'invoices_description' => 'Everything issued to this account, newest first.',
+        'outstanding' => 'Outstanding',
+        'nothing_owed' => 'Nothing outstanding. Thank you.',
+        'no_invoices' => 'No invoices yet.',
+        'due' => 'Due :date',
+        'past_due' => 'Past due',
+        'view' => 'View',
+        'bill_to' => 'Billed to',
+        'transactions_title' => 'Transactions',
+        'transactions_description' => 'Every movement of money on this account, newest first.',
+        'no_transactions' => 'Nothing has moved on this account yet.',
+        'credit_balance' => 'Account credit',
+        'credit_explained' => 'Credit is applied to your invoices automatically before anything is charged.',
+        'running_balance' => 'Credit after',
+        'against' => 'Against',
+        'details_title' => 'Billing details',
+        'details_description' => 'What the next invoice will be made out to.',
+        'details_note' => 'Invoices already issued keep the details they were issued with. Changes here apply to the next one.',
+        'address' => 'Billing address',
+        'methods_title' => 'Payment methods',
+        'methods_none' => 'No saved payment methods.',
+        'methods_add_note' => 'A card is saved the first time you pay with one. This platform never sees or stores the number itself.',
+        'default' => 'Default',
+        'make_default' => 'Make default',
+        'remove' => 'Remove',
+    ],
+
+    'methods' => [
+        'default_set' => 'Default payment method changed.',
+        'removed' => 'Payment method removed.',
+    ],
     'statuses' => [
         'draft' => 'Draft',
         'unpaid' => 'Unpaid',
@@ -22,6 +59,10 @@ return [
         'partially_refunded' => 'Partially refunded',
     ],
 
+    'transactions' => [
+        'kind' => 'Kind',
+    ],
+
     'transaction_kinds' => [
         'payment' => 'Payment',
         'refund' => 'Refund',
@@ -37,6 +78,7 @@ return [
     ],
 
     'invoices' => [
+        'all' => 'All',
         'raised' => 'Invoice :number has been raised for this order.',
         'title' => 'Invoices',
         'subtitle' => 'Once issued, an invoice never changes. Corrections are credit notes.',

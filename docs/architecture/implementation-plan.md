@@ -104,8 +104,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 2 | Catalog + Storefront: products, groups, pricing, options, addons, currencies, storefront catalog, theme foundation | **complete** — see `phase-2-result.md` |
 | 3 | Cart + Checkout + Orders + Risk: cart, domains-in-cart abstraction, promotions, checkout, tax interface, order state machine, risk engine | **complete** — see `phase-3-result.md` |
 | 4 | Billing + Payments: invoices and PDF, payments, transactions, credits/refunds, Stripe, PayPal, manual payment, webhook idempotency, reconciliation | **complete** — see `phase-4-result.md` |
-| 5 | Client Area: dashboard, services, billing, support shell, account/security, developer section | next |
-| 6 | Services + Provisioning: service lifecycle, infrastructure inventory, placement, queues, first hosting/VPS adapters | |
+| 5 | Client Area: dashboard, services, billing, support shell, account/security, developer section | **complete** — see `phase-5-result.md` |
+| 6 | Services + Provisioning: service lifecycle, infrastructure inventory, placement, queues, first hosting/VPS adapters | next |
 | 7 | Domains: registrar SDK, TLD pricing, register/transfer/renew, nameservers, synchronisation | |
 | 8 | Support + Content + Notifications: tickets, departments, SLA, knowledge base, announcements, email/in-app/webhook notifications | |
 | 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | |

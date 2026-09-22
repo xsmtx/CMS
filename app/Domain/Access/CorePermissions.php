@@ -182,6 +182,14 @@ final class CorePermissions
             new PermissionDefinition('portal.profile.manage', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.contacts.manage', 'portal', RoleScope::Customer, highRisk: true),
             new PermissionDefinition('portal.security.manage', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.billing.view', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.billing.pay', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.orders.view', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.payment_methods.manage', 'portal', RoleScope::Customer),
+            // A token is a password that does not expire and that nobody
+            // types. Issuing one is the most dangerous thing a customer can
+            // do in the portal.
+            new PermissionDefinition('portal.tokens.manage', 'portal', RoleScope::Customer, highRisk: true),
         ];
     }
 }

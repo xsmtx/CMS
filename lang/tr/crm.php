@@ -3,6 +3,20 @@
 declare(strict_types=1);
 
 return [
+    'save' => 'Kaydet',
+
+    'fields' => [
+        'company_name' => 'Şirket',
+        'legal_name' => 'Ticari unvan',
+        'tax_id' => 'Vergi numarası',
+        'line_one' => 'Adres',
+        'line_two' => 'Adres satırı 2',
+        'city' => 'Şehir',
+        'region' => 'Bölge',
+        'postal_code' => 'Posta kodu',
+        'country' => 'Ülke',
+    ],
+
     'customer_created' => 'Müşteri oluşturuldu.',
     'customer_updated' => 'Müşteri güncellendi.',
     'customer_anonymized' => 'Kişisel veriler silindi. Ticari kayıt korundu.',

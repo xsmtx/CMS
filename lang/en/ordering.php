@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 return [
+
+    'not_permitted' => 'You do not have access to orders on this account.',
+
+    'portal' => [
+        'title' => 'Orders',
+        'description' => 'What you have ordered, newest first.',
+        'none' => 'No orders yet.',
+        'placed' => 'Placed :date',
+        'invoice' => 'Invoice',
+        'pay' => 'Pay this invoice',
+        'what_you_ordered' => 'What you ordered',
+        'view' => 'View',
+    ],
     'statuses' => [
         'draft' => 'Draft',
         'pending' => 'Pending',
@@ -72,6 +85,7 @@ return [
     ],
 
     'cart' => [
+        'recurring_label' => 'Then, each renewal',
         'title' => 'Your cart',
         'empty' => 'Your cart is empty.',
         'empty_hint' => 'Pick a plan and it will show up here.',

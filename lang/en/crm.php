@@ -3,6 +3,20 @@
 declare(strict_types=1);
 
 return [
+    'save' => 'Save',
+
+    'fields' => [
+        'company_name' => 'Company',
+        'legal_name' => 'Legal name',
+        'tax_id' => 'Tax ID',
+        'line_one' => 'Address',
+        'line_two' => 'Address line 2',
+        'city' => 'City',
+        'region' => 'Region',
+        'postal_code' => 'Postal code',
+        'country' => 'Country',
+    ],
+
     'customer_created' => 'Customer created.',
     'customer_updated' => 'Customer updated.',
     'customer_anonymized' => 'Personal data erased. The commercial record remains.',

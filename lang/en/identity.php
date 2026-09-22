@@ -3,6 +3,26 @@
 declare(strict_types=1);
 
 return [
+
+    'tokens' => [
+        'title' => 'API tokens',
+        'description' => 'Tokens act as you, without a password and without a browser. Issue one per integration so you can revoke it on its own.',
+        'name' => 'What is it for',
+        'name_hint' => 'The only label this token will ever have. Backup script, Zapier, a colleague.',
+        'expires' => 'Expires after',
+        'expires_hint' => 'Days. Leave empty for a token that does not expire.',
+        'create' => 'Create token',
+        'created' => 'Token created.',
+        'revoked' => 'Token revoked.',
+        'revoke' => 'Revoke',
+        'none' => 'No tokens yet.',
+        'never_used' => 'Never used',
+        'last_used' => 'Last used :date',
+        'no_expiry' => 'No expiry',
+        'copy_once' => 'Copy this now. It will not be shown again - the platform stores only a hash of it.',
+        'not_permitted' => 'You do not have access to API tokens on this account.',
+        'api_coming' => 'The public API arrives in a later release. Tokens created now will work with it.',
+    ],
     'auth' => [
         // One message for every credential failure. Distinguishing "no such
         // account" from "wrong password" is an enumeration oracle.

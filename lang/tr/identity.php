@@ -3,6 +3,26 @@
 declare(strict_types=1);
 
 return [
+
+    'tokens' => [
+        'title' => 'API anahtarları',
+        'description' => 'Anahtarlar sizin adınıza, parola ve tarayıcı olmadan işlem yapar. Her entegrasyon için ayrı bir anahtar oluşturun ki tek tek iptal edebilesiniz.',
+        'name' => 'Ne için kullanılacak',
+        'name_hint' => 'Bu anahtarın sahip olacağı tek etiket. Yedekleme betiği, Zapier, bir iş arkadaşı.',
+        'expires' => 'Geçerlilik süresi',
+        'expires_hint' => 'Gün. Süresiz bir anahtar için boş bırakın.',
+        'create' => 'Anahtar oluştur',
+        'created' => 'Anahtar oluşturuldu.',
+        'revoked' => 'Anahtar iptal edildi.',
+        'revoke' => 'İptal et',
+        'none' => 'Henüz anahtar yok.',
+        'never_used' => 'Hiç kullanılmadı',
+        'last_used' => 'Son kullanım :date',
+        'no_expiry' => 'Süresiz',
+        'copy_once' => 'Bunu şimdi kopyalayın. Bir daha gösterilmeyecek - platform yalnızca özetini saklar.',
+        'not_permitted' => 'Bu hesabın API anahtarlarına erişiminiz yok.',
+        'api_coming' => 'Herkese açık API sonraki bir sürümde geliyor. Şimdi oluşturulan anahtarlar onunla çalışacak.',
+    ],
     'auth' => [
         'failed' => 'Bu bilgiler kayıtlarımızla eşleşmiyor.',
         'throttled' => 'Çok fazla deneme yapıldı. Lütfen :seconds saniye sonra tekrar deneyin.',

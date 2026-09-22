@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 4 are complete (`docs/architecture/phase-0-result.md` through
-`phase-4-result.md`). Phase 5, Client Area, is next and is not started. Do
-not begin a phase without being asked for it.
+Phases 0 to 5 are complete (`docs/architecture/phase-0-result.md` through
+`phase-5-result.md`). Phase 6, Services + Provisioning, is next and is not
+started. Do not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -140,3 +140,20 @@ moves money.
 A model whose money columns have database defaults declares them in
 `$attributes` too: a default fills the row but leaves the model in memory
 without the attribute, and the money cast reads that absence as null.
+
+A document number belongs to the seller, not the buyer (ADR 0025). A
+customer is an organization of its own, so `AllocateNumber` resolves the
+nearest non-customer ancestor itself; no call site passes the seller. Order,
+invoice and credit-note numbers are unique across the installation.
+
+The client area reads what the admin reads. A client screen resolves the
+same models through the same services, narrowed by `CurrentCustomer`, and
+the presenter — never the query — drops what a customer should not see.
+Authorization there is three questions: boundary, ownership, permission. A
+record that fails ownership answers 404, never 403.
+
+Vue components read translations through `useTranslations()`, backed by a
+JSON block in the document. `FrontEndTranslations` is an allow-list of
+dotted paths: adding `t('group.key')` to a component means adding its path
+there. A language file holds operator vocabulary next to customer
+vocabulary, and shipping a whole file publishes the first kind.
