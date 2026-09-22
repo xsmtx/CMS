@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Audit\Models\AuditLog;
+use App\Infrastructure\Billing\Models\GatewayEventRecord;
 use App\Infrastructure\Identity\Models\LoginHistory;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use App\Infrastructure\Organizations\Models\Organization;
@@ -39,10 +40,12 @@ it('bounds every model that carries an organization', function (): void {
 
 it('stamps the organization on write for every model that can carry one', function (): void {
     // Nullable-organization models are exempt by design: a failed sign-in
-    // has no actor to attribute, and refusing to record it would be worse
-    // than recording it without one.
+    // has no actor to attribute, and a webhook arrives before anyone knows
+    // which organization it concerns. Refusing to record either would be
+    // worse than recording it without one.
     $nullable = [
         AuditLog::class,
+        GatewayEventRecord::class,
         LoginHistory::class,
     ];
 

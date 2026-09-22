@@ -40,71 +40,29 @@ final readonly class RecordPayment
         private TransitionOrder $orders,
     ) {}
 
+    /**
+     * Record money an operator says arrived.
+     */
     public function handle(Invoice $invoice, RecordPaymentRequest $request, ?Model $actor = null): Payment
     {
         $this->assertAcceptable($invoice, $request->amount);
 
-        $payment = DB::transaction(function () use ($invoice, $request): Payment {
-            $customer = $invoice->customer;
+        $payment = Payment::query()->create([
+            'organization_id' => $invoice->organization_id,
+            'invoice_id' => $invoice->id,
+            'customer_id' => $invoice->customer_id,
+            'gateway' => $request->gateway,
+            'status' => PaymentStatus::Completed->value,
+            'currency_code' => $request->amount->currency->code,
+            'amount_minor' => $request->amount->minorUnits,
+            'reference' => $request->reference ?? 'man_'.Str::lower(Str::random(20)),
+            'idempotency_key' => $request->idempotencyKey ?? Str::lower(Str::random(32)),
+            'received_at' => $request->receivedAt ?? CarbonImmutable::now(),
+            'recorded_by' => $request->recordedBy,
+            'note' => $request->note,
+        ]);
 
-            $payment = Payment::query()->create([
-                'organization_id' => $invoice->organization_id,
-                'invoice_id' => $invoice->id,
-                'customer_id' => $invoice->customer_id,
-                'gateway' => $request->gateway,
-                'status' => PaymentStatus::Completed->value,
-                'currency_code' => $request->amount->currency->code,
-                'amount_minor' => $request->amount->minorUnits,
-                'reference' => $request->reference ?? 'man_'.Str::lower(Str::random(20)),
-                'idempotency_key' => $request->idempotencyKey ?? Str::lower(Str::random(32)),
-                'received_at' => $request->receivedAt ?? CarbonImmutable::now(),
-                'recorded_by' => $request->recordedBy,
-                'note' => $request->note,
-            ]);
-
-            if ($customer === null) {
-                return $payment;
-            }
-
-            $balance = $invoice->balance();
-
-            // The ledger's payment row records what was applied to this
-            // invoice; anything beyond it is credit, on its own row. That
-            // keeps "what has this invoice been paid" a straight sum.
-            $applied = $request->amount->isGreaterThan($balance) && $balance->isPositive()
-                ? $balance
-                : $request->amount;
-
-            if ($applied->isPositive()) {
-                $this->ledger->record(
-                    customer: $customer,
-                    kind: TransactionKind::Payment,
-                    amount: $applied,
-                    invoice: $invoice,
-                    payment: $payment,
-                    description: $request->note,
-                    recordedBy: $request->recordedBy,
-                );
-            }
-
-            $excess = $request->amount->minus($applied);
-
-            if ($excess->isPositive()) {
-                $this->ledger->record(
-                    customer: $customer,
-                    kind: TransactionKind::CreditAdded,
-                    amount: $excess,
-                    invoice: $invoice,
-                    payment: $payment,
-                    description: 'Overpayment on '.$invoice->number,
-                    recordedBy: $request->recordedBy,
-                );
-            }
-
-            return $payment;
-        });
-
-        $this->settle($invoice, $actor);
+        $this->attach($invoice, $payment, $actor);
 
         Audit::action('billing.payment.recorded')
             ->by($actor)
@@ -119,6 +77,62 @@ final readonly class RecordPayment
             ->write();
 
         return $payment;
+    }
+
+    /**
+     * Write the ledger for a payment that already exists, and settle.
+     *
+     * Used when a gateway confirms a payment that was created as pending
+     * before the customer was sent away. Idempotent: a webhook delivered
+     * again under a second event id finds the rows already written and
+     * leaves them alone.
+     */
+    public function attach(Invoice $invoice, Payment $payment, ?Model $actor = null): Invoice
+    {
+        $customer = $invoice->customer;
+
+        if ($customer === null || $payment->transactions()->exists()) {
+            return $this->settle($invoice, $actor);
+        }
+
+        DB::transaction(function () use ($invoice, $payment, $customer): void {
+            $balance = $invoice->balance();
+
+            // The ledger's payment row records what was applied to this
+            // invoice; anything beyond it is credit, on its own row. That
+            // keeps "what has this invoice been paid" a straight sum.
+            $applied = $payment->amount->isGreaterThan($balance) && $balance->isPositive()
+                ? $balance
+                : $payment->amount;
+
+            if ($applied->isPositive()) {
+                $this->ledger->record(
+                    customer: $customer,
+                    kind: TransactionKind::Payment,
+                    amount: $applied,
+                    invoice: $invoice,
+                    payment: $payment,
+                    description: $payment->note,
+                    recordedBy: $payment->recorded_by,
+                );
+            }
+
+            $excess = $payment->amount->minus($applied);
+
+            if ($excess->isPositive()) {
+                $this->ledger->record(
+                    customer: $customer,
+                    kind: TransactionKind::CreditAdded,
+                    amount: $excess,
+                    invoice: $invoice,
+                    payment: $payment,
+                    description: 'Overpayment on '.$invoice->number,
+                    recordedBy: $payment->recorded_by,
+                );
+            }
+        });
+
+        return $this->settle($invoice, $actor);
     }
 
     /**
@@ -163,12 +177,11 @@ final readonly class RecordPayment
             throw PaymentRefused::exceedsBalance($amount, $invoice->balance());
         }
 
-        if ($invoice->status === InvoiceStatus::Draft) {
-            // Nothing is owed on a document that has not been issued.
-            throw PaymentRefused::alreadyPaid();
-        }
-
-        if ($invoice->status->isSettled() || $invoice->status === InvoiceStatus::Cancelled) {
+        // Nothing is owed on a document that has not been issued, and
+        // nothing more is owed on one already settled or cancelled.
+        if ($invoice->status === InvoiceStatus::Draft
+            || $invoice->status->isSettled()
+            || $invoice->status === InvoiceStatus::Cancelled) {
             throw PaymentRefused::alreadyPaid();
         }
     }
