@@ -22,6 +22,7 @@ return [
     'groups' => [
         'platform' => 'Platform',
         'access' => 'Yetkilendirme',
+        'billing' => 'Faturalama',
         'catalog' => 'Katalog',
         'crm' => 'Müşteriler',
         'identity' => 'Kimlik',

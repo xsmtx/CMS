@@ -30,6 +30,7 @@ final class CorePermissions
             ...self::crm(),
             ...self::catalog(),
             ...self::ordering(),
+            ...self::billing(),
             ...self::settings(),
             ...self::portal(),
         ];
@@ -136,6 +137,24 @@ final class CorePermissions
 
             // Changes what customers are charged.
             new PermissionDefinition('promotions.manage', 'ordering', RoleScope::Staff, highRisk: true),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
+    private static function billing(): array
+    {
+        return [
+            new PermissionDefinition('billing.invoices.view', 'billing', RoleScope::Staff),
+            new PermissionDefinition('billing.invoices.manage', 'billing', RoleScope::Staff),
+
+            // Each of these asserts something about money: that it arrived,
+            // that it went back, or that the business owes it. They are
+            // separable from editing a draft for that reason.
+            new PermissionDefinition('billing.payments.record', 'billing', RoleScope::Staff, highRisk: true),
+            new PermissionDefinition('billing.refunds.manage', 'billing', RoleScope::Staff, highRisk: true),
+            new PermissionDefinition('billing.credits.manage', 'billing', RoleScope::Staff, highRisk: true),
         ];
     }
 

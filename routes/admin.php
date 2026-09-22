@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\OptionGroupController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderReviewController;
@@ -89,6 +91,26 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::post('orders/{order}/refuse', [OrderReviewController::class, 'refuse'])->name('orders.refuse');
 
     Route::resource('promotions', PromotionController::class)->except(['show']);
+
+    // Billing. Every action that moves money is its own route, because
+    // each answers to its own permission.
+    Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::post('orders/{order}/invoice', [InvoiceController::class, 'storeForOrder'])
+        ->name('orders.invoice');
+    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
+    Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
+
+    Route::post('invoices/{invoice}/payments', [InvoicePaymentController::class, 'store'])
+        ->name('invoices.payments.store');
+    Route::post('invoices/{invoice}/payments/{payment}/refund', [InvoicePaymentController::class, 'refund'])
+        ->name('invoices.payments.refund');
+    Route::post('invoices/{invoice}/credit/apply', [InvoicePaymentController::class, 'applyCredit'])
+        ->name('invoices.credit.apply');
+    Route::post('invoices/{invoice}/credit/add', [InvoicePaymentController::class, 'addCredit'])
+        ->name('invoices.credit.add');
+    Route::post('invoices/{invoice}/credit-note', [InvoicePaymentController::class, 'creditNote'])
+        ->name('invoices.credit-note');
 
     // Acting as a customer. Starting it is rate limited on top of the
     // permission and boundary checks.

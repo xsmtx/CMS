@@ -75,6 +75,7 @@ const groups: NavGroup[] = [
     // thinks of them.
     label: 'Billing',
     items: [
+      { label: 'Invoices', href: '/admin/invoices', permission: 'billing.invoices.view' },
       {
         label: 'Currencies',
         href: '/admin/catalog/currencies',
