@@ -26,3 +26,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0016](0016-two-guard-identity.md) | Two authenticatables, two guards | accepted |
 | [0017](0017-first-party-authentication.md) | First-party authentication, not Fortify | accepted |
 | [0018](0018-impersonation-safeguards.md) | Impersonation safeguards | accepted |
+| [0019](0019-price-matrix.md) | Prices are a matrix, and absence means not sold | accepted |
+| [0020](0020-storefront-organization-boundary.md) | The storefront's boundary comes from the installation | accepted |

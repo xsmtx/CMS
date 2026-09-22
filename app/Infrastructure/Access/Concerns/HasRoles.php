@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Access\Concerns;
 
+use App\Domain\Access\PermissionDefinition;
+use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\RoleScope;
 use App\Domain\Access\SystemRole;
 use App\Infrastructure\Access\Models\Role;
@@ -87,6 +89,18 @@ trait HasRoles
     public function effectivePermissions(): array
     {
         return $this->permissionCache()->remember($this, function (): array {
+            // The super-admin role bypasses the permission check rather than
+            // holding grants, so reading its assignments would describe it
+            // as holding nothing at all. The interface asks this question to
+            // decide what to show, and it deserves the same answer the gate
+            // gives: everything in scope.
+            if ($this->isSuperAdmin()) {
+                return array_values(array_map(
+                    static fn (PermissionDefinition $definition): string => $definition->slug,
+                    app(PermissionRegistry::class)->forScope($this->roleScope()),
+                ));
+            }
+
             /** @var list<string> $slugs */
             $slugs = $this->roles()
                 ->with('permissions:id,slug,orphaned_at')

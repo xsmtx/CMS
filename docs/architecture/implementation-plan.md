@@ -101,8 +101,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | --- | --- | --- |
 | 0 | Foundation: repo, Docker, Laravel/Vue/TS/Inertia, MariaDB, Redis, CI, ADRs, correlation IDs, RBAC + audit foundations, **organization ownership** | **complete** — see `phase-0-result.md` |
 | 1 | Identity + CRM: customers, contacts, staff, permissions UI, 2FA, sessions, profile/security, impersonation with audit | **complete** - see `phase-1-result.md` |
-| 2 | Catalog + Storefront: products, groups, pricing, options, addons, currencies, storefront catalog, theme foundation | next |
-| 3 | Cart + Checkout + Orders + Risk: cart, domains-in-cart abstraction, promotions, checkout, tax interface, order state machine, risk engine | |
+| 2 | Catalog + Storefront: products, groups, pricing, options, addons, currencies, storefront catalog, theme foundation | **complete** — see `phase-2-result.md` |
+| 3 | Cart + Checkout + Orders + Risk: cart, domains-in-cart abstraction, promotions, checkout, tax interface, order state machine, risk engine | next |
 | 4 | Billing + Payments: invoices and PDF, payments, transactions, credits/refunds, Stripe, PayPal, manual payment, webhook idempotency, reconciliation | |
 | 5 | Client Area: dashboard, services, billing, support shell, account/security, developer section | |
 | 6 | Services + Provisioning: service lifecycle, infrastructure inventory, placement, queues, first hosting/VPS adapters | |

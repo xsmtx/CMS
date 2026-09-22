@@ -32,7 +32,7 @@ function remove(currency: CurrencyRow): void {
     heading="Currencies"
     description="What this installation trades in. Rates are for reporting only — a customer always pays the price entered in their own currency."
   >
-    <div v-if="canManage" class="mb-5 flex justify-end">
+    <div v-if="canManage && currencies.length > 0" class="mb-5 flex justify-end">
       <AppButton href="/admin/catalog/currencies/create" variant="primary">Add currency</AppButton>
     </div>
 

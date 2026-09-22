@@ -41,7 +41,7 @@ function remove(addon: AddonRow): void {
     :heading="`Addons — ${product.name}`"
     description="Separate lines a customer can add or drop later, each with its own price."
   >
-    <div v-if="canManage" class="mb-5 flex justify-end">
+    <div v-if="canManage && addons.length > 0" class="mb-5 flex justify-end">
       <AppButton :href="`/admin/catalog/products/${product.id}/addons/create`" variant="primary">
         New addon
       </AppButton>

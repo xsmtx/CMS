@@ -10,7 +10,12 @@ import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
 import PriceMatrix from '../../../../Components/PriceMatrix.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
-import type { CurrencyOption, CycleOption, PriceCell } from '../../../../types/catalog'
+import {
+  toPricePayload,
+  type CurrencyOption,
+  type CycleOption,
+  type PriceCell,
+} from '../../../../types/catalog'
 
 interface ChoiceInput {
   id: string | null
@@ -128,12 +133,7 @@ function submit(): void {
             value: choice.value,
             is_default: choice.isDefault,
             position: choice.position,
-            prices: choice.prices.map((price) => ({
-              billing_cycle: price.billingCycle,
-              currency_code: price.currencyCode,
-              recurring_minor: price.recurringMinor,
-              setup_minor: price.setupMinor,
-            })),
+            prices: toPricePayload(choice.prices),
           })),
     }))
     [props.group ? 'put' : 'post'](

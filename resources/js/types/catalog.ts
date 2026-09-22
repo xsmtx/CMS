@@ -66,3 +66,37 @@ export function toMinor(text: string, exponent: number): number | null {
 export function cellKey(cycle: string, currency: string): string {
   return `${cycle}:${currency}`
 }
+
+/**
+ * The wire shape the server validates: snake_case keys, minor units.
+ *
+ * Three screens submit a price matrix. Each one spelling the keys out again
+ * is how one of them ends up silently rejected, so the mapping lives here
+ * and is tested.
+ */
+export interface PricePayload {
+  billing_cycle: string
+  currency_code: string
+  recurring_minor: number
+  setup_minor: number
+}
+
+export function toPricePayload(cells: PriceCell[]): PricePayload[] {
+  return cells.map((cell) => ({
+    billing_cycle: cell.billingCycle,
+    currency_code: cell.currencyCode,
+    recurring_minor: cell.recurringMinor,
+    setup_minor: cell.setupMinor,
+  }))
+}
+
+/**
+ * The first validation error touching the price matrix, whatever row it
+ * landed on. Laravel reports `prices.0.recurring_minor`; an operator needs
+ * to be told something went wrong, not which array index.
+ */
+export function firstPriceError(errors: Record<string, string>): string | undefined {
+  const key = Object.keys(errors).find((name) => name === 'prices' || name.startsWith('prices.'))
+
+  return key === undefined ? undefined : errors[key]
+}

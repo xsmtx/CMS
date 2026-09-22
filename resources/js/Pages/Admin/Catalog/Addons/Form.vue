@@ -2,6 +2,7 @@
 import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import AppAlert from '../../../../Components/AppAlert.vue'
 import AppButton from '../../../../Components/AppButton.vue'
 import AppCard from '../../../../Components/AppCard.vue'
 import AppInput from '../../../../Components/AppInput.vue'
@@ -9,7 +10,13 @@ import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
 import PriceMatrix from '../../../../Components/PriceMatrix.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
-import type { CurrencyOption, CycleOption, PriceCell } from '../../../../types/catalog'
+import {
+  firstPriceError,
+  toPricePayload,
+  type CurrencyOption,
+  type CycleOption,
+  type PriceCell,
+} from '../../../../types/catalog'
 
 const props = defineProps<{
   product: { id: string; name: string }
@@ -41,6 +48,8 @@ const form = useForm({
 // does not require resaving its description.
 const pricing = useForm<{ prices: PriceCell[] }>({ prices: props.addon?.prices ?? [] })
 
+const priceError = computed(() => firstPriceError(pricing.errors))
+
 function submit(): void {
   form
     .transform((data) => ({ ...data, position: Number(data.position) }))
@@ -55,14 +64,7 @@ function savePrices(): void {
   if (!props.addon) return
 
   pricing
-    .transform((data) => ({
-      prices: data.prices.map((price) => ({
-        billing_cycle: price.billingCycle,
-        currency_code: price.currencyCode,
-        recurring_minor: price.recurringMinor,
-        setup_minor: price.setupMinor,
-      })),
-    }))
+    .transform((data) => ({ prices: toPricePayload(data.prices) }))
     .put(`/admin/catalog/products/${props.product.id}/addons/${props.addon.id}/pricing`, {
       preserveScroll: true,
     })
@@ -124,6 +126,8 @@ function savePrices(): void {
       </form>
 
       <form v-if="addon" class="flex flex-col gap-6" @submit.prevent="savePrices">
+        <AppAlert v-if="priceError" tone="danger">{{ priceError }}</AppAlert>
+
         <AppCard>
           <PriceMatrix
             v-model="pricing.prices"

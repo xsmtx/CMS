@@ -8,25 +8,25 @@ return [
 
     'scopes' => [
         'staff' => 'Personel',
-        'customer' => 'Musteri',
+        'customer' => 'Müşteri',
     ],
 
     'roles' => [
-        'super-admin' => 'Super Yonetici',
-        'administrator' => 'Yonetici',
+        'super-admin' => 'Süper Yönetici',
+        'administrator' => 'Yönetici',
         'support' => 'Destek Temsilcisi',
         'account-owner' => 'Hesap Sahibi',
-        'portal-member' => 'Panel Kullanicisi',
+        'portal-member' => 'Panel Kullanıcısı',
     ],
 
     'groups' => [
         'platform' => 'Platform',
         'access' => 'Yetkilendirme',
         'catalog' => 'Katalog',
-        'crm' => 'Musteriler',
+        'crm' => 'Müşteriler',
         'identity' => 'Kimlik',
         'organizations' => 'Organizasyonlar',
         'settings' => 'Ayarlar',
-        'portal' => 'Musteri paneli',
+        'portal' => 'Müşteri paneli',
     ],
 ];

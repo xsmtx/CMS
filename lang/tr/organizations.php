@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 return [
     'types' => [
-        'provider' => 'Saglayici',
+        'provider' => 'Sağlayıcı',
         'reseller' => 'Bayi',
-        'customer' => 'Musteri',
+        'customer' => 'Müşteri',
     ],
 ];

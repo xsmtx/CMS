@@ -54,7 +54,7 @@ function statusLabel(value: string): string {
     heading="Products"
     description="What customers can buy. A product with no price in a currency is simply not sold in it."
   >
-    <div class="mb-5 flex justify-end">
+    <div v-if="sections.length > 0" class="mb-5 flex justify-end">
       <AppButton href="/admin/catalog/products/create" variant="primary">New product</AppButton>
     </div>
 

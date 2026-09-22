@@ -88,9 +88,10 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 and 1 are complete (`docs/architecture/phase-0-result.md`,
-`phase-1-result.md`). Phase 2, Catalog + Storefront, is next and is not
-started. Do not begin a phase without being asked for it.
+Phases 0, 1 and 2 are complete (`docs/architecture/phase-0-result.md`,
+`phase-1-result.md`, `phase-2-result.md`). Phase 3, Cart + Checkout +
+Orders, is next and is not started. Do not begin a phase without being asked
+for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -100,3 +101,13 @@ auth controllers read their guard from the route-name prefix.
 The organization boundary is forced ahead of `SubstituteBindings` in the
 middleware priority list. Do not reorder it: route-model binding resolved
 before the boundary exists is an unscoped lookup.
+
+Money is never a float, anywhere: not in a column, a DTO, a JSON payload or
+the browser. `App\Domain\Shared\Money` holds integer minor units and an ISO
+4217 code, and has no `toFloat()` on purpose. A price exists for a billing
+cycle and currency only when a row exists for it — absence means not sold,
+zero means free, and nothing is ever converted at display time.
+
+The public storefront takes its boundary from the installation rather than
+from an actor, and narrows to exactly one organization rather than the
+subtree a boundary normally means.

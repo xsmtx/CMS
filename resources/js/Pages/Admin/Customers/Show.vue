@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -50,8 +50,6 @@ const props = defineProps<{
   can: { update: boolean; export: boolean; anonymize: boolean; impersonate: boolean }
 }>()
 
-const page = usePage()
-
 const impersonating = ref<string | null>(null)
 const showErasure = ref(false)
 
@@ -81,10 +79,6 @@ function formatTime(value: string | null): string {
   <Head :title="customer.name" />
 
   <AdminLayout :heading="customer.name">
-    <template v-if="page.props.flash?.status">
-      <AppAlert tone="success" class="mb-5">{{ page.props.flash.status }}</AppAlert>
-    </template>
-
     <AppAlert v-if="customer.anonymized" tone="info" class="mb-5">
       This customer's personal data has been erased. The commercial record remains so that invoices
       and service history stay intact.

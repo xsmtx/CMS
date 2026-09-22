@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import AppAlert from '../Components/AppAlert.vue'
 import { usePermissions } from '../composables/usePermissions'
 
 /**
@@ -22,6 +23,10 @@ const page = usePage()
 const { can } = usePermissions()
 
 const brand = computed(() => page.props.brand?.name ?? 'InfraCMS')
+
+// Confirmation belongs to the shell rather than to each page: an action that
+// redirects has no page left to report on.
+const flash = computed(() => page.props.flash)
 const user = computed(() => page.props.auth.user)
 
 interface NavItem {
@@ -173,6 +178,11 @@ function isCurrent(href: string): boolean {
                 {{ description }}
               </p>
             </div>
+
+            <AppAlert v-if="flash?.error" tone="danger" class="mb-5">{{ flash.error }}</AppAlert>
+            <AppAlert v-else-if="flash?.status" tone="success" class="mb-5">
+              {{ flash.status }}
+            </AppAlert>
 
             <slot />
           </div>

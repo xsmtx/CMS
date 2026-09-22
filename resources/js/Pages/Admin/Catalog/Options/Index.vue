@@ -38,7 +38,7 @@ function remove(group: OptionGroupRow): void {
     :heading="`Configurable options — ${product.name}`"
     description="Choices that change what the product is. Each choice is priced as a difference from the product price, so a cheaper choice is a negative number."
   >
-    <div v-if="canManage" class="mb-5 flex justify-end">
+    <div v-if="canManage && groups.length > 0" class="mb-5 flex justify-end">
       <AppButton :href="`/admin/catalog/products/${product.id}/options/create`" variant="primary">
         New option group
       </AppButton>

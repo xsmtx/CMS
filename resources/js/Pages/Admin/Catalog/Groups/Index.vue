@@ -35,7 +35,7 @@ function remove(group: GroupRow): void {
     heading="Product groups"
     description="How products are arranged on the storefront. A group holding products cannot be deleted; retire it to take it off the menu."
   >
-    <div class="mb-5 flex justify-end">
+    <div v-if="groups.length > 0" class="mb-5 flex justify-end">
       <AppButton href="/admin/catalog/groups/create" variant="primary">New group</AppButton>
     </div>
 

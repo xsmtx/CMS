@@ -167,3 +167,23 @@ it('declares no permission slug twice across core and modules', function (): voi
 
     expect(count($registry->slugs()))->toBe(count(array_unique($registry->slugs())));
 });
+
+it('lists every staff permission for a super admin', function (): void {
+    // The role bypasses the check rather than holding grants, so reading its
+    // assignments would say it holds nothing — and the admin navigation,
+    // which asks this question to decide what to show, would come up empty.
+    syncCorePermissions();
+    $this->seed(SystemRoleSeeder::class);
+
+    $owner = StaffUser::factory()->create();
+    $owner->assignRole(SystemRole::SuperAdmin);
+
+    $staffSlugs = array_values(array_map(
+        static fn (PermissionDefinition $definition): string => $definition->slug,
+        app(PermissionRegistry::class)->forScope(RoleScope::Staff),
+    ));
+
+    expect($owner->fresh()?->effectivePermissions())->toEqualCanonicalizing($staffSlugs)
+        ->and($owner->fresh()?->effectivePermissions())->toContain('catalog.products.view')
+        ->and($owner->fresh()?->effectivePermissions())->not->toContain('portal.dashboard.view');
+});
