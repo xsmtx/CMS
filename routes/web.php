@@ -6,6 +6,7 @@ use App\Http\Controllers\StorefrontCartController;
 use App\Http\Controllers\StorefrontCatalogController;
 use App\Http\Controllers\StorefrontCheckoutController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StorefrontInvoiceController;
 use App\Http\Middleware\ResolveStorefrontOrganization;
 use Illuminate\Support\Facades\Route;
 
@@ -50,4 +51,19 @@ Route::middleware(ResolveStorefrontOrganization::class)->group(function (): void
         ->name('storefront.checkout.store');
     Route::get('/orders/{number}', [StorefrontCheckoutController::class, 'confirmation'])
         ->name('storefront.order');
+
+    // Paying an invoice. Signed in, because an invoice names a person and
+    // says what they bought.
+    Route::middleware('auth:client')->group(function (): void {
+        Route::get('/invoices/{number}', [StorefrontInvoiceController::class, 'show'])
+            ->name('storefront.invoice');
+        Route::post('/invoices/{number}/pay', [StorefrontInvoiceController::class, 'pay'])
+            ->name('storefront.invoice.pay');
+
+        // Where a gateway sends the customer back. It confirms nothing:
+        // whatever the query string claims, the page shows only what a
+        // verified webhook has already recorded.
+        Route::get('/invoices/{number}/returned', [StorefrontInvoiceController::class, 'returned'])
+            ->name('storefront.invoice.returned');
+    });
 });
