@@ -68,7 +68,8 @@ npm run test:unit   # vitest
 npm run build       # production assets
 
 php artisan platform:permissions:sync
-php artisan db:seed          # idempotent: provider org, permissions, system roles
+php artisan db:seed                # provider org, permissions, system roles
+php artisan identity:create-owner  # the first staff account
 php artisan migrate --env=testing
 ```
 
@@ -87,6 +88,15 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phase 0 is complete (`docs/architecture/phase-0-result.md`). Phase 1 —
-Identity + CRM — is next and is not started. Do not begin a phase without
-being asked for it.
+Phases 0 and 1 are complete (`docs/architecture/phase-0-result.md`,
+`phase-1-result.md`). Phase 2, Catalog + Storefront, is next and is not
+started. Do not begin a phase without being asked for it.
+
+Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
+in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
+resolves only the default guard. Route files are per area, and the shared
+auth controllers read their guard from the route-name prefix.
+
+The organization boundary is forced ahead of `SubstituteBindings` in the
+middleware priority list. Do not reorder it: route-model binding resolved
+before the boundary exists is an unscoped lookup.

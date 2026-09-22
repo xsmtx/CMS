@@ -23,3 +23,6 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0013](0013-licensing-control-plane-separation.md) | Licensing control plane is a separate system | accepted |
 | [0014](0014-money-representation.md) | Money as integer minor units | accepted |
 | [0015](0015-module-sdk-boundary.md) | Module SDK boundary | accepted |
+| [0016](0016-two-guard-identity.md) | Two authenticatables, two guards | accepted |
+| [0017](0017-first-party-authentication.md) | First-party authentication, not Fortify | accepted |
+| [0018](0018-impersonation-safeguards.md) | Impersonation safeguards | accepted |

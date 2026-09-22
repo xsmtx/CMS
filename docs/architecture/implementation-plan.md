@@ -1,7 +1,7 @@
 # InfraCMS — Implementation Plan
 
 Status: living document
-Last updated: 2026-09-22
+Last updated: 2026-09-23
 Source of record: `CLAUDE_HOSTING_PLATFORM_HANDOFF_V2.md` (the V2 addendum
 supersedes conflicting V1 requirements; this plan follows V2).
 
@@ -88,6 +88,9 @@ done to them. Neither substitutes for the other. See ADR 0002 and 0007.
 | 0013 | Licensing control plane is a separate system |
 | 0014 | Money as integer minor units, never float |
 | 0015 | Module SDK depends on platform contracts, not framework internals |
+| 0016 | Two authenticatables, two guards |
+| 0017 | First-party authentication, not Fortify |
+| 0018 | Impersonation safeguards |
 
 ## 4. Roadmap
 
@@ -97,8 +100,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 0 | Foundation: repo, Docker, Laravel/Vue/TS/Inertia, MariaDB, Redis, CI, ADRs, correlation IDs, RBAC + audit foundations, **organization ownership** | **complete** — see `phase-0-result.md` |
-| 1 | Identity + CRM: customers, contacts, staff, organizations UI, permissions UI, 2FA, sessions, profile/security, impersonation with audit | next |
-| 2 | Catalog + Storefront: products, groups, pricing, options, addons, currencies, storefront catalog, theme foundation | |
+| 1 | Identity + CRM: customers, contacts, staff, permissions UI, 2FA, sessions, profile/security, impersonation with audit | **complete** - see `phase-1-result.md` |
+| 2 | Catalog + Storefront: products, groups, pricing, options, addons, currencies, storefront catalog, theme foundation | next |
 | 3 | Cart + Checkout + Orders + Risk: cart, domains-in-cart abstraction, promotions, checkout, tax interface, order state machine, risk engine | |
 | 4 | Billing + Payments: invoices and PDF, payments, transactions, credits/refunds, Stripe, PayPal, manual payment, webhook idempotency, reconciliation | |
 | 5 | Client Area: dashboard, services, billing, support shell, account/security, developer section | |
