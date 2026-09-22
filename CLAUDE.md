@@ -88,10 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0, 1 and 2 are complete (`docs/architecture/phase-0-result.md`,
-`phase-1-result.md`, `phase-2-result.md`). Phase 3, Cart + Checkout +
-Orders, is next and is not started. Do not begin a phase without being asked
-for it.
+Phases 0 to 3 are complete (`docs/architecture/phase-0-result.md` through
+`phase-3-result.md`). Phase 4, Billing + Payments, is next and is not
+started. Do not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -111,3 +110,18 @@ zero means free, and nothing is ever converted at display time.
 The public storefront takes its boundary from the installation rather than
 from an actor, and narrows to exactly one organization rather than the
 subtree a boundary normally means.
+
+An order line copies the catalog rather than referencing it: the product
+name, the option labels, the cycle and every amount are written onto the
+line when the order is placed (ADR 0021). Invoice lines in Phase 4 copy from
+the order line for the same reason. A cart is the other way round — its
+lines reference the catalog and are priced on every read.
+
+Tax and risk are contracts with dull defaults (ADR 0022). Core never
+implements a country's tax rules and never names a fraud vendor. Risk holds
+rather than refuses, and a rejection never tells the customer which rule
+fired.
+
+The admin sidebar follows the admin panel map in the handoff, which is the
+shape WHMCS operators know. Only sections that exist are listed; each phase
+adds its own rows.

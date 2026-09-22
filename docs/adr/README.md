@@ -28,3 +28,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0018](0018-impersonation-safeguards.md) | Impersonation safeguards | accepted |
 | [0019](0019-price-matrix.md) | Prices are a matrix, and absence means not sold | accepted |
 | [0020](0020-storefront-organization-boundary.md) | The storefront's boundary comes from the installation | accepted |
+| [0021](0021-order-lines-copy-the-catalog.md) | Order lines copy the catalog, they do not reference it | accepted |
+| [0022](0022-risk-and-tax-are-contracts.md) | Risk and tax are contracts, with dull defaults | accepted |
