@@ -34,15 +34,14 @@ final class OrderController extends Controller
                 OrderStatus::tryFrom($status) instanceof OrderStatus,
                 fn ($query) => $query->where('status', $status),
             )
-            ->orderByDesc('placed_at')
-            ->orderByDesc('created_at')
+            ->latest('placed_at')->latest()
             ->paginate(25)
             ->withQueryString();
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => [
                 'data' => array_map(
-                    fn (Order $order): array => $this->row($order),
+                    $this->row(...),
                     $orders->items(),
                 ),
                 'currentPage' => $orders->currentPage(),
@@ -226,7 +225,7 @@ final class OrderController extends Controller
                 /** @var array<string, scalar|null> $detail */
                 $detail = $reason['detail'] ?? [];
 
-                return (string) __('ordering.risk_reasons.'.((string) ($reason['code'] ?? '')), $detail);
+                return (string) __('ordering.risk_reasons.'.(($reason['code'] ?? '')), $detail);
             },
             $order->risk_reasons ?? [],
         ));
