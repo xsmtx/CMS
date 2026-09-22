@@ -28,6 +28,7 @@ final class CorePermissions
             ...self::access(),
             ...self::identity(),
             ...self::crm(),
+            ...self::catalog(),
             ...self::settings(),
             ...self::portal(),
         ];
@@ -95,6 +96,24 @@ final class CorePermissions
             new PermissionDefinition('crm.notes.manage', 'crm', RoleScope::Staff),
             new PermissionDefinition('crm.tags.manage', 'crm', RoleScope::Staff),
             new PermissionDefinition('crm.custom_fields.manage', 'crm', RoleScope::Staff),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
+    private static function catalog(): array
+    {
+        return [
+            new PermissionDefinition('catalog.groups.view', 'catalog', RoleScope::Staff),
+            new PermissionDefinition('catalog.groups.manage', 'catalog', RoleScope::Staff),
+            new PermissionDefinition('catalog.products.view', 'catalog', RoleScope::Staff),
+            new PermissionDefinition('catalog.products.manage', 'catalog', RoleScope::Staff),
+
+            // Both change what customers are charged, which is why they are
+            // separable from editing a product's description.
+            new PermissionDefinition('catalog.pricing.manage', 'catalog', RoleScope::Staff, highRisk: true),
+            new PermissionDefinition('catalog.currencies.manage', 'catalog', RoleScope::Staff, highRisk: true),
         ];
     }
 
