@@ -77,6 +77,7 @@ return [
         'empty_hint' => 'Pick a plan and it will show up here.',
         'continue' => 'Continue shopping',
         'checkout' => 'Checkout',
+        'update_line' => 'Update',
         'remove' => 'Remove',
         'quantity' => 'Quantity',
         'subtotal' => 'Subtotal',

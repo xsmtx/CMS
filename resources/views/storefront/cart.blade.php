@@ -87,7 +87,7 @@
                                         class="w-20 rounded-[var(--radius-sm)] border border-line bg-surface px-2 py-1 text-sm tabular-nums"
                                     >
                                     <button type="submit" class="pressable text-xs text-content-muted underline underline-offset-4 hover:text-content">
-                                        {{ __('ordering.cart.promo_apply') }}
+                                        {{ __('ordering.cart.update_line') }}
                                     </button>
                                 </form>
 

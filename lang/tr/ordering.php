@@ -77,6 +77,7 @@ return [
         'empty_hint' => 'Bir paket seçin, burada görünsün.',
         'continue' => 'Alışverişe devam et',
         'checkout' => 'Siparişi tamamla',
+        'update_line' => 'Güncelle',
         'remove' => 'Kaldır',
         'quantity' => 'Adet',
         'subtotal' => 'Ara toplam',
