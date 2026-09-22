@@ -32,6 +32,7 @@ final class CorePermissions
             ...self::ordering(),
             ...self::billing(),
             ...self::settings(),
+            ...self::provisioning(),
             ...self::portal(),
         ];
     }
@@ -174,6 +175,26 @@ final class CorePermissions
     /**
      * @return list<PermissionDefinition>
      */
+    private static function provisioning(): array
+    {
+        return [
+            new PermissionDefinition('services.view', 'services', RoleScope::Staff),
+            new PermissionDefinition('services.manage', 'services', RoleScope::Staff),
+            new PermissionDefinition('services.provision', 'services', RoleScope::Staff),
+            new PermissionDefinition('services.suspend', 'services', RoleScope::Staff),
+            // It destroys an account at a provider, and nothing brings it
+            // back.
+            new PermissionDefinition('services.terminate', 'services', RoleScope::Staff, highRisk: true),
+
+            new PermissionDefinition('infrastructure.view', 'infrastructure', RoleScope::Staff),
+            // Holds the credentials for somebody's production fleet.
+            new PermissionDefinition('infrastructure.manage', 'infrastructure', RoleScope::Staff, highRisk: true),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
     private static function portal(): array
     {
         return [
@@ -190,6 +211,7 @@ final class CorePermissions
             // types. Issuing one is the most dangerous thing a customer can
             // do in the portal.
             new PermissionDefinition('portal.tokens.manage', 'portal', RoleScope::Customer, highRisk: true),
+            new PermissionDefinition('portal.services.view', 'portal', RoleScope::Customer),
         ];
     }
 }

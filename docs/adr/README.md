@@ -33,3 +33,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0023](0023-issued-documents-are-frozen.md) | An issued document is frozen; corrections are credit notes | accepted |
 | [0024](0024-the-ledger-is-the-truth.md) | The ledger is the truth; a redirect is not | accepted |
 | [0025](0025-documents-are-numbered-in-the-sellers-name.md) | Documents are numbered in the seller's name | accepted |
+| [0026](0026-provisioning-is-idempotent-and-failure-is-a-state.md) | Provisioning is idempotent, and failure is a state | accepted |
+| [0027](0027-contexts-meet-through-events.md) | Contexts meet through events, not through calls | accepted |

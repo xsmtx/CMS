@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Application\Ordering;
 
 use App\Application\Ordering\Exceptions\InvalidOrderTransition;
+use App\Domain\Ordering\Events\OrderPaid;
 use App\Domain\Ordering\OrderStatus;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Support\Audit\Contracts\AuditLabel;
 use App\Support\Audit\Facades\Audit;
+use App\Support\Correlation\CorrelationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +55,17 @@ final readonly class TransitionOrder
                 'occurred_at' => CarbonImmutable::now(),
             ]);
         });
+
+        if ($target === OrderStatus::Paid) {
+            // Announced rather than acted on: an order reaching `paid` is a
+            // fact about ordering, and deciding that somebody should go
+            // and create a hosting account is provisioning's business.
+            event(new OrderPaid(
+                $order->id,
+                $order->organization_id,
+                app(CorrelationContext::class)->id(),
+            ));
+        }
 
         Audit::action('ordering.order.status_changed')
             ->by($actor)

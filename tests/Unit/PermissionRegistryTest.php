@@ -67,8 +67,11 @@ it('declares every core permission with a dotted, lowercase slug', function (): 
     }
 });
 
-it('groups every core permission under a declared group', function (): void {
-    $groups = ['platform', 'access', 'identity', 'crm', 'catalog', 'ordering', 'billing', 'organizations', 'settings', 'portal'];
+it('groups every core permission under a group that has a label', function (): void {
+    // Read from the language file rather than a list in this test: a new
+    // group with no label is exactly the bug worth catching, and a list
+    // kept here would have to be edited to stay green instead.
+    $groups = array_keys((array) __('access.groups'));
 
     foreach (CorePermissions::all() as $definition) {
         expect($definition->group)->toBeIn($groups);

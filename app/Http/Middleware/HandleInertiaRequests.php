@@ -58,6 +58,9 @@ final class HandleInertiaRequests extends Middleware
                 'success' => fn (): ?string => $request->session()->get('success'),
                 'error' => fn (): ?string => $request->session()->get('error'),
                 'status' => fn (): ?string => $request->session()->get('status'),
+                // Flashed once, by the endpoint that records the operator
+                // asking for them. Never stored and never sent again.
+                'credentials' => fn (): ?array => $request->session()->get('credentials'),
             ],
             'correlationId' => app(CorrelationContext::class)->id(),
         ];

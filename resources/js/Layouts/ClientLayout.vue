@@ -30,11 +30,16 @@ const can = computed(() => new Set(page.props.auth.permissions))
 
 // Destinations land with the phases that build them. A row is here when
 // the screen behind it exists: a nav item that leads to "coming soon"
-// teaches a customer that the navigation lies. Services, Domains and
-// Support arrive in Phases 6, 7 and 8.
+// teaches a customer that the navigation lies. Domains and Support
+// arrive in Phases 7 and 8.
 const items = computed(() =>
   [
     { label: t('portal.nav.overview'), href: '/client', permission: null },
+    {
+      label: t('portal.nav.services'),
+      href: '/client/services',
+      permission: 'portal.services.view',
+    },
     { label: t('portal.nav.orders'), href: '/client/orders', permission: 'portal.orders.view' },
     { label: t('portal.nav.billing'), href: '/client/billing', permission: 'portal.billing.view' },
     {

@@ -6,8 +6,10 @@ namespace App\Infrastructure\Catalog\Models;
 
 use App\Domain\Catalog\CatalogStatus;
 use App\Domain\Catalog\ProductType;
+use App\Domain\Provisioning\AutoSetup;
 use App\Infrastructure\Catalog\Concerns\HasPrices;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
+use App\Infrastructure\Provisioning\Models\ServerGroup;
 use App\Support\Audit\Contracts\AuditLabel;
 use Carbon\CarbonImmutable;
 use Database\Factories\ProductFactory;
@@ -34,6 +36,9 @@ use Illuminate\Support\Str;
  * @property int $position
  * @property int|null $stock
  * @property bool $requires_domain
+ * @property string|null $provisioning_module
+ * @property string|null $provisioning_package
+ * @property AutoSetup $auto_setup
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
@@ -62,6 +67,10 @@ final class Product extends Model implements AuditLabel
         'position',
         'stock',
         'requires_domain',
+        'provisioning_module',
+        'server_group_id',
+        'provisioning_package',
+        'auto_setup',
     ];
 
     /**
@@ -122,6 +131,16 @@ final class Product extends Model implements AuditLabel
     }
 
     /**
+     * Where a service bought from this product is placed.
+     *
+     * @return BelongsTo<ServerGroup, $this>
+     */
+    public function serverGroup(): BelongsTo
+    {
+        return $this->belongsTo(ServerGroup::class, 'server_group_id');
+    }
+
+    /**
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
@@ -174,6 +193,7 @@ final class Product extends Model implements AuditLabel
             'position' => 'integer',
             'stock' => 'integer',
             'requires_domain' => 'boolean',
+            'auto_setup' => AutoSetup::class,
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];

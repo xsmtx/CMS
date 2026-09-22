@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'nav' => [
         'overview' => 'Genel bakış',
+        'services' => 'Hizmetler',
         'orders' => 'Siparişler',
         'billing' => 'Faturalandırma',
         'contacts' => 'Kişiler',

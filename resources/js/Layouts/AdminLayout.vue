@@ -70,6 +70,16 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    // Where the platform meets somebody else's machines. Infrastructure
+    // sits beside services rather than under System: an operator adding a
+    // node is thinking about what runs on it.
+    label: 'Services',
+    items: [
+      { label: 'Services', href: '/admin/services', permission: 'services.view' },
+      { label: 'Infrastructure', href: '/admin/infrastructure', permission: 'infrastructure.view' },
+    ],
+  },
+  {
     // Invoices, payments and transactions land here in Phase 4. Currencies
     // sit with them rather than with the catalog, the way an operator
     // thinks of them.

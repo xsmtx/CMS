@@ -28,6 +28,11 @@ export interface FlashProps {
    * regeneration. They are never persisted and never sent again.
    */
   recoveryCodes?: string[] | null
+  /**
+   * A service's provider credentials, flashed once when an operator asks
+   * for them. Never persisted and never sent again.
+   */
+  credentials?: { username: string | null; password: string | null } | null
 }
 
 /**

@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 5 are complete (`docs/architecture/phase-0-result.md` through
-`phase-5-result.md`). Phase 6, Services + Provisioning, is next and is not
-started. Do not begin a phase without being asked for it.
+Phases 0 to 6 are complete (`docs/architecture/phase-0-result.md` through
+`phase-6-result.md`). Phase 7, Domains, is next and is not started. Do not
+begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -157,3 +157,21 @@ JSON block in the document. `FrontEndTranslations` is an allow-list of
 dotted paths: adding `t('group.key')` to a component means adding its path
 there. A language file holds operator vocabulary next to customer
 vocabulary, and shipping a whole file publishes the first kind.
+
+Provisioning is idempotent and failure is a state (ADR 0026). An adapter
+takes a value object and returns one — it never touches the database. The
+external id is written the moment a provider returns it; `already_done` is a
+success, because that is what makes a retry safe; a run that cannot succeed
+leaves the service in `failed` with a reason, never in `provisioning`. The
+remote call never happens inside a transaction, and a service is a copy of
+what was bought, like an order line.
+
+Contexts meet through events (ADR 0027). `TransitionOrder` announces
+`OrderPaid`; provisioning subscribes. Events carry identifiers rather than
+models, listeners are registered explicitly in a service provider, a
+listener only writes rows and dispatches jobs, and nothing is dispatched
+from inside a transaction.
+
+Queued jobs go on named queues. A new queue has to be added to the Horizon
+supervisor in `config/horizon.php`, or its jobs sit in Redis and the failure
+is silent.

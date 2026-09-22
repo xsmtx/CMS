@@ -11,6 +11,7 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\InvoiceController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\ServiceController;
 use App\Http\Controllers\Client\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +56,9 @@ Route::middleware(['auth:client'])->prefix('client')->group(function (): void {
                 ->name('methods.destroy');
         });
     });
+
+    Route::get('services', [ServiceController::class, 'index'])->name('services');
+    Route::get('services/{service}', [ServiceController::class, 'show'])->name('service');
 
     Route::get('orders', [OrderController::class, 'index'])->name('orders');
     Route::get('orders/{number}', [OrderController::class, 'show'])->name('order');

@@ -42,8 +42,22 @@ final readonly class SecretRedactor
         return $this->walk($data, 0);
     }
 
+    /**
+     * Clean a free-text string.
+     *
+     * Two passes, because a secret arrives in prose as often as it arrives
+     * in a structure. A provider's error message habitually quotes back the
+     * request that caused it — `createacct failed for user bob with
+     * password=hunter2` — and that message is exactly what gets written to
+     * an event record for an operator to read later.
+     *
+     * The same configured key fragments drive both, so adding a fragment to
+     * the list protects logs and prose at once.
+     */
     public function redactString(string $value): string
     {
+        $value = $this->redactAssignments($value);
+
         if (! $this->redactCardLikeValues) {
             return $value;
         }
@@ -58,6 +72,37 @@ final readonly class SecretRedactor
         $needle = strtolower($key);
 
         return array_any($this->keys, fn (string $fragment): bool => str_contains($needle, strtolower($fragment)));
+    }
+
+    /**
+     * Replace `<something-secret>=value`, `: value` and `":"value"` in
+     * running text.
+     *
+     * The value is taken as a quoted run or up to the next whitespace,
+     * comma or closing brace. Redacting a little too much — "password:
+     * incorrect" — costs nothing; redacting too little costs a credential.
+     */
+    private function redactAssignments(string $value): string
+    {
+        if ($this->keys === [] || ! str_contains($value, '=') && ! str_contains($value, ':')) {
+            return $value;
+        }
+
+        $fragments = implode('|', array_map(
+            static fn (string $fragment): string => preg_quote($fragment, '/'),
+            $this->keys,
+        ));
+
+        $pattern = '/(["\']?[\w.\-]*(?:'.$fragments.')[\w.\-]*["\']?\s*[=:]\s*)'
+            .'("[^"]*"|\'[^\']*\'|[^\s,;}&]+)/i';
+
+        $result = preg_replace_callback(
+            $pattern,
+            fn (array $matches): string => $matches[1].$this->placeholder,
+            $value,
+        );
+
+        return $result ?? $value;
     }
 
     /**

@@ -145,6 +145,36 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Provisioning
+    |--------------------------------------------------------------------------
+    |
+    | A module that is not configured is never registered, so an operator
+    | picking one on a product form is picking from the set that works.
+    | `manual` is always available: "an operator sets it up" is always a
+    | real answer.
+    |
+    */
+
+    'provisioning' => [
+        // Seconds. A control panel that hangs must not hold a worker.
+        'timeout' => (int) env('PROVISIONING_TIMEOUT', 30),
+
+        // Retries inside one attempt, on top of the queue's own tries.
+        'retries' => (int) env('PROVISIONING_RETRIES', 2),
+
+        // How many times a provisioning job is attempted before the
+        // service is left in `failed` for a human.
+        'job_tries' => (int) env('PROVISIONING_JOB_TRIES', 3),
+
+        'modules' => [
+            'cpanel' => [
+                'enabled' => (bool) env('PROVISIONING_CPANEL_ENABLED', true),
+            ],
+        ],
+    ],
+
     'risk' => [
         'enabled' => (bool) env('RISK_ENABLED', true),
 

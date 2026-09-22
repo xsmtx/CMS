@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\OptionGroupController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\StaffController;
 use Illuminate\Support\Facades\Route;
 
@@ -94,6 +96,35 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     // Billing. Every action that moves money is its own route, because
     // each answers to its own permission.
+    Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
+    Route::post('services/{service}/provision', [ServiceController::class, 'provision'])
+        ->name('services.provision');
+    Route::post('services/{service}/actions', [ServiceController::class, 'action'])
+        ->name('services.action');
+    Route::put('services/{service}/status', [ServiceController::class, 'transition'])
+        ->name('services.status');
+    // Reading somebody's control panel password is an action in the audit
+    // log, not a side effect of opening a screen.
+    Route::post('services/{service}/credentials', [ServiceController::class, 'credentials'])
+        ->name('services.credentials');
+
+    Route::get('infrastructure', [InfrastructureController::class, 'index'])->name('infrastructure');
+    Route::post('infrastructure/groups', [InfrastructureController::class, 'storeGroup'])
+        ->name('infrastructure.groups.store');
+    Route::put('infrastructure/groups/{group}', [InfrastructureController::class, 'updateGroup'])
+        ->name('infrastructure.groups.update');
+    Route::delete('infrastructure/groups/{group}', [InfrastructureController::class, 'destroyGroup'])
+        ->name('infrastructure.groups.destroy');
+    Route::post('infrastructure/servers', [InfrastructureController::class, 'storeServer'])
+        ->name('infrastructure.servers.store');
+    Route::put('infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
+        ->name('infrastructure.servers.update');
+    Route::delete('infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
+        ->name('infrastructure.servers.destroy');
+    Route::post('infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
+        ->name('infrastructure.servers.test');
+
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::post('orders/{order}/invoice', [InvoiceController::class, 'storeForOrder'])

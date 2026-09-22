@@ -151,5 +151,16 @@ configuration redirects to a path, not a route name.
 **Horizon will not start on Windows.** It requires `ext-pcntl`, which Windows
 does not have. Run it in the container: `docker compose up -d queue`.
 
+**A service stays in "Pending setup".** Nothing is consuming the
+`provisioning` queue. Horizon needs `ext-pcntl`, so on Windows run the
+worker in the container (`docker compose up -d queue`); without it, jobs sit
+in Redis and the service never moves. `php artisan queue:work --queue=provisioning`
+works on the host for a single-process run.
+
+**A service is "Failed" and the reason mentions placement.** Its product has
+no server group, every node in the group is full or in maintenance, or the
+group places by hand and nobody chose a node. The service detail screen
+shows the reason and the setup can be retried once the cause is fixed.
+
 **Permissions look empty on a role.** Run `php artisan db:seed` — the role
 seeder syncs the permission registry first, so it is safe to re-run.

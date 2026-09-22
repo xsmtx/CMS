@@ -29,7 +29,10 @@ const props = withDefaults(
   },
 )
 
-const model = defineModel<string>({ required: true })
+// A number input genuinely holds a number, and a form that binds one
+// should not have to stringify it on the way in and parse it on the way
+// out.
+const model = defineModel<string | number>({ required: true })
 
 const id = useId()
 const hintId = computed(() => `${id}-hint`)

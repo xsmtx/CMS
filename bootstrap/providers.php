@@ -9,12 +9,14 @@ use App\Providers\HorizonServiceProvider;
 use App\Providers\OrderingServiceProvider;
 use App\Providers\OrganizationServiceProvider;
 use App\Providers\PlatformServiceProvider;
+use App\Providers\ProvisioningServiceProvider;
 
 return [
     AppServiceProvider::class,
     OrganizationServiceProvider::class,
     OrderingServiceProvider::class,
     BillingServiceProvider::class,
+    ProvisioningServiceProvider::class,
     PlatformServiceProvider::class,
     AccessServiceProvider::class,
     HorizonServiceProvider::class,

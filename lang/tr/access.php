@@ -29,6 +29,8 @@ return [
         'ordering' => 'Siparişler',
         'organizations' => 'Organizasyonlar',
         'settings' => 'Ayarlar',
+        'services' => 'Hizmetler',
+        'infrastructure' => 'Altyapı',
         'portal' => 'Müşteri paneli',
     ],
 ];

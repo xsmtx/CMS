@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'nav' => [
         'overview' => 'Overview',
+        'services' => 'Services',
         'orders' => 'Orders',
         'billing' => 'Billing',
         'contacts' => 'Contacts',

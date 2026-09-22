@@ -201,7 +201,10 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            // `provisioning` first: a customer waiting for an account to
+            // be created is a worse wait than anything on the default
+            // queue, and a job left unlisted here is a job nobody runs.
+            'queue' => ['provisioning', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,

@@ -29,6 +29,8 @@ return [
         'ordering' => 'Orders',
         'organizations' => 'Organizations',
         'settings' => 'Settings',
+        'services' => 'Services',
+        'infrastructure' => 'Infrastructure',
         'portal' => 'Client portal',
     ],
 ];
