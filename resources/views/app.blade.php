@@ -8,6 +8,19 @@
 
     <title inertia>{{ config('app.name') }}</title>
 
+    {{-- Applied before the first paint, so a dark-theme operator never
+         sees a white flash on the way in. --}}
+    <script>
+        try {
+            var theme = localStorage.getItem('infracms.theme');
+            if (theme === 'light' || theme === 'dark') {
+                document.documentElement.dataset.theme = theme;
+            }
+        } catch (error) {
+            // Site data blocked. The media query still applies.
+        }
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>

@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
+import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { usePermissions } from '../composables/usePermissions'
 
 /**
@@ -40,36 +41,40 @@ interface NavGroup {
   items: NavItem[]
 }
 
-// Each phase appends its own group rather than rewriting the ones before
-// it, which keeps the navigation a record of what the product can do.
+/**
+ * The admin panel map from the product specification, which is deliberately
+ * shaped like the one WHMCS operators already know: Customers, Orders,
+ * Billing, Products, System, in that order.
+ *
+ * Only the sections that exist are listed. A menu that advertises Billing
+ * before invoices exist is a menu that lies, so each phase fills in its own
+ * rows rather than the whole map being stubbed out up front.
+ */
 const groups: NavGroup[] = [
   {
-    label: 'Operations',
-    items: [
-      { label: 'Dashboard', href: '/admin', permission: 'platform.health.view' },
-      { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
-      { label: 'Audit log', href: '/admin/audit', permission: 'platform.audit.view' },
-    ],
+    label: 'Dashboard',
+    items: [{ label: 'Overview', href: '/admin', permission: 'platform.health.view' }],
   },
   {
-    label: 'People',
+    label: 'Customers',
     items: [
       { label: 'Customers', href: '/admin/customers', permission: 'crm.customers.view' },
-      { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
+      { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
     ],
   },
   {
-    label: 'Sales',
+    label: 'Orders',
     items: [
       { label: 'Orders', href: '/admin/orders', permission: 'orders.view' },
-      { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
+      { label: 'Review queue', href: '/admin/orders/review', permission: 'orders.view' },
     ],
   },
   {
-    label: 'Catalog',
+    // Invoices, payments and transactions land here in Phase 4. Currencies
+    // sit with them rather than with the catalog, the way an operator
+    // thinks of them.
+    label: 'Billing',
     items: [
-      { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
-      { label: 'Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
       {
         label: 'Currencies',
         href: '/admin/catalog/currencies',
@@ -78,11 +83,21 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'Products',
+    items: [
+      { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
+      { label: 'Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
+      { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
+    ],
+  },
+  {
     label: 'System',
     items: [
-      { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
+      { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
       { label: 'Roles', href: '/admin/roles', permission: 'access.roles.view' },
       { label: 'Settings', href: '/admin/settings', permission: 'settings.view' },
+      { label: 'Audit log', href: '/admin/audit', permission: 'platform.audit.view' },
+      { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
     ],
   },
 ]
@@ -98,8 +113,27 @@ const visibleGroups = computed(() =>
 
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
 
+/**
+ * The longest matching destination wins.
+ *
+ * `/admin/orders` is a prefix of `/admin/orders/review`, and without this
+ * both light up at once — which tells the operator nothing about where
+ * they are.
+ */
+const currentHref = computed(() => {
+  const candidates = groups
+    .flatMap((group) => group.items.map((item) => item.href))
+    .filter(
+      (href) =>
+        currentPath.value === href ||
+        (href !== '/admin' && currentPath.value.startsWith(`${href}/`)),
+    )
+
+  return candidates.sort((a, b) => b.length - a.length)[0] ?? null
+})
+
 function isCurrent(href: string): boolean {
-  return href === '/admin' ? currentPath.value === '/admin' : currentPath.value.startsWith(href)
+  return currentHref.value === href
 }
 </script>
 
@@ -157,6 +191,7 @@ function isCurrent(href: string): boolean {
         <header
           class="border-line flex h-16 shrink-0 items-center justify-end gap-3 border-b px-5 sm:px-8"
         >
+          <ThemeSwitch />
           <span v-if="user" class="text-content-muted text-sm">{{ user.email }}</span>
           <Link
             href="/admin/security"
