@@ -69,6 +69,12 @@
                         {{ __('storefront.plans') }}
                     </a>
                     <a
+                        href="{{ route('storefront.cart') }}"
+                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                    >
+                        {{ __('ordering.cart.title') }}
+                    </a>
+                    <a
                         href="{{ url('/client') }}"
                         class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                     >

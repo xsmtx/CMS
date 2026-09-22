@@ -166,6 +166,7 @@ return [
 
     'errors' => [
         'promotion_redeemed' => 'This code has been used :count time(s). Deactivate it instead.',
+        'email_taken' => 'An account already uses that email address. Sign in to order with it.',
         'invalid_domain' => 'That does not look like a domain name.',
         'cart_empty' => 'Your cart is empty.',
         'cart_expired' => 'Your cart has expired. Please start again.',

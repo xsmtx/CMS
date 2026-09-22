@@ -118,6 +118,70 @@ final class StorefrontCatalogController extends Controller
     }
 
     /**
+     * The configure screen: cycle, options, addons and a domain.
+     *
+     * Priced for every cycle the product is sold on, so switching the cycle
+     * does not need a round trip and the numbers a customer compares are
+     * the ones they will be charged.
+     */
+    public function configure(string $slug): Renderable
+    {
+        $currency = $this->currency->current();
+        $product = $currency === null ? null : $this->catalog->product($slug, $currency);
+
+        if ($product === null || $currency === null) {
+            throw new NotFoundHttpException;
+        }
+
+        if (! $product->isOrderable()) {
+            throw new NotFoundHttpException;
+        }
+
+        return $this->renderer->render('configure', [
+            'brand' => config('app.name'),
+            'currency' => $currency,
+            'currencies' => $this->currency->available(),
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'tagline' => $product->tagline,
+                'requiresDomain' => $product->requires_domain,
+                'cycles' => $this->cycles($product, $currency),
+                'optionGroups' => $product->optionGroups
+                    ->map(fn (OptionGroup $group): array => [
+                        'id' => $group->id,
+                        'name' => $group->name,
+                        'type' => $group->type->value,
+                        'description' => $group->description,
+                        'isRequired' => $group->is_required,
+                        'minQuantity' => $group->min_quantity,
+                        'maxQuantity' => $group->max_quantity,
+                        'options' => $group->options
+                            ->map(fn (Option $option): array => [
+                                'id' => $option->id,
+                                'label' => $option->label,
+                                'isDefault' => $option->is_default,
+                                'delta' => $this->delta($option, $currency),
+                            ])
+                            ->all(),
+                    ])
+                    ->all(),
+                'addons' => $product->addons
+                    ->filter(fn (Addon $addon): bool => $addon->status->isOrderable())
+                    ->map(fn (Addon $addon): array => [
+                        'id' => $addon->id,
+                        'name' => $addon->name,
+                        'description' => $addon->description,
+                        'price' => $this->cheapestAddonPrice($addon, $currency),
+                    ])
+                    ->values()
+                    ->all(),
+            ],
+        ]);
+    }
+
+    /**
      * Remember a currency choice. A POST because it changes what the next
      * page says, and because a crawler following links should not be able to
      * change anyone's session.

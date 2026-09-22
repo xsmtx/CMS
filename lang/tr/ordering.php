@@ -166,6 +166,7 @@ return [
 
     'errors' => [
         'promotion_redeemed' => 'Bu kod :count kez kullanılmış. Silmek yerine pasife alın.',
+        'email_taken' => 'Bu e-posta adresi zaten bir hesaba ait. Sipariş vermek için giriş yapın.',
         'invalid_domain' => 'Bu bir alan adına benzemiyor.',
         'cart_empty' => 'Sepetiniz boş.',
         'cart_expired' => 'Sepetinizin süresi doldu. Lütfen yeniden başlayın.',

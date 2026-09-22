@@ -133,11 +133,12 @@
                             {{ __('catalog.products.sold_out') }}
                         </span>
                     @else
-                        {{-- Ordering arrives in Phase 3. The button states
-                             that rather than pretending to work. --}}
-                        <span class="inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content-muted">
-                            {{ __('catalog.storefront.ordering_soon') }}
-                        </span>
+                        <a
+                            href="{{ route('storefront.configure', $product['slug']) }}"
+                            class="pressable inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                        >
+                            {{ __('catalog.storefront.order_now') }}
+                        </a>
                     @endif
                 </div>
             </div>

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\StorefrontCartController;
 use App\Http\Controllers\StorefrontCatalogController;
+use App\Http\Controllers\StorefrontCheckoutController;
 use App\Http\Controllers\StorefrontController;
 use App\Http\Middleware\ResolveStorefrontOrganization;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +29,25 @@ Route::middleware(ResolveStorefrontOrganization::class)->group(function (): void
         ->name('storefront.currency');
     Route::get('/store/{slug}', [StorefrontCatalogController::class, 'show'])
         ->name('storefront.product');
+    Route::get('/store/{slug}/configure', [StorefrontCatalogController::class, 'configure'])
+        ->name('storefront.configure');
+
+    // The cart. Every mutation is a POST or a DELETE: a crawler following
+    // links must not be able to fill or empty anyone's basket.
+    Route::get('/cart', [StorefrontCartController::class, 'show'])->name('storefront.cart');
+    Route::post('/cart', [StorefrontCartController::class, 'store'])->name('storefront.cart.store');
+    Route::put('/cart/items/{item}', [StorefrontCartController::class, 'update'])
+        ->name('storefront.cart.update');
+    Route::delete('/cart/items/{item}', [StorefrontCartController::class, 'destroy'])
+        ->name('storefront.cart.remove');
+    Route::post('/cart/code', [StorefrontCartController::class, 'applyCode'])
+        ->name('storefront.cart.code');
+    Route::delete('/cart/code', [StorefrontCartController::class, 'removeCode'])
+        ->name('storefront.cart.code.remove');
+
+    Route::get('/checkout', [StorefrontCheckoutController::class, 'show'])->name('storefront.checkout');
+    Route::post('/checkout', [StorefrontCheckoutController::class, 'store'])
+        ->name('storefront.checkout.store');
+    Route::get('/orders/{number}', [StorefrontCheckoutController::class, 'confirmation'])
+        ->name('storefront.order');
 });
