@@ -9,6 +9,9 @@ use App\Domain\Catalog\CatalogStatus;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Catalog\Models\ProductGroup;
+use App\Support\Organizations\OrganizationContext;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
@@ -17,9 +20,16 @@ use Illuminate\Support\Collection;
  * A product appears only when it has a price row in the requested currency.
  * Nothing is converted: a price that changes between the listing and the
  * cart is a price the customer will notice, and rightly not trust.
+ *
+ * Scoped to exactly one organization rather than to the boundary subtree. A
+ * boundary answers "what may this actor reach", which for a provider
+ * includes every reseller under it; a storefront answers "what does this
+ * brand sell", which does not.
  */
 final readonly class StorefrontCatalog
 {
+    public function __construct(private OrganizationContext $context) {}
+
     /**
      * Listed groups, each with the products that can be bought in this
      * currency. Groups that end up empty are dropped rather than rendered
@@ -33,6 +43,7 @@ final readonly class StorefrontCatalog
 
         return ProductGroup::query()
             ->where('status', CatalogStatus::Active->value)
+            ->tap($this->ownedByStorefront(...))
             ->with(['products' => function ($query) use ($currency): void {
                 $query->where('status', CatalogStatus::Active->value)
                     ->whereHas('prices', fn ($prices) => $prices->where('currency_code', $currency))
@@ -59,6 +70,7 @@ final readonly class StorefrontCatalog
 
         $product = Product::query()
             ->orderable()
+            ->tap($this->ownedByStorefront(...))
             ->where('slug', $slug)
             ->with([
                 'group',
@@ -109,5 +121,19 @@ final readonly class StorefrontCatalog
         }
 
         return ['money' => $best['money'], 'cycle' => $best['cycle']];
+    }
+
+    /**
+     * Restrict a query to the storefront's own organization.
+     *
+     * @param  Builder<covariant Model>  $query
+     */
+    private function ownedByStorefront(Builder $query): void
+    {
+        $organizationId = $this->context->id();
+
+        if ($organizationId !== null) {
+            $query->where($query->qualifyColumn('organization_id'), $organizationId);
+        }
     }
 }

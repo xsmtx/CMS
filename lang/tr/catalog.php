@@ -138,6 +138,7 @@ return [
         'empty' => 'Burada henüz satışta bir şey yok.',
         'setup_fee' => ':amount kurulum',
         'no_setup_fee' => 'Kurulum ücreti yok',
+        'ordering_soon' => 'Sipariş yakında açılıyor',
     ],
 
     'errors' => [

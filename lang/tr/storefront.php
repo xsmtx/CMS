@@ -3,33 +3,37 @@
 declare(strict_types=1);
 
 return [
-    'meta_description' => 'Hosting otomasyon platformu. Bu kurulum henuz siparise acik degil.',
-    'skip_to_content' => 'Icerige gec',
-    'primary_navigation' => 'Ana menu',
+    'meta_description' => 'Hosting otomasyon platformu. Bu kurulum henüz siparişe açık değil.',
+    'skip_to_content' => 'İçeriğe geç',
+    'primary_navigation' => 'Ana menü',
 
-    'client_area' => 'Musteri paneli',
-    'admin' => 'Yonetim',
+    'plans' => 'Paketler',
+    'currency' => 'Para birimi',
+    'apply' => 'Uygula',
 
-    'headline' => ':brand kuruldu ve calisiyor.',
-    'subheadline' => 'Magazanin henuz bir katalogu yok. Urunleri yapilandirmak icin yonetim paneline, mevcut bir hesabi yonetmek icin musteri paneline giris yapin.',
+    'client_area' => 'Müşteri paneli',
+    'admin' => 'Yönetim',
 
-    'next_steps_title' => 'Bu sayfa satis yapmadan once',
-    'next_steps_body' => 'Once uc seyin olusmasi gerekiyor. Yonetim paneli her birini adim adim anlatir.',
+    'headline' => ':brand kuruldu ve çalışıyor.',
+    'subheadline' => 'Mağazanın henüz bir kataloğu yok. Ürünleri yapılandırmak için yönetim paneline, mevcut bir hesabı yönetmek için müşteri paneline giriş yapın.',
+
+    'next_steps_title' => 'Bu sayfa satış yapmadan önce',
+    'next_steps_body' => 'Önce üç şeyin oluşması gerekiyor. Yönetim paneli her birini adım adım anlatır.',
 
     'next_steps' => [
         [
-            'title' => 'Personel hesabi olusturun',
-            'body' => 'Ilk hesap saglayici organizasyonun ve altindaki tum yetkilerin sahibidir.',
+            'title' => 'Personel hesabı oluşturun',
+            'body' => 'İlk hesap sağlayıcı organizasyonun ve altındaki tüm yetkilerin sahibidir.',
         ],
         [
-            'title' => 'Urun ve fiyatlandirma ekleyin',
-            'body' => 'Gruplar, faturalama donemleri, yapilandirilabilir secenekler ve satis para birimleri.',
+            'title' => 'Ürün ve fiyatlandırma ekleyin',
+            'body' => 'Gruplar, faturalama dönemleri, yapılandırılabilir seçenekler ve satış para birimleri.',
         ],
         [
-            'title' => 'Odeme saglayicisi baglayin',
-            'body' => 'Bir saglayici tahsilati onaylayana kadar siparisler odenmemis kalir.',
+            'title' => 'Ödeme sağlayıcısı bağlayın',
+            'body' => 'Bir sağlayıcı tahsilatı onaylayana kadar siparişler ödenmemiş kalır.',
         ],
     ],
 
-    'footer_note' => 'Bu sayfayi degistirmek icin bir magaza temasi kurun.',
+    'footer_note' => 'Bu sayfayı değiştirmek için bir mağaza teması kurun.',
 ];

@@ -7,6 +7,9 @@ return [
     'skip_to_content' => 'Skip to content',
     'primary_navigation' => 'Primary',
 
+    'plans' => 'Plans',
+    'currency' => 'Currency',
+    'apply' => 'Apply',
     'client_area' => 'Client area',
     'admin' => 'Admin',
 

@@ -138,6 +138,7 @@ return [
         'empty' => 'Nothing is for sale here yet.',
         'setup_fee' => ':amount setup',
         'no_setup_fee' => 'No setup fee',
+        'ordering_soon' => 'Ordering opens soon',
     ],
 
     'errors' => [
