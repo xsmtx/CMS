@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Audit\Models\AuditLog;
-use App\Infrastructure\Identity\Models\User;
+use App\Infrastructure\Identity\Models\StaffUser;
 use App\Support\Audit\Facades\Audit;
 
 it('writes an audit record with actor, target and correlation identifier', function (): void {
-    $actor = User::factory()->create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
-    $target = User::factory()->create();
+    $actor = StaffUser::factory()->create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
+    $target = StaffUser::factory()->create();
 
     Audit::action('identity.user.updated')
         ->by($actor)

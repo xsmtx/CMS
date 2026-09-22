@@ -59,7 +59,18 @@ it('forgets everything a module contributed', function (): void {
 });
 
 it('declares every core permission with a dotted, lowercase slug', function (): void {
+    // context.resource.verb, lowercase, dots between segments. The shape is
+    // load-bearing: gates, translation keys and the admin grouping all key
+    // off it.
     foreach (CorePermissions::all() as $definition) {
-        expect($definition->slug)->toMatch('/^[a-z0-9]+(\.[a-z0-9-]+)+$/');
+        expect($definition->slug)->toMatch('/^[a-z0-9]+(\.[a-z0-9_-]+){1,2}$/');
+    }
+});
+
+it('groups every core permission under a declared group', function (): void {
+    $groups = ['platform', 'access', 'identity', 'crm', 'organizations', 'settings', 'portal'];
+
+    foreach (CorePermissions::all() as $definition) {
+        expect($definition->group)->toBeIn($groups);
     }
 });

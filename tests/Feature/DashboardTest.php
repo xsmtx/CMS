@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Application\Access\SyncPermissions;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
-use App\Infrastructure\Identity\Models\User;
+use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
@@ -38,13 +38,13 @@ it('answers an unauthenticated api request with the error envelope', function ()
 });
 
 it('refuses a signed-in user without the permission', function (): void {
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(StaffUser::factory()->create())
         ->get('/admin')
         ->assertForbidden();
 });
 
 it('renders the admin dashboard for a permitted user', function (): void {
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::Support);
 
     $this->actingAs($user->fresh())
@@ -59,7 +59,7 @@ it('renders the admin dashboard for a permitted user', function (): void {
 });
 
 it('renders the client dashboard for any signed-in user', function (): void {
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(StaffUser::factory()->create())
         ->get('/client')
         ->assertOk()
         ->assertInertia(
@@ -68,7 +68,7 @@ it('renders the client dashboard for any signed-in user', function (): void {
 });
 
 it('never shares a secret with the front end', function (): void {
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::Support);
 
     $this->actingAs($user->fresh())

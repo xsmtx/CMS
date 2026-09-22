@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Organizations\Exceptions\InvalidOrganizationHierarchy;
 use App\Domain\Organizations\OrganizationType;
 use App\Infrastructure\Audit\Models\AuditLog;
-use App\Infrastructure\Identity\Models\User;
+use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Organizations\OrganizationContext;
@@ -76,12 +76,12 @@ it('shows the whole hierarchy to the provider', function (): void {
 it('never leaks another organization owned records', function (): void {
     $mine = $this->context->runAs(
         $this->resellerA->id,
-        fn (): User => User::factory()->create(['email' => 'mine@example.test']),
+        fn (): StaffUser => StaffUser::factory()->create(['email' => 'mine@example.test']),
     );
 
     $theirs = $this->context->runAs(
         $this->resellerB->id,
-        fn (): User => User::factory()->create(['email' => 'theirs@example.test']),
+        fn (): StaffUser => StaffUser::factory()->create(['email' => 'theirs@example.test']),
     );
 
     expect($mine->organization_id)->toBe($this->resellerA->id)
@@ -89,28 +89,28 @@ it('never leaks another organization owned records', function (): void {
 
     $this->context->set($this->resellerA->id);
 
-    $emails = User::query()->pluck('email')->all();
+    $emails = StaffUser::query()->pluck('email')->all();
 
     expect($emails)->toContain('mine@example.test')
         ->and($emails)->not->toContain('theirs@example.test')
-        ->and(User::query()->find($theirs->id))->toBeNull();
+        ->and(StaffUser::query()->find($theirs->id))->toBeNull();
 });
 
 it('lets a parent organization see records owned by its children', function (): void {
     $this->context->runAs(
         $this->customerA->id,
-        fn (): User => User::factory()->create(['email' => 'child@example.test']),
+        fn (): StaffUser => StaffUser::factory()->create(['email' => 'child@example.test']),
     );
 
     $this->context->set($this->resellerA->id);
 
-    expect(User::query()->pluck('email')->all())->toContain('child@example.test');
+    expect(StaffUser::query()->pluck('email')->all())->toContain('child@example.test');
 });
 
 it('stamps new records with the acting organization without being told', function (): void {
     $user = $this->context->runAs(
         $this->customerB->id,
-        fn (): User => User::factory()->create(),
+        fn (): StaffUser => StaffUser::factory()->create(),
     );
 
     expect($user->organization_id)->toBe($this->customerB->id);
@@ -119,7 +119,7 @@ it('stamps new records with the acting organization without being told', functio
 it('refuses to create an owned record with no boundary at all', function (): void {
     $this->context->forget();
 
-    User::query()->create([
+    StaffUser::query()->create([
         'name' => 'Nobody',
         'email' => 'nobody@example.test',
         'password' => 'irrelevant',

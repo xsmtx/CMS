@@ -10,7 +10,7 @@ use App\Domain\Access\RoleScope;
 use App\Domain\Access\SystemRole;
 use App\Infrastructure\Access\Models\Permission;
 use App\Infrastructure\Access\Models\Role;
-use App\Infrastructure\Identity\Models\User;
+use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\Gate;
 
@@ -65,7 +65,7 @@ it('grants a capability through a role rather than a flag on the user', function
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
 
     expect($user->hasPermissionTo('settings.manage'))->toBeFalse();
 
@@ -78,7 +78,7 @@ it('revokes the capability when the role is removed', function (): void {
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::Administrator);
     $user->revokeRole(SystemRole::Administrator);
 
@@ -89,14 +89,14 @@ it('refuses to assign a customer-scoped role to a staff subject', function (): v
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    User::factory()->create()->assignRole(SystemRole::AccountOwner);
+    StaffUser::factory()->create()->assignRole(SystemRole::AccountOwner);
 })->throws(InvalidArgumentException::class);
 
 it('ignores permissions that have been orphaned', function (): void {
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::Administrator);
 
     Permission::query()->where('slug', 'settings.manage')->sole()
@@ -109,7 +109,7 @@ it('lets a super admin through without explicit grants', function (): void {
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::SuperAdmin);
 
     $user = $user->fresh();
@@ -124,7 +124,7 @@ it('audits a super admin bypassing a high-risk capability', function (): void {
     $this->seed(SystemRoleSeeder::class);
     $audit = $this->fakeAudit();
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::SuperAdmin);
 
     $user->fresh()->can('settings.manage');
@@ -139,7 +139,7 @@ it('denies a capability the subject has no role for', function (): void {
     syncCorePermissions();
     $this->seed(SystemRoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = StaffUser::factory()->create();
     $user->assignRole(SystemRole::Support);
 
     expect($user->fresh()->can('settings.manage'))->toBeFalse()
