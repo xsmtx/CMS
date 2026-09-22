@@ -8,11 +8,13 @@ use App\Domain\Access\RoleScope;
 use App\Domain\Crm\CustomFieldEntity;
 use App\Domain\Identity\AccountStatus;
 use App\Domain\Identity\Guard;
+use App\Domain\Identity\LoginFailureReason;
 use App\Infrastructure\Access\Concerns\HasRoles;
 use App\Infrastructure\Crm\Concerns\HasAddresses;
 use App\Infrastructure\Crm\Concerns\HasCustomFields;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Concerns\Authenticates;
+use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use App\Infrastructure\Identity\Notifications\ContactPasswordReset;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use App\Support\Audit\Contracts\AuditLabel;
@@ -46,16 +48,17 @@ use SensitiveParameter;
  * @property AccountStatus $status
  * @property CarbonImmutable|null $anonymized_at
  */
-final class Contact extends Authenticatable implements AuditLabel
+final class Contact extends Authenticatable implements AuditLabel, AuthenticatableAccount
 {
     use Authenticates;
-
     use BelongsToOrganization;
     use HasAddresses;
     use HasApiTokens;
     use HasCustomFields;
+
     /** @use HasFactory<ContactFactory> */
     use HasFactory;
+
     use HasRoles;
     use HasUlids;
     use Notifiable;
@@ -124,6 +127,15 @@ final class Contact extends Authenticatable implements AuditLabel
             && $this->password !== null
             && $this->anonymized_at === null
             && $this->accountStatus()->canAuthenticate();
+    }
+
+    public function authRefusalReason(): LoginFailureReason
+    {
+        if (! $this->portal_access || $this->password === null) {
+            return LoginFailureReason::NoPortalAccess;
+        }
+
+        return LoginFailureReason::forStatus($this->accountStatus());
     }
 
     public function isAnonymized(): bool

@@ -19,7 +19,7 @@ final class CustomFieldDefinitionFactory extends Factory
 
     public function definition(): array
     {
-        $label = Str::title(fake()->unique()->words(2, true));
+        $label = Str::title(fake()->unique()->word().' '.fake()->word());
 
         return [
             'entity_type' => CustomFieldEntity::Customer->value,

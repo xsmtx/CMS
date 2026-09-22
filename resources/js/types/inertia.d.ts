@@ -16,6 +16,12 @@ export interface BrandProps {
 export interface FlashProps {
   success: string | null
   error: string | null
+  status: string | null
+  /**
+   * Two-factor recovery codes, flashed once after enrolment or
+   * regeneration. They are never persisted and never sent again.
+   */
+  recoveryCodes?: string[] | null
 }
 
 /**

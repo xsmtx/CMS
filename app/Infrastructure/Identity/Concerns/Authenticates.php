@@ -6,6 +6,7 @@ namespace App\Infrastructure\Identity\Concerns;
 
 use App\Domain\Identity\AccountStatus;
 use App\Domain\Identity\Guard;
+use App\Domain\Identity\LoginFailureReason;
 use App\Infrastructure\Identity\Models\AuthenticatedSession;
 use App\Infrastructure\Identity\Models\LoginHistory;
 use Illuminate\Database\Eloquent\Model;
@@ -143,5 +144,16 @@ trait Authenticates
     public function canAuthenticate(): bool
     {
         return $this->accountStatus()->canAuthenticate();
+    }
+
+    /**
+     * Why this account may not sign in.
+     *
+     * Recorded in login history and never shown to the caller. Overridden
+     * where a model has refusal reasons of its own.
+     */
+    public function authRefusalReason(): LoginFailureReason
+    {
+        return LoginFailureReason::forStatus($this->accountStatus());
     }
 }

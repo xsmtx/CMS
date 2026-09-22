@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Lang;
@@ -22,16 +23,16 @@ final class StaffPasswordReset extends Notification
     /**
      * @return list<string>
      */
-    public function via(object $notifiable): array
+    public function via(CanResetPassword $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(CanResetPassword $notifiable): MailMessage
     {
         $url = url(route('admin.password.reset', [
             'token' => $this->token,
-            'email' => $notifiable->getAttribute('email'),
+            'email' => $notifiable->getEmailForPasswordReset(),
         ], absolute: false));
 
         $minutes = (int) config('auth.passwords.staff_users.expire', 60);

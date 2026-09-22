@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\AssignCorrelationId;
+use App\Http\Middleware\BlockDuringImpersonation;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveOrganizationContext;
+use App\Http\Middleware\TrackAuthenticatedSession;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Errors\ApiExceptionRenderer;
 use Illuminate\Foundation\Application;
@@ -12,6 +14,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +22,19 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            // Each area is a separate file with its own guard, URL prefix
+            // and route-name prefix, so a route cannot end up on the wrong
+            // guard by being declared in the wrong place.
+            Route::middleware('web')
+                ->prefix('admin')
+                ->name('admin.')
+                ->group(base_path('routes/admin.php'));
+
+            Route::middleware('web')
+                ->name('client.')
+                ->group(base_path('routes/client.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Correlation must be assigned before anything else can log, so that
@@ -30,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // unscoped.
         $middleware->web(append: [
             ResolveOrganizationContext::class,
+            TrackAuthenticatedSession::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
@@ -38,11 +55,18 @@ return Application::configure(basePath: dirname(__DIR__))
             ResolveOrganizationContext::class,
         ]);
 
-        // Phase 1 implements the sign-in screens at these paths. Until then a
-        // guest is still redirected here rather than to a route name that
-        // does not exist, so the middleware contract is already correct.
+        $middleware->alias([
+            'impersonation.blocked' => BlockDuringImpersonation::class,
+        ]);
+
         $middleware->redirectGuestsTo(
             fn (Request $request): string => $request->is('admin', 'admin/*') ? '/admin/login' : '/login',
+        );
+
+        // A signed-in visitor hitting a sign-in screen goes to their own
+        // area rather than being shown a form they cannot use.
+        $middleware->redirectUsersTo(
+            fn (Request $request): string => $request->is('admin', 'admin/*') ? '/admin' : '/client',
         );
 
         // SPA requests from the first-party admin/client apps authenticate

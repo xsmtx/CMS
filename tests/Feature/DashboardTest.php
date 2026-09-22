@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Access\SyncPermissions;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Support\Facades\Route;
@@ -37,45 +38,64 @@ it('answers an unauthenticated api request with the error envelope', function ()
         ->assertJsonPath('error.code', 'unauthenticated');
 });
 
-it('refuses a signed-in user without the permission', function (): void {
-    $this->actingAs(StaffUser::factory()->create())
+it('refuses a signed-in staff member without the permission', function (): void {
+    $this->actingAs(StaffUser::factory()->create(), 'staff')
         ->get('/admin')
         ->assertForbidden();
 });
 
-it('renders the admin dashboard for a permitted user', function (): void {
-    $user = StaffUser::factory()->create();
-    $user->assignRole(SystemRole::Support);
+it('renders the admin dashboard for a permitted staff member', function (): void {
+    $staff = StaffUser::factory()->create();
+    $staff->assignRole(SystemRole::Support);
 
-    $this->actingAs($user->fresh())
+    $this->actingAs($staff->fresh(), 'staff')
         ->get('/admin')
         ->assertOk()
         ->assertInertia(
             fn (AssertableInertia $page): AssertableInertia => $page
                 ->component('Admin/Dashboard')
                 ->has('environment')
-                ->has('auth.permissions'),
+                ->has('auth.permissions')
+                ->where('auth.guard', 'staff'),
         );
 });
 
-it('renders the client dashboard for any signed-in user', function (): void {
-    $this->actingAs(StaffUser::factory()->create())
+it('renders the client dashboard for a signed-in contact', function (): void {
+    $this->actingAs(Contact::factory()->create(), 'client')
         ->get('/client')
         ->assertOk()
         ->assertInertia(
-            fn (AssertableInertia $page): AssertableInertia => $page->component('Client/Dashboard'),
+            fn (AssertableInertia $page): AssertableInertia => $page
+                ->component('Client/Dashboard')
+                ->where('auth.guard', 'client'),
         );
 });
 
-it('never shares a secret with the front end', function (): void {
-    $user = StaffUser::factory()->create();
-    $user->assignRole(SystemRole::Support);
+it('keeps a staff session out of the client area', function (): void {
+    // The two guards do not share a session, so a staff member browsing to
+    // the client area is simply an anonymous visitor there.
+    $this->actingAs(StaffUser::factory()->create(), 'staff')
+        ->get('/client')
+        ->assertRedirect('/login');
+});
 
-    $this->actingAs($user->fresh())
+it('keeps a contact session out of the admin area', function (): void {
+    $this->actingAs(Contact::factory()->create(), 'client')
+        ->get('/admin')
+        ->assertRedirect('/admin/login');
+});
+
+it('never shares a secret with the front end', function (): void {
+    $staff = StaffUser::factory()->create();
+    $staff->assignRole(SystemRole::Support);
+
+    $this->actingAs($staff->fresh(), 'staff')
         ->get('/admin')
         ->assertOk()
         ->assertInertia(
-            fn (AssertableInertia $page): AssertableInertia => $page->missing('auth.user.password'),
+            fn (AssertableInertia $page): AssertableInertia => $page
+                ->missing('auth.user.password')
+                ->missing('auth.user.two_factor_secret'),
         );
 });
 

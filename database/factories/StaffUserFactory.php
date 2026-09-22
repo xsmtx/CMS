@@ -35,6 +35,17 @@ final class StaffUserFactory extends Factory
             'password' => self::$password ??= Hash::make('password'),
             'status' => AccountStatus::Active->value,
             'remember_token' => Str::random(10),
+            // Nullable columns are set explicitly so a factory-built model
+            // has the same attribute set as one read back from the database.
+            // Without this, strict mode throws the first time code touches
+            // one on an instance that was never re-fetched.
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'password_changed_at' => null,
+            'last_login_at' => null,
+            'locale' => null,
+            'timezone' => null,
         ];
     }
 

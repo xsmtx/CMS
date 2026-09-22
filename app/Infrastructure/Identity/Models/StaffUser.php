@@ -9,6 +9,7 @@ use App\Domain\Identity\AccountStatus;
 use App\Domain\Identity\Guard;
 use App\Infrastructure\Access\Concerns\HasRoles;
 use App\Infrastructure\Identity\Concerns\Authenticates;
+use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use App\Infrastructure\Identity\Notifications\StaffPasswordReset;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use App\Support\Audit\Contracts\AuditLabel;
@@ -42,14 +43,15 @@ use SensitiveParameter;
  * @property CarbonImmutable|null $two_factor_confirmed_at
  * @property CarbonImmutable|null $last_login_at
  */
-final class StaffUser extends Authenticatable implements AuditLabel
+final class StaffUser extends Authenticatable implements AuditLabel, AuthenticatableAccount
 {
     use Authenticates;
-
     use BelongsToOrganization;
     use HasApiTokens;
+
     /** @use HasFactory<StaffUserFactory> */
     use HasFactory;
+
     use HasRoles;
     use HasUlids;
     use Notifiable;

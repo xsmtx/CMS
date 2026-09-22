@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import { computed, useId } from 'vue'
+
+/**
+ * Text input with its label above and its error below.
+ *
+ * Never a placeholder as a label: the placeholder disappears the moment
+ * someone types, taking the only description of the field with it.
+ */
+const props = withDefaults(
+  defineProps<{
+    label: string
+    type?: string
+    error?: string
+    hint?: string
+    autocomplete?: string
+    required?: boolean
+    disabled?: boolean
+    placeholder?: string
+  }>(),
+  {
+    type: 'text',
+    error: undefined,
+    hint: undefined,
+    autocomplete: undefined,
+    required: false,
+    disabled: false,
+    placeholder: undefined,
+  },
+)
+
+const model = defineModel<string>({ required: true })
+
+const id = useId()
+const hintId = computed(() => `${id}-hint`)
+const errorId = computed(() => `${id}-error`)
+
+const describedBy = computed(() => {
+  const ids = []
+  if (props.hint) ids.push(hintId.value)
+  if (props.error) ids.push(errorId.value)
+  return ids.length > 0 ? ids.join(' ') : undefined
+})
+</script>
+
+<template>
+  <div class="flex flex-col gap-2">
+    <label :for="id" class="text-sm font-medium">
+      {{ label }}
+      <span v-if="required" class="text-content-subtle" aria-hidden="true">*</span>
+    </label>
+
+    <input
+      :id="id"
+      v-model="model"
+      :type="type"
+      :autocomplete="autocomplete"
+      :required="required"
+      :disabled="disabled"
+      :placeholder="placeholder"
+      :aria-invalid="error ? true : undefined"
+      :aria-describedby="describedBy"
+      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3 py-2 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+      :class="error ? 'border-danger' : 'focus:border-accent'"
+    />
+
+    <p v-if="hint && !error" :id="hintId" class="text-content-muted text-xs">{{ hint }}</p>
+    <p v-if="error" :id="errorId" class="text-danger text-xs">{{ error }}</p>
+  </div>
+</template>

@@ -26,7 +26,7 @@ final class ContactFactory extends Factory
             'customer_id' => fn (): string => Customer::factory()->create()->id,
             // A contact belongs to the same organization as its customer,
             // never to whichever boundary happens to be active.
-            'organization_id' => fn (array $attributes): string => self::organizationOf($attributes['customer_id']),
+            'organization_id' => fn (array $attributes): string => $this->organizationOf($attributes['customer_id']),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
@@ -37,6 +37,16 @@ final class ContactFactory extends Factory
             'is_primary' => false,
             'status' => AccountStatus::Active->value,
             'remember_token' => Str::random(10),
+            // See StaffUserFactory: nullable columns are set so factory
+            // models match rows read back from the database.
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'password_changed_at' => null,
+            'last_login_at' => null,
+            'anonymized_at' => null,
+            'locale' => null,
+            'timezone' => null,
         ];
     }
 
@@ -46,7 +56,7 @@ final class ContactFactory extends Factory
 
         return $this->state(fn (): array => [
             'customer_id' => $id,
-            'organization_id' => self::organizationOf($id),
+            'organization_id' => $this->organizationOf($id),
         ]);
     }
 
@@ -81,7 +91,7 @@ final class ContactFactory extends Factory
         ]);
     }
 
-    private static function organizationOf(string $customerId): string
+    private function organizationOf(string $customerId): string
     {
         return Customer::query()
             ->withoutGlobalScope('organization')

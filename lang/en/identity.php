@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'auth' => [
+        // One message for every credential failure. Distinguishing "no such
+        // account" from "wrong password" is an enumeration oracle.
+        'failed' => 'Those credentials do not match our records.',
+        'throttled' => 'Too many attempts. Please try again in :seconds seconds.',
+        'account_unavailable' => 'This account is not available. Please contact support.',
+        'invalid_code' => 'That code is not valid.',
+        'invalid_recovery_code' => 'That recovery code is not valid, or it has already been used.',
+        'reset_link_sent' => 'If that address has an account, a reset link is on its way.',
+        'password_reset' => 'Your password has been reset. You can sign in now.',
+        'password_updated' => 'Your password has been updated.',
+        'signed_out_others' => 'Signed out of :count other session(s).',
+    ],
+
+    'statuses' => [
+        'active' => 'Active',
+        'suspended' => 'Suspended',
+        'closed' => 'Closed',
+    ],
+
+    'two_factor' => [
+        'enabled' => 'Two-factor authentication is on.',
+        'disabled' => 'Two-factor authentication is off.',
+        'confirm_failed' => 'That code did not match. Check your authenticator app and try again.',
+        'recovery_codes_regenerated' => 'New recovery codes generated. Your old codes no longer work.',
+    ],
+
+    'mail' => [
+        'reset_subject' => 'Reset your password',
+        'reset_intro' => 'You are receiving this email because we received a password reset request for your account.',
+        'reset_action' => 'Reset password',
+        'reset_expiry' => 'This link expires in :minutes minutes.',
+        'reset_ignore' => 'If you did not request a password reset, no further action is required.',
+    ],
+
+    'impersonation' => [
+        'active' => 'You are viewing this account as :name.',
+        'stop' => 'Stop',
+        'started' => 'You are now acting as :name.',
+        'stopped' => 'Impersonation ended.',
+        'forbidden' => 'That account is outside your organization.',
+        'no_portal_access' => 'That contact has no portal access, so there is no session to act in.',
+        'blocked_action' => 'This action is not available while impersonating.',
+    ],
+];

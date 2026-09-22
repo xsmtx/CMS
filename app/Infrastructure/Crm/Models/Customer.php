@@ -45,11 +45,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Customer extends Model implements AuditLabel
 {
     use BelongsToOrganization;
-
     use HasAddresses;
     use HasCustomFields;
+
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
+
     use HasNotes;
     use HasTags;
     use HasUlids;
@@ -113,9 +114,22 @@ final class Customer extends Model implements AuditLabel
             return $this->legal_name;
         }
 
-        return $this->primaryContact?->displayName()
-            ?? $this->organization?->name
-            ?? 'Customer '.$this->id;
+        $contactName = $this->primaryContact?->displayName();
+
+        if ($contactName !== null && $contactName !== '') {
+            return $contactName;
+        }
+
+        // A customer always has an organization: the column is not nullable
+        // and the relation is unique. The branch covers a model built in
+        // memory and never saved.
+        $organization = $this->organization;
+
+        if ($organization !== null) {
+            return $organization->name;
+        }
+
+        return 'Customer';
     }
 
     public function auditLabel(): string
