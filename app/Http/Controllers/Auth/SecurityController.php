@@ -12,6 +12,7 @@ use App\Http\Requests\Identity\PasswordUpdateRequest;
 use App\Http\Requests\Identity\TwoFactorConfirmRequest;
 use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use App\Infrastructure\Identity\Models\AuthenticatedSession;
+use App\Infrastructure\Identity\Models\LoginHistory;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Identity\CurrentActor;
 use Carbon\CarbonImmutable;
@@ -59,15 +60,20 @@ final class SecurityController extends Controller
                     'current' => $session->isCurrent($request->session()->getId()),
                 ],
             )->values(),
-            'loginHistory' => $subject->loginHistories()->limit(10)->get()->map(
-                fn ($entry): array => [
+            'loginHistory' => LoginHistory::query()
+                ->where('subject_type', $subject->getMorphClass())
+                ->where('subject_id', (string) $subject->getKey())
+                ->latest('occurred_at')
+                ->limit(10)
+                ->get()
+                ->map(fn (LoginHistory $entry): array => [
                     'id' => $entry->id,
                     'successful' => $entry->successful,
                     'reason' => $entry->failure_reason?->value,
                     'ipAddress' => $entry->ip_address,
                     'occurredAt' => $entry->occurred_at->toIso8601String(),
-                ],
-            )->values(),
+                ])
+                ->values(),
         ]);
     }
 

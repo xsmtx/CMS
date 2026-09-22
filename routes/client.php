@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Client\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:client'])->prefix('client')->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
+
+    // Stopping impersonation happens from inside the customer session, which
+    // is the only place the banner is visible.
+    Route::delete('impersonation', [ImpersonationController::class, 'destroy'])
+        ->name('impersonation.stop');
 });

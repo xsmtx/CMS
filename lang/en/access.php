@@ -21,6 +21,8 @@ return [
     'groups' => [
         'platform' => 'Platform',
         'access' => 'Access control',
+        'crm' => 'Customers',
+        'identity' => 'Identity',
         'organizations' => 'Organizations',
         'settings' => 'Settings',
         'portal' => 'Client portal',

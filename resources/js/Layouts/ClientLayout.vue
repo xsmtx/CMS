@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 /**
@@ -16,6 +16,11 @@ const page = usePage()
 
 const brand = computed(() => page.props.brand?.name ?? 'InfraCMS')
 const user = computed(() => page.props.auth.user)
+const impersonation = computed(() => page.props.impersonation)
+
+function stopImpersonating(): void {
+  router.delete('/client/impersonation')
+}
 
 // Destinations land with the phases that build them; the shell already
 // reserves their place so the information architecture does not shift under
@@ -43,6 +48,25 @@ function isCurrent(href: string): boolean {
     >
       Skip to content
     </a>
+
+    <!--
+      Not dismissible, and deliberately loud. The whole safeguard of
+      impersonation is that the person doing it can always see that the
+      session is not really theirs.
+    -->
+    <div
+      v-if="impersonation?.active"
+      class="bg-warning text-surface-sunken flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-sm font-medium"
+    >
+      <span>You are viewing this account as {{ impersonation.subjectName }}.</span>
+      <button
+        type="button"
+        class="pressable rounded-[var(--radius-sm)] bg-black/15 px-2 py-0.5 text-xs underline underline-offset-4"
+        @click="stopImpersonating"
+      >
+        Stop
+      </button>
+    </div>
 
     <header class="border-line bg-surface-raised border-b">
       <div class="mx-auto flex h-16 w-full max-w-5xl items-center gap-6 px-5 sm:px-6">

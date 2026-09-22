@@ -13,6 +13,12 @@ export interface BrandProps {
   name: string
 }
 
+export interface ImpersonationProps {
+  active: boolean
+  subjectName: string | null
+  impersonatorName: string | null
+}
+
 export interface FlashProps {
   success: string | null
   error: string | null
@@ -34,6 +40,7 @@ declare module '@inertiajs/core' {
   interface PageProps {
     auth: AuthProps
     brand: BrandProps
+    impersonation: ImpersonationProps | null
     locale: string
     flash: FlashProps
     correlationId: string | null

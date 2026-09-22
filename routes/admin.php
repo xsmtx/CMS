@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +36,19 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('staff.two-factor.disable');
 
     Route::resource('roles', RoleController::class)->except(['show']);
+
+    // Customers, and the contacts that belong to them.
+    Route::resource('customers', CustomerController::class)->except(['destroy']);
+
+    Route::get('customers/{customer}/export', [CustomerController::class, 'export'])
+        ->name('customers.export');
+    Route::post('customers/{customer}/anonymize', [CustomerController::class, 'anonymize'])
+        ->name('customers.anonymize');
+
+    Route::resource('customers.contacts', ContactController::class)->except(['index', 'show']);
+
+    // Acting as a customer. Starting it is rate limited on top of the
+    // permission and boundary checks.
+    Route::post('contacts/{contact}/impersonate', [ImpersonationController::class, 'store'])
+        ->name('contacts.impersonate');
 });

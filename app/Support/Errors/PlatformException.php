@@ -7,6 +7,7 @@ namespace App\Support\Errors;
 use App\Support\Errors\Contracts\ProvidesErrorCode;
 use App\Support\Errors\Contracts\ProvidesErrorDetails;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
@@ -16,7 +17,7 @@ use Throwable;
  * contracts directly) so that failures arrive at the client with a stable
  * error code instead of a generic 500.
  */
-abstract class PlatformException extends RuntimeException implements ProvidesErrorCode, ProvidesErrorDetails
+abstract class PlatformException extends RuntimeException implements HttpExceptionInterface, ProvidesErrorCode, ProvidesErrorDetails
 {
     /**
      * @param  array<string, mixed>  $details
@@ -45,5 +46,25 @@ abstract class PlatformException extends RuntimeException implements ProvidesErr
     public function translationKey(): string
     {
         return $this->errorCode()->translationKey();
+    }
+
+    /**
+     * The status an HTML response uses.
+     *
+     * Without this a domain refusal renders as a 500 on the browser
+     * surfaces while the API returns the right code, which is exactly the
+     * kind of divergence the shared error contract exists to prevent.
+     */
+    public function getStatusCode(): int
+    {
+        return $this->errorCode()->status();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getHeaders(): array
+    {
+        return [];
     }
 }

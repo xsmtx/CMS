@@ -9,6 +9,7 @@ use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Who is acting, across both guards.
@@ -85,6 +86,19 @@ final class CurrentActor
         $organizationId = $this->model()?->getAttribute('organization_id');
 
         return is_string($organizationId) ? $organizationId : null;
+    }
+
+    /**
+     * Whether the current actor may do something.
+     *
+     * Goes through the gate rather than the model, so it works for either
+     * guard and returns false for an anonymous visitor instead of throwing.
+     */
+    public function can(string $ability, mixed $arguments = []): bool
+    {
+        $subject = $this->subject();
+
+        return $subject !== null && Gate::forUser($subject)->allows($ability, $arguments);
     }
 
     public function isStaff(): bool

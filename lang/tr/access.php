@@ -21,6 +21,8 @@ return [
     'groups' => [
         'platform' => 'Platform',
         'access' => 'Yetkilendirme',
+        'crm' => 'Musteriler',
+        'identity' => 'Kimlik',
         'organizations' => 'Organizasyonlar',
         'settings' => 'Ayarlar',
         'portal' => 'Musteri paneli',

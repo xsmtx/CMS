@@ -25,7 +25,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $body
  * @property bool $is_customer_visible
  * @property bool $is_pinned
- * @property CarbonImmutable $created_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 final class Note extends Model
 {
@@ -33,6 +34,7 @@ final class Note extends Model
 
     /** @use HasFactory<NoteFactory> */
     use HasFactory;
+
     use HasUlids;
 
     protected $table = 'notes';

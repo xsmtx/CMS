@@ -46,7 +46,18 @@ use SensitiveParameter;
  * @property bool $portal_access
  * @property bool $is_primary
  * @property AccountStatus $status
+ * @property string|null $password
+ * @property bool $notify_invoices
+ * @property bool $notify_support
+ * @property bool $notify_product
+ * @property bool $notify_marketing
+ * @property string|null $two_factor_secret
+ * @property CarbonImmutable|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $password_changed_at
+ * @property CarbonImmutable|null $last_login_at
  * @property CarbonImmutable|null $anonymized_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 final class Contact extends Authenticatable implements AuditLabel, AuthenticatableAccount
 {

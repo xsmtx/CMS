@@ -40,7 +40,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CustomerStatus $status
  * @property string $currency_code
  * @property bool $marketing_opt_in
+ * @property CarbonImmutable|null $tax_id_validated_at
  * @property CarbonImmutable|null $anonymized_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 final class Customer extends Model implements AuditLabel
 {
