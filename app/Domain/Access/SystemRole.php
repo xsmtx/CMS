@@ -22,11 +22,17 @@ enum SystemRole: string
 
     case AccountOwner = 'account-owner';
 
+    /**
+     * A contact with portal access who is not the account owner. They can
+     * see the account; they cannot change who else reaches it.
+     */
+    case PortalMember = 'portal-member';
+
     public function scope(): RoleScope
     {
         return match ($this) {
             self::SuperAdmin, self::Administrator, self::Support => RoleScope::Staff,
-            self::AccountOwner => RoleScope::Customer,
+            self::AccountOwner, self::PortalMember => RoleScope::Customer,
         };
     }
 

@@ -8,6 +8,10 @@ return [
     'customer_anonymized' => 'Personal data erased. The commercial record remains.',
     'contact_saved' => 'Contact saved.',
     'contact_deleted' => 'Contact deleted.',
+    'profile_updated' => 'Your details have been updated.',
+    'profile_not_editable' => 'Only the account owner can change the company details.',
+    'contacts_not_manageable' => 'Only the account owner can manage who reaches this account.',
+    'contact_not_removable' => 'This contact cannot be removed from here.',
     'invalid_transition' => 'A customer cannot move from :from to :to.',
     'contact_not_on_customer' => 'That contact does not belong to this customer.',
 

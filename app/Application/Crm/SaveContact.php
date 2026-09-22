@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Crm;
 
+use App\Domain\Access\SystemRole;
 use App\Domain\Crm\CustomFieldEntity;
+use App\Infrastructure\Access\Models\Role;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Support\Audit\Facades\Audit;
@@ -80,6 +82,8 @@ final readonly class SaveContact
             return $contact;
         });
 
+        $this->syncPortalRole($saved);
+
         $this->customFields->handle($saved, CustomFieldEntity::Contact, $attributes->customFields);
 
         Audit::action($isNew ? 'crm.contact.created' : 'crm.contact.updated')
@@ -90,5 +94,34 @@ final readonly class SaveContact
             ->write();
 
         return $saved;
+    }
+
+    /**
+     * Portal access implies exactly one role.
+     *
+     * The primary contact owns the account and can change who else reaches
+     * it; everyone else can see the account and manage their own security,
+     * and nothing more. Withdrawing access takes the role with it, so a
+     * contact who cannot sign in also holds no permissions.
+     */
+    private function syncPortalRole(Contact $contact): void
+    {
+        if (! $contact->portal_access) {
+            $contact->roles()->detach();
+            $contact->flushPermissionCache();
+
+            return;
+        }
+
+        $role = Role::query()
+            ->where('slug', ($contact->is_primary ? SystemRole::AccountOwner : SystemRole::PortalMember)->value)
+            ->first();
+
+        if ($role === null) {
+            return;
+        }
+
+        $contact->roles()->sync([$role->id]);
+        $contact->flushPermissionCache();
     }
 }

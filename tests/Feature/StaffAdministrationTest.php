@@ -215,5 +215,8 @@ it('offers only staff-scoped roles on the form', function (): void {
 
 it('scopes the assignable role list to staff', function (): void {
     expect(Role::query()->forScope(RoleScope::Customer)->pluck('slug')->all())
-        ->toBe([SystemRole::AccountOwner->value]);
+        ->toEqualCanonicalizing([
+            SystemRole::AccountOwner->value,
+            SystemRole::PortalMember->value,
+        ]);
 });

@@ -72,6 +72,11 @@ final class SystemRoleSeeder extends Seeder
                 'settings.view',
             ],
             SystemRole::AccountOwner => array_keys($registry->forScope(RoleScope::Customer)),
+            SystemRole::PortalMember => [
+                'portal.dashboard.view',
+                'portal.profile.view',
+                'portal.security.manage',
+            ],
         };
     }
 }

@@ -36,7 +36,7 @@ it('lists roles with their permission counts', function (): void {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('Admin/Roles/Index')
-            ->has('roles', 4));
+            ->has('roles', 5));
 });
 
 it('creates a role with only the permissions it asked for', function (): void {

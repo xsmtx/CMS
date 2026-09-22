@@ -16,6 +16,7 @@ return [
         'administrator' => 'Yonetici',
         'support' => 'Destek Temsilcisi',
         'account-owner' => 'Hesap Sahibi',
+        'portal-member' => 'Panel Kullanicisi',
     ],
 
     'groups' => [

@@ -163,6 +163,18 @@ final class Contact extends Authenticatable implements AuditLabel, Authenticatab
     }
 
     /**
+     * The customer this contact belongs to.
+     *
+     * `customer_id` is not nullable, so the relation always resolves; this
+     * accessor states that once instead of every caller coping with a
+     * nullable relation.
+     */
+    public function owningCustomer(): Customer
+    {
+        return $this->customer()->sole();
+    }
+
+    /**
      * Password reset mail is sent through the client broker, so the link
      * lands on the client area rather than the admin sign-in page.
      */

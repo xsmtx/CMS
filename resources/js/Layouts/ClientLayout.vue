@@ -31,6 +31,9 @@ const items = [
   { label: 'Domains', href: '/client/domains' },
   { label: 'Billing', href: '/client/billing' },
   { label: 'Support', href: '/client/support' },
+  { label: 'Contacts', href: '/client/contacts' },
+  { label: 'Profile', href: '/client/profile' },
+  { label: 'Security', href: '/security' },
 ]
 
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')

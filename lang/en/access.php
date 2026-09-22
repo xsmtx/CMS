@@ -16,6 +16,7 @@ return [
         'administrator' => 'Administrator',
         'support' => 'Support Agent',
         'account-owner' => 'Account Owner',
+        'portal-member' => 'Portal Member',
     ],
 
     'groups' => [
