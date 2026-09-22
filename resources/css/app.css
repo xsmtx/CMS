@@ -1,0 +1,176 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.{vue,ts}';
+
+/*
+ * Design tokens.
+ *
+ * Every value a component uses is a semantic token, never a raw palette
+ * value. White-labelling in Phase 11 rewrites these custom properties from
+ * the brand settings and the components do not change.
+ *
+ * Typography is a system stack on purpose: this product is installed on
+ * servers that may have no outbound network access, and shipping a webfont
+ * would either add a CDN dependency or bake a licence decision into core.
+ * Brands supply their own face through the same token in Phase 11.
+ */
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /* Surfaces and text */
+  --color-surface: oklch(98.6% 0.003 250);
+  --color-surface-raised: oklch(100% 0 0);
+  --color-surface-sunken: oklch(96% 0.005 250);
+  --color-line: oklch(91% 0.006 250);
+  --color-line-strong: oklch(84% 0.008 250);
+  --color-content: oklch(21% 0.014 250);
+  --color-content-muted: oklch(52% 0.014 250);
+  --color-content-subtle: oklch(64% 0.012 250);
+
+  /* One accent, used identically everywhere */
+  --color-accent: oklch(52% 0.15 248);
+  --color-accent-hover: oklch(46% 0.15 248);
+  --color-accent-content: oklch(99% 0.002 250);
+  --color-accent-subtle: oklch(95% 0.03 248);
+
+  /* Status */
+  --color-danger: oklch(55% 0.19 25);
+  --color-success: oklch(55% 0.13 155);
+  --color-warning: oklch(70% 0.14 75);
+
+  /* One radius system: 6 for inputs, 10 for cards, 14 for panels,
+       full only for badges. Nothing else. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Shadows are tinted to the surface hue, never pure black */
+  --shadow-raised: 0 1px 2px oklch(21% 0.014 250 / 0.06);
+  --shadow-panel:
+    0 1px 2px oklch(21% 0.014 250 / 0.05), 0 8px 24px -12px oklch(21% 0.014 250 / 0.12);
+
+  /* Motion. The built-in CSS easings are too weak to read as intentional. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 120ms;
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-surface: oklch(17.5% 0.012 250);
+    --color-surface-raised: oklch(21.5% 0.014 250);
+    --color-surface-sunken: oklch(14% 0.012 250);
+    --color-line: oklch(29% 0.014 250);
+    --color-line-strong: oklch(37% 0.016 250);
+    --color-content: oklch(96% 0.004 250);
+    --color-content-muted: oklch(72% 0.012 250);
+    --color-content-subtle: oklch(58% 0.012 250);
+
+    --color-accent: oklch(70% 0.14 248);
+    --color-accent-hover: oklch(76% 0.14 248);
+    --color-accent-content: oklch(17.5% 0.012 250);
+    --color-accent-subtle: oklch(28% 0.05 248);
+
+    --color-danger: oklch(68% 0.17 25);
+    --color-success: oklch(70% 0.13 155);
+    --color-warning: oklch(80% 0.13 75);
+
+    --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.4);
+    --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.35), 0 8px 24px -12px oklch(0% 0 0 / 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-surface: oklch(17.5% 0.012 250);
+  --color-surface-raised: oklch(21.5% 0.014 250);
+  --color-surface-sunken: oklch(14% 0.012 250);
+  --color-line: oklch(29% 0.014 250);
+  --color-line-strong: oklch(37% 0.016 250);
+  --color-content: oklch(96% 0.004 250);
+  --color-content-muted: oklch(72% 0.012 250);
+  --color-content-subtle: oklch(58% 0.012 250);
+
+  --color-accent: oklch(70% 0.14 248);
+  --color-accent-hover: oklch(76% 0.14 248);
+  --color-accent-content: oklch(17.5% 0.012 250);
+  --color-accent-subtle: oklch(28% 0.05 248);
+
+  --color-danger: oklch(68% 0.17 25);
+  --color-success: oklch(70% 0.13 155);
+  --color-warning: oklch(80% 0.13 75);
+
+  --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.4);
+  --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.35), 0 8px 24px -12px oklch(0% 0 0 / 0.6);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-content);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One focus treatment for the whole product. Never removed, only styled. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  ::selection {
+    background-color: var(--color-accent-subtle);
+    color: var(--color-content);
+  }
+}
+
+@layer components {
+  /*
+     * Pressable surfaces.
+     *
+     * The scale on :active is what makes the interface feel like it heard
+     * the click. Only transform is transitioned, so it stays on the GPU.
+     * Hover is gated behind a real pointer: on touch, :hover sticks after a
+     * tap and reads as a stuck state.
+     */
+  .pressable {
+    transition: transform var(--duration-press) var(--ease-out);
+  }
+
+  .pressable:active {
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+     * Reduced motion means gentler, not absent: colour and opacity still
+     * carry meaning. Movement does not.
+     */
+  .pressable,
+  .pressable:active {
+    transition: none;
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
