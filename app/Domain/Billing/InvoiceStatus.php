@@ -62,6 +62,19 @@ enum InvoiceStatus: string
         };
     }
 
+    /**
+     * The statuses a query means by "still owed".
+     *
+     * @return list<string>
+     */
+    public static function owed(): array
+    {
+        return array_values(array_map(
+            static fn (self $status): string => $status->value,
+            array_filter(self::cases(), static fn (self $status): bool => $status->isOwed()),
+        ));
+    }
+
     public function isSettled(): bool
     {
         return $this === self::Paid || $this === self::Refunded;

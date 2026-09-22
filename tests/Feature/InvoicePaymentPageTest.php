@@ -71,7 +71,27 @@ it('hides an invoice belonging to somebody else', function (): void {
 });
 
 it('hides an invoice from a visitor who is not signed in', function (): void {
-    $this->get("/invoices/{$this->invoice->number}")->assertRedirect();
+    // A number is short and sequential. Without either proof of identity,
+    // it opens nothing.
+    $this->get("/invoices/{$this->invoice->number}")->assertNotFound();
+});
+
+it('lets the browser that placed the order reach its invoice', function (): void {
+    $this->withSession(['storefront.invoices' => [$this->invoice->id]])
+        ->get("/invoices/{$this->invoice->number}")
+        ->assertOk()
+        ->assertSee($this->invoice->number);
+});
+
+it('does not let that session reach anybody elses invoice', function (): void {
+    $other = Invoice::factory()
+        ->forCustomer(Customer::factory()->create())
+        ->status(InvoiceStatus::Unpaid)
+        ->create();
+
+    $this->withSession(['storefront.invoices' => [$this->invoice->id]])
+        ->get("/invoices/{$other->number}")
+        ->assertNotFound();
 });
 
 it('does not show a draft', function (): void {

@@ -52,18 +52,19 @@ Route::middleware(ResolveStorefrontOrganization::class)->group(function (): void
     Route::get('/orders/{number}', [StorefrontCheckoutController::class, 'confirmation'])
         ->name('storefront.order');
 
-    // Paying an invoice. Signed in, because an invoice names a person and
-    // says what they bought.
-    Route::middleware('auth:client')->group(function (): void {
-        Route::get('/invoices/{number}', [StorefrontInvoiceController::class, 'show'])
-            ->name('storefront.invoice');
-        Route::post('/invoices/{number}/pay', [StorefrontInvoiceController::class, 'pay'])
-            ->name('storefront.invoice.pay');
+    // Paying an invoice. Either the contact it belongs to, or the browser
+    // that placed the order — an account created at checkout has no
+    // password until the reset mail arrives, and an invoice nobody can
+    // reach is not an invoice anybody pays. The controller decides; a
+    // number on its own opens nothing.
+    Route::get('/invoices/{number}', [StorefrontInvoiceController::class, 'show'])
+        ->name('storefront.invoice');
+    Route::post('/invoices/{number}/pay', [StorefrontInvoiceController::class, 'pay'])
+        ->name('storefront.invoice.pay');
 
-        // Where a gateway sends the customer back. It confirms nothing:
-        // whatever the query string claims, the page shows only what a
-        // verified webhook has already recorded.
-        Route::get('/invoices/{number}/returned', [StorefrontInvoiceController::class, 'returned'])
-            ->name('storefront.invoice.returned');
-    });
+    // Where a gateway sends the customer back. It confirms nothing:
+    // whatever the query string claims, the page shows only what a
+    // verified webhook has already recorded.
+    Route::get('/invoices/{number}/returned', [StorefrontInvoiceController::class, 'returned'])
+        ->name('storefront.invoice.returned');
 });

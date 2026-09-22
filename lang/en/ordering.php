@@ -122,7 +122,7 @@ return [
         'summary' => 'Order summary',
         'placed' => 'Order :number placed.',
         'thanks' => 'Thank you. Your order is :number.',
-        'next_steps' => 'We have emailed a confirmation. Payment arrives in a later release.',
+        'next_steps' => 'We have emailed a confirmation. Pay the invoice from your client area whenever you are ready.',
         'verify_email' => 'Check your inbox to confirm your email address before signing in.',
     ],
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -72,7 +72,8 @@ const props = defineProps<{
     history: HistoryEntry[]
     transitions: { value: string; label: string }[]
   }
-  can: { update: boolean; review: boolean }
+  invoice: { id: string; number: string; status: string; balance: string } | null
+  can: { update: boolean; review: boolean; invoice: boolean }
 }>()
 
 const statusForm = useForm({
@@ -82,6 +83,11 @@ const statusForm = useForm({
 
 const reviewForm = useForm({ reason: '' })
 const reviewing = ref(false)
+const invoiceForm = useForm({})
+
+function raiseInvoice(): void {
+  invoiceForm.post(`/admin/orders/${props.order.id}/invoice`)
+}
 
 function changeStatus(): void {
   statusForm.put(`/admin/orders/${props.order.id}/status`, { preserveScroll: true })
@@ -269,6 +275,34 @@ function formatDateTime(value: string | null): string {
             </template>
             <AppButton v-else size="sm" @click="reviewing = true">Review this order</AppButton>
           </div>
+        </AppCard>
+
+        <AppCard v-if="invoice || can.invoice">
+          <h2 class="mb-3 text-sm font-semibold">Invoice</h2>
+
+          <template v-if="invoice">
+            <div class="flex items-baseline justify-between gap-3">
+              <Link
+                :href="`/admin/invoices/${invoice.id}`"
+                class="text-sm font-medium underline-offset-4 hover:underline"
+              >
+                {{ invoice.number }}
+              </Link>
+              <AppBadge>{{ invoice.status }}</AppBadge>
+            </div>
+            <p class="text-content-muted mt-2 text-xs">
+              Outstanding <span class="tabular-nums">{{ invoice.balance }}</span>
+            </p>
+          </template>
+
+          <template v-else>
+            <p class="text-content-muted mb-3 text-xs">
+              No invoice yet. Raising one creates a draft you can check before issuing it.
+            </p>
+            <AppButton size="sm" :loading="invoiceForm.processing" @click="raiseInvoice">
+              Raise invoice
+            </AppButton>
+          </template>
         </AppCard>
 
         <AppCard v-if="can.update && order.transitions.length > 0">

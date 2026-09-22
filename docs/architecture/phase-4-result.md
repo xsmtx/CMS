@@ -14,15 +14,15 @@ Next phase: Phase 5 (Client Area) — **not started**
 | Formatting (PHP) | `vendor/bin/pint --test` | pass |
 | Idiom drift | `vendor/bin/rector process --dry-run` | pass, no changes |
 | Static analysis | `vendor/bin/phpstan analyse` level 8 | pass, 0 errors |
-| Tests | `vendor/bin/pest` | **547 passed, 1684 assertions**, 0 failed |
+| Tests | `vendor/bin/pest` | **562 passed, 1721 assertions**, 0 failed |
 | Lint (TS/Vue) | `npx eslint .` | pass |
 | Formatting (front end) | `npx prettier --check .` | pass |
 | Type check | `vue-tsc --noEmit` | pass |
 | Front-end tests | `vitest run` | 17 passed |
 | Build | `vite build` | pass |
-| Migrations | 18 migrations on MariaDB 11.8 | clean |
+| Migrations | 19 migrations on MariaDB 11.8 | clean |
 
-Phase 3 finished at 443 tests; this phase adds 104.
+Phase 3 finished at 443 tests; this phase adds 119.
 
 ## 2. The two decisions this phase turns on
 
@@ -56,6 +56,30 @@ same named scope by hand, the way `AuditLog` and `LoginHistory` already do,
 and is listed in the exemption the ownership test enforces. Refusing to
 record an event until we can attribute it would lose exactly the evidence
 needed for the ones we could not match.
+
+**Every customer's first invoice was called INV-000001.** A customer is an
+organization of its own, and numbers were allocated against the organization
+that owns the document — so each customer had their own sequence, and the
+unique index, scoped to that same organization, was satisfied by numbers
+that collided with everybody else's. Two orders placed through the
+storefront were both `ORD-000001`; the confirmation page looked one up by
+number and found the other customer's. Numbers now come from the seller
+([ADR 0025](../adr/0025-documents-are-numbered-in-the-sellers-name.md)),
+resolved inside `AllocateNumber` so no call site can get it wrong, and the
+unique index is on the number alone. A migration renumbers what already
+collided and advances each seller's sequence past it.
+
+It was found by placing two orders and reading the result, not by the suite:
+every test placed one order.
+
+**Checkout raised no invoice.** Phase 4 built everything an invoice needs
+and left the storefront still ending at "payment arrives in a later
+release". `RaiseInvoiceForOrder` now issues one as the order is placed —
+except for an order held for review, or one that costs nothing — and the
+confirmation page links to it. An account created at checkout has no
+password until the reset mail arrives, so the browser that placed the order
+may open that invoice: the same proof the confirmation page already runs on,
+held in the session and no wider.
 
 ## 4. What was built
 
@@ -123,6 +147,7 @@ app/Domain/Billing/       InvoiceStatus, PaymentStatus, TransactionKind,
                           GatewayEventType, WebhookRequest,
                           Contracts/PaymentGateway
 app/Application/Billing/  CreateInvoiceFromOrder, IssueInvoice,
+                          RaiseInvoiceForOrder,
                           TransitionInvoice, Ledger, RecordPayment,
                           RefundPayment, AddCredit, ApplyCredit,
                           IssueCreditNote, StartPayment, HandleGatewayEvent,
@@ -139,7 +164,7 @@ database/migrations/      invoice tables, payment tables
 resources/js/             Pages/Admin/Invoices/{Index,Show}
 resources/views/          storefront/{invoice,invoice-returned}
 lang/{en,tr}/             billing.php
-docs/adr/                 0023, 0024
+docs/adr/                 0023, 0024, 0025
 ```
 
 ## 6. Not done, and why
@@ -150,7 +175,7 @@ docs/adr/                 0023, 0024
 | **PDF rendering** | The invoice screen prints acceptably from the browser, which is what an operator needs today. A PDF contract with a renderer behind it belongs with the branded templates in Phase 11, where the layout is themeable. |
 | **Recurring invoices and dunning** | Phase 9's automation. The machinery it calls — issuing, numbering, overdue as a state, the ledger — is built and tested here. |
 | **Stored payment methods** | The table, the model and the token-hiding are done, and the Stripe adapter declares the capability. Nothing stores one yet, because that needs the client-area billing screens in Phase 5. |
-| **Client billing area** | Phase 5. A customer can pay an invoice they hold the number for; the list of their invoices belongs with the rest of the client area. |
+| **Client billing area** | Phase 5. A customer can reach the invoice their checkout raised, and a signed-in contact can reach their own; the list of their invoices belongs with the rest of the client area. |
 | **Late fees, partial-payment reminders** | Phase 9, with the rest of the automation. |
 | **Custom field, tag, address and note admin screens** | Still carried from Phase 1. |
 
@@ -163,7 +188,7 @@ docs/adr/                 0023, 0024
 | **`paid_minor` is recalculated, never locked** | Two concurrent webhooks for the same invoice could both rebuild it. They would arrive at the same answer from the same rows, so the outcome is right, but a row lock on the invoice during settlement would make that an argument rather than a coincidence. |
 | **Tax is charged on the invoice, not per line** | Correct for a single-rate installation and what the order already computed. A jurisdiction with different rates per line needs the tax to move onto the line, which the column is already there for. |
 | **Credit is per currency with no conversion** | A customer with credit in EUR cannot spend it on a TRY invoice. That is deliberate — converting it would invent a rate — but an operator will eventually ask, and the answer is a documented refusal rather than silence. |
-| **Invoice numbers restart per organization** | Same note as order numbers. If Phase 11 gives resellers their own billing, the sequence key may need a per-organization prefix. |
+| **Two resellers with the same prefix will collide** | Numbers are unique across the installation now, so a second seller configured with `INV-` is refused at the moment of issue rather than silently duplicating. The fix is a per-seller prefix, which the sequence row already has a column for; Phase 11 has to set it. |
 
 ## 8. Exact next recommended task
 

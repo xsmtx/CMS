@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Catalog\OptionType;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Ordering\OrderStatus;
+use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Catalog\Models\Option;
 use App\Infrastructure\Catalog\Models\OptionGroup;
 use App\Infrastructure\Catalog\Models\Product;
@@ -291,4 +293,95 @@ it('hides an order confirmation from a stranger', function (): void {
     )->create(['number' => 'ORD-000999']);
 
     $this->get("/orders/{$order->number}")->assertNotFound();
+});
+
+it('shows the invoice on the confirmation page', function (): void {
+    addToCart();
+
+    $this->followingRedirects()
+        ->post('/checkout', [
+            'first_name' => 'Ayse',
+            'last_name' => 'Yilmaz',
+            'email' => 'ayse@example.com',
+            'country_code' => 'TR',
+            'terms' => '1',
+            'expected_total' => 1499,
+        ])
+        ->assertOk()
+        ->assertSee(Invoice::query()->withoutGlobalScope('organization')->sole()->number)
+        ->assertSee(__('billing.payments.pay_now'), false);
+
+    $order = Order::query()->withoutGlobalScope('organization')->sole();
+    $invoice = Invoice::query()->withoutGlobalScope('organization')->sole();
+
+    expect($invoice->order_id)->toBe($order->id)
+        ->and($invoice->status)->toBe(InvoiceStatus::Unpaid)
+        ->and($invoice->total->minorUnits)->toBe($order->total->minorUnits)
+        // Issued, so the bill-to party is copied onto it and will not move
+        // if the customer edits their details tomorrow.
+        ->and($invoice->bill_to_email)->toBe('ayse@example.com')
+        ->and($invoice->items()->count())->toBe($order->allItems()->count());
+});
+
+it('raises no invoice for an order held for fraud review', function (): void {
+    // Every first order is flagged, so this one is held rather than billed.
+    config()->set('platform.risk.rules.flag_first_order', true);
+    config()->set('platform.risk.rules.first_order_weight', 5);
+    config()->set('platform.risk.rules.review_score', 1);
+
+    addToCart();
+
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ]);
+
+    $order = Order::query()->withoutGlobalScope('organization')->sole();
+
+    expect($order->status)->toBe(OrderStatus::FraudReview)
+        ->and(Invoice::query()->withoutGlobalScope('organization')->count())->toBe(0);
+});
+
+it('lets the browser that checked out open the invoice it just raised', function (): void {
+    addToCart();
+
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ]);
+
+    $invoice = Invoice::query()->withoutGlobalScope('organization')->sole();
+
+    // The account has no password until the reset mail arrives, so the
+    // session is the only identity this customer has for now.
+    $this->get("/invoices/{$invoice->number}")
+        ->assertOk()
+        ->assertSee($invoice->number);
+});
+
+it('does not carry that permission into a different browser', function (): void {
+    addToCart();
+
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ]);
+
+    $invoice = Invoice::query()->withoutGlobalScope('organization')->sole();
+
+    $this->flushSession();
+
+    $this->get("/invoices/{$invoice->number}")->assertNotFound();
 });

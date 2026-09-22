@@ -83,6 +83,40 @@ final class Organization extends Model implements AuditLabel
         return str_starts_with($other->path, $this->path);
     }
 
+    /**
+     * The organization that sells to this one.
+     *
+     * A customer is an organization of its own, so "the customer's
+     * organization" is the buyer, never the seller. Anything issued in the
+     * seller's name — an order number, an invoice number — has to be
+     * allocated here instead, or every customer starts at 000001 and two
+     * documents share a number.
+     *
+     * For a reseller's customer that is the reseller; for a direct
+     * customer, the provider. An organization that is not a customer sells
+     * in its own name.
+     */
+    public function sellerId(): string
+    {
+        if ($this->type !== OrganizationType::Customer) {
+            return $this->id;
+        }
+
+        $ancestors = array_values(array_filter(explode('/', $this->path)));
+        array_pop($ancestors);
+
+        $seller = self::query()
+            ->withoutGlobalScope('organization')
+            ->whereIn('id', $ancestors)
+            ->whereNot('type', OrganizationType::Customer->value)
+            // The nearest one: a reseller's customer is the reseller's to
+            // bill, not the provider's.
+            ->orderByRaw('LENGTH(path) DESC')
+            ->first();
+
+        return $seller instanceof self ? $seller->id : $this->id;
+    }
+
     public function auditLabel(): string
     {
         return $this->name;

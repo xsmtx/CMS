@@ -37,6 +37,7 @@ return [
     ],
 
     'invoices' => [
+        'raised' => 'Bu sipariş için :number numaralı fatura oluşturuldu.',
         'title' => 'Faturalar',
         'subtitle' => 'Kesilen fatura bir daha değişmez. Düzeltmeler iade faturasıyla yapılır.',
         'empty' => 'Henüz fatura yok.',

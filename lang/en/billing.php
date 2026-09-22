@@ -37,6 +37,7 @@ return [
     ],
 
     'invoices' => [
+        'raised' => 'Invoice :number has been raised for this order.',
         'title' => 'Invoices',
         'subtitle' => 'Once issued, an invoice never changes. Corrections are credit notes.',
         'empty' => 'No invoices yet.',

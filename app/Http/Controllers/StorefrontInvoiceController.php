@@ -30,6 +30,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class StorefrontInvoiceController extends Controller
 {
+    private const string SESSION_KEY = 'storefront.invoices';
+
     public function __construct(
         private readonly StorefrontRenderer $renderer,
         private readonly StorefrontCurrency $currency,
@@ -90,20 +92,45 @@ final class StorefrontInvoiceController extends Controller
         ]);
     }
 
+    /**
+     * Let this browser back to an invoice it raised at checkout.
+     *
+     * Kept short: it is a convenience for the minutes between placing an
+     * order and setting a password, not a way to reach an invoice later.
+     */
+    public static function remember(Request $request, Invoice $invoice): void
+    {
+        $remembered = array_values(array_unique([
+            ...array_slice((array) $request->session()->get(self::SESSION_KEY, []), -4),
+            $invoice->id,
+        ]));
+
+        $request->session()->put(self::SESSION_KEY, $remembered);
+    }
+
+    /**
+     * Two ways in, and no third: the contact it belongs to, or the browser
+     * that placed the order it came from. A number alone is never enough —
+     * it is short, sequential, and names a person.
+     */
     private function findForViewer(string $number): Invoice
     {
-        $contact = $this->actor->model();
-
-        if (! $contact instanceof Contact) {
-            throw new NotFoundHttpException;
-        }
-
         $invoice = Invoice::query()
+            ->withoutGlobalScope('organization')
             ->where('number', $number)
-            ->where('customer_id', $contact->customer_id)
             ->first();
 
         if (! $invoice instanceof Invoice || ! $invoice->status->isIssued()) {
+            throw new NotFoundHttpException;
+        }
+
+        $contact = $this->actor->model();
+        $isTheirs = $contact instanceof Contact && $invoice->customer_id === $contact->customer_id;
+
+        /** @var list<string> $remembered */
+        $remembered = (array) session(self::SESSION_KEY, []);
+
+        if (! $isTheirs && ! in_array($invoice->id, $remembered, true)) {
             throw new NotFoundHttpException;
         }
 

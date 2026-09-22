@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Billing\RaiseInvoiceForOrder;
 use App\Application\Ordering\CheckoutAccount;
 use App\Application\Ordering\PlaceOrder;
 use App\Application\Ordering\PlaceOrderRequest;
 use App\Application\Ordering\PriceCart;
 use App\Application\Ordering\RegisterCheckoutAccount;
 use App\Application\Ordering\ResolveCart;
+use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Crm\AddressType;
 use App\Domain\Shared\Money;
 use App\Domain\Tax\TaxableSupply;
 use App\Http\Concerns\PresentsCartTotals;
 use App\Http\Requests\Ordering\CheckoutRequest;
+use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Ordering\Models\Cart;
 use App\Infrastructure\Ordering\Models\Order;
@@ -74,6 +77,7 @@ final class StorefrontCheckoutController extends Controller
     public function store(
         CheckoutRequest $request,
         PlaceOrder $placeOrder,
+        RaiseInvoiceForOrder $invoices,
         RegisterCheckoutAccount $register,
         OrganizationContext $context,
     ): RedirectResponse {
@@ -120,6 +124,16 @@ final class StorefrontCheckoutController extends Controller
 
         $this->carts->forget();
 
+        $invoice = $invoices->handle($order, $contact);
+
+        if ($invoice instanceof Invoice) {
+            // An account created at checkout has no password yet, so the
+            // browser that placed the order is the only proof of identity
+            // there is until the reset mail arrives. It is the same proof
+            // the confirmation page runs on.
+            StorefrontInvoiceController::remember($request, $invoice);
+        }
+
         return to_route('storefront.order', $order->number)
             ->with('status', __('ordering.checkout.placed', ['number' => $order->number]))
             ->with('accountCreated', $created);
@@ -154,6 +168,11 @@ final class StorefrontCheckoutController extends Controller
 
         $order->load('items.options', 'items.children');
 
+        $invoice = Invoice::query()
+            ->where('order_id', $order->id)
+            ->whereIn('status', InvoiceStatus::owed())
+            ->first();
+
         return $this->renderer->render('order-confirmation', [
             'brand' => config('app.name'),
             'currency' => $order->currency_code,
@@ -166,6 +185,11 @@ final class StorefrontCheckoutController extends Controller
                     ? null
                     : $order->recurring_total->format(app()->getLocale()),
                 'accountCreated' => (bool) $request->session()->get('accountCreated', false),
+            ],
+            'invoice' => $invoice === null ? null : [
+                'number' => $invoice->number,
+                'due' => $invoice->balance()->format(app()->getLocale()),
+                'url' => route('storefront.invoice', $invoice->number),
             ],
         ]);
     }

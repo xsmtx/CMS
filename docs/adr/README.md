@@ -32,3 +32,4 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0022](0022-risk-and-tax-are-contracts.md) | Risk and tax are contracts, with dull defaults | accepted |
 | [0023](0023-issued-documents-are-frozen.md) | An issued document is frozen; corrections are credit notes | accepted |
 | [0024](0024-the-ledger-is-the-truth.md) | The ledger is the truth; a redirect is not | accepted |
+| [0025](0025-documents-are-numbered-in-the-sellers-name.md) | Documents are numbered in the seller's name | accepted |

@@ -122,7 +122,7 @@ return [
         'summary' => 'Sipariş özeti',
         'placed' => ':number numaralı sipariş oluşturuldu.',
         'thanks' => 'Teşekkürler. Sipariş numaranız :number.',
-        'next_steps' => 'Onay e-postası gönderdik. Ödeme adımı bir sonraki sürümde geliyor.',
+        'next_steps' => 'Onay e-postası gönderdik. Faturayı müşteri panelinizden dilediğiniz zaman ödeyebilirsiniz.',
         'verify_email' => 'Giriş yapmadan önce e-posta adresinizi onaylamak için gelen kutunuza bakın.',
     ],
 

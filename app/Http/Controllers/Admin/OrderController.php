@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Ordering\TransitionOrder;
+use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Ordering\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ordering\OrderStatusRequest;
+use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
 use App\Infrastructure\Ordering\Models\OrderItemOption;
@@ -86,6 +88,11 @@ final class OrderController extends Controller
 
         $order->load(['customer', 'contact', 'items.options', 'items.children.options', 'statusHistory']);
 
+        $invoice = Invoice::query()
+            ->where('order_id', $order->id)
+            ->whereNot('status', InvoiceStatus::Cancelled->value)
+            ->first();
+
         return Inertia::render('Admin/Orders/Show', [
             'order' => [
                 ...$this->row($order),
@@ -125,9 +132,16 @@ final class OrderController extends Controller
                     $order->status->manualTransitions(),
                 ),
             ],
+            'invoice' => $invoice === null ? null : [
+                'id' => $invoice->id,
+                'number' => $invoice->number,
+                'status' => (string) __($invoice->status->labelKey()),
+                'balance' => $invoice->balance()->format(app()->getLocale()),
+            ],
             'can' => [
                 'update' => $this->actor->can('update', $order),
                 'review' => $this->actor->can('review', $order),
+                'invoice' => $this->actor->can('create', Invoice::class),
             ],
         ]);
     }
