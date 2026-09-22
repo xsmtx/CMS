@@ -1,0 +1,177 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '24'
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+
+    services:
+      # Published on the same ports as the development Compose stack so that
+      # .env.testing is identical locally and in CI.
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root-secret
+          MARIADB_DATABASE: infracms_test
+          MARIADB_USER: infracms
+          MARIADB_PASSWORD: secret
+        ports:
+          - 33061:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 63791:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, gmp, intl, mbstring, pcntl, pdo_mysql, redis, sodium, zip
+          coverage: pcov
+          ini-values: memory_limit=512M
+
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-publish
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+          php artisan key:generate --env=testing
+
+      - name: Check formatting
+        run: vendor/bin/pint --test
+
+      - name: Check for drift from current idioms
+        run: vendor/bin/rector process --dry-run --no-progress-bar
+
+      - name: Static analysis
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Migrate the test database
+        run: php artisan migrate --env=testing --force
+
+      - name: Tests
+        run: vendor/bin/pest --coverage --min=70 --colors=never
+
+      - name: Audit dependencies
+        run: composer audit --locked
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, gmp, intl, mbstring, pcntl, pdo_mysql, redis, sodium, zip
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build the deployable tree
+        run: |
+          composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+          npm ci
+          npm run build
+
+      # The seed of the Phase 17 installer package: everything an operator
+      # needs, and nothing they do not.
+      - name: Create artifact
+        run: |
+          tar --exclude-vcs \
+              --exclude='./node_modules' \
+              --exclude='./tests' \
+              --exclude='./docs' \
+              --exclude='./docker' \
+              --exclude='./.github' \
+              --exclude='./storage/logs/*' \
+              -czf infracms-${{ github.sha }}.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: infracms-${{ github.sha }}
+          path: infracms-${{ github.sha }}.tar.gz
+          retention-days: 14
