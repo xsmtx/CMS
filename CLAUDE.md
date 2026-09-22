@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 3 are complete (`docs/architecture/phase-0-result.md` through
-`phase-3-result.md`). Phase 4, Billing + Payments, is next and is not
-started. Do not begin a phase without being asked for it.
+Phases 0 to 4 are complete (`docs/architecture/phase-0-result.md` through
+`phase-4-result.md`). Phase 5, Client Area, is next and is not started. Do
+not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -125,3 +125,18 @@ fired.
 The admin sidebar follows the admin panel map in the handoff, which is the
 shape WHMCS operators know. Only sections that exist are listed; each phase
 adds its own rows.
+
+An issued invoice is frozen (ADR 0023). Issuing copies the bill-to party
+onto the document and fixes every amount; corrections are credit notes,
+never edits. A draft is the only editable state.
+
+The ledger is the truth (ADR 0024). Transactions are append-only and always
+positive, the kind decides direction, and an invoice's paid amount is a
+cache rebuilt from the rows. One path settles an invoice — `RecordPayment` —
+whether the money came from a webhook or an operator. A redirect back from a
+gateway proves nothing; only a verified webhook or a server-to-server answer
+moves money.
+
+A model whose money columns have database defaults declares them in
+`$attributes` too: a default fills the row but leaves the model in memory
+without the attribute, and the money cast reads that absence as null.

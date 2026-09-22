@@ -30,3 +30,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0020](0020-storefront-organization-boundary.md) | The storefront's boundary comes from the installation | accepted |
 | [0021](0021-order-lines-copy-the-catalog.md) | Order lines copy the catalog, they do not reference it | accepted |
 | [0022](0022-risk-and-tax-are-contracts.md) | Risk and tax are contracts, with dull defaults | accepted |
+| [0023](0023-issued-documents-are-frozen.md) | An issued document is frozen; corrections are credit notes | accepted |
+| [0024](0024-the-ledger-is-the-truth.md) | The ledger is the truth; a redirect is not | accepted |
