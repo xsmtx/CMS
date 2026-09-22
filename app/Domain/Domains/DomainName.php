@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Domains;
 
 use App\Domain\Domains\Exceptions\InvalidDomainName;
+use Stringable;
 
 /**
  * A domain name, validated and split.
@@ -14,7 +15,7 @@ use App\Domain\Domains\Exceptions\InvalidDomainName;
  * and three implementations of "everything after the first dot" is three
  * chances to disagree about `co.uk`.
  */
-final readonly class DomainName
+final readonly class DomainName implements Stringable
 {
     private function __construct(
         public string $value,

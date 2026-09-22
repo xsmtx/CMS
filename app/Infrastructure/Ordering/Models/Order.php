@@ -108,7 +108,7 @@ final class Order extends Model implements AuditLabel
      */
     public function statusHistory(): HasMany
     {
-        return $this->hasMany(OrderStatusChange::class)->orderBy('occurred_at');
+        return $this->hasMany(OrderStatusChange::class)->oldest('occurred_at');
     }
 
     /**

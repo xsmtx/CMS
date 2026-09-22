@@ -111,7 +111,7 @@ final class Cart extends Model
     {
         self::creating(static function (self $cart): void {
             if ($cart->token === '' || $cart->token === null) {
-                $cart->token = (string) Str::ulid().Str::lower(Str::random(8));
+                $cart->token = Str::ulid().Str::lower(Str::random(8));
             }
 
             // A cart nobody comes back to is rubbish in the table. Long

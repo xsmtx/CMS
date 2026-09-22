@@ -74,7 +74,7 @@ final readonly class PromotionEngine
             return DiscountResult::none($lines, $zero, PromotionRefusal::WrongCurrency);
         }
 
-        if ($refusal = $this->checkCustomerTerms($promotion, $cart)) {
+        if (($refusal = $this->checkCustomerTerms($promotion, $cart)) instanceof PromotionRefusal) {
             return DiscountResult::none($lines, $zero, $refusal);
         }
 
