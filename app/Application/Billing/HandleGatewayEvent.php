@@ -56,7 +56,7 @@ final readonly class HandleGatewayEvent
         if (! $event instanceof GatewayEvent) {
             // A bad signature is recorded without its payload: whatever
             // that body is, it is not something this platform vouched for.
-            $this->recordRejection($gatewayKey, $request);
+            $this->recordRejection($gatewayKey);
 
             return ['handled' => false, 'reason' => 'invalid_signature'];
         }
@@ -230,7 +230,7 @@ final readonly class HandleGatewayEvent
         ])->save();
     }
 
-    private function recordRejection(string $gatewayKey, WebhookRequest $request): void
+    private function recordRejection(string $gatewayKey): void
     {
         try {
             GatewayEventRecord::query()->create([

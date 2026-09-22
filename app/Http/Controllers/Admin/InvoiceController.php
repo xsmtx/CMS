@@ -50,7 +50,7 @@ final class InvoiceController extends Controller
 
         return Inertia::render('Admin/Invoices/Index', [
             'invoices' => [
-                'data' => array_map(fn (Invoice $invoice): array => $this->row($invoice), $invoices->items()),
+                'data' => array_map($this->row(...), $invoices->items()),
                 'currentPage' => $invoices->currentPage(),
                 'lastPage' => $invoices->lastPage(),
                 'total' => $invoices->total(),

@@ -207,13 +207,7 @@ final readonly class StripeGateway implements PaymentGateway
 
         $expected = hash_hmac('sha256', $timestamp.'.'.$request->body, $this->webhookSecret);
 
-        foreach ($signatures as $signature) {
-            if (hash_equals($expected, $signature)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($signatures, fn ($signature): bool => hash_equals($expected, $signature));
     }
 
     /**
