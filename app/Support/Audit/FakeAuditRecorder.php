@@ -35,6 +35,22 @@ final class FakeAuditRecorder implements AuditRecorder
     }
 
     /**
+     * The actions recorded, in order. Reads better than digging through
+     * entries when a test only cares that something was written.
+     *
+     * @return list<string>
+     */
+    public function actions(): array
+    {
+        return array_map(static fn (AuditEntry $entry): string => $entry->action, $this->entries);
+    }
+
+    public function last(): ?AuditEntry
+    {
+        return $this->entries === [] ? null : $this->entries[count($this->entries) - 1];
+    }
+
+    /**
      * @param  (callable(AuditEntry): bool)|null  $filter
      */
     public function assertRecorded(string $action, ?callable $filter = null): void
