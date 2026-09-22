@@ -62,6 +62,18 @@ final class InvoiceItem extends Model
     ];
 
     /**
+     * @var array<string, int>
+     */
+    protected $attributes = [
+        'quantity' => 1,
+        'unit_amount_minor' => 0,
+        'line_amount_minor' => 0,
+        'discount_minor' => 0,
+        'tax_minor' => 0,
+        'position' => 0,
+    ];
+
+    /**
      * @return BelongsTo<Invoice, $this>
      */
     public function invoice(): BelongsTo

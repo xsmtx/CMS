@@ -61,6 +61,14 @@ final class Payment extends Model implements AuditLabel
     ];
 
     /**
+     * @var array<string, int>
+     */
+    protected $attributes = [
+        'amount_minor' => 0,
+        'refunded_minor' => 0,
+    ];
+
+    /**
      * @return BelongsTo<Invoice, $this>
      */
     public function invoice(): BelongsTo

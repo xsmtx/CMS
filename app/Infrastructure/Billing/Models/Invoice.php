@@ -83,6 +83,24 @@ final class Invoice extends Model implements AuditLabel
     ];
 
     /**
+     * The amounts a row always has.
+     *
+     * Declared here rather than relying on the column defaults, because a
+     * default fills the row and leaves the model in memory without the
+     * attribute — and a money cast reads that absence as null.
+     *
+     * @var array<string, int|bool>
+     */
+    protected $attributes = [
+        'subtotal_minor' => 0,
+        'discount_minor' => 0,
+        'tax_minor' => 0,
+        'total_minor' => 0,
+        'paid_minor' => 0,
+        'is_proforma' => false,
+    ];
+
+    /**
      * @return HasMany<InvoiceItem, $this>
      */
     public function items(): HasMany

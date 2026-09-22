@@ -1,0 +1,193 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Billing;
+
+use App\Application\Billing\Exceptions\PaymentRefused;
+use App\Application\Ordering\TransitionOrder;
+use App\Domain\Billing\InvoiceStatus;
+use App\Domain\Billing\PaymentStatus;
+use App\Domain\Billing\TransactionKind;
+use App\Domain\Ordering\OrderStatus;
+use App\Domain\Shared\Money;
+use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Billing\Models\Payment;
+use App\Support\Audit\Facades\Audit;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+/**
+ * Money arrived.
+ *
+ * The single path by which an invoice becomes paid, whether the money came
+ * from a gateway webhook or an operator saying a transfer landed. Anything
+ * that writes `paid_minor` directly is a bug: this recalculates it from the
+ * ledger, transitions the invoice, and — when the invoice came from an
+ * order — moves the order too, so an invoice cannot be settled without the
+ * order noticing.
+ *
+ * Overpayment is not an error. The excess becomes account credit, which is
+ * a ledger row like any other.
+ */
+final readonly class RecordPayment
+{
+    public function __construct(
+        private Ledger $ledger,
+        private TransitionInvoice $transitions,
+        private TransitionOrder $orders,
+    ) {}
+
+    public function handle(Invoice $invoice, RecordPaymentRequest $request, ?Model $actor = null): Payment
+    {
+        $this->assertAcceptable($invoice, $request->amount);
+
+        $payment = DB::transaction(function () use ($invoice, $request): Payment {
+            $customer = $invoice->customer;
+
+            $payment = Payment::query()->create([
+                'organization_id' => $invoice->organization_id,
+                'invoice_id' => $invoice->id,
+                'customer_id' => $invoice->customer_id,
+                'gateway' => $request->gateway,
+                'status' => PaymentStatus::Completed->value,
+                'currency_code' => $request->amount->currency->code,
+                'amount_minor' => $request->amount->minorUnits,
+                'reference' => $request->reference ?? 'man_'.Str::lower(Str::random(20)),
+                'idempotency_key' => $request->idempotencyKey ?? Str::lower(Str::random(32)),
+                'received_at' => $request->receivedAt ?? CarbonImmutable::now(),
+                'recorded_by' => $request->recordedBy,
+                'note' => $request->note,
+            ]);
+
+            if ($customer === null) {
+                return $payment;
+            }
+
+            $balance = $invoice->balance();
+
+            // The ledger's payment row records what was applied to this
+            // invoice; anything beyond it is credit, on its own row. That
+            // keeps "what has this invoice been paid" a straight sum.
+            $applied = $request->amount->isGreaterThan($balance) && $balance->isPositive()
+                ? $balance
+                : $request->amount;
+
+            if ($applied->isPositive()) {
+                $this->ledger->record(
+                    customer: $customer,
+                    kind: TransactionKind::Payment,
+                    amount: $applied,
+                    invoice: $invoice,
+                    payment: $payment,
+                    description: $request->note,
+                    recordedBy: $request->recordedBy,
+                );
+            }
+
+            $excess = $request->amount->minus($applied);
+
+            if ($excess->isPositive()) {
+                $this->ledger->record(
+                    customer: $customer,
+                    kind: TransactionKind::CreditAdded,
+                    amount: $excess,
+                    invoice: $invoice,
+                    payment: $payment,
+                    description: 'Overpayment on '.$invoice->number,
+                    recordedBy: $request->recordedBy,
+                );
+            }
+
+            return $payment;
+        });
+
+        $this->settle($invoice, $actor);
+
+        Audit::action('billing.payment.recorded')
+            ->by($actor)
+            ->on($payment)
+            ->forOrganization($payment->organization_id)
+            ->withMetadata([
+                'invoice' => $invoice->number,
+                'amount' => $request->amount->toDecimalString(),
+                'currency' => $request->amount->currency->code,
+                'gateway' => $request->gateway,
+            ])
+            ->write();
+
+        return $payment;
+    }
+
+    /**
+     * Recalculate an invoice from the ledger and move it if it settled.
+     *
+     * Public because a refund and a credit note change the same numbers and
+     * must use the same arithmetic.
+     */
+    public function settle(Invoice $invoice, ?Model $actor = null): Invoice
+    {
+        $invoice->refresh();
+        $paid = $this->ledger->paidTowards($invoice);
+
+        $invoice->forceFill(['paid_minor' => $paid->minorUnits])->save();
+
+        $target = match (true) {
+            ! $paid->isPositive() && $invoice->status !== InvoiceStatus::Draft => $invoice->isPastDue()
+                ? InvoiceStatus::Overdue
+                : InvoiceStatus::Unpaid,
+            $paid->isGreaterThan($invoice->total) || $paid->equals($invoice->total) => InvoiceStatus::Paid,
+            default => InvoiceStatus::PartiallyPaid,
+        };
+
+        if ($invoice->status !== $target && $invoice->status->canTransitionTo($target)) {
+            $invoice = $this->transitions->handle($invoice, $target, $actor);
+        }
+
+        if ($target === InvoiceStatus::Paid) {
+            $this->markOrderPaid($invoice, $actor);
+        }
+
+        return $invoice;
+    }
+
+    private function assertAcceptable(Invoice $invoice, Money $amount): void
+    {
+        if ($amount->currency->code !== $invoice->currency_code) {
+            throw PaymentRefused::currencyMismatch($invoice->currency_code, $amount->currency->code);
+        }
+
+        if (! $amount->isPositive()) {
+            throw PaymentRefused::exceedsBalance($amount, $invoice->balance());
+        }
+
+        if ($invoice->status === InvoiceStatus::Draft) {
+            // Nothing is owed on a document that has not been issued.
+            throw PaymentRefused::alreadyPaid();
+        }
+
+        if ($invoice->status->isSettled() || $invoice->status === InvoiceStatus::Cancelled) {
+            throw PaymentRefused::alreadyPaid();
+        }
+    }
+
+    /**
+     * An order whose invoice is paid is paid.
+     *
+     * The transition is attempted rather than assumed: an order that has
+     * already moved on — provisioning, active — must not be dragged
+     * backwards by a late payment row.
+     */
+    private function markOrderPaid(Invoice $invoice, ?Model $actor): void
+    {
+        $order = $invoice->order;
+
+        if ($order === null || ! $order->status->canTransitionTo(OrderStatus::Paid)) {
+            return;
+        }
+
+        $this->orders->handle($order, OrderStatus::Paid, $actor, 'Invoice '.$invoice->number.' paid');
+    }
+}

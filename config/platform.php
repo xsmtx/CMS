@@ -175,6 +175,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Billing
+    |--------------------------------------------------------------------------
+    |
+    | Gateways are adapters behind a contract. A gateway with no credentials
+    | is never registered, so an operator is offered only what actually
+    | works rather than a method that fails at the till.
+    |
+    */
+
+    'billing' => [
+        'due_days' => (int) env('INVOICE_DUE_DAYS', 14),
+
+        'numbering' => [
+            'invoice_prefix' => env('INVOICE_NUMBER_PREFIX', 'INV-'),
+            'proforma_prefix' => env('PROFORMA_NUMBER_PREFIX', 'PRO-'),
+            'credit_note_prefix' => env('CREDIT_NOTE_NUMBER_PREFIX', 'CN-'),
+            'padding' => (int) env('INVOICE_NUMBER_PADDING', 6),
+        ],
+
+        'gateways' => [
+            'manual' => [
+                'enabled' => (bool) env('GATEWAY_MANUAL_ENABLED', true),
+                'instructions' => env('GATEWAY_MANUAL_INSTRUCTIONS', ''),
+            ],
+
+            'stripe' => [
+                // Registered only when both keys are present.
+                'secret' => env('STRIPE_SECRET'),
+                'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+                'api_base' => env('STRIPE_API_BASE', 'https://api.stripe.com'),
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Licensing client
     |--------------------------------------------------------------------------
     |
