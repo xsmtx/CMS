@@ -9,6 +9,8 @@ return [
         'create' => 'Yeni grup',
         'edit' => 'Grubu düzenle',
         'empty' => 'Henüz ürün grubu yok.',
+        'saved' => 'Grup kaydedildi.',
+        'deleted' => 'Grup silindi.',
         'products_count' => ':count ürün',
     ],
 
@@ -22,6 +24,8 @@ return [
         'stock_remaining' => ':count adet kaldı',
         'unlimited_stock' => 'Sınırsız',
         'requires_domain' => 'Ödeme adımında alan adı ister',
+        'saved' => 'Ürün kaydedildi.',
+        'deleted' => 'Ürün silindi.',
     ],
 
     'pricing' => [
@@ -33,6 +37,8 @@ return [
         'not_sold_hint' => 'Bir hücreyi boş bırakmak o dönemde satışı durdurur.',
         'add_currency' => 'Para birimi ekle',
         'save' => 'Fiyatları kaydet',
+        'saved' => 'Fiyatlar kaydedildi.',
+        'negative_not_allowed' => 'Ürün fiyatı negatif olamaz.',
     ],
 
     'options' => [
@@ -44,6 +50,8 @@ return [
         'required' => 'Zorunlu',
         'default' => 'Varsayılan',
         'add_choice' => 'Seçenek ekle',
+        'saved' => 'Seçenekler kaydedildi.',
+        'deleted' => 'Seçenek grubu silindi.',
     ],
 
     'addons' => [
@@ -52,6 +60,8 @@ return [
         'create' => 'Yeni ek hizmet',
         'edit' => 'Ek hizmeti düzenle',
         'empty' => 'Henüz ek hizmet yok.',
+        'saved' => 'Ek hizmet kaydedildi.',
+        'deleted' => 'Ek hizmet silindi.',
     ],
 
     'currencies' => [
@@ -65,7 +75,10 @@ return [
         'rate_hint' => 'Raporlama için kullanılır. Ödemede fiyatlar çevrilmez.',
         'active' => 'Aktif',
         'history' => 'Kur geçmişi',
+        'rate_format' => 'Kur, 42.12345678 gibi ondalık bir sayı olmalıdır.',
         'captured_at' => 'Kaydedildi',
+        'saved' => 'Para birimi kaydedildi.',
+        'deleted' => 'Para birimi silindi.',
     ],
 
     'status' => [

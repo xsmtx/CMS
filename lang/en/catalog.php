@@ -9,6 +9,8 @@ return [
         'create' => 'New group',
         'edit' => 'Edit group',
         'empty' => 'No product groups yet.',
+        'saved' => 'Group saved.',
+        'deleted' => 'Group deleted.',
         'products_count' => ':count product|:count products',
     ],
 
@@ -22,6 +24,8 @@ return [
         'stock_remaining' => ':count left',
         'unlimited_stock' => 'Unlimited',
         'requires_domain' => 'Collects a domain at checkout',
+        'saved' => 'Product saved.',
+        'deleted' => 'Product deleted.',
     ],
 
     'pricing' => [
@@ -33,6 +37,8 @@ return [
         'not_sold_hint' => 'Leave a cell empty to stop selling on that cycle.',
         'add_currency' => 'Add currency',
         'save' => 'Save prices',
+        'saved' => 'Prices saved.',
+        'negative_not_allowed' => 'A product price cannot be negative.',
     ],
 
     'options' => [
@@ -44,6 +50,8 @@ return [
         'required' => 'Required',
         'default' => 'Default',
         'add_choice' => 'Add choice',
+        'saved' => 'Options saved.',
+        'deleted' => 'Option group deleted.',
     ],
 
     'addons' => [
@@ -52,6 +60,8 @@ return [
         'create' => 'New addon',
         'edit' => 'Edit addon',
         'empty' => 'No addons yet.',
+        'saved' => 'Addon saved.',
+        'deleted' => 'Addon deleted.',
     ],
 
     'currencies' => [
@@ -65,7 +75,10 @@ return [
         'rate_hint' => 'Used for reporting. Prices are never converted at checkout.',
         'active' => 'Active',
         'history' => 'Rate history',
+        'rate_format' => 'The rate must be a decimal number such as 42.12345678.',
         'captured_at' => 'Recorded',
+        'saved' => 'Currency saved.',
+        'deleted' => 'Currency removed.',
     ],
 
     'status' => [

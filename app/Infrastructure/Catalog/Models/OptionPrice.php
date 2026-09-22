@@ -22,8 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property BillingCycle $billing_cycle
  * @property string $currency_code
- * @property Money|null $recurring
- * @property Money|null $setup
+ * @property Money $recurring
+ * @property Money $setup
  */
 final class OptionPrice extends Model
 {

@@ -35,8 +35,8 @@ interface NavGroup {
   items: NavItem[]
 }
 
-// Phase 0 ships the sections the foundation actually owns. Each later phase
-// appends its own group rather than editing this one.
+// Each phase appends its own group rather than rewriting the ones before
+// it, which keeps the navigation a record of what the product can do.
 const groups: NavGroup[] = [
   {
     label: 'Operations',
@@ -51,6 +51,18 @@ const groups: NavGroup[] = [
     items: [
       { label: 'Customers', href: '/admin/customers', permission: 'crm.customers.view' },
       { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
+    ],
+  },
+  {
+    label: 'Catalog',
+    items: [
+      { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
+      { label: 'Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
+      {
+        label: 'Currencies',
+        href: '/admin/catalog/currencies',
+        permission: 'catalog.products.view',
+      },
     ],
   },
   {
