@@ -68,7 +68,7 @@ it('declares every core permission with a dotted, lowercase slug', function (): 
 });
 
 it('groups every core permission under a declared group', function (): void {
-    $groups = ['platform', 'access', 'identity', 'crm', 'catalog', 'organizations', 'settings', 'portal'];
+    $groups = ['platform', 'access', 'identity', 'crm', 'catalog', 'ordering', 'organizations', 'settings', 'portal'];
 
     foreach (CorePermissions::all() as $definition) {
         expect($definition->group)->toBeIn($groups);

@@ -160,10 +160,12 @@ return [
         'saved' => 'Promotion saved.',
         'deleted' => 'Promotion deleted.',
         'usage' => ':used of :limit used',
+        'percentage_format' => 'The percentage must be a number such as 10 or 12.50.',
         'unlimited' => 'Unlimited',
     ],
 
     'errors' => [
+        'promotion_redeemed' => 'This code has been used :count time(s). Deactivate it instead.',
         'invalid_domain' => 'That does not look like a domain name.',
         'cart_empty' => 'Your cart is empty.',
         'cart_expired' => 'Your cart has expired. Please start again.',

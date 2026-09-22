@@ -10,9 +10,12 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\OptionGroupController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderReviewController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +77,18 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
         Route::resource('currencies', CurrencyController::class)->except(['show']);
     });
+
+    // Orders. The review queue is its own screen rather than a filter:
+    // an order sitting in it is not moving until someone decides.
+    Route::get('orders/review', [OrderController::class, 'review'])->name('orders.review');
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::put('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+
+    Route::post('orders/{order}/release', [OrderReviewController::class, 'release'])->name('orders.release');
+    Route::post('orders/{order}/refuse', [OrderReviewController::class, 'refuse'])->name('orders.refuse');
+
+    Route::resource('promotions', PromotionController::class)->except(['show']);
 
     // Acting as a customer. Starting it is rate limited on top of the
     // permission and boundary checks.

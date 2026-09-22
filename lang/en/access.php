@@ -25,6 +25,7 @@ return [
         'catalog' => 'Catalog',
         'crm' => 'Customers',
         'identity' => 'Identity',
+        'ordering' => 'Orders',
         'organizations' => 'Organizations',
         'settings' => 'Settings',
         'portal' => 'Client portal',

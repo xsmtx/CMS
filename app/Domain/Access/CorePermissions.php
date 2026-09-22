@@ -29,6 +29,7 @@ final class CorePermissions
             ...self::identity(),
             ...self::crm(),
             ...self::catalog(),
+            ...self::ordering(),
             ...self::settings(),
             ...self::portal(),
         ];
@@ -114,6 +115,27 @@ final class CorePermissions
             // separable from editing a product's description.
             new PermissionDefinition('catalog.pricing.manage', 'catalog', RoleScope::Staff, highRisk: true),
             new PermissionDefinition('catalog.currencies.manage', 'catalog', RoleScope::Staff, highRisk: true),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
+    private static function ordering(): array
+    {
+        return [
+            new PermissionDefinition('orders.view', 'ordering', RoleScope::Staff),
+            new PermissionDefinition('orders.manage', 'ordering', RoleScope::Staff),
+
+            // Clearing a risk hold overrides the platform's own judgement
+            // about an order, which is exactly the kind of decision that
+            // has to be attributable.
+            new PermissionDefinition('orders.review', 'ordering', RoleScope::Staff, highRisk: true),
+
+            new PermissionDefinition('promotions.view', 'ordering', RoleScope::Staff),
+
+            // Changes what customers are charged.
+            new PermissionDefinition('promotions.manage', 'ordering', RoleScope::Staff, highRisk: true),
         ];
     }
 

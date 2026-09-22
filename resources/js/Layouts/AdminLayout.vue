@@ -59,6 +59,13 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'Sales',
+    items: [
+      { label: 'Orders', href: '/admin/orders', permission: 'orders.view' },
+      { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
+    ],
+  },
+  {
     label: 'Catalog',
     items: [
       { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },

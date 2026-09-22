@@ -25,6 +25,7 @@ return [
         'catalog' => 'Katalog',
         'crm' => 'Müşteriler',
         'identity' => 'Kimlik',
+        'ordering' => 'Siparişler',
         'organizations' => 'Organizasyonlar',
         'settings' => 'Ayarlar',
         'portal' => 'Müşteri paneli',

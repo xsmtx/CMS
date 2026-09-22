@@ -160,10 +160,12 @@ return [
         'saved' => 'Kampanya kaydedildi.',
         'deleted' => 'Kampanya silindi.',
         'usage' => ':limit hakkın :used tanesi kullanıldı',
+        'percentage_format' => 'Yüzde, 10 veya 12.50 gibi bir sayı olmalıdır.',
         'unlimited' => 'Sınırsız',
     ],
 
     'errors' => [
+        'promotion_redeemed' => 'Bu kod :count kez kullanılmış. Silmek yerine pasife alın.',
         'invalid_domain' => 'Bu bir alan adına benzemiyor.',
         'cart_empty' => 'Sepetiniz boş.',
         'cart_expired' => 'Sepetinizin süresi doldu. Lütfen yeniden başlayın.',

@@ -41,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property RiskDecision|null $risk_decision
  * @property array<int, array<string, mixed>>|null $risk_reasons
  * @property array<int, array<string, mixed>>|null $tax_breakdown
+ * @property CarbonImmutable|null $terms_accepted_at
+ * @property CarbonImmutable|null $risk_reviewed_at
  * @property CarbonImmutable|null $placed_at
  */
 final class Order extends Model implements AuditLabel
