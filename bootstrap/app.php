@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\AssignCorrelationId;
 use App\Http\Middleware\BlockDuringImpersonation;
+use App\Http\Middleware\EnforceMaintenanceMode;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveOrganizationContext;
 use App\Http\Middleware\TrackAuthenticatedSession;
@@ -32,7 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
 
-            Route::middleware('web')
+            // Maintenance mode closes the portal and the storefront and
+            // leaves the admin area open, because the person fixing the
+            // thing being maintained has to be able to see it.
+            Route::middleware(['web', EnforceMaintenanceMode::class])
                 ->name('client.')
                 ->group(base_path('routes/client.php'));
         },

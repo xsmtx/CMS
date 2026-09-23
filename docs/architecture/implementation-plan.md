@@ -108,8 +108,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 6 | Services + Provisioning: service lifecycle, infrastructure inventory, placement, queues, first hosting/VPS adapters | **complete** — see `phase-6-result.md` |
 | 7 | Domains: registrar SDK, TLD pricing, register/transfer/renew, nameservers, synchronisation | **complete** — see `phase-7-result.md` |
 | 8 | Support + Content + Notifications: tickets, departments, SLA, knowledge base, announcements, email/in-app/webhook notifications | **complete** - see `phase-8-result.md` |
-| 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | next |
-| 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | |
+| 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | **complete** - see `phase-9-result.md` |
+| 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | next |
 | 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | |
 | 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | |
 | 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | |

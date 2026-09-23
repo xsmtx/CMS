@@ -12,6 +12,7 @@ use App\Domain\Automation\ItemOutcome;
 use App\Domain\Automation\RunItem;
 use App\Domain\Automation\RunStatus;
 use App\Domain\Automation\RunSummary;
+use App\Domain\Billing\Events\PaymentReceived;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Provisioning\ServiceStatus;
@@ -222,4 +223,56 @@ it('runs a task from the command line and says what it did', function (): void {
 
 it('refuses a task nobody has heard of', function (): void {
     $this->artisan('platform:run not-a-task')->assertFailed();
+});
+
+it('advances the service date only once the renewal is paid', function (): void {
+    $service = Service::factory()->create([
+        'status' => ServiceStatus::Active->value,
+        'billing_cycle' => BillingCycle::Monthly->value,
+        'next_due_on' => now()->addDays(3)->toDateString(),
+    ]);
+
+    $this->runner->handle(AutomationTask::Renewals, app(GenerateRenewalInvoices::class));
+
+    $before = $service->fresh()?->next_due_on;
+
+    // Raising the invoice is a request. It must not extend the service, or
+    // dunning would have nothing left to chase.
+    expect($before?->toDateString())->toBe(now()->addDays(3)->toDateString());
+
+    $invoice = Invoice::query()->withoutGlobalScope('organization')->sole();
+    $line = InvoiceItem::query()->withoutGlobalScope('organization')->sole();
+
+    $invoice->forceFill(['status' => InvoiceStatus::Paid->value])->save();
+
+    event(new PaymentReceived(
+        paymentId: 'payment',
+        invoiceId: $invoice->id,
+        organizationId: $invoice->organization_id,
+    ));
+
+    expect($service->fresh()?->next_due_on?->toDateString())
+        ->toBe($line->period_end?->toDateString());
+});
+
+it('does not advance anything for a part payment', function (): void {
+    $service = Service::factory()->create([
+        'status' => ServiceStatus::Active->value,
+        'billing_cycle' => BillingCycle::Monthly->value,
+        'next_due_on' => now()->addDays(3)->toDateString(),
+    ]);
+
+    $this->runner->handle(AutomationTask::Renewals, app(GenerateRenewalInvoices::class));
+
+    $invoice = Invoice::query()->withoutGlobalScope('organization')->sole();
+    $invoice->forceFill(['status' => InvoiceStatus::PartiallyPaid->value])->save();
+
+    event(new PaymentReceived(
+        paymentId: 'payment',
+        invoiceId: $invoice->id,
+        organizationId: $invoice->organization_id,
+    ));
+
+    expect($service->fresh()?->next_due_on?->toDateString())
+        ->toBe(now()->addDays(3)->toDateString());
 });

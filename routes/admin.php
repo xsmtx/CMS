@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
+use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
+use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
+use App\Http\Controllers\Admin\OperationController;
 use App\Http\Controllers\Admin\OptionGroupController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderReviewController;
@@ -197,6 +200,33 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('invoices.credit.add');
     Route::post('invoices/{invoice}/credit-note', [InvoicePaymentController::class, 'creditNote'])
         ->name('invoices.credit-note');
+
+    /*
+     * What the platform does on its own, and what became of it.
+     *
+     * "Run now" is a POST because it changes things — it can invoice a
+     * thousand customers — and it runs in the request rather than on the
+     * queue because somebody pressed it in order to watch.
+     */
+    Route::get('automation', [AutomationController::class, 'index'])->name('automation');
+    Route::get('automation/dunning', [AutomationController::class, 'dunning'])
+        ->name('automation.dunning');
+    Route::post('automation/dunning', [AutomationController::class, 'storeStep'])
+        ->name('automation.dunning.store');
+    Route::delete('automation/dunning/{step}', [AutomationController::class, 'destroyStep'])
+        ->name('automation.dunning.destroy');
+    Route::post('automation/{task}/run', [AutomationController::class, 'run'])
+        ->name('automation.run');
+
+    Route::get('operations', [OperationController::class, 'index'])->name('operations');
+    Route::post('operations/{operation}/retry', [OperationController::class, 'retry'])
+        ->name('operations.retry');
+    Route::post('operations/{operation}/resolve', [OperationController::class, 'resolve'])
+        ->name('operations.resolve');
+
+    Route::get('health', [HealthController::class, 'index'])->name('health');
+    Route::put('health/maintenance', [AutomationController::class, 'maintenance'])
+        ->name('health.maintenance');
 
     // Acting as a customer. Starting it is rate limited on top of the
     // permission and boundary checks.

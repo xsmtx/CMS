@@ -119,6 +119,18 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'Automation',
+    items: [
+      { label: 'Tasks', href: '/admin/automation', permission: 'automation.view' },
+      {
+        label: 'Unpaid invoices',
+        href: '/admin/automation/dunning',
+        permission: 'automation.view',
+      },
+      { label: 'Operations', href: '/admin/operations', permission: 'operations.view' },
+    ],
+  },
+  {
     label: 'System',
     items: [
       { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
@@ -129,6 +141,7 @@ const groups: NavGroup[] = [
         href: '/admin/notifications/templates',
         permission: 'notifications.view',
       },
+      { label: 'System health', href: '/admin/health', permission: 'platform.health.view' },
       { label: 'Audit log', href: '/admin/audit', permission: 'platform.audit.view' },
       { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
     ],

@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 8 are complete (`docs/architecture/phase-0-result.md` through
-`phase-8-result.md`). Phase 9, Automation + Operations, is next and is not
-started. Do not begin a phase without being asked for it.
+Phases 0 to 9 are complete (`docs/architecture/phase-0-result.md` through
+`phase-9-result.md`). Phase 10, Public API + Developer Platform, is next
+and is not started. Do not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -220,3 +220,47 @@ resolves.
 A role gets the permissions of a phase when that phase lands. Phase 8 found
 `support` holding none of the support permissions, which made the role
 called Support unable to open a ticket.
+
+A run is a record, and time is not a trigger (ADR 0031). Every automation
+task asks a question about rows — "which services are past due and not
+suspended" — never about the clock, so a scheduler that was down for three
+days catches up instead of skipping three days permanently. The guard
+against repeating is always state: `renewal_invoiced_through`, a row in
+`invoice_dunning_steps` with a unique index, the invoice's own status.
+`RecordedRun` wraps every task, so a run cannot forget to write its record;
+a run that changed nothing is still written. One row failing never stops a
+sweep, and `completed` means the run finished, not that every row
+succeeded. A new task needs two tests: run it twice and assert the second
+changed nothing, make one row fail and assert the rest completed.
+
+An operation is visible before it finishes (ADR 0032). `WatchedDispatch`
+opens the `operations` row **before** handing the job to the queue, because
+an operation that never reaches a worker is the failure nobody sees.
+`manual_intervention` is a real end state, not a failed operation with a
+note. A retry never resets the attempt counter and resolving never clears
+the error.
+
+Dunning is rows an operator edits, not constants. A sequence with no
+suspend step is a valid configuration. A step's action failing does not
+record the step as run, so the next sweep tries again — a platform that
+marked a service suspended without suspending anything would be lying to
+its own operator.
+
+A health check never returns a configuration value — not a DSN, not a host,
+not a key prefix — and a test asserts it. Three states, because `degraded`
+is what a queue with a thousand waiting jobs is. The scheduler heartbeat
+lives in `platform_state` rather than the cache: one that vanishes on a
+Redis restart cries wolf after every deploy.
+
+Maintenance mode is the operator's switch, not `php artisan down`. It
+closes the storefront and the client area, leaves the admin area open, and
+turns itself off once its window passes.
+
+`ResolveSeller` is the one place that answers "who sells to this
+organization". Document numbering, support departments and dunning all need
+it, and three private copies of a boundary escape is three chances to write
+one without the narrowing that makes it safe.
+
+A `static fn` cannot reach `$this`. Phase 9 shipped one in a controller's
+`->map()` and every test passed, because no test loaded that page. If a
+screen has no feature test that renders it, it has not been tested.

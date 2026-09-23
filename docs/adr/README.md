@@ -38,3 +38,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0028](0028-a-domain-is-not-a-service.md) | A domain is not a service, and silence is not availability | accepted |
 | [0029](0029-an-event-is-not-a-message.md) | An event is not a message | accepted |
 | [0030](0030-the-ticket-clock.md) | A ticket has one clock, and one place that moves it | accepted |
+| [0031](0031-a-run-is-a-record.md) | A run is a record, and time is not a trigger | accepted |
+| [0032](0032-an-operation-is-visible-before-it-finishes.md) | An operation is visible before it finishes | accepted |

@@ -18,6 +18,7 @@ use App\Domain\Provisioning\ServiceStatus;
 use App\Infrastructure\Automation\Models\DunningStep;
 use App\Infrastructure\Automation\Models\InvoiceDunningStep;
 use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Billing\Models\InvoiceItem;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Organizations\OrganizationContext;
@@ -180,16 +181,32 @@ final readonly class RunDunningSequence implements AutomationRun
     /**
      * The services this invoice was for.
      *
-     * Through the order rather than through the invoice lines, because an
-     * invoice line is a copy of text and an order item is what a service
-     * was created from.
+     * Two ways in, because there are two kinds of invoice. A first invoice
+     * comes from an order, and its services are the ones that order
+     * created. A **renewal** invoice has no order at all — the sweep that
+     * raises it writes `subject_type` and `subject_id` onto each line
+     * instead — and reading only `order_id` would mean a suspend step
+     * quietly finding nothing on exactly the invoices dunning exists for.
+     *
+     * The line reference is preferred: it names the service directly,
+     * where the order names a purchase that may since have been added to.
      *
      * @return list<Service>
      */
     private function servicesFor(Invoice $invoice): array
     {
-        if ($invoice->order_id === null) {
-            return [];
+        $fromLines = $this->organizations->withoutBoundary(
+            static fn (): array => array_values(Service::query()
+                ->whereIn('id', InvoiceItem::query()
+                    ->where('invoice_id', $invoice->id)
+                    ->where('subject_type', Service::class)
+                    ->select('subject_id'))
+                ->get()
+                ->all()),
+        );
+
+        if ($fromLines !== [] || $invoice->order_id === null) {
+            return $fromLines;
         }
 
         return $this->organizations->withoutBoundary(
