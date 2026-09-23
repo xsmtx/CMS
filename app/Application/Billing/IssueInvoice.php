@@ -33,7 +33,10 @@ final readonly class IssueInvoice
         private TransitionInvoice $transitions,
     ) {}
 
-    public function handle(Invoice $invoice, ?Model $actor = null): Invoice
+    /**
+     * @param  bool  $notify  false when the desk will hand the invoice over itself
+     */
+    public function handle(Invoice $invoice, ?Model $actor = null, bool $notify = true): Invoice
     {
         if ($invoice->status !== InvoiceStatus::Draft) {
             // Issuing twice is almost always a double-submitted form; the
@@ -69,11 +72,17 @@ final readonly class IssueInvoice
 
         // Announced after the transaction, like every event here: a
         // listener must never see a row that is not committed yet.
-        event(new InvoiceIssued(
-            $issued->id,
-            $issued->organization_id,
-            app(CorrelationContext::class)->id(),
-        ));
+        // The document exists either way. What `notify` decides is
+        // whether anybody is told about it now — an operator reading an
+        // invoice number down the phone does not want the customer's copy
+        // arriving mid-sentence.
+        if ($notify) {
+            event(new InvoiceIssued(
+                $issued->id,
+                $issued->organization_id,
+                app(CorrelationContext::class)->id(),
+            ));
+        }
 
         Audit::action('billing.invoice.issued')
             ->by($actor)

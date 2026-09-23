@@ -35,6 +35,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Money $line_setup
  * @property Money $line_discount
  * @property Money $line_total
+ * @property string|null $domain_action
+ * @property list<string>|null $domain_addons
+ * @property int|null $price_override_minor
  */
 final class OrderItem extends Model
 {
@@ -69,6 +72,9 @@ final class OrderItem extends Model
         'domain',
         'domain_tld',
         'domain_years',
+        'domain_action',
+        'domain_addons',
+        'price_override_minor',
         'position',
     ];
 
@@ -134,6 +140,7 @@ final class OrderItem extends Model
             'line_discount_minor' => 'integer',
             'line_total_minor' => 'integer',
             'domain_years' => 'integer',
+            'domain_addons' => 'array',
             'position' => 'integer',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',

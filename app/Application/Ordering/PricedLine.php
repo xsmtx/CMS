@@ -40,6 +40,15 @@ final readonly class PricedLine
         public ?string $domain = null,
         public ?string $domainTld = null,
         public ?int $domainYears = null,
+        public ?string $domainAction = null,
+        /** @var list<string> */
+        public array $domainAddons = [],
+        /**
+         * What an operator agreed instead of the catalogue's price, in
+         * minor units. Null is not zero: no override means "whatever the
+         * catalogue says", zero means somebody agreed to give it away.
+         */
+        public ?int $priceOverrideMinor = null,
     ) {}
 
     /**
@@ -76,6 +85,9 @@ final readonly class PricedLine
             $this->domain,
             $this->domainTld,
             $this->domainYears,
+            $this->domainAction,
+            $this->domainAddons,
+            $this->priceOverrideMinor,
         );
     }
 }

@@ -26,6 +26,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $quantity
  * @property string|null $domain
  * @property int|null $domain_years
+ * @property string|null $domain_action
+ * @property list<string>|null $domain_addons
+ * @property int|null $price_override_minor
  */
 final class CartItem extends Model
 {
@@ -51,6 +54,9 @@ final class CartItem extends Model
         'domain_tld',
         'domain_years',
         'domain_registration_minor',
+        'domain_action',
+        'domain_addons',
+        'price_override_minor',
         'position',
     ];
 
@@ -111,6 +117,25 @@ final class CartItem extends Model
         return $minor === null ? null : Money::ofMinor((int) $minor, $currencyCode);
     }
 
+    public function priceOverride(string $currencyCode): ?Money
+    {
+        $minor = $this->getAttribute('price_override_minor');
+
+        return $minor === null ? null : Money::ofMinor((int) $minor, $currencyCode);
+    }
+
+    /**
+     * The per-domain services bought with this line.
+     *
+     * @return list<string>
+     */
+    public function domainAddons(): array
+    {
+        $value = $this->getAttribute('domain_addons');
+
+        return is_array($value) ? array_values(array_filter($value, is_string(...))) : [];
+    }
+
     /**
      * @return array<string, string>
      */
@@ -118,6 +143,7 @@ final class CartItem extends Model
     {
         return [
             'kind' => LineKind::class,
+            'domain_addons' => 'array',
             'billing_cycle' => BillingCycle::class,
             'quantity' => 'integer',
             'domain_years' => 'integer',

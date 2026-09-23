@@ -113,6 +113,9 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // an order sitting in it is not moving until someone decides.
     Route::get('orders/review', [OrderController::class, 'review'])->name('orders.review');
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    // Before `orders/{order}`, or the word is read as an id.
+    Route::get('orders/add', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::put('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 

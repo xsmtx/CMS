@@ -141,6 +141,7 @@ return [
     ],
 
     'orders' => [
+        'created' => 'Order :number has been placed.',
         'title' => 'Orders',
         'subtitle' => 'What customers have agreed to buy.',
         'empty' => 'No orders yet.',

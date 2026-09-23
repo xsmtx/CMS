@@ -62,6 +62,7 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/orders?status=fraud_review',
     '/admin/orders?client=zey&ip=10.0',
     '/admin/orders/review',
+    '/admin/orders/add',
 
     // Billing
     '/admin/transactions',

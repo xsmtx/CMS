@@ -141,6 +141,7 @@ return [
     ],
 
     'orders' => [
+        'created' => ':number numaralı sipariş oluşturuldu.',
         'title' => 'Siparişler',
         'subtitle' => 'Müşterilerin satın almayı kabul ettiği şeyler.',
         'empty' => 'Henüz sipariş yok.',

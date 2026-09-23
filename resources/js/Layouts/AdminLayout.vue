@@ -202,6 +202,7 @@ const groups: NavGroup[] = [
           { label: 'Cancelled Orders', href: '/admin/orders?status=cancelled' },
         ],
       },
+      { label: 'Add New Order', href: '/admin/orders/add', permission: 'orders.manage' },
       { label: 'Review Queue', href: '/admin/orders/review', permission: 'orders.view' },
     ],
   },

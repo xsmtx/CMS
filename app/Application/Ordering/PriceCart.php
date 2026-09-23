@@ -249,6 +249,16 @@ final readonly class PriceCart
     ): PricedLine {
         $quantity = max($item->quantity, 1);
 
+        // The one place a unit price becomes a line, which is why the
+        // override is applied here rather than at each caller. It replaces
+        // the recurring unit price and leaves setup alone: an operator
+        // agreeing a monthly rate has not agreed to waive the setup fee.
+        $override = $item->priceOverride($unitRecurring->currency->code);
+
+        if ($override instanceof Money) {
+            $unitRecurring = $override;
+        }
+
         $lineRecurring = $unitRecurring->multipliedBy($quantity);
         $lineSetup = $unitSetup->multipliedBy($quantity);
         $zero = Money::zero($unitRecurring->currency);
@@ -273,6 +283,9 @@ final readonly class PriceCart
             domain: $item->domain,
             domainTld: $item->domain_tld,
             domainYears: $item->domain_years,
+            domainAction: $item->domain_action,
+            domainAddons: $item->domainAddons(),
+            priceOverrideMinor: $override instanceof Money ? $override->minorUnits : null,
         );
     }
 

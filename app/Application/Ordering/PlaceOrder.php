@@ -113,6 +113,7 @@ final readonly class PlaceOrder
                 'currency' => $totals->currencyCode,
                 'lines' => count($totals->lines),
                 'promotion' => $order->promotion_code,
+                'on_behalf' => $request->onBehalfBy !== null,
             ])
             ->write();
 
@@ -129,7 +130,10 @@ final readonly class PlaceOrder
             throw CartNotOrderable::empty();
         }
 
-        if (! $request->termsAccepted) {
+        // An order the desk took is not an order nobody agreed to: the
+        // agreement happened on the phone and the audit trail names the
+        // operator who recorded it.
+        if (! $request->termsAccepted && $request->onBehalfBy === null) {
             throw CartNotOrderable::termsRequired();
         }
     }
@@ -196,6 +200,9 @@ final readonly class PlaceOrder
                 'domain' => $line->domain,
                 'domain_tld' => $line->domainTld,
                 'domain_years' => $line->domainYears,
+                'domain_action' => $line->domainAction,
+                'domain_addons' => $line->domainAddons === [] ? null : $line->domainAddons,
+                'price_override_minor' => $line->priceOverrideMinor,
                 'position' => $position,
             ]);
 

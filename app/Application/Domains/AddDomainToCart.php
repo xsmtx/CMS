@@ -31,8 +31,18 @@ final readonly class AddDomainToCart
 {
     public function __construct(private TldCatalog $catalog) {}
 
-    public function handle(Cart $cart, string $input, int $years): CartItem
-    {
+    /**
+     * @param  list<string>  $addons  dns_management, email_forwarding, id_protection
+     * @param  int|null  $overrideMinor  what an operator agreed instead; null is not zero
+     */
+    public function handle(
+        Cart $cart,
+        string $input,
+        int $years,
+        DomainAction $action = DomainAction::Register,
+        array $addons = [],
+        ?int $overrideMinor = null,
+    ): CartItem {
         $name = $this->catalog->parse($input);
         $tld = $this->catalog->find($name->tld);
 
@@ -46,12 +56,14 @@ final readonly class AddDomainToCart
             throw DomainNotSellable::termRefused($tld->extension, $years);
         }
 
-        $price = $tld->priceFor(DomainAction::Register, $years, $cart->currency_code);
+        $price = $tld->priceFor($action, $years, $cart->currency_code);
 
         if ($price === null) {
             throw DomainNotSellable::noPrice($tld->extension, $cart->currency_code);
         }
 
+        // A name this installation already holds cannot be sold again —
+        // not registered, and not transferred to itself.
         if ($this->alreadyHeld((string) $name)) {
             throw DomainNotSellable::alreadyHeld((string) $name);
         }
@@ -76,7 +88,12 @@ final readonly class AddDomainToCart
             'domain' => (string) $name,
             'domain_tld' => $name->tld,
             'domain_years' => $years,
-            'domain_registration_minor' => $price->minorUnits,
+            // The price on the board at this moment, or what an operator
+            // agreed instead. Either way it is written onto the line and
+            // never read from the matrix again (ADR 0021).
+            'domain_registration_minor' => $overrideMinor ?? $price->minorUnits,
+            'domain_action' => $action->value,
+            'domain_addons' => $addons === [] ? null : array_values($addons),
             'position' => $position + 1,
         ]);
     }

@@ -23,6 +23,16 @@ final class OrderPolicy
             && $this->withinBoundary($actor, $order);
     }
 
+    /**
+     * Taking an order over the phone. No particular order is in hand yet,
+     * so there is no boundary to check — the customer the operator picks
+     * is resolved through one.
+     */
+    public function create(StaffUser $actor): bool
+    {
+        return $actor->hasPermissionTo('orders.manage');
+    }
+
     public function update(StaffUser $actor, Order $order): bool
     {
         return $actor->hasPermissionTo('orders.manage')

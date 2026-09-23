@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Crm\SearchCustomers;
+use App\Application\Ordering\OrderLineRequest;
+use App\Application\Ordering\PlaceOrderForCustomer;
+use App\Application\Ordering\PlaceOrderForCustomerRequest;
 use App\Application\Ordering\SearchOrders;
 use App\Application\Ordering\TransitionOrder;
 use App\Domain\Billing\InvoiceStatus;
+use App\Domain\Catalog\BillingCycle;
+use App\Domain\Domains\DomainOrderType;
 use App\Domain\Ordering\OrderStatus;
+use App\Domain\Shared\Money;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ordering\OrderStatusRequest;
+use App\Infrastructure\Billing\GatewayRegistry;
 use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
@@ -25,6 +34,99 @@ use Inertia\Response;
 final class OrderController extends Controller
 {
     public function __construct(private readonly CurrentActor $actor) {}
+
+    /**
+     * The form for taking an order over the phone.
+     *
+     * The catalogue is sent with the page rather than searched, because an
+     * operator taking an order has to see what is on sale — a product they
+     * cannot find is a product they do not sell. The client picker is a
+     * partial reload of this same screen, like every other picker here.
+     */
+    public function create(Request $request, SearchCustomers $customers): Response
+    {
+        $this->authorize('create', Order::class);
+
+        $customer = $this->chosenCustomer($request);
+        $currency = $customer instanceof Customer
+            ? $customer->currency_code
+            : strtoupper((string) config('platform.crm.default_currency', 'TRY'));
+
+        return Inertia::render('Admin/Orders/Create', [
+            'candidates' => $customers->lookup($request->string('q')->toString()),
+            'chosen' => $customer === null ? null : [
+                'id' => $customer->id,
+                'name' => $customer->displayName(),
+                'email' => $customer->primaryContact?->email,
+                'currency' => $customer->currency_code,
+            ],
+            'currency' => $currency,
+            'products' => $this->sellableProducts($currency),
+            'gateways' => $this->gateways(),
+            'domainActions' => array_values(array_map(
+                static fn (DomainOrderType $case): array => [
+                    'value' => $case->value,
+                    'label' => (string) __($case->labelKey()),
+                ],
+                [DomainOrderType::Register, DomainOrderType::Transfer],
+            )),
+            // A preview only. The summary on the right adds up the way
+            // the customer's will, but the number that gets charged is
+            // worked out server side by the tax contract when the order is
+            // placed — core never implements a country's tax rules
+            // (ADR 0022), and a driver of `none` charges nothing.
+            'taxRatePercent' => config('platform.tax.driver') === 'flat'
+                ? (string) config('platform.tax.flat.rate', '0')
+                : '0',
+            'taxName' => (string) config('platform.tax.flat.name', 'VAT'),
+        ]);
+    }
+
+    public function store(Request $request, PlaceOrderForCustomer $orders): RedirectResponse
+    {
+        $this->authorize('create', Order::class);
+
+        $data = $request->validate([
+            'customer_id' => ['required', 'ulid', 'exists:customers,id'],
+            'lines' => ['required_without:domain_name', 'array', 'max:20'],
+            'lines.*.product_id' => ['required', 'ulid'],
+            'lines.*.billing_cycle' => ['required', 'string'],
+            'lines.*.quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
+            'lines.*.domain' => ['nullable', 'string', 'max:253'],
+            'lines.*.price_override' => ['nullable', 'numeric', 'min:0'],
+            'promotion_code' => ['nullable', 'string', 'max:64'],
+            'gateway' => ['nullable', 'string', 'max:64'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'confirm' => ['nullable', 'boolean'],
+            'generate_invoice' => ['nullable', 'boolean'],
+            'send_email' => ['nullable', 'boolean'],
+            'domain_action' => ['nullable', 'string'],
+            'domain_name' => ['nullable', 'string', 'max:253'],
+            'domain_years' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'domain_addons' => ['nullable', 'array'],
+            'domain_addons.*' => ['string', 'in:dns_management,email_forwarding,id_protection'],
+            'domain_registration_price' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $order = $orders->handle(new PlaceOrderForCustomerRequest(
+            customerId: (string) $data['customer_id'],
+            lines: $this->linesFrom($data['lines'] ?? []),
+            promotionCode: $data['promotion_code'] ?? null,
+            gateway: $data['gateway'] ?? null,
+            notes: $data['notes'] ?? null,
+            confirm: (bool) ($data['confirm'] ?? true),
+            generateInvoice: (bool) ($data['generate_invoice'] ?? false),
+            sendEmail: (bool) ($data['send_email'] ?? true),
+            domainAction: DomainOrderType::tryFrom((string) ($data['domain_action'] ?? '')),
+            domainName: $data['domain_name'] ?? null,
+            domainYears: (int) ($data['domain_years'] ?? 1),
+            domainAddons: array_values($data['domain_addons'] ?? []),
+            domainRegistrationOverrideMinor: $this->minor($data['domain_registration_price'] ?? null),
+        ), $this->actor->model());
+
+        return to_route('admin.orders.show', $order)
+            ->with('status', __('ordering.orders.created', ['number' => $order->number]));
+    }
 
     public function index(Request $request, SearchOrders $search): Response
     {
@@ -176,6 +278,137 @@ final class OrderController extends Controller
             ],
             OrderStatus::cases(),
         );
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $lines
+     * @return list<OrderLineRequest>
+     */
+    private function linesFrom(array $lines): array
+    {
+        $requests = [];
+
+        foreach ($lines as $line) {
+            $cycle = BillingCycle::tryFrom((string) ($line['billing_cycle'] ?? ''));
+
+            if (! $cycle instanceof BillingCycle) {
+                continue;
+            }
+
+            $requests[] = new OrderLineRequest(
+                productId: (string) $line['product_id'],
+                cycle: $cycle,
+                quantity: max((int) ($line['quantity'] ?? 1), 1),
+                domain: ($line['domain'] ?? '') === '' ? null : (string) $line['domain'],
+                priceOverrideMinor: $this->minor($line['price_override'] ?? null),
+            );
+        }
+
+        return $requests;
+    }
+
+    /**
+     * An amount an operator typed, in minor units.
+     *
+     * The float exists for one expression and never reaches a column.
+     * Null stays null: no override is not the same as an override of zero.
+     */
+    private function minor(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (int) round(((float) str_replace(',', '.', (string) $value)) * 100);
+    }
+
+    private function chosenCustomer(Request $request): ?Customer
+    {
+        $id = $request->string('customer')->toString();
+
+        if ($id === '') {
+            return null;
+        }
+
+        return Customer::query()
+            ->with(Customer::displayNameWith())
+            ->where('id', $id)
+            ->first();
+    }
+
+    /**
+     * What is on sale, in the currency this order is in.
+     *
+     * A product with no price in that currency is left out rather than
+     * shown and then refused: an operator should not be able to pick
+     * something the cart will not accept.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function sellableProducts(string $currency): array
+    {
+        $locale = app()->getLocale();
+        $rows = [];
+
+        $products = Product::query()
+            ->with(['prices', 'group'])
+            ->orderBy('name')
+            ->get();
+
+        foreach ($products as $product) {
+            if (! $product->status->isOrderable() || $product->isSoldOut()) {
+                continue;
+            }
+
+            $cycles = [];
+
+            foreach (BillingCycle::cases() as $cycle) {
+                $recurring = $product->recurringFor($cycle, $currency);
+
+                if ($recurring === null) {
+                    continue;
+                }
+
+                $setup = $product->setupFor($cycle, $currency);
+
+                $cycles[] = [
+                    'value' => $cycle->value,
+                    'label' => (string) __($cycle->labelKey()),
+                    'recurringMinor' => $recurring->minorUnits,
+                    'recurring' => $recurring->format($locale),
+                    'setupMinor' => $setup instanceof Money ? $setup->minorUnits : 0,
+                    'setup' => $setup?->format($locale),
+                ];
+            }
+
+            if ($cycles === []) {
+                continue;
+            }
+
+            $rows[] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'group' => $product->group?->name,
+                'requiresDomain' => $product->requires_domain,
+                'cycles' => $cycles,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    private function gateways(): array
+    {
+        return array_values(array_map(
+            static fn (string $key): array => [
+                'value' => $key,
+                'label' => (string) __('billing.gateways.'.$key),
+            ],
+            app(GatewayRegistry::class)->keys(),
+        ));
     }
 
     /**

@@ -36,7 +36,10 @@ final readonly class RaiseInvoiceForOrder
         private IssueInvoice $issue,
     ) {}
 
-    public function handle(Order $order, ?Model $actor = null): ?Invoice
+    /**
+     * @param  bool  $notify  false when the desk will hand the invoice over itself
+     */
+    public function handle(Order $order, ?Model $actor = null, bool $notify = true): ?Invoice
     {
         $existing = $this->existing($order);
 
@@ -56,7 +59,7 @@ final readonly class RaiseInvoiceForOrder
             return $this->existing($order);
         }
 
-        return $this->issue->handle($invoice, $actor);
+        return $this->issue->handle($invoice, $actor, $notify);
     }
 
     private function shouldInvoice(Order $order): bool
