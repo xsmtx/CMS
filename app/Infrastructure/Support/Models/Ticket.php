@@ -64,6 +64,7 @@ final class Ticket extends Model implements AuditLabel
         'number',
         'customer_id',
         'contact_id',
+        'cc_recipients',
         'department_id',
         'assigned_to',
         'service_id',
@@ -238,6 +239,7 @@ final class Ticket extends Model implements AuditLabel
         return [
             'status' => TicketStatus::class,
             'priority' => TicketPriority::class,
+            'cc_recipients' => 'array',
             'first_response_due_at' => 'immutable_datetime',
             'resolution_due_at' => 'immutable_datetime',
             'first_responded_at' => 'immutable_datetime',

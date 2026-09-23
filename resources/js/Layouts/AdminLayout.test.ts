@@ -53,6 +53,12 @@ vi.mock('@inertiajs/vue3', () => ({
       },
       flash: {},
       auth: { user: { email: 'operator@example.test' } },
+      help: {
+        documentation: 'https://docs.example.test',
+        bug: 'https://bugs.example.test',
+        contact: 'https://example.test/contact',
+        license: 'https://example.test/licence',
+      },
     },
     url: '/admin/invoices',
   }),
@@ -178,6 +184,7 @@ describe('AdminLayout navigation', () => {
 
     expect(rows).toEqual([
       'Transactions List',
+      'Add Transaction',
       'Invoices',
       'Gateway Log',
       'Unpaid invoice sequence',
@@ -207,5 +214,30 @@ describe('AdminLayout navigation', () => {
 
     expect(wrapper.find('button[aria-label="Search"]').exists()).toBe(true)
     expect(wrapper.find('button[aria-label="Help"]').exists()).toBe(true)
+  })
+
+  /**
+   * One bar. The map, the search box and the account share a row, because
+   * a second full-width strip costs an inch of every screen an operator
+   * spends the day scrolling.
+   */
+  it('keeps the menu on the same row as the search box', () => {
+    const wrapper = render()
+    const nav = wrapper.find('nav[data-admin-nav]')
+    const row = nav.element.parentElement
+
+    expect(row?.querySelector('input[type="search"], [aria-label="Search"]')).not.toBeNull()
+  })
+
+  /**
+   * A link nobody configured is left out rather than shown pointing
+   * nowhere — which is the same rule the help menu follows.
+   */
+  it('puts the configured help links in the footer, in reading order', () => {
+    const wrapper = render()
+    const links = wrapper.findAll('footer a').map((link) => link.text())
+
+    expect(links).toEqual(['Report a Bug', 'Documentation', 'Contact us'])
+    expect(wrapper.find('footer p').text()).toContain('InfraCMS')
   })
 })

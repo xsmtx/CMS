@@ -39,6 +39,8 @@ final readonly class OpenTicket
 
     /**
      * @param  array<string, string|null>  $links  service_id, domain_id, invoice_id
+     * @param  list<string>  $cc  addresses that are not contacts on the account
+     * @param  bool  $notify  false when the desk is recording a call it already answered
      */
     public function handle(
         Customer $customer,
@@ -48,11 +50,13 @@ final readonly class OpenTicket
         string $body,
         TicketPriority $priority = TicketPriority::Normal,
         array $links = [],
+        array $cc = [],
+        bool $notify = true,
     ): Ticket {
         $now = CarbonImmutable::now();
 
         $ticket = DB::transaction(function () use (
-            $customer, $contact, $department, $subject, $body, $priority, $links, $now
+            $customer, $contact, $department, $subject, $body, $priority, $links, $cc, $now
         ): Ticket {
             $firstResponse = $department?->firstResponseMinutesFor($priority);
             $resolution = $department?->resolutionMinutesFor($priority);
@@ -67,6 +71,7 @@ final readonly class OpenTicket
                 ),
                 'customer_id' => $customer->id,
                 'contact_id' => $contact?->id,
+                'cc_recipients' => $cc === [] ? null : array_values($cc),
                 'department_id' => $department?->id,
                 'service_id' => $links['service_id'] ?? null,
                 'domain_id' => $links['domain_id'] ?? null,
@@ -102,7 +107,13 @@ final readonly class OpenTicket
             ->withMetadata(['department' => $department?->name])
             ->write();
 
-        event(new TicketOpened($ticket->id, $ticket->organization_id, $this->correlation->id()));
+        // Recording a call the desk has already answered is a real thing
+        // to do, and mailing the customer about the ticket they are on the
+        // phone about is not. The row is written either way — what is
+        // skipped is the message, not the history.
+        if ($notify) {
+            event(new TicketOpened($ticket->id, $ticket->organization_id, $this->correlation->id()));
+        }
 
         return $ticket;
     }

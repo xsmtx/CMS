@@ -402,6 +402,12 @@ return [
 
     'help' => [
         'documentation' => env('PLATFORM_HELP_DOCUMENTATION'),
+        // Where an operator reports something broken, and where they write
+        // to a human. Both sit in the footer of every screen, because the
+        // moment somebody needs them is the moment they are looking at the
+        // thing that went wrong.
+        'bug' => env('PLATFORM_HELP_BUG'),
+        'contact' => env('PLATFORM_HELP_CONTACT'),
         'support' => env('PLATFORM_HELP_SUPPORT'),
         'community' => env('PLATFORM_HELP_COMMUNITY'),
         'license' => env('PLATFORM_HELP_LICENSE'),

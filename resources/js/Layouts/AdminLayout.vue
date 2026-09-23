@@ -56,7 +56,29 @@ const HELP_LABELS: Record<string, string> = {
   support: 'Technical Support',
   community: 'Community Forums',
   license: 'License Information',
+  bug: 'Report a Bug',
+  contact: 'Contact us',
 }
+
+/**
+ * The footer's three links, in the order they are read.
+ *
+ * Taken from the same configured set the help menu uses, so a white-label
+ * installation points its operators at its own documentation rather than
+ * at ours — and a link nobody configured is left out rather than shown
+ * pointing nowhere.
+ */
+const FOOTER_LINKS = ['bug', 'documentation', 'contact'] as const
+
+const footerLinks = computed(() =>
+  FOOTER_LINKS.filter((key) => Boolean(help.value[key])).map((key) => ({
+    key,
+    label: HELP_LABELS[key] ?? key,
+    href: help.value[key] as string,
+  })),
+)
+
+const year = new Date().getFullYear()
 
 const searching = ref(false)
 const term = ref('')
@@ -444,12 +466,13 @@ onBeforeUnmount(() => {
     </a>
 
     <header class="border-line bg-surface-raised sticky top-0 z-20 border-b">
-      <!-- Top strip: who you are and how you leave. Kept apart from the
-           menu so that signing out is never one row away from Setup. -->
-      <div class="border-line flex h-14 items-center gap-3 border-b px-5 sm:px-8">
+      <!-- One row. The map, the search box and the account live on the
+           same line, because a second full-width strip costs an inch of
+           every screen an operator spends the day scrolling. -->
+      <div class="flex h-14 items-center gap-3 px-5 sm:px-8">
         <Link
           href="/admin"
-          class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
+          class="pressable flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
         >
           <img
             v-if="brand.logoUrl"
@@ -459,9 +482,154 @@ onBeforeUnmount(() => {
           />
           <span v-else>{{ brand.name }}</span>
         </Link>
-        <span class="text-content-subtle text-xs">Admin</span>
 
-        <div class="ml-auto flex items-center gap-1 sm:gap-2">
+        <nav data-admin-nav aria-label="Admin" class="min-w-0 flex-1">
+          <button
+            type="button"
+            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1.5 text-sm lg:hidden"
+            :aria-expanded="mobileOpen"
+            @click="mobileOpen = !mobileOpen"
+          >
+            Menu
+          </button>
+
+          <ul class="hidden items-center lg:flex">
+            <li v-for="group in visibleGroups" :key="group.label" class="relative">
+              <Link
+                v-if="group.href"
+                :href="group.href"
+                :aria-current="isCurrentGroup(group) ? 'page' : undefined"
+                class="pressable inline-flex h-14 items-center rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                :class="
+                  isCurrentGroup(group)
+                    ? 'text-content font-medium'
+                    : 'text-content-muted hover:text-content'
+                "
+              >
+                {{ group.label }}
+              </Link>
+
+              <button
+                v-else
+                type="button"
+                class="pressable inline-flex h-14 items-center gap-1 rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                :class="
+                  isCurrentGroup(group) || openGroup === group.label
+                    ? 'text-content font-medium'
+                    : 'text-content-muted hover:text-content'
+                "
+                :aria-expanded="openGroup === group.label"
+                @click="toggle(group.label)"
+              >
+                {{ group.label }}
+                <svg
+                  class="size-3 transition-transform duration-(--duration-fast) ease-(--ease-out)"
+                  :class="openGroup === group.label ? 'rotate-180' : ''"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 4.5 6 7.5 9 4.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <!-- The marker sits on the bar rather than under the label, so
+                 a group and its open panel read as one object. -->
+              <span
+                v-if="isCurrentGroup(group)"
+                class="bg-accent absolute inset-x-3 bottom-0 h-0.5 rounded-full"
+                aria-hidden="true"
+              />
+
+              <!-- Grows out of its own trigger: a panel anchored to the thing
+                 you pressed needs no explanation. -->
+              <div
+                v-if="(group.items ?? []).length > 0 && openGroup === group.label"
+                class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
+              >
+                <ul class="space-y-0.5">
+                  <li
+                    v-for="item in group.items"
+                    :key="item.label"
+                    class="relative"
+                    @mouseenter="item.children ? (openItem = item.label) : (openItem = null)"
+                  >
+                    <!-- A row with a submenu is a link *and* a door: clicking
+                       it goes to the list, the chevron opens the filters
+                       for it. An operator who wanted the whole list should
+                       not have to pick a filter first. -->
+                    <div class="flex items-stretch">
+                      <Link
+                        :href="item.href"
+                        :aria-current="isCurrent(item.href) ? 'page' : undefined"
+                        class="pressable block flex-1 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                        :class="
+                          isCurrent(item.href)
+                            ? 'bg-surface-sunken text-content font-medium'
+                            : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+                        "
+                      >
+                        {{ item.label }}
+                      </Link>
+
+                      <button
+                        v-if="item.children"
+                        type="button"
+                        class="pressable text-content-subtle hover:text-content rounded-[var(--radius-sm)] px-1.5"
+                        :aria-expanded="openItem === item.label"
+                        :aria-label="`${item.label} submenu`"
+                        @click.stop="openItem = openItem === item.label ? null : item.label"
+                      >
+                        <svg class="size-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path
+                            d="M4.5 3 7.5 6 4.5 9"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- To the side, not underneath: a submenu that pushed the
+                       rows below it down moves the thing somebody was
+                       reaching for. -->
+                    <div
+                      v-if="item.children && openItem === item.label"
+                      class="border-line bg-surface-raised absolute top-0 left-full z-30 ml-1 min-w-[14rem] rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
+                    >
+                      <ul class="space-y-0.5">
+                        <li v-for="child in item.children" :key="child.href">
+                          <Link
+                            :href="child.href"
+                            :aria-current="isCurrent(child.href) ? 'page' : undefined"
+                            class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                            :class="
+                              isCurrent(child.href)
+                                ? 'bg-surface-sunken text-content font-medium'
+                                : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+                            "
+                          >
+                            {{ child.label }}
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
           <!-- One box, every kind of record: a support call carries one
                fact and no idea which screen it belongs to. -->
           <form v-if="searching" class="flex items-center gap-1.5" @submit.prevent="submitSearch">
@@ -577,151 +745,9 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <nav data-admin-nav aria-label="Admin" class="px-3 sm:px-6">
-        <button
-          type="button"
-          class="pressable text-content-muted hover:text-content my-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-sm lg:hidden"
-          :aria-expanded="mobileOpen"
-          @click="mobileOpen = !mobileOpen"
-        >
-          Menu
-        </button>
-
-        <ul class="hidden items-center lg:flex">
-          <li v-for="group in visibleGroups" :key="group.label" class="relative">
-            <Link
-              v-if="group.href"
-              :href="group.href"
-              :aria-current="isCurrentGroup(group) ? 'page' : undefined"
-              class="pressable inline-flex h-12 items-center rounded-[var(--radius-sm)] px-3.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
-              :class="
-                isCurrentGroup(group)
-                  ? 'text-content font-medium'
-                  : 'text-content-muted hover:text-content'
-              "
-            >
-              {{ group.label }}
-            </Link>
-
-            <button
-              v-else
-              type="button"
-              class="pressable inline-flex h-12 items-center gap-1.5 rounded-[var(--radius-sm)] px-3.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
-              :class="
-                isCurrentGroup(group) || openGroup === group.label
-                  ? 'text-content font-medium'
-                  : 'text-content-muted hover:text-content'
-              "
-              :aria-expanded="openGroup === group.label"
-              @click="toggle(group.label)"
-            >
-              {{ group.label }}
-              <svg
-                class="size-3 transition-transform duration-(--duration-fast) ease-(--ease-out)"
-                :class="openGroup === group.label ? 'rotate-180' : ''"
-                viewBox="0 0 12 12"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 4.5 6 7.5 9 4.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-
-            <!-- The marker sits on the bar rather than under the label, so
-                 a group and its open panel read as one object. -->
-            <span
-              v-if="isCurrentGroup(group)"
-              class="bg-accent absolute inset-x-3.5 bottom-0 h-0.5 rounded-full"
-              aria-hidden="true"
-            />
-
-            <!-- Grows out of its own trigger: a panel anchored to the thing
-                 you pressed needs no explanation. -->
-            <div
-              v-if="(group.items ?? []).length > 0 && openGroup === group.label"
-              class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
-            >
-              <ul class="space-y-0.5">
-                <li
-                  v-for="item in group.items"
-                  :key="item.label"
-                  class="relative"
-                  @mouseenter="item.children ? (openItem = item.label) : (openItem = null)"
-                >
-                  <!-- A row with a submenu is a link *and* a door: clicking
-                       it goes to the list, the chevron opens the filters
-                       for it. An operator who wanted the whole list should
-                       not have to pick a filter first. -->
-                  <div class="flex items-stretch">
-                    <Link
-                      :href="item.href"
-                      :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable block flex-1 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
-                      :class="
-                        isCurrent(item.href)
-                          ? 'bg-surface-sunken text-content font-medium'
-                          : 'text-content-muted hover:bg-surface-sunken hover:text-content'
-                      "
-                    >
-                      {{ item.label }}
-                    </Link>
-
-                    <button
-                      v-if="item.children"
-                      type="button"
-                      class="pressable text-content-subtle hover:text-content rounded-[var(--radius-sm)] px-1.5"
-                      :aria-expanded="openItem === item.label"
-                      :aria-label="`${item.label} submenu`"
-                      @click.stop="openItem = openItem === item.label ? null : item.label"
-                    >
-                      <svg class="size-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                        <path
-                          d="M4.5 3 7.5 6 4.5 9"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <!-- To the side, not underneath: a submenu that pushed the
-                       rows below it down moves the thing somebody was
-                       reaching for. -->
-                  <div
-                    v-if="item.children && openItem === item.label"
-                    class="border-line bg-surface-raised absolute top-0 left-full z-30 ml-1 min-w-[14rem] rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
-                  >
-                    <ul class="space-y-0.5">
-                      <li v-for="child in item.children" :key="child.href">
-                        <Link
-                          :href="child.href"
-                          :aria-current="isCurrent(child.href) ? 'page' : undefined"
-                          class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
-                          :class="
-                            isCurrent(child.href)
-                              ? 'bg-surface-sunken text-content font-medium'
-                              : 'text-content-muted hover:bg-surface-sunken hover:text-content'
-                          "
-                        >
-                          {{ child.label }}
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-
+      <!-- Below lg only. A dropdown inside a drawer is two taps to reach
+           one link, so the small screen gets the whole map at once. -->
+      <nav aria-label="Admin menu" class="px-3 sm:px-6 lg:hidden">
         <!-- Addons. Rendered from what the enabled modules registered, so
              an installation with none sees nothing rather than an empty
              menu promising extensions. -->
@@ -771,7 +797,9 @@ onBeforeUnmount(() => {
       </nav>
     </header>
 
-    <main id="main" class="px-5 py-9 sm:px-8 sm:py-12">
+    <!-- pb: the footer is fixed, so the last row of a table would sit
+         underneath it without this. -->
+    <main id="main" class="px-5 pt-9 pb-24 sm:px-8 sm:pt-12 sm:pb-24">
       <!-- Wider than the sidebar allowed: the horizontal space the menu
            gave back belongs to the tables, which is where an operator
            actually spends the day. -->
@@ -796,5 +824,28 @@ onBeforeUnmount(() => {
         <slot />
       </div>
     </main>
+
+    <!-- Fixed rather than at the end of the document: an operator three
+         hundred rows into a list still needs the link that reports what is
+         wrong with the page they are looking at. -->
+    <footer
+      class="border-line bg-surface-raised text-content-muted fixed inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-3 text-xs sm:px-8"
+    >
+      <p>&copy; {{ year }} {{ brand.name }}</p>
+
+      <nav v-if="footerLinks.length > 0" aria-label="Help" class="flex items-center gap-2">
+        <template v-for="(link, index) in footerLinks" :key="link.key">
+          <span v-if="index > 0" class="text-content-subtle" aria-hidden="true">|</span>
+          <a
+            :href="link.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-content underline-offset-4 transition-colors duration-(--duration-fast) hover:underline"
+          >
+            {{ link.label }}
+          </a>
+        </template>
+      </nav>
+    </footer>
   </div>
 </template>
