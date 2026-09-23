@@ -91,6 +91,14 @@ const groups: NavGroup[] = [
             href: '/admin/clients/create',
             permission: 'crm.customers.manage',
           },
+          // The same screen the Services menu opens. It is listed twice on
+          // purpose: a WHMCS operator looks for it under Clients, and a
+          // hosting operator looks for it under Services.
+          {
+            label: 'Products/Services',
+            href: '/admin/services',
+            permission: 'services.view',
+          },
           {
             label: 'Organizations',
             href: '/admin/organizations',
@@ -139,7 +147,11 @@ const groups: NavGroup[] = [
     sections: [
       {
         items: [
-          { label: 'Services', href: '/admin/services', permission: 'services.view' },
+          {
+            label: 'Products/Services',
+            href: '/admin/services',
+            permission: 'services.view',
+          },
           {
             label: 'Infrastructure',
             href: '/admin/infrastructure',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Operations\WatchedDispatch;
+use App\Application\Provisioning\SearchServices;
 use App\Application\Provisioning\TransitionService;
 use App\Domain\Operations\OperationType;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
@@ -43,21 +44,29 @@ final class ServiceController extends Controller
         private readonly WatchedDispatch $dispatcher,
     ) {}
 
-    public function index(Request $request): Response
+    /**
+     * The products and services list, the shape a WHMCS operator knows.
+     *
+     * A filter panel that folds away, a row of product types across the
+     * top to drill into, a toggle for closed accounts, and a row that
+     * opens to show the rest rather than a second page load.
+     */
+    public function index(Request $request, SearchServices $search): Response
     {
         $this->authorize('viewAny', Service::class);
 
-        $status = $request->string('status')->toString();
+        /** @var array<string, mixed> $criteria */
+        $criteria = $request->only([
+            'product_type', 'server', 'product', 'gateway',
+            'billing_cycle', 'status', 'domain', 'client',
+            'custom_field', 'custom_value',
+        ]);
 
-        $services = Service::query()
-            ->with([...Customer::displayNameWith('customer'), 'server'])
-            ->when(
-                ServiceStatus::tryFrom($status) instanceof ServiceStatus,
-                fn ($query) => $query->where('status', $status),
-            )
-            ->latest()
-            ->paginate(25)
-            ->withQueryString();
+        // Hidden unless asked for, which is the WHMCS default and the
+        // right one: a closed account's services are a record, not work.
+        $includeInactive = $request->boolean('inactive');
+
+        $services = $search->paginate($criteria, includeInactiveClients: $includeInactive);
 
         return Inertia::render('Admin/Services/Index', [
             'services' => [
@@ -66,8 +75,9 @@ final class ServiceController extends Controller
                 'lastPage' => $services->lastPage(),
                 'total' => $services->total(),
             ],
-            'filters' => ['status' => $status === '' ? null : $status],
-            'statuses' => $this->statuses(),
+            'filters' => [...$criteria, 'inactive' => $includeInactive],
+            'schema' => $search->schema(),
+            'types' => $search->typeCounts($includeInactive),
             'counts' => [
                 'pending' => Service::query()->where('status', ServiceStatus::Pending->value)->count(),
                 'failed' => Service::query()->where('status', ServiceStatus::Failed->value)->count(),
@@ -232,10 +242,18 @@ final class ServiceController extends Controller
     }
 
     /**
+     * One row, plus everything the `+` opens.
+     *
+     * The detail is sent with the list rather than fetched on expand: it
+     * is eight columns already loaded, and a request per row would turn a
+     * glance into twenty-five round trips.
+     *
      * @return array<string, mixed>
      */
     private function row(Service $service): array
     {
+        $card = $service->customer?->defaultPaymentMethod;
+
         return [
             'id' => $service->id,
             'name' => $service->name,
@@ -246,22 +264,46 @@ final class ServiceController extends Controller
             'domain' => $service->domain,
             'server' => $service->server?->name,
             'recurring' => $service->recurring->format(app()->getLocale()),
+            'billingCycle' => $service->billing_cycle?->value,
+            'billingCycleLabel' => $service->billing_cycle === null
+                ? null
+                : (string) __($service->billing_cycle->labelKey()),
             'nextDueOn' => $service->next_due_on?->toDateString(),
             'createdAt' => $service->created_at?->toIso8601String(),
+            'detail' => [
+                'orderNumber' => $service->order?->number,
+                'orderId' => $service->order_id,
+                'server' => $service->server?->name,
+                // The card on the customer's file. There is no payment
+                // method on a service in this platform, and inventing a
+                // column for one would leave two answers to one question.
+                'paymentMethod' => $card === null
+                    ? null
+                    : trim($card->gateway.' '.($card->brand ?? '').' '.($card->last_four === null ? '' : '•••• '.$card->last_four)),
+                'registeredOn' => ($service->starts_on ?? $service->created_at)?->toDateString(),
+                'dedicatedIp' => $this->dedicatedIp($service),
+                'username' => $service->username,
+                'promotionCode' => $service->order?->promotion_code,
+                'product' => $service->product?->name,
+                'productType' => $service->product === null
+                    ? null
+                    : (string) __($service->product->type->labelKey()),
+            ],
         ];
     }
 
     /**
-     * @return list<array{value: string, label: string}>
+     * Whatever the module recorded as this service's own address.
+     *
+     * Read from the configuration the provisioning module wrote rather
+     * than from a column, because not every kind of service has one and a
+     * column that is null for eight products in nine is a column that
+     * teaches operators to ignore it.
      */
-    private function statuses(): array
+    private function dedicatedIp(Service $service): ?string
     {
-        return array_values(array_map(
-            static fn (ServiceStatus $status): array => [
-                'value' => $status->value,
-                'label' => (string) __($status->labelKey()),
-            ],
-            ServiceStatus::cases(),
-        ));
+        $value = $service->configuration['dedicated_ip'] ?? $service->configuration['ip'] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

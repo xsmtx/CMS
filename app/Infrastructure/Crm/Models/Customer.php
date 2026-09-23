@@ -128,6 +128,21 @@ final class Customer extends Model implements AuditLabel
     }
 
     /**
+     * The card this customer pays with unless somebody says otherwise.
+     *
+     * Declared as its own relation rather than filtered from
+     * `paymentMethods` in a presenter: a services list that showed the
+     * payment method would otherwise load every card of every customer on
+     * the page to find one of them.
+     *
+     * @return HasOne<PaymentMethod, $this>
+     */
+    public function defaultPaymentMethod(): HasOne
+    {
+        return $this->hasOne(PaymentMethod::class)->where('is_default', true);
+    }
+
+    /**
      * Cards on file.
      *
      * Declared here so an operator can search on the last four digits of a
