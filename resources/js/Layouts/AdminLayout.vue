@@ -226,7 +226,11 @@ const groups: NavGroup[] = [
   {
     label: 'Support',
     items: [
-      { label: 'Support Overview', href: '/admin/support', permission: 'support.tickets.view' },
+      {
+        label: 'Support Overview',
+        href: '/admin/support/overview',
+        permission: 'support.tickets.view',
+      },
       {
         label: 'Support Tickets',
         href: '/admin/support',

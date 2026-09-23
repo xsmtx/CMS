@@ -7,6 +7,7 @@ namespace App\Infrastructure\Support\Models;
 use App\Domain\Support\TicketPriority;
 use App\Domain\Support\TicketStatus;
 use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Crm\Concerns\HasTags;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Identity\Models\Contact;
@@ -50,6 +51,10 @@ final class Ticket extends Model implements AuditLabel
     /** @use HasFactory<TicketFactory> */
     use HasFactory;
 
+    // Tags are this platform's vocabulary for grouping records an
+    // operator cares about together. A desk needs it on tickets for
+    // the same reason sales needs it on clients.
+    use HasTags;
     use HasUlids;
 
     protected $table = 'tickets';

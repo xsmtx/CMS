@@ -6,13 +6,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Application\Support\OpenTicket;
 use App\Application\Support\ReplyToTicket;
+use App\Application\Support\SearchTickets;
 use App\Application\Support\StoreAttachment;
+use App\Application\Support\SupportStatistics;
 use App\Application\Support\TransitionTicket;
 use App\Domain\Support\TicketPriority;
 use App\Domain\Support\TicketStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Support\TicketReplyRequest;
 use App\Infrastructure\Crm\Models\Customer;
+use App\Infrastructure\Crm\Models\Tag;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Support\Models\CannedResponse;
 use App\Infrastructure\Support\Models\Department;
@@ -36,27 +39,19 @@ final class TicketController extends Controller
 {
     public function __construct(private readonly CurrentActor $actor) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request, SearchTickets $search): Response
     {
         $this->authorize('viewAny', Ticket::class);
 
-        $status = $request->string('status')->toString();
-        $mine = $request->boolean('mine');
-        $breaching = $request->boolean('breaching');
+        /** @var array<string, mixed> $criteria */
+        $criteria = $request->only([
+            'status', 'department', 'priority', 'assigned', 'number',
+            'text', 'email', 'client', 'tag', 'breaching',
+        ]);
 
-        $tickets = Ticket::query()
-            ->with([...Customer::displayNameWith('customer'), 'department', 'assignee'])
-            ->when(
-                TicketStatus::tryFrom($status) instanceof TicketStatus,
-                fn ($query) => $query->where('status', $status),
-                fn ($query) => $query->awaitingUs(),
-            )
-            ->when($mine, fn ($query) => $query->where('assigned_to', $this->actor->model()?->getKey()))
-            ->when($breaching, fn ($query) => $query->breachingSla())
-            // Null due dates last: not measured is not overdue.
-            ->orderByRaw('first_response_due_at IS NULL, first_response_due_at ASC')
-            ->paginate(25)
-            ->withQueryString();
+        $actorId = $this->actor->model()?->getKey();
+
+        $tickets = $search->paginate($criteria, is_string($actorId) ? $actorId : null);
 
         return Inertia::render('Admin/Support/Index', [
             'tickets' => [
@@ -66,19 +61,69 @@ final class TicketController extends Controller
                 'total' => $tickets->total(),
             ],
             'filters' => [
-                'status' => $status === '' ? null : $status,
-                'mine' => $mine,
-                'breaching' => $breaching,
+                ...$criteria,
+                // Always a list on the way out, whatever arrived: the form
+                // binds to one shape and a bookmark may carry the other.
+                'status' => is_array($criteria['status'] ?? null)
+                    ? array_values($criteria['status'])
+                    : (($criteria['status'] ?? '') === '' ? [] : [$criteria['status']]),
             ],
             'statuses' => $this->statuses(),
+            'priorities' => array_values(array_map(
+                static fn (TicketPriority $priority): array => [
+                    'value' => $priority->value,
+                    'label' => (string) __($priority->labelKey()),
+                ],
+                TicketPriority::cases(),
+            )),
+            'departments' => array_values(Department::query()
+                ->orderBy('name')
+                ->get()
+                ->map(static fn (Department $department): array => [
+                    'value' => $department->id,
+                    'label' => $department->name,
+                ])
+                ->all()),
+            'staff' => array_values(StaffUser::query()
+                ->orderBy('name')
+                ->get()
+                ->map(static fn (StaffUser $member): array => [
+                    'value' => $member->id,
+                    'label' => $member->name,
+                ])
+                ->all()),
+            'tags' => array_values(Tag::query()
+                ->orderBy('name')
+                ->get()
+                ->map(static fn (Tag $tag): array => ['value' => $tag->id, 'label' => $tag->name])
+                ->all()),
             'counts' => [
                 'awaiting' => Ticket::query()->awaitingUs()->count(),
                 'breaching' => Ticket::query()->breachingSla()->count(),
                 'mine' => Ticket::query()
                     ->awaitingUs()
-                    ->where('assigned_to', $this->actor->model()?->getKey())
+                    ->where('assigned_to', $actorId)
                     ->count(),
             ],
+        ]);
+    }
+
+    /**
+     * What the desk did, over a period somebody chooses.
+     *
+     * Its own screen rather than a panel on the queue: a queue is what to
+     * do next and an overview is how it has been going, and mixing them
+     * makes an operator scroll past a chart to reach their work.
+     */
+    public function overview(Request $request, SupportStatistics $statistics): Response
+    {
+        $this->authorize('viewAny', Ticket::class);
+
+        $period = $request->string('period')->toString() ?: 'this_month';
+
+        return Inertia::render('Admin/Support/Overview', [
+            'statistics' => $statistics->forPeriod($period),
+            'periods' => SupportStatistics::periods(),
         ]);
     }
 
@@ -298,6 +343,7 @@ final class TicketController extends Controller
             'dueAt' => $ticket->first_response_due_at?->toIso8601String(),
             'minutesUntilDue' => $ticket->minutesUntilFirstResponseDue(),
             'hasBreached' => $ticket->hasBreachedFirstResponse(),
+            'tags' => array_values($ticket->tags->pluck('name')->all()),
         ];
     }
 

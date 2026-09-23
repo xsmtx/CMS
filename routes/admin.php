@@ -125,6 +125,8 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // each answers to its own permission.
     Route::get('support', [TicketController::class, 'index'])->name('support.index');
     // Before `support/{ticket}`, or the words are read as ids.
+    Route::get('support/overview', [TicketController::class, 'overview'])
+        ->name('support.overview');
     Route::get('support/create', [TicketController::class, 'create'])->name('support.create');
     Route::post('support', [TicketController::class, 'store'])->name('support.store');
 

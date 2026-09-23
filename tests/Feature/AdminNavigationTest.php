@@ -53,6 +53,7 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/cancellations',
     '/admin/services/addons',
     '/admin/domains',
+    '/admin/domains?status=active&domain=kaya%25',
     '/admin/organizations',
 
     // Orders
@@ -77,6 +78,9 @@ it('answers every destination in the admin menu', function (string $path): void 
     // Support
     '/admin/support',
     '/admin/support?status=customer_reply',
+    '/admin/support/overview',
+    '/admin/support/overview?period=last_month',
+    '/admin/support?client=kaya&priority=high',
     '/admin/support/create',
     '/admin/support/replies',
     '/admin/content/announcements',
