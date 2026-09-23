@@ -82,3 +82,21 @@ Schedule::command('platform:run cleanup')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground();
+
+/*
+ * The licence heartbeat.
+ *
+ * Hourly, and the task itself decides whether to speak to the vendor — it
+ * calls only when the stored state says the deadline is half way past. So this
+ * is how often the installation *asks itself*, not how often it telephones a
+ * third party.
+ *
+ * `onOneServer`, like everything else here: two application servers
+ * heartbeating the same installation would look to the vendor like two
+ * activations of one licence.
+ */
+Schedule::command('platform:run licence')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
+use App\Http\Controllers\Admin\LicenceController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
@@ -325,6 +326,22 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // numbers are the dashboard they already have.
     Route::get('reports/resellers', ResellerReportController::class)
         ->name('reports.resellers');
+
+    /*
+     * This installation's relationship with the vendor.
+     *
+     * Owner only, and the controller enforces it: an Administrator holds every
+     * staff permission by design, and a reseller's Administrator is an
+     * Administrator. A reseller who could release the installation's licence
+     * would be a reseller able to turn the vendor mark back on for the provider.
+     */
+    Route::get('licence', [LicenceController::class, 'index'])->name('licence');
+    Route::post('licence/activate', [LicenceController::class, 'activate'])
+        ->name('licence.activate');
+    Route::post('licence/heartbeat', [LicenceController::class, 'heartbeat'])
+        ->name('licence.heartbeat');
+    Route::post('licence/deactivate', [LicenceController::class, 'deactivate'])
+        ->name('licence.deactivate');
 
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');

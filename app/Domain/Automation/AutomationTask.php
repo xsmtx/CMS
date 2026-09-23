@@ -23,6 +23,15 @@ enum AutomationTask: string
     case Webhooks = 'webhooks';
     case Cleanup = 'cleanup';
 
+    /**
+     * Telling the vendor this installation is still here.
+     *
+     * A task rather than a middleware or a boot hook, because it is a remote
+     * call: doing it in a request would put a vendor's latency in front of a
+     * customer, and doing it on boot would do it thousands of times a day.
+     */
+    case Licence = 'licence';
+
     public function labelKey(): string
     {
         return 'automation.tasks.'.str_replace('-', '_', $this->value).'.label';
@@ -49,6 +58,10 @@ enum AutomationTask: string
     {
         return match ($this) {
             self::Retries, self::Webhooks => 5,
+            // Hourly. The heartbeat itself only speaks to the vendor when the
+            // state says it is due — half way to the deadline — so this is how
+            // often it *checks*, not how often it calls.
+            self::Licence => 60,
             self::Sync => 360,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

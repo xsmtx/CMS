@@ -10,6 +10,7 @@ use App\Domain\Billing\Events\PaymentReceived;
 use App\Infrastructure\Health\Checks\CacheCheck;
 use App\Infrastructure\Health\Checks\DatabaseCheck;
 use App\Infrastructure\Health\Checks\FailedJobsCheck;
+use App\Infrastructure\Health\Checks\LicenceCheck;
 use App\Infrastructure\Health\Checks\MailCheck;
 use App\Infrastructure\Health\Checks\ProviderCheck;
 use App\Infrastructure\Health\Checks\QueueCheck;
@@ -38,6 +39,10 @@ final class AutomationServiceProvider extends ServiceProvider
                 new SchedulerCheck,
                 $this->app->make(MailCheck::class),
                 $this->app->make(ProviderCheck::class),
+                // Last, because it is the only one that is not about whether
+                // the installation works: a lapsed licence brings the vendor
+                // mark back and changes nothing else.
+                new LicenceCheck,
             ],
             $this->app->make(SecretRedactor::class),
         ));

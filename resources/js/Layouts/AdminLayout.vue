@@ -351,6 +351,9 @@ const groups: NavGroup[] = [
       // The passwordless way into a server's panel. Owner only, like
       // everything that reaches somebody else's machine.
       { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
+      // Owner only, like Connect: it is about who somebody is rather than what
+      // they may do, and a reseller's Administrator is an Administrator.
+      { label: 'Licence', href: '/admin/licence', superAdmin: true },
       // WHMCS calls this the Module Queue. It is the same thing: every
       // background operation, what it was for, and what went wrong.
       { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },

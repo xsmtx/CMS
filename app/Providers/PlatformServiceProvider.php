@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Licensing\LicencePublicKey;
 use App\Domain\Licensing\Contracts\Entitlements;
+use App\Domain\Licensing\Contracts\LicenceClient;
 use App\Http\Middleware\AssignCorrelationId;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Licensing\HttpLicenceClient;
+use App\Infrastructure\Licensing\LicensedEntitlements;
+use App\Infrastructure\Licensing\UnconfiguredLicenceClient;
 use App\Infrastructure\Licensing\UnrestrictedEntitlements;
 use App\Support\Audit\Contracts\AuditRecorder;
 use App\Support\Branding\StorefrontComposer;
@@ -64,10 +69,7 @@ final class PlatformServiceProvider extends ServiceProvider
 
         $this->app->bind(StorefrontRenderer::class, BladeStorefrontRenderer::class);
 
-        // A self-hosted installation with no licence server must not be
-        // crippled by a check it cannot answer. A commercial
-        // distribution binds something else.
-        $this->app->bind(Entitlements::class, UnrestrictedEntitlements::class);
+        $this->bindLicensing();
     }
 
     public function boot(): void
@@ -83,6 +85,57 @@ final class PlatformServiceProvider extends ServiceProvider
 
         $this->propagateCorrelationIdToOutboundRequests();
         $this->assignCorrelationIdToScheduledTasks();
+    }
+
+    /**
+     * The licence client, and what it entitles this installation to.
+     *
+     * **Which `Entitlements` is bound depends on configuration, not on
+     * whether a licence is live.** An installation with a licence API
+     * configured gets `LicensedEntitlements`, which then answers from the
+     * stored state — including "no licence has ever been activated", which
+     * allows everything. An installation with nothing configured gets the
+     * unrestricted binding and never reads a state row at all.
+     *
+     * The distinction matters because a self-hosted installation with no
+     * commercial relationship must not be crippled by a check it has no way to
+     * answer, and a gate whose default is deny turns an unreachable licence
+     * API into an outage.
+     *
+     * `scoped`, not `singleton`: the state is cached for the length of a
+     * request, because `allows()` is called from render paths and a query per
+     * call would be a query per rendered badge — but a queue worker handling
+     * two jobs must not carry the first job's answer into the second.
+     */
+    private function bindLicensing(): void
+    {
+        $this->app->singleton(LicencePublicKey::class);
+
+        $this->app->bind(LicenceClient::class, function (): LicenceClient {
+            $url = config('platform.licensing.api_url');
+
+            if (! is_string($url) || trim($url) === '') {
+                // Nothing configured. A client that throws on every call is
+                // the honest binding: the alternative is a null object that
+                // returns a token nobody signed.
+                return new UnconfiguredLicenceClient;
+            }
+
+            return new HttpLicenceClient(
+                baseUrl: trim($url),
+                correlation: $this->app->make(CorrelationContext::class),
+                timeout: (int) config('platform.licensing.timeout', 10),
+                retries: (int) config('platform.licensing.retries', 2),
+            );
+        });
+
+        $this->app->scoped(Entitlements::class, function (): Entitlements {
+            $url = config('platform.licensing.api_url');
+
+            return is_string($url) && trim($url) !== ''
+                ? new LicensedEntitlements
+                : new UnrestrictedEntitlements;
+        });
     }
 
     /**

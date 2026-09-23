@@ -184,6 +184,11 @@ it('keeps the mark when the licence does not allow removing it', function (): vo
         {
             return $feature !== Feature::RemoveVendorMark->value;
         }
+
+        public function limit(string $name): ?int
+        {
+            return null;
+        }
     });
 
     // The stored choice survives, so restoring the licence restores it —

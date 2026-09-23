@@ -11,6 +11,7 @@ use App\Application\Automation\Runs\NotifyExpiringDomains;
 use App\Application\Automation\Runs\RetryFailedOperations;
 use App\Application\Automation\Runs\RetryWebhookDeliveries;
 use App\Application\Automation\Runs\RunDunningSequence;
+use App\Application\Automation\Runs\SendLicenceHeartbeat;
 use App\Application\Automation\Runs\SyncWithProviders;
 use App\Domain\Automation\AutomationTask;
 use App\Domain\Automation\Contracts\AutomationRun;
@@ -40,6 +41,7 @@ final readonly class TaskRegistry
             AutomationTask::Sync => SyncWithProviders::class,
             AutomationTask::Webhooks => RetryWebhookDeliveries::class,
             AutomationTask::Cleanup => CleanUpExpiredRecords::class,
+            AutomationTask::Licence => SendLicenceHeartbeat::class,
         });
     }
 }

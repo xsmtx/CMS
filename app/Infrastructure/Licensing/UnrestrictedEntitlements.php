@@ -25,4 +25,14 @@ final readonly class UnrestrictedEntitlements implements Entitlements
     {
         return true;
     }
+
+    /**
+     * Nothing is capped, which is null rather than a large number: a caller
+     * comparing against `PHP_INT_MAX` would be a caller doing arithmetic on a
+     * fiction.
+     */
+    public function limit(string $name): ?int
+    {
+        return null;
+    }
 }

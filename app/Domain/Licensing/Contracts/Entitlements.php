@@ -22,4 +22,17 @@ namespace App\Domain\Licensing\Contracts;
 interface Entitlements
 {
     public function allows(string $feature): bool;
+
+    /**
+     * A numeric ceiling this licence sets, or null when nothing caps it.
+     *
+     * A second method rather than `allows('max_staff_users:5')`, because a
+     * limit is a number and a caller that had to parse it out of a string
+     * would be a caller that could parse it wrongly.
+     *
+     * **Null, never zero, for "no limit".** Zero is a real answer — "no
+     * reseller accounts at all" — and a caller reading the two as the same
+     * would cap an unlimited licence at nothing.
+     */
+    public function limit(string $name): ?int;
 }

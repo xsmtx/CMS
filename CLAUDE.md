@@ -90,12 +90,11 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 13 are complete (`docs/architecture/phase-0-result.md` through
-`phase-13-result.md`). **Phase 14, Licensing Control Plane, is next and is
-not started.** The roadmap is the V2 addendum's (handoff §22) and runs to
-Phase 17: 14 Licensing Control Plane, 15 Import / Migration,
-16 Reporting / Operations, 17 Production Hardening. Do not begin a phase
-without being asked for it.
+Phases 0 to 14 are complete (`docs/architecture/phase-0-result.md` through
+`phase-14-result.md`). **Phase 15, Import / Migration, is next and is not
+started.** The roadmap is the V2 addendum's (handoff §22) and runs to
+Phase 17: 15 Import / Migration, 16 Reporting / Operations,
+17 Production Hardening.
 
 Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
 owner's instruction. None has ever talked to its real provider.
@@ -510,6 +509,29 @@ nothing else, then greps every 200 body for three records the provider owns.
 A screen added in a later phase joins it the day it is routed. Two guards
 keep it honest — one asserts the filter still matches screens, the other that
 the leak check examined bodies — because an audit that checks nothing passes.
+
+A lapsed licence is not an outage (ADR 0041). The installation verifies an
+Ed25519 token locally against a public key in the distribution — it can prove
+a licence and cannot mint one — and the signature covers the **raw payload
+bytes**, because a signature over re-encoded JSON fails on a different PHP
+version. `LicenceUnreachable` and `LicenceRefused` are separate types and
+nothing catches them together: "the vendor is broken" and "your licence is
+revoked" must never be the same outcome. Grace counts from the token's
+`heartbeat_by`, not from last contact. The token lists **exclusions**, so a
+feature added after a token was minted is allowed rather than silently
+switched off for every existing licence. When everything lapses, the vendor
+mark comes back and nothing else changes.
+
+The installation UUID lives in `platform_state` on purpose: restoring a
+production backup into a second environment then produces two installations
+claiming one identity, which is exactly the anomaly the licence server should
+see. The licence key is the one secret in that context — write-only on the
+screen, in the redaction list under both spellings, and three tests assert it
+reaches neither an audit row, a health report nor a rendered page.
+
+The vendor's licence API is a separate application this repository does not
+contain. `docs/licensing/api.md` is the contract; `Tests\Support\FakeLicenceClient`
+is what the tests drive.
 
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap

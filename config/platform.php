@@ -82,6 +82,12 @@ return [
             'remember_token',
             'two_factor',
             'recovery_code',
+            // The licence key, and the token it buys. `token` already catches
+            // the second; the first is named because `license_key` contains
+            // neither `secret` nor `token` and would otherwise go to the log
+            // in full.
+            'license_key',
+            'licence_key',
         ],
         'redact_card_like_values' => true,
     ],
@@ -570,6 +576,21 @@ return [
         'api_url' => env('LICENSE_API_URL'),
         'key' => env('LICENSE_KEY'),
         'public_key_path' => env('LICENSE_PUBLIC_KEY_PATH'),
+
+        /*
+         * How long the last good answer keeps working when the licence server
+         * cannot be reached, counted from the heartbeat deadline the vendor
+         * set — not from now. A vendor who said "come back in seven days" and
+         * a grace of thirty means a customer keeps working for thirty-seven.
+         *
+         * Generous on purpose. ADR 0013: a temporary outage of the licensing
+         * service must never take a customer's production system down.
+         */
+        'grace_days' => env('LICENSE_GRACE_DAYS', 30),
+
+        // Short. Nothing a customer is waiting for depends on this call.
+        'timeout' => env('LICENSE_TIMEOUT', 10),
+        'retries' => env('LICENSE_RETRIES', 2),
     ],
 
 ];
