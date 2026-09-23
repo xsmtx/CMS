@@ -50,7 +50,7 @@ function copy(key: string) {
         class="pressable border-line bg-surface-raised hover:border-line-strong block rounded-[var(--radius-lg)] border p-6 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
       >
         <div class="flex items-start justify-between gap-4">
-          <h2 class="text-[0.9375rem] font-semibold tracking-tight">{{ copy(area.key).label }}</h2>
+          <h2 class="text-title font-semibold tracking-tight">{{ copy(area.key).label }}</h2>
           <span class="text-content-muted text-xs tabular-nums">
             {{ area.count }} {{ copy(area.key).unit }}
           </span>

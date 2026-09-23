@@ -110,7 +110,7 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-[0.9375rem] font-semibold tracking-tight">{{ module.name }}</h2>
+              <h2 class="text-title font-semibold tracking-tight">{{ module.name }}</h2>
               <AppBadge :tone="tone(module.state)">{{ module.stateLabel }}</AppBadge>
               <AppBadge>{{ module.typeLabel }}</AppBadge>
             </div>

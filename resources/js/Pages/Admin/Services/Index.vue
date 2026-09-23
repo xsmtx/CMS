@@ -341,10 +341,10 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ expanded === service.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">
+          <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">
             {{ service.id.slice(-8) }}
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <Link
               :href="`/admin/services/${service.id}`"
               class="font-medium underline-offset-4 hover:underline"
@@ -352,8 +352,8 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ service.name }}
             </Link>
           </td>
-          <td class="text-content-muted px-5 py-3.5">{{ service.domain ?? '—' }}</td>
-          <td class="px-5 py-3.5">
+          <td class="text-content-muted px-4 py-2.5">{{ service.domain ?? '—' }}</td>
+          <td class="px-4 py-2.5">
             <Link
               v-if="service.customerId"
               :href="`/admin/customers/${service.customerId}`"
@@ -363,14 +363,14 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-5 py-3.5 tabular-nums">{{ service.recurring }}</td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="px-4 py-2.5 tabular-nums">{{ service.recurring }}</td>
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ service.billingCycleLabel ?? 'One time' }}
           </td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ formatDate(service.nextDueOn) }}
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <AppBadge :tone="tone(service.status)">{{ service.statusLabel }}</AppBadge>
           </td>
         </tr>

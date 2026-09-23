@@ -41,15 +41,15 @@ function remove(group: GroupRow): void {
 
     <AppTable v-if="groups.length > 0" :headers="['Group', 'Status', 'Products', '']">
       <tr v-for="group in groups" :key="group.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <p class="font-medium">{{ group.name }}</p>
           <p class="text-content-muted font-mono text-xs">{{ group.slug }}</p>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge>{{ label(statuses, group.status) }}</AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ group.productCount }}</td>
-        <td class="px-5 py-3.5 text-right whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ group.productCount }}</td>
+        <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/groups/${group.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

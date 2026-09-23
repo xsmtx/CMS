@@ -137,7 +137,7 @@ function formatTime(value: string | null): string {
           </div>
           <div class="flex justify-between gap-4">
             <dt class="text-content-muted">Tax id</dt>
-            <dd class="font-mono text-[13px]">{{ customer.taxId ?? '—' }}</dd>
+            <dd class="text-body font-mono">{{ customer.taxId ?? '—' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
             <dt class="text-content-muted">Currency</dt>

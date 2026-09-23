@@ -77,19 +77,19 @@ function formatDateTime(value: string | null): string {
       :headers="['Received', 'Gateway', 'Event', 'Type', 'Outcome', 'Processed']"
     >
       <tr v-for="row in events.data" :key="row.id">
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(row.receivedAt) }}
         </td>
-        <td class="px-5 py-3.5">{{ row.gateway }}</td>
-        <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">{{ row.eventId }}</td>
-        <td class="px-5 py-3.5">{{ row.type }}</td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">{{ row.gateway }}</td>
+        <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">{{ row.eventId }}</td>
+        <td class="px-4 py-2.5">{{ row.type }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(row.outcome)">{{ row.outcome }}</AppBadge>
           <span v-if="row.error" class="text-danger mt-1 block max-w-[40ch] text-xs">
             {{ row.error }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(row.processedAt) }}
         </td>
       </tr>

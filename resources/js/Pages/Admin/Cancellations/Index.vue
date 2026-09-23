@@ -131,10 +131,10 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
       :headers="['Date', 'Product / service', 'Client', 'Reason', 'Type', 'Ends', 'Status', '']"
     >
       <tr v-for="row in requests.data" :key="row.id">
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(row.requestedAt) }}
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             :href="`/admin/services/${row.serviceId}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -143,7 +143,7 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
           </Link>
           <span v-if="row.domain" class="text-content-muted block text-xs">{{ row.domain }}</span>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             :href="`/admin/customers/${row.customerId}`"
             class="underline-offset-4 hover:underline"
@@ -154,21 +154,21 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
             asked by {{ row.requestedBy }}
           </span>
         </td>
-        <td class="text-content-muted max-w-[32ch] px-5 py-3.5 text-sm">{{ row.reason ?? '—' }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted max-w-[32ch] px-4 py-2.5 text-sm">{{ row.reason ?? '—' }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="row.type === 'immediate' ? 'danger' : 'neutral'">
             {{ row.typeLabel }}
           </AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ row.type === 'immediate' ? 'Now' : formatDate(row.endsOn) }}
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="row.status === 'pending' ? 'warning' : 'neutral'">
             {{ row.statusLabel }}
           </AppBadge>
         </td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 text-right">
           <div v-if="can.manage && row.status === 'pending'" class="flex justify-end gap-2">
             <AppButton size="sm" variant="ghost" @click="act(row, 'withdraw')">Withdraw</AppButton>
             <AppButton size="sm" variant="primary" @click="act(row, 'complete')"

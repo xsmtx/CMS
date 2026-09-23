@@ -105,7 +105,7 @@ function remove(reply: ReplyRow): void {
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-[0.9375rem] font-semibold tracking-tight">{{ reply.name }}</h2>
+              <h2 class="text-title font-semibold tracking-tight">{{ reply.name }}</h2>
               <AppBadge>{{ reply.department ?? 'Every department' }}</AppBadge>
               <AppBadge tone="neutral">used {{ reply.usedCount }}×</AppBadge>
             </div>

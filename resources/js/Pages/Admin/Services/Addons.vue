@@ -272,11 +272,11 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ expanded === addon.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">
+          <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">
             {{ addon.id.slice(-8) }}
           </td>
-          <td class="px-5 py-3.5 font-medium">{{ addon.name }}</td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5 font-medium">{{ addon.name }}</td>
+          <td class="px-4 py-2.5">
             <Link
               v-if="addon.serviceId"
               :href="`/admin/services/${addon.serviceId}`"
@@ -286,7 +286,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <Link
               v-if="addon.customerId"
               :href="`/admin/customers/${addon.customerId}`"
@@ -296,14 +296,14 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ addon.billingCycleLabel ?? 'One time' }}
           </td>
-          <td class="px-5 py-3.5 tabular-nums">{{ addon.recurring }}</td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="px-4 py-2.5 tabular-nums">{{ addon.recurring }}</td>
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ formatDate(addon.nextDueOn) }}
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <AppBadge :tone="tone(addon.status)">{{ addon.statusLabel }}</AppBadge>
           </td>
         </tr>

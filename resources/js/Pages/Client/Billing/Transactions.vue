@@ -65,11 +65,11 @@ function formatDate(value: string): string {
       ]"
     >
       <tr v-for="transaction in transactions.data" :key="transaction.id">
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(transaction.occurredAt) }}
         </td>
-        <td class="px-5 py-3.5">{{ transaction.kindLabel }}</td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">{{ transaction.kindLabel }}</td>
+        <td class="px-4 py-2.5">
           <Link
             v-if="transaction.invoiceNumber"
             :href="`/client/billing/invoices/${transaction.invoiceNumber}`"
@@ -84,12 +84,12 @@ function formatDate(value: string): string {
           ledger row is positive, and the direction is the kind's to say.
         -->
         <td
-          class="px-5 py-3.5 tabular-nums"
+          class="px-4 py-2.5 tabular-nums"
           :class="transaction.increasesPaid ? '' : 'text-content-muted'"
         >
           {{ transaction.increasesPaid ? '' : '−' }}{{ transaction.amount }}
         </td>
-        <td class="text-content-muted px-5 py-3.5 tabular-nums">
+        <td class="text-content-muted px-4 py-2.5 tabular-nums">
           {{ transaction.creditBalance }}
         </td>
       </tr>

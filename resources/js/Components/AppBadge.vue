@@ -2,8 +2,12 @@
 import { computed } from 'vue'
 
 /**
- * The one place a full-pill radius is used. Everything else follows the
- * 8/12/16 radius scale.
+ * A status chip.
+ *
+ * **Not a pill.** A rounded rectangle at the small radius sits in a table
+ * cell without drawing a shape of its own, and a column of pills reads as
+ * decoration. The pill was the first thing that made this look like a
+ * consumer dashboard.
  *
  * Every tone carries a tint of its own colour rather than sharing one grey
  * chip. Status is the column an operator scans down, and a row of
@@ -42,7 +46,7 @@ const classes = computed(
 
 <template>
   <span
-    class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-tight ring-1 ring-inset"
+    class="text-label inline-flex items-center rounded-[var(--radius-sm)] px-1.5 py-0.5 font-medium ring-1 ring-inset"
     :class="classes"
   >
     <slot />

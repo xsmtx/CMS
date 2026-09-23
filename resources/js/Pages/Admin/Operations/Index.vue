@@ -108,7 +108,7 @@ function formatDateTime(value: string | null): string {
       :headers="['Client / service', 'Module / action', 'Failure reason', 'Attempt', 'Started', '']"
     >
       <tr v-for="operation in operations.data" :key="operation.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             v-if="operation.subjectHref"
             :href="operation.subjectHref"
@@ -118,13 +118,13 @@ function formatDateTime(value: string | null): string {
           </Link>
           <span v-else class="font-medium">{{ operation.subject ?? '—' }}</span>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           {{ operation.typeLabel }}
           <AppBadge :tone="tone(operation.state)" class="ml-2">
             {{ operation.stateLabel }}
           </AppBadge>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <!-- Already redacted on the way in. Shown because an operator
                cannot act on "something went wrong". -->
           <span v-if="operation.error" class="text-content-muted block max-w-[46ch] text-xs">
@@ -132,16 +132,16 @@ function formatDateTime(value: string | null): string {
           </span>
           <span v-else class="text-content-muted text-xs">—</span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap tabular-nums">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap tabular-nums">
           {{ operation.attempt }} / {{ operation.maxAttempts }}
           <span v-if="operation.nextAttemptAt" class="block text-xs">
             next {{ formatDateTime(operation.nextAttemptAt) }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(operation.startedAt ?? operation.createdAt) }}
         </td>
-        <td class="px-5 py-3.5 text-right whitespace-nowrap">
+        <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <AppButton
             v-if="can.manage && operation.canRetry"
             size="sm"

@@ -215,12 +215,12 @@ function cellsFor(currency: string, action: string): EditableCell[] {
         :headers="['Extension', 'Registrar', 'Terms', 'Prices', 'Domains', '']"
       >
         <tr v-for="tld in tlds" :key="tld.id">
-          <td class="px-5 py-3.5 font-medium">.{{ tld.extension }}</td>
-          <td class="text-content-muted px-5 py-3.5">{{ tld.registrar ?? '—' }}</td>
-          <td class="px-5 py-3.5">{{ tld.minYears }}–{{ tld.maxYears }} years</td>
-          <td class="text-content-muted px-5 py-3.5">{{ priceSummary(tld) }}</td>
-          <td class="px-5 py-3.5 tabular-nums">{{ tld.domains }}</td>
-          <td class="px-5 py-3.5 text-right">
+          <td class="px-4 py-2.5 font-medium">.{{ tld.extension }}</td>
+          <td class="text-content-muted px-4 py-2.5">{{ tld.registrar ?? '—' }}</td>
+          <td class="px-4 py-2.5">{{ tld.minYears }}–{{ tld.maxYears }} years</td>
+          <td class="text-content-muted px-4 py-2.5">{{ priceSummary(tld) }}</td>
+          <td class="px-4 py-2.5 tabular-nums">{{ tld.domains }}</td>
+          <td class="px-4 py-2.5 text-right">
             <div v-if="can.manage" class="flex justify-end gap-2">
               <AppButton size="sm" variant="ghost" @click="edit(tld)">Edit</AppButton>
               <AppButton v-if="tld.domains === 0" size="sm" variant="ghost" @click="remove(tld)">

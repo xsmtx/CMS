@@ -51,7 +51,7 @@ function confirm(): void {
           <p class="text-content-muted mt-3 max-w-[28ch] text-xs leading-relaxed">
             Cannot scan? Enter this key by hand:
           </p>
-          <p class="mt-1 font-mono text-[13px] break-all">{{ secret }}</p>
+          <p class="text-body mt-1 font-mono break-all">{{ secret }}</p>
         </div>
 
         <div>

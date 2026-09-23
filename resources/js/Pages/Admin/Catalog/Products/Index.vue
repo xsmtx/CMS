@@ -64,22 +64,22 @@ function statusLabel(value: string): string {
 
         <AppTable :headers="['Product', 'Type', 'Status', 'Prices', '']">
           <tr v-for="product in section.products" :key="product.id">
-            <td class="px-5 py-3.5">
+            <td class="px-4 py-2.5">
               <p class="font-medium">{{ product.name }}</p>
               <p class="text-content-muted font-mono text-xs">{{ product.slug }}</p>
             </td>
-            <td class="text-content-muted px-5 py-3.5">{{ product.typeLabel }}</td>
-            <td class="px-5 py-3.5">
+            <td class="text-content-muted px-4 py-2.5">{{ product.typeLabel }}</td>
+            <td class="px-4 py-2.5">
               <AppBadge>{{ statusLabel(product.status) }}</AppBadge>
               <span v-if="product.stock === 0" class="text-danger ml-2 text-xs">Sold out</span>
             </td>
             <td
-              class="px-5 py-3.5 tabular-nums"
+              class="px-4 py-2.5 tabular-nums"
               :class="product.priceCount === 0 ? 'text-danger' : 'text-content-muted'"
             >
               {{ product.priceCount === 0 ? 'None' : product.priceCount }}
             </td>
-            <td class="px-5 py-3.5 text-right whitespace-nowrap">
+            <td class="px-4 py-2.5 text-right whitespace-nowrap">
               <Link
                 :href="`/admin/catalog/products/${product.id}/edit`"
                 class="text-content-muted hover:text-content text-xs underline underline-offset-4"

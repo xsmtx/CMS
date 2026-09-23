@@ -112,8 +112,8 @@ function formatDate(value: string | null): string {
       ]"
     >
       <tr v-for="invoice in invoices.data" :key="invoice.id">
-        <td class="px-5 py-3.5 font-mono text-xs">{{ invoice.number }}</td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5 font-mono text-xs">{{ invoice.number }}</td>
+        <td class="px-4 py-2.5">
           <Link
             v-if="invoice.customerId"
             :href="`/admin/customers/${invoice.customerId}`"
@@ -123,22 +123,22 @@ function formatDate(value: string | null): string {
           </Link>
           <span v-else>—</span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(invoice.issuedOn) }}
         </td>
         <td
-          class="px-5 py-3.5 whitespace-nowrap"
+          class="px-4 py-2.5 whitespace-nowrap"
           :class="invoice.isPastDue ? 'text-danger' : 'text-content-muted'"
         >
           {{ formatDate(invoice.dueOn) }}
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(invoice.lastCaptureAt) }}
           <span v-if="invoice.lastCaptureOutcome" class="block text-xs">
             {{ invoice.lastCaptureOutcome }}
           </span>
         </td>
-        <td class="px-5 py-3.5 tabular-nums">
+        <td class="px-4 py-2.5 tabular-nums">
           {{ invoice.total }}
           <span
             v-if="invoice.balanceMinor > 0"
@@ -147,11 +147,11 @@ function formatDate(value: string | null): string {
             {{ invoice.balance }} owed
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5">{{ invoice.paymentMethod ?? '—' }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted px-4 py-2.5">{{ invoice.paymentMethod ?? '—' }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge>{{ invoice.statusLabel }}</AppBadge>
         </td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/admin/invoices/${invoice.id}`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

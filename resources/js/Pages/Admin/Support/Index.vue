@@ -308,7 +308,7 @@ function formatDate(value: string | null): string {
       :headers="['Ticket', 'Customer', 'Department', 'Status', 'Assigned', 'Due']"
     >
       <tr v-for="ticket in tickets.data" :key="ticket.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             :href="`/admin/support/${ticket.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -320,13 +320,13 @@ function formatDate(value: string | null): string {
             <span v-for="tag in ticket.tags" :key="tag" class="text-accent">· {{ tag }}</span>
           </span>
         </td>
-        <td class="px-5 py-3.5">{{ ticket.customer ?? '—' }}</td>
-        <td class="text-content-muted px-5 py-3.5">{{ ticket.department ?? '—' }}</td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">{{ ticket.customer ?? '—' }}</td>
+        <td class="text-content-muted px-4 py-2.5">{{ ticket.department ?? '—' }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(ticket.status)">{{ ticket.statusLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5">{{ ticket.assignee ?? 'Unassigned' }}</td>
-        <td class="px-5 py-3.5 whitespace-nowrap" :class="ticket.hasBreached ? 'text-danger' : ''">
+        <td class="text-content-muted px-4 py-2.5">{{ ticket.assignee ?? 'Unassigned' }}</td>
+        <td class="px-4 py-2.5 whitespace-nowrap" :class="ticket.hasBreached ? 'text-danger' : ''">
           {{ due(ticket) }}
           <span class="text-content-subtle block text-xs">{{
             formatDate(ticket.lastReplyAt)

@@ -212,12 +212,12 @@ function withBlank(options: { value: string; label: string }[]) {
       ]"
     >
       <tr v-for="order in orders.data" :key="order.id">
-        <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">{{ order.id.slice(-8) }}</td>
-        <td class="px-5 py-3.5 font-mono text-xs">{{ order.number }}</td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">{{ order.id.slice(-8) }}</td>
+        <td class="px-4 py-2.5 font-mono text-xs">{{ order.number }}</td>
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(order.placedAt) }}
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             v-if="order.customerId"
             :href="`/admin/customers/${order.customerId}`"
@@ -230,18 +230,18 @@ function withBlank(options: { value: string; label: string }[]) {
             {{ order.ipAddress }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5">{{ order.paymentMethod ?? '—' }}</td>
-        <td class="px-5 py-3.5 tabular-nums">{{ order.total }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted px-4 py-2.5">{{ order.paymentMethod ?? '—' }}</td>
+        <td class="px-4 py-2.5 tabular-nums">{{ order.total }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="paymentTone(order.paymentStatus)">
             {{ PAYMENT_LABELS[order.paymentStatus] ?? order.paymentStatus }}
           </AppBadge>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge>{{ order.statusLabel }}</AppBadge>
           <span v-if="order.riskDecision === 'review'" class="text-warning ml-2 text-xs">Held</span>
         </td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/admin/orders/${order.id}`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

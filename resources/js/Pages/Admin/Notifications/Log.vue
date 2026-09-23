@@ -88,20 +88,20 @@ function formatDateTime(value: string): string {
       :headers="['Message', 'Recipient', 'Channel', 'Status', 'Sent']"
     >
       <tr v-for="delivery in deliveries.data" :key="delivery.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <span class="font-medium">{{ delivery.event }}</span>
           <span v-if="delivery.subject" class="text-content-muted block text-xs">
             {{ delivery.subject }}
           </span>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           {{ delivery.recipient ?? '—' }}
           <span v-if="delivery.address" class="text-content-muted block text-xs">
             {{ delivery.address }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5">{{ delivery.channel }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted px-4 py-2.5">{{ delivery.channel }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(delivery.status)">{{ delivery.statusLabel }}</AppBadge>
           <!-- "We did not send it because they asked us not to" and "we
                tried and it bounced" are different answers. -->
@@ -109,7 +109,7 @@ function formatDateTime(value: string): string {
             {{ delivery.error }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(delivery.createdAt) }}
         </td>
       </tr>

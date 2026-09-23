@@ -119,7 +119,7 @@ watch(
           type="button"
           role="tab"
           :aria-selected="currency.code === active"
-          class="pressable rounded-[calc(var(--radius-sm)-2px)] px-3 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+          class="pressable text-body rounded-[calc(var(--radius-sm)-2px)] px-3 py-1.5 font-medium whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
           :class="
             currency.code === active
               ? 'bg-surface-raised text-content shadow-(--shadow-raised)'
@@ -128,7 +128,7 @@ watch(
           @click="active = currency.code"
         >
           {{ currency.code }}
-          <span class="text-content-subtle ml-1 text-[11px] tabular-nums">
+          <span class="text-content-subtle text-label ml-1 tabular-nums">
             {{ soldCount(currency.code) }}
           </span>
         </button>

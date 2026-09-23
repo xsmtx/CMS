@@ -187,11 +187,11 @@ function usage(server: ServerRow): string {
           :headers="['Group', 'Placement', 'Region', 'Servers', '']"
         >
           <tr v-for="group in groups" :key="group.id">
-            <td class="px-5 py-3.5 font-medium">{{ group.name }}</td>
-            <td class="px-5 py-3.5">{{ group.strategyLabel }}</td>
-            <td class="text-content-muted px-5 py-3.5">{{ group.region ?? '—' }}</td>
-            <td class="px-5 py-3.5 tabular-nums">{{ group.servers }}</td>
-            <td class="px-5 py-3.5 text-right">
+            <td class="px-4 py-2.5 font-medium">{{ group.name }}</td>
+            <td class="px-4 py-2.5">{{ group.strategyLabel }}</td>
+            <td class="text-content-muted px-4 py-2.5">{{ group.region ?? '—' }}</td>
+            <td class="px-4 py-2.5 tabular-nums">{{ group.servers }}</td>
+            <td class="px-4 py-2.5 text-right">
               <div v-if="can.manage" class="flex justify-end gap-2">
                 <AppButton size="sm" variant="ghost" @click="editGroup(group)">Edit</AppButton>
                 <AppButton
@@ -253,25 +253,25 @@ function usage(server: ServerRow): string {
           :headers="['Server', 'Group', 'Module', 'Status', 'Health', 'In use', '']"
         >
           <tr v-for="server in servers" :key="server.id">
-            <td class="px-5 py-3.5">
+            <td class="px-4 py-2.5">
               <span class="font-medium">{{ server.name }}</span>
               <span class="text-content-muted block text-xs">{{ server.hostname }}</span>
             </td>
-            <td class="text-content-muted px-5 py-3.5">{{ server.group ?? '—' }}</td>
-            <td class="px-5 py-3.5">{{ server.module }}</td>
-            <td class="px-5 py-3.5">
+            <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
+            <td class="px-4 py-2.5">{{ server.module }}</td>
+            <td class="px-4 py-2.5">
               <AppBadge :tone="server.status === 'active' ? 'success' : 'warning'">
                 {{ server.statusLabel }}
               </AppBadge>
             </td>
-            <td class="px-5 py-3.5">
+            <td class="px-4 py-2.5">
               <AppBadge :tone="healthTone(server.health)">{{ server.healthLabel }}</AppBadge>
               <span v-if="server.healthMessage" class="text-content-muted block text-xs">
                 {{ server.healthMessage }}
               </span>
             </td>
-            <td class="px-5 py-3.5 tabular-nums">{{ usage(server) }}</td>
-            <td class="px-5 py-3.5 text-right">
+            <td class="px-4 py-2.5 tabular-nums">{{ usage(server) }}</td>
+            <td class="px-4 py-2.5 text-right">
               <div v-if="can.manage" class="flex justify-end gap-2">
                 <AppButton size="sm" variant="ghost" @click="test(server)">Test</AppButton>
                 <AppButton size="sm" variant="ghost" @click="editServer(server)">Edit</AppButton>

@@ -76,21 +76,21 @@ function openSession(server: ServerRow): void {
       :headers="['Server', 'Hostname', 'Group', 'Module', 'Status', '']"
     >
       <tr v-for="server in servers" :key="server.id">
-        <td class="px-5 py-3.5 font-medium">{{ server.name }}</td>
-        <td class="text-content-muted px-5 py-3.5">
+        <td class="px-4 py-2.5 font-medium">{{ server.name }}</td>
+        <td class="text-content-muted px-4 py-2.5">
           {{ server.hostname }}
           <span v-if="server.ipAddress" class="block font-mono text-xs">
             {{ server.ipAddress }}
           </span>
         </td>
-        <td class="text-content-muted px-5 py-3.5">{{ server.group ?? '—' }}</td>
-        <td class="text-content-muted px-5 py-3.5">{{ server.module ?? '—' }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
+        <td class="text-content-muted px-4 py-2.5">{{ server.module ?? '—' }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="server.status === 'active' ? 'success' : 'warning'">
             {{ server.status }}
           </AppBadge>
         </td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 text-right">
           <AppButton v-if="server.canOpenSession" size="sm" @click="openSession(server)">
             Open panel
           </AppButton>

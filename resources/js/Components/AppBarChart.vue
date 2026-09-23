@@ -74,7 +74,7 @@ const columns = computed(() =>
 <template>
   <div>
     <div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h3 class="text-[0.8125rem] font-semibold tracking-tight">{{ title }}</h3>
+      <h3 class="text-body font-semibold tracking-tight">{{ title }}</h3>
 
       <div class="flex items-center gap-3 text-xs">
         <span class="flex items-center gap-1.5">

@@ -97,15 +97,21 @@ describe('AdminLayout navigation', () => {
       .findAll('nav[data-admin-nav] > ul > li')
       .map((item) => item.text().trim())
 
-    expect(labels).toEqual([
-      'Dashboard',
-      'Clients',
-      'Orders',
-      'Billing',
-      'Support',
-      'Utilities',
-      'Setup',
-    ])
+    // No Dashboard row: the wordmark is the way home, the way it is in
+    // every panel an operator has used, and a menu whose first entry
+    // duplicates the logo spends a slot saying nothing.
+    expect(labels).toEqual(['Clients', 'Orders', 'Billing', 'Support', 'Utilities', 'Setup'])
+  })
+
+  it('makes the wordmark the way to the dashboard', () => {
+    const wrapper = render()
+    const home = wrapper.findAll('a[href="/admin"]')
+
+    // One link, outside the nav list, and titled — a logo doing navigation
+    // duty silently is a link nobody can place.
+    expect(home).toHaveLength(1)
+    expect(wrapper.findAll('nav[data-admin-nav] a[href="/admin"]')).toHaveLength(0)
+    expect(home[0]?.attributes('title')).toContain('dashboard')
   })
 
   it('keeps every dropdown shut until it is asked for', () => {
@@ -140,12 +146,19 @@ describe('AdminLayout navigation', () => {
   })
 
   it('marks the group the current page belongs to', () => {
-    const billing = render().findAll('nav[data-admin-nav] > ul > li')[3]
+    const groups = render().findAll('nav[data-admin-nav] > ul > li')
+    const billing = groups[2]
 
-    // `/admin/invoices` lives under Billing, so Billing carries the marker
-    // even though the menu is shut.
+    // `/admin/invoices` lives under Billing, so Billing reads as the one
+    // you are on even though the menu is shut. A filled row rather than an
+    // underline: saying it twice is how a bar gets noisy.
     expect(billing?.text()).toContain('Billing')
-    expect(billing?.find('span[aria-hidden="true"]').exists()).toBe(true)
+    expect(billing?.find('[class*="bg-surface-sunken"]').exists()).toBe(true)
+
+    // And nothing else claims it.
+    const marked = groups.filter((group) => group.find('[class*="bg-surface-sunken"]').exists())
+
+    expect(marked).toHaveLength(1)
   })
 
   /**
@@ -155,7 +168,7 @@ describe('AdminLayout navigation', () => {
    */
   it('opens a submenu beside the row that owns it', async () => {
     const wrapper = render()
-    const clients = wrapper.findAll('nav[data-admin-nav] > ul > li')[1]
+    const clients = wrapper.findAll('nav[data-admin-nav] > ul > li')[0]
 
     await clients?.find('button').trigger('click')
 
@@ -176,7 +189,7 @@ describe('AdminLayout navigation', () => {
 
   it('lists each group flat, one level, until a submenu is opened', async () => {
     const wrapper = render()
-    const billing = wrapper.findAll('nav[data-admin-nav] > ul > li')[3]
+    const billing = wrapper.findAll('nav[data-admin-nav] > ul > li')[2]
 
     await billing?.find('button').trigger('click')
 

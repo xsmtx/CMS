@@ -215,7 +215,7 @@ defineExpose({ close })
         v-if="open"
         ref="panel"
         role="menu"
-        class="border-line bg-surface-raised z-50 rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
+        class="panel-enter border-line bg-surface-raised z-50 origin-top-right rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
         :style="style"
       >
         <slot :close="close" />

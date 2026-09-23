@@ -136,7 +136,7 @@ function submit(): void {
                   <AppBadge v-if="permission.module" tone="neutral">
                     {{ permission.module }}
                   </AppBadge>
-                  <code class="text-content-subtle text-[11px]">{{ permission.slug }}</code>
+                  <code class="text-content-subtle text-label">{{ permission.slug }}</code>
                 </div>
               </div>
             </div>

@@ -103,7 +103,7 @@ function describeDevice(agent: string | null): string {
         <p class="mt-1">
           Each one can be used once if you lose your authenticator. They will not be shown again.
         </p>
-        <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-[13px]">
+        <ul class="text-body mt-3 grid grid-cols-2 gap-x-6 gap-y-1 font-mono">
           <li v-for="code in recoveryCodes" :key="code">{{ code }}</li>
         </ul>
       </AppAlert>

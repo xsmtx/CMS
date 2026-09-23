@@ -35,13 +35,19 @@ const classes = computed(() => [
   // A transparent border on every variant, so a button is exactly as tall
   // as the input beside it. Without it the bordered variants are two
   // pixels taller than the rest and nothing in a row ever lines up.
-  'border border-transparent font-semibold whitespace-nowrap',
+  //
+  // Medium, not semibold: a panel with forty controls on it does not need
+  // forty of them shouting, and weight is the first thing that makes an
+  // operator tool look like a consumer app.
+  'border border-transparent font-medium whitespace-nowrap',
   'transition-[color,background-color,border-color,opacity] duration-(--duration-fast) ease-(--ease-out)',
   'disabled:pointer-events-none disabled:opacity-55',
-  props.size === 'sm' ? 'px-3.5 py-2 text-[13px]' : 'px-4.5 py-2.5 text-sm',
+  props.size === 'sm' ? 'text-chrome px-2.5 py-1.5' : 'text-body px-3.5 py-2',
   {
-    primary: 'bg-accent text-accent-content shadow-(--shadow-raised) hover:bg-accent-hover',
-    secondary: 'border-line-strong text-content hover:bg-surface-sunken',
+    primary: 'bg-accent text-accent-content hover:bg-accent-hover',
+    // The line, not the strong line: a secondary button outlined in the
+    // heavier border reads as a text field, which is the thing beside it.
+    secondary: 'border-line bg-surface-raised text-content hover:border-line-strong',
     ghost: 'text-content-muted hover:bg-surface-sunken hover:text-content',
     danger: 'bg-danger text-accent-content hover:opacity-90',
   }[props.variant],

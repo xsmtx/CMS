@@ -35,7 +35,7 @@ const facts: { label: string; value: string }[] = []
           </div>
           <div class="flex items-center justify-between gap-4">
             <dt class="text-content-muted">Version</dt>
-            <dd class="font-mono text-[13px]">{{ version ?? 'dev' }}</dd>
+            <dd class="text-body font-mono">{{ version ?? 'dev' }}</dd>
           </div>
           <div
             v-for="fact in facts"
@@ -43,7 +43,7 @@ const facts: { label: string; value: string }[] = []
             class="flex items-center justify-between gap-4"
           >
             <dt class="text-content-muted">{{ fact.label }}</dt>
-            <dd class="font-mono text-[13px]">{{ fact.value }}</dd>
+            <dd class="text-body font-mono">{{ fact.value }}</dd>
           </div>
         </dl>
       </AppCard>

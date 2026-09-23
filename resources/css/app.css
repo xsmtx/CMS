@@ -57,15 +57,40 @@
      read a run as a problem. */
   --color-automation: #7c3aed;
 
-  /* One radius system: 8 for inputs, 12 for cards, 16 for panels,
+  /*
+   * The type scale, because an operator panel lives or dies by it.
+   *
+   * Four sizes and two weights, chosen for a screen somebody reads for eight
+   * hours: 13px is the working size, 12px is chrome, 11px is a label, and
+   * anything larger is a heading. A fifth size is how a product ends up with
+   * nine.
+   *
+   * Tracking tightens as size grows, which is what optical sizing does by
+   * hand: 28px at default tracking reads loose and amateur.
+   */
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.04em;
+  --text-chrome: 0.75rem;
+  --text-chrome--line-height: 1.125rem;
+  --text-body: 0.8125rem;
+  --text-body--line-height: 1.25rem;
+  --text-title: 0.9375rem;
+  --text-title--line-height: 1.375rem;
+  --text-title--letter-spacing: -0.01em;
+  --text-page: 1.1875rem;
+  --text-page--line-height: 1.625rem;
+  --text-page--letter-spacing: -0.015em;
+
+  /* One radius system: 8 for inputs, 10 for cards, 14 for panels,
        full only for badges. Nothing else. */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
 
   /* Shadows are tinted to the surface hue, never pure black */
-  --shadow-raised: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 2px 8px -4px oklch(21% 0.03 255 / 0.1);
-  --shadow-panel: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 8px 24px -12px oklch(21% 0.03 255 / 0.14);
+  --shadow-raised: 0 1px 1px oklch(21% 0.03 255 / 0.04);
+  --shadow-panel: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
 
   /* Motion. The built-in CSS easings are too weak to read as intentional. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -106,8 +131,10 @@
 
     --color-automation: #8b5cf6;
 
-    --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.5);
-    --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.45), 0 8px 24px -12px oklch(0% 0 0 / 0.7);
+    /* Almost nothing. A dark panel is defined by its hairline; a
+       drop shadow on near-black is a smudge. */
+    --shadow-raised: 0 0 0 0 transparent;
+    --shadow-panel: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
   }
 }
 
@@ -141,8 +168,10 @@
 
   --color-automation: #8b5cf6;
 
-  --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.5);
-  --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.45), 0 8px 24px -12px oklch(0% 0 0 / 0.7);
+  /* Almost nothing. A dark panel is defined by its hairline; a
+     drop shadow on near-black is a smudge. */
+  --shadow-raised: 0 0 0 0 transparent;
+  --shadow-panel: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
 }
 
 @layer base {
@@ -154,6 +183,10 @@
   body {
     background-color: var(--color-surface);
     color: var(--color-content);
+    /* 13px, which is what a panel somebody reads all day wants. Larger is
+       a document; smaller is a spreadsheet. */
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
@@ -200,7 +233,52 @@
   }
 
   .data-table tbody tr:hover {
-    background-color: color-mix(in oklab, var(--color-surface-sunken) 55%, transparent);
+    background-color: color-mix(in oklab, var(--color-surface-sunken) 60%, transparent);
+  }
+
+  /*
+     * Numbers line up or they are not numbers.
+     *
+     * Every money and count cell is tabular and right-aligned, so a column
+     * of totals can be read as a column rather than as a list of strings.
+     * An operator scanning for the big one should find it by shape.
+     */
+  .data-table td.numeric,
+  .data-table th.numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /*
+     * A header that stays put.
+     *
+     * A list of two hundred services is scrolled, and a header that leaves
+     * the screen turns every column into a guess.
+     */
+  .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--color-surface-raised);
+    box-shadow: inset 0 -1px 0 var(--color-line);
+  }
+
+  /*
+     * Panels that grow out of the thing you pressed.
+     *
+     * `transform-origin` is set per-panel from the trigger, so a menu opens
+     * from its button rather than from the middle of itself. Scale starts at
+     * 0.97 and not 0 — nothing in the world appears from nothing.
+     */
+  .panel-enter {
+    animation: panel-in var(--duration-fast) var(--ease-out);
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
   }
 }
 
@@ -213,6 +291,10 @@
   .pressable:active {
     transition: none;
     transform: none;
+  }
+
+  .panel-enter {
+    animation: none;
   }
 
   *,

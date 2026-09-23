@@ -25,14 +25,14 @@ const emit = defineEmits<{ select: [] }>()
 <template>
   <button
     type="button"
-    class="pressable border-line bg-surface-raised hover:border-line-strong flex min-w-[9rem] flex-col items-start gap-1 rounded-[var(--radius-md)] border px-4 py-3.5 text-left shadow-(--shadow-raised) transition-colors duration-(--duration-fast) ease-(--ease-out)"
+    class="pressable border-line bg-surface-raised hover:border-line-strong flex min-w-[8.5rem] flex-col items-start gap-0.5 rounded-[var(--radius-md)] border px-3.5 py-2.5 text-left transition-colors duration-(--duration-fast) ease-(--ease-out)"
     :class="active ? 'border-accent' : ''"
     :aria-pressed="active"
     @click="emit('select')"
   >
-    <span class="text-content-muted text-xs">{{ label }}</span>
+    <span class="text-content-muted text-label uppercase">{{ label }}</span>
     <span
-      class="text-2xl leading-none font-semibold tabular-nums"
+      class="text-[1.375rem] leading-tight font-semibold tabular-nums"
       :class="
         {
           neutral: '',

@@ -38,7 +38,7 @@ function remove(currency: CurrencyRow): void {
 
     <AppTable v-if="currencies.length > 0" :headers="['Currency', 'Decimals', 'Rate', '']">
       <tr v-for="currency in currencies" :key="currency.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <p class="font-medium">
             {{ currency.code }}
             <AppBadge v-if="currency.isBase" class="ml-2">Base</AppBadge>
@@ -46,11 +46,11 @@ function remove(currency: CurrencyRow): void {
           </p>
           <p class="text-content-muted text-xs">{{ currency.name }}</p>
         </td>
-        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ currency.exponent }}</td>
-        <td class="text-content-muted px-5 py-3.5 font-mono text-xs tabular-nums">
+        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ currency.exponent }}</td>
+        <td class="text-content-muted px-4 py-2.5 font-mono text-xs tabular-nums">
           {{ currency.rate }}
         </td>
-        <td class="px-5 py-3.5 text-right whitespace-nowrap">
+        <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/currencies/${currency.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

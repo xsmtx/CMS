@@ -205,10 +205,10 @@ function addonsOf(detail: DomainDetail): string {
               {{ expanded === domain.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">
+          <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">
             {{ domain.id.slice(-8) }}
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <Link
               :href="`/admin/domains/${domain.id}`"
               class="font-medium underline-offset-4 hover:underline"
@@ -216,7 +216,7 @@ function addonsOf(detail: DomainDetail): string {
               {{ domain.name }}
             </Link>
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <Link
               v-if="domain.customerId"
               :href="`/admin/customers/${domain.customerId}`"
@@ -226,15 +226,15 @@ function addonsOf(detail: DomainDetail): string {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ domain.years }} {{ domain.years === 1 ? 'year' : 'years' }}
           </td>
-          <td class="text-content-muted px-5 py-3.5">{{ domain.registrar ?? '—' }}</td>
-          <td class="px-5 py-3.5 tabular-nums">{{ domain.renewal }}</td>
-          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          <td class="text-content-muted px-4 py-2.5">{{ domain.registrar ?? '—' }}</td>
+          <td class="px-4 py-2.5 tabular-nums">{{ domain.renewal }}</td>
+          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
             {{ formatDate(domain.nextDueOn) }}
           </td>
-          <td class="px-5 py-3.5 whitespace-nowrap">
+          <td class="px-4 py-2.5 whitespace-nowrap">
             {{ formatDate(domain.expiresOn) }}
             <span
               v-if="domain.daysUntilExpiry !== null && domain.daysUntilExpiry <= 45"
@@ -243,7 +243,7 @@ function addonsOf(detail: DomainDetail): string {
               {{ domain.daysUntilExpiry }} days
             </span>
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-4 py-2.5">
             <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
           </td>
         </tr>

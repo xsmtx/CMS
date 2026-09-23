@@ -149,17 +149,20 @@ function isCurrent(href: string): boolean {
       </div>
     </header>
 
-    <main id="main" class="mx-auto w-full max-w-5xl px-5 py-12 sm:px-8">
-      <div class="mb-9">
-        <h1 class="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em]">
-          {{ heading }}
-        </h1>
-        <p
-          v-if="description"
-          class="text-content-muted mt-2.5 max-w-[62ch] text-[0.9375rem] leading-relaxed"
-        >
-          {{ description }}
-        </p>
+    <main id="main" class="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
+      <!-- Title and actions on one line, the explanation under it in chrome
+           type — the same rule the admin header follows. A customer reading
+           their own invoices wants the name of the screen, not a masthead. -->
+      <div class="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div class="min-w-0">
+          <h1 class="text-page font-semibold">{{ heading }}</h1>
+          <p v-if="description" class="text-content-muted text-chrome mt-1 max-w-[80ch]">
+            {{ description }}
+          </p>
+        </div>
+        <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
+          <slot name="actions" />
+        </div>
       </div>
 
       <slot />

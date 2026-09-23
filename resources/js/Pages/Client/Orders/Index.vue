@@ -52,19 +52,19 @@ function formatDate(value: string | null): string {
       ]"
     >
       <tr v-for="order in orders.data" :key="order.id">
-        <td class="px-5 py-3.5 font-medium">
+        <td class="px-4 py-2.5 font-medium">
           <Link :href="`/client/orders/${order.number}`" class="underline-offset-4 hover:underline">
             {{ order.number }}
           </Link>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(order.placedAt) }}
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(order.status)">{{ order.statusLabel }}</AppBadge>
         </td>
-        <td class="px-5 py-3.5 tabular-nums">{{ order.total }}</td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 tabular-nums">{{ order.total }}</td>
+        <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/client/orders/${order.number}`"
             class="text-content-muted hover:text-content text-xs underline-offset-4 hover:underline"

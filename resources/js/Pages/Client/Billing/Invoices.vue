@@ -110,7 +110,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
       ]"
     >
       <tr v-for="invoice in invoices.data" :key="invoice.id">
-        <td class="px-5 py-3.5 font-medium">
+        <td class="px-4 py-2.5 font-medium">
           <Link
             :href="`/client/billing/invoices/${invoice.number}`"
             class="underline-offset-4 hover:underline"
@@ -118,13 +118,13 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
             {{ invoice.number }}
           </Link>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(invoice.status)">{{ invoice.statusLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">{{ invoice.dueOn ?? '—' }}</td>
-        <td class="px-5 py-3.5 tabular-nums">{{ invoice.total }}</td>
-        <td class="px-5 py-3.5 font-medium tabular-nums">{{ invoice.balance }}</td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">{{ invoice.dueOn ?? '—' }}</td>
+        <td class="px-4 py-2.5 tabular-nums">{{ invoice.total }}</td>
+        <td class="px-4 py-2.5 font-medium tabular-nums">{{ invoice.balance }}</td>
+        <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/client/billing/invoices/${invoice.number}`"
             class="text-content-muted hover:text-content text-xs underline-offset-4 hover:underline"

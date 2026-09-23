@@ -115,7 +115,7 @@ function formatDate(value: string | null): string {
 
           <div class="mt-4 grid gap-5 sm:grid-cols-2">
             <div v-for="entry in grouped" :key="entry.group">
-              <p class="text-content-subtle pb-2 text-[11px] font-medium">{{ entry.group }}</p>
+              <p class="text-content-subtle text-label pb-2 font-medium">{{ entry.group }}</p>
 
               <div class="flex flex-col gap-2.5">
                 <div v-for="scope in entry.scopes" :key="scope.value">

@@ -136,10 +136,10 @@ function formatDateTime(value: string | null): string {
       :headers="['ID', 'First name', 'Last name', 'Email address', 'Two factor', 'Last login', '']"
     >
       <tr v-for="user in users.data" :key="user.id">
-        <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">{{ user.id.slice(-8) }}</td>
-        <td class="px-5 py-3.5">{{ user.firstName }}</td>
-        <td class="px-5 py-3.5">{{ user.lastName }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">{{ user.id.slice(-8) }}</td>
+        <td class="px-4 py-2.5">{{ user.firstName }}</td>
+        <td class="px-4 py-2.5">{{ user.lastName }}</td>
+        <td class="px-4 py-2.5">
           <span class="font-medium">{{ user.email }}</span>
           <Link
             v-if="user.customer"
@@ -149,15 +149,15 @@ function formatDateTime(value: string | null): string {
             {{ user.customer }}
           </Link>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="user.twoFactor ? 'success' : 'neutral'">
             {{ user.twoFactor ? 'Enabled' : 'Disabled' }}
           </AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(user.lastLoginAt) }}
         </td>
-        <td class="px-5 py-3.5 text-right">
+        <td class="px-4 py-2.5 text-right">
           <!-- The panel is teleported out of the table: an `absolute` one
                is clipped by the table's own horizontal scroll. -->
           <AppMenu v-if="can.manage" v-slot="{ close }" label="Manage user">

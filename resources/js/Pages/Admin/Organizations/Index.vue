@@ -51,24 +51,24 @@ function formatDate(value: string): string {
   >
     <AppTable :headers="['Name', 'Type', 'Slug', 'Below it', 'Active', 'Created']">
       <tr v-for="organization in organizations" :key="organization.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <span class="font-medium" :style="{ paddingLeft: `${organization.depth * 1.25}rem` }">
             <span v-if="organization.depth > 0" class="text-content-subtle" aria-hidden="true"
               >└ </span
             >{{ organization.name }}
           </span>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="tone(organization.type)">{{ organization.typeLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 font-mono text-xs">{{ organization.slug }}</td>
-        <td class="px-5 py-3.5 tabular-nums">{{ organization.children }}</td>
-        <td class="px-5 py-3.5">
+        <td class="text-content-muted px-4 py-2.5 font-mono text-xs">{{ organization.slug }}</td>
+        <td class="px-4 py-2.5 tabular-nums">{{ organization.children }}</td>
+        <td class="px-4 py-2.5">
           <AppBadge :tone="organization.isActive ? 'success' : 'warning'">
             {{ organization.isActive ? 'Active' : 'Inactive' }}
           </AppBadge>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(organization.createdAt) }}
         </td>
       </tr>

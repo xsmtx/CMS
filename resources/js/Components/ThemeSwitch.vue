@@ -23,7 +23,7 @@ const { choice, set, options } = useTheme()
       type="button"
       role="radio"
       :aria-checked="choice === option.value"
-      class="pressable rounded-[calc(var(--radius-sm)-2px)] px-2 py-1 text-[11px] font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
+      class="pressable text-label rounded-[calc(var(--radius-sm)-2px)] px-2 py-1 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
       :class="
         choice === option.value
           ? 'bg-surface-raised text-content shadow-(--shadow-raised)'

@@ -240,7 +240,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
       ]"
     >
       <tr v-for="row in transactions.data" :key="row.id">
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <Link
             v-if="row.customerId"
             :href="`/admin/customers/${row.customerId}`"
@@ -257,17 +257,17 @@ function withBlank(options: Option[], label = 'All'): Option[] {
             {{ row.invoice }}
           </Link>
         </td>
-        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(row.occurredAt) }}
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <span v-if="row.gatewayLabel">{{ row.gatewayLabel }}</span>
           <span v-else class="text-content-muted">—</span>
-          <span v-if="row.reference" class="text-content-subtle block font-mono text-[11px]">
+          <span v-if="row.reference" class="text-content-subtle text-label block font-mono">
             {{ row.reference }}
           </span>
         </td>
-        <td class="px-5 py-3.5">
+        <td class="px-4 py-2.5">
           <AppBadge :tone="row.increasesBalance ? 'success' : 'neutral'">
             {{ row.kindLabel }}
           </AppBadge>
@@ -275,14 +275,14 @@ function withBlank(options: Option[], label = 'All'): Option[] {
             {{ row.description }}
           </span>
         </td>
-        <td class="px-5 py-3.5 text-right tabular-nums">
+        <td class="px-4 py-2.5 text-right tabular-nums">
           <span v-if="row.increasesBalance">{{ row.amount }}</span>
           <span v-else class="text-content-subtle">—</span>
         </td>
-        <td class="text-content-muted px-5 py-3.5 text-right tabular-nums">
+        <td class="text-content-muted px-4 py-2.5 text-right tabular-nums">
           {{ row.fees ?? '—' }}
         </td>
-        <td class="px-5 py-3.5 text-right tabular-nums">
+        <td class="px-4 py-2.5 text-right tabular-nums">
           <span v-if="!row.increasesBalance">{{ row.amount }}</span>
           <span v-else class="text-content-subtle">—</span>
         </td>

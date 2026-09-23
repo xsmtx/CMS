@@ -152,8 +152,12 @@ interface NavGroup {
  * Setup and Utilities are sub-headed rather than flat, the way WHMCS's are:
  * a dropdown of fourteen undifferentiated links is a list nobody reads.
  */
+/*
+ * No Dashboard row. The wordmark is the way home — every panel an
+ * operator has used works that way, and a menu whose first entry
+ * duplicates the logo spends a slot saying nothing.
+ */
 const groups: NavGroup[] = [
-  { label: 'Dashboard', href: '/admin', permission: 'platform.health.view' },
   {
     label: 'Clients',
     items: [
@@ -471,9 +475,15 @@ onBeforeUnmount(() => {
            same line, because a second full-width strip costs an inch of
            every screen an operator spends the day scrolling. -->
       <div class="flex h-14 items-center gap-3 px-5 sm:px-8">
+        <!-- The way home, and the only one. It carries `aria-current` when
+             you are on it, because a logo doing navigation duty silently is
+             a link screen readers cannot place. -->
         <Link
           href="/admin"
-          class="pressable flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
+          :aria-current="currentPath === '/admin' ? 'page' : undefined"
+          :title="`${brand.name} dashboard`"
+          class="pressable text-title mr-1 flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] font-semibold transition-colors duration-(--duration-fast)"
+          :class="currentPath === '/admin' ? 'text-content' : 'text-content hover:text-accent'"
         >
           <img
             v-if="brand.logoUrl"
@@ -481,8 +491,18 @@ onBeforeUnmount(() => {
             :alt="brand.name"
             class="h-6 w-auto max-w-[9rem] object-contain"
           />
-          <span v-else>{{ brand.name }}</span>
+          <template v-else>
+            <span
+              class="bg-accent text-accent-content grid size-5 place-items-center rounded-[5px] text-[10px] font-bold"
+              aria-hidden="true"
+            >
+              {{ brand.name.slice(0, 1).toUpperCase() }}
+            </span>
+            <span>{{ brand.name }}</span>
+          </template>
         </Link>
+
+        <span class="bg-line h-5 w-px shrink-0" aria-hidden="true" />
 
         <nav data-admin-nav aria-label="Admin" class="min-w-0 flex-1">
           <button
@@ -500,10 +520,10 @@ onBeforeUnmount(() => {
                 v-if="group.href"
                 :href="group.href"
                 :aria-current="isCurrentGroup(group) ? 'page' : undefined"
-                class="pressable inline-flex h-14 items-center rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body inline-flex items-center rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group)
-                    ? 'text-content font-medium'
+                    ? 'bg-surface-sunken text-content'
                     : 'text-content-muted hover:text-content'
                 "
               >
@@ -513,10 +533,10 @@ onBeforeUnmount(() => {
               <button
                 v-else
                 type="button"
-                class="pressable inline-flex h-14 items-center gap-1 rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group) || openGroup === group.label
-                    ? 'text-content font-medium'
+                    ? 'bg-surface-sunken text-content'
                     : 'text-content-muted hover:text-content'
                 "
                 :aria-expanded="openGroup === group.label"
@@ -540,23 +560,11 @@ onBeforeUnmount(() => {
                 </svg>
               </button>
 
-              <!-- The marker sits on the bar rather than under the label,
-                   so a group and its open panel read as one object.
-
-                   Cyan rather than the primary: "where you are" and "what to
-                   click" are different sentences, and the rest of the panel
-                   says the second one in blue. -->
-              <span
-                v-if="isCurrentGroup(group)"
-                class="bg-highlight absolute inset-x-3 bottom-0 h-0.5 rounded-full"
-                aria-hidden="true"
-              />
-
               <!-- Grows out of its own trigger: a panel anchored to the thing
                  you pressed needs no explanation. -->
               <div
                 v-if="(group.items ?? []).length > 0 && openGroup === group.label"
-                class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
+                class="panel-enter border-line bg-surface-raised absolute top-full left-0 z-20 mt-1.5 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
               >
                 <ul class="space-y-0.5">
                   <li
@@ -573,11 +581,11 @@ onBeforeUnmount(() => {
                       <Link
                         :href="item.href"
                         :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                        class="pressable block flex-1 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                        class="pressable text-body block flex-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                         :class="
                           isCurrent(item.href)
-                            ? 'bg-surface-sunken text-content font-medium'
-                            : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+                            ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
+                            : 'text-content-muted hover:bg-surface-sunken hover:text-content border-l-2 border-transparent'
                         "
                       >
                         {{ item.label }}
@@ -608,18 +616,18 @@ onBeforeUnmount(() => {
                        reaching for. -->
                     <div
                       v-if="item.children && openItem === item.label"
-                      class="border-line bg-surface-raised absolute top-0 left-full z-30 ml-1 min-w-[14rem] rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
+                      class="panel-enter border-line bg-surface-raised absolute top-0 left-full z-30 ml-1.5 min-w-[14rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
                     >
                       <ul class="space-y-0.5">
                         <li v-for="child in item.children" :key="child.href">
                           <Link
                             :href="child.href"
                             :aria-current="isCurrent(child.href) ? 'page' : undefined"
-                            class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                            class="pressable text-body block rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                             :class="
                               isCurrent(child.href)
-                                ? 'bg-surface-sunken text-content font-medium'
-                                : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+                                ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
+                                : 'text-content-muted hover:bg-surface-sunken hover:text-content border-l-2 border-transparent'
                             "
                           >
                             {{ child.label }}
@@ -644,7 +652,7 @@ onBeforeUnmount(() => {
               type="search"
               placeholder="Client, domain, hostname, invoice…"
               aria-label="Search everything"
-              class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-56 rounded-[var(--radius-sm)] border px-3 py-1.5 text-sm sm:w-72"
+              class="border-line bg-surface text-content placeholder:text-content-subtle text-body focus:border-accent w-56 rounded-[var(--radius-sm)] border px-2.5 py-1.5 transition-colors duration-(--duration-fast) sm:w-72"
               @keydown.escape="searching = false"
             />
           </form>
@@ -761,7 +769,7 @@ onBeforeUnmount(() => {
              is two taps to reach one link. -->
         <div v-if="mobileOpen" class="border-line border-t py-3 lg:hidden">
           <div v-for="group in visibleGroups" :key="group.label" class="mb-4 last:mb-0">
-            <p class="text-content-subtle px-2 pb-1 text-[11px] font-medium">{{ group.label }}</p>
+            <p class="text-content-subtle text-label px-2 pb-1 font-medium">{{ group.label }}</p>
 
             <ul class="space-y-0.5">
               <li v-if="group.href">
@@ -780,7 +788,7 @@ onBeforeUnmount(() => {
                     class="block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
                     :class="
                       isCurrent(item.href)
-                        ? 'bg-surface-sunken text-content font-medium'
+                        ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
                         : 'text-content-muted hover:bg-surface-sunken'
                     "
                   >
@@ -804,21 +812,25 @@ onBeforeUnmount(() => {
 
     <!-- pb: the footer is fixed, so the last row of a table would sit
          underneath it without this. -->
-    <main id="main" class="px-5 pt-9 pb-24 sm:px-8 sm:pt-12 sm:pb-24">
+    <main id="main" class="px-5 pt-6 pb-20 sm:px-8 sm:pt-8">
       <!-- Wider than the sidebar allowed: the horizontal space the menu
            gave back belongs to the tables, which is where an operator
            actually spends the day. -->
       <div class="mx-auto max-w-7xl">
-        <div class="mb-9">
-          <h1 class="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em]">
-            {{ heading }}
-          </h1>
-          <p
-            v-if="description"
-            class="text-content-muted mt-2.5 max-w-[62ch] text-[0.9375rem] leading-relaxed"
-          >
-            {{ description }}
-          </p>
+        <!-- Title and actions on one line, the explanation under it in
+             chrome type. A 28px heading with a paragraph beneath reads like
+             a marketing page; an operator wants the name of the screen and
+             the button they came for, in the same glance. -->
+        <div class="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <div class="min-w-0">
+            <h1 class="text-page font-semibold">{{ heading }}</h1>
+            <p v-if="description" class="text-content-muted text-chrome mt-1 max-w-[80ch]">
+              {{ description }}
+            </p>
+          </div>
+          <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
+            <slot name="actions" />
+          </div>
         </div>
 
         <AppAlert v-if="flash?.error" tone="danger" class="mb-6">{{ flash.error }}</AppAlert>

@@ -135,7 +135,7 @@ defineExpose({ insert })
           {{ tool.label }}
         </button>
 
-        <span class="text-content-subtle ml-auto pr-1 text-[11px] tabular-nums">
+        <span class="text-content-subtle text-label ml-auto pr-1 tabular-nums">
           {{ characters }}
         </span>
       </div>
