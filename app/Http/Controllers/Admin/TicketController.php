@@ -11,6 +11,7 @@ use App\Domain\Support\TicketPriority;
 use App\Domain\Support\TicketStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Support\TicketReplyRequest;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Support\Models\CannedResponse;
 use App\Infrastructure\Support\Models\Department;
@@ -43,7 +44,7 @@ final class TicketController extends Controller
         $breaching = $request->boolean('breaching');
 
         $tickets = Ticket::query()
-            ->with(['customer.primaryContact', 'department', 'assignee'])
+            ->with([...Customer::displayNameWith('customer'), 'department', 'assignee'])
             ->when(
                 TicketStatus::tryFrom($status) instanceof TicketStatus,
                 fn ($query) => $query->where('status', $status),
@@ -85,7 +86,7 @@ final class TicketController extends Controller
         $this->authorize('view', $ticket);
 
         $ticket->load([
-            'customer.primaryContact', 'contact', 'department', 'assignee',
+            ...Customer::displayNameWith('customer'), 'contact', 'department', 'assignee',
             'replies.attachments', 'service', 'domain', 'invoice',
         ]);
 

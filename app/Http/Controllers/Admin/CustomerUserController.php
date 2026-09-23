@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Identity\SetContactPasswordRequest;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Identity\Models\LoginHistory;
 use App\Support\Audit\Facades\Audit;
@@ -63,7 +64,10 @@ final class CustomerUserController extends Controller
                 });
             })
             ->select('contacts.*')
-            ->with('customer:id,company_name,legal_name')
+            // Not just `customer`: the name shown for a sole trader comes
+            // from their primary contact, and for a customer with neither
+            // from the organization.
+            ->with(Customer::displayNameWith('customer'))
             // The last time they actually got in. A failed attempt is not a
             // login, and showing one would answer the question wrongly.
             ->addSelect([

@@ -129,6 +129,38 @@ final class Customer extends Model implements AuditLabel
     }
 
     /**
+     * The relations `displayName()` may read, ready to hand to `with()`.
+     *
+     * `displayName()` falls through the company name, the legal name, the
+     * primary contact and finally the organization. A list that eager-loads
+     * the customer alone therefore lazy-loads the moment one row has no
+     * company name — and Laravel only reports that when the page returns
+     * more than one row, which is why it reaches an operator rather than a
+     * test.
+     *
+     * Stating the list in one place is the point: every list that shows a
+     * customer's name asks this method rather than remembering the chain,
+     * so the next list added cannot get it wrong.
+     *
+     *   Customer::query()->with(Customer::displayNameWith())
+     *   Contact::query()->with(Customer::displayNameWith('customer'))
+     *
+     * No column constraints, deliberately. A partial select is the other
+     * half of this same trap: it leaves the attributes a caller did not
+     * anticipate missing, and strict mode throws for those too.
+     *
+     * @return list<string>
+     */
+    public static function displayNameWith(?string $relation = null): array
+    {
+        if ($relation === null) {
+            return ['primaryContact', 'organization'];
+        }
+
+        return [$relation, $relation.'.primaryContact', $relation.'.organization'];
+    }
+
+    /**
      * The name a human uses for this customer. Falls through company, legal
      * name, then the primary contact, so a sole trader with no company name
      * is never rendered as an empty string.

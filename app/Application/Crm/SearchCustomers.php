@@ -153,7 +153,7 @@ final readonly class SearchCustomers
 
         return $query
             ->with([
-                'primaryContact:id,customer_id,first_name,last_name,email',
+                ...Customer::displayNameWith(),
                 'tags:id,name',
             ])
             // Counted in the list query, never read per row: a hundred

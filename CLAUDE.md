@@ -272,11 +272,16 @@ against a single fixture and fails the first time an operator opens it.
 `tests/Feature/LazyLoadingTest.php` creates at least two of everything on
 purpose; keep it that way.
 
-`Customer::displayName()` falls back to `primaryContact` when there is no
-company or legal name, so **any list that renders a customer name must
-eager-load `customer.primaryContact`**, not just `customer`. A customer
-created at checkout by an individual has no company name, which is why this
-only ever breaks on real data.
+`Customer::displayName()` falls back to `primaryContact`, then to
+`organization`, when there is no company or legal name. So **any query whose
+rows render a customer name eager-loads `Customer::displayNameWith()`** —
+`Customer::displayNameWith('customer')` when the customer hangs off the row.
+Never `with('customer')` alone, and never a partial select on it: a column
+the caller did not anticipate is the same exception by another route. A
+customer created at checkout by an individual has no company name, which is
+why this only ever breaks on real data. It has now been found twice, on
+orders and invoices in Phase 10 and on Manage users in Phase 11, which is
+what the helper exists to stop.
 
 A presenter that recurses into a relation must stop at the depth the data
 actually has. An order line is a product with its addons under it — one

@@ -12,6 +12,7 @@ use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Provisioning\ServiceActionRequest;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Provisioning\Jobs\ProvisionService as ProvisionServiceJob;
 use App\Infrastructure\Provisioning\Jobs\RunServiceAction;
 use App\Infrastructure\Provisioning\Models\Service;
@@ -49,7 +50,7 @@ final class ServiceController extends Controller
         $status = $request->string('status')->toString();
 
         $services = Service::query()
-            ->with(['customer.primaryContact', 'server'])
+            ->with([...Customer::displayNameWith('customer'), 'server'])
             ->when(
                 ServiceStatus::tryFrom($status) instanceof ServiceStatus,
                 fn ($query) => $query->where('status', $status),
@@ -79,7 +80,7 @@ final class ServiceController extends Controller
     {
         $this->authorize('view', $service);
 
-        $service->load(['customer.primaryContact', 'server.group', 'product', 'options', 'order']);
+        $service->load([...Customer::displayNameWith('customer'), 'server.group', 'product', 'options', 'order']);
 
         $module = $service->module === null ? null : $this->modules->find($service->module);
         $capabilities = $module instanceof ProvisioningModule ? $module->capabilities() : null;

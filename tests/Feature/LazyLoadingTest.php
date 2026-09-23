@@ -148,3 +148,48 @@ it('shows an order whose line has two addons under it', function (): void {
         ->get('/admin/orders/'.$order->id)
         ->assertOk();
 });
+
+it('lists customers for customers who have no company name', function (): void {
+    individuals(2);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers')
+        ->assertOk();
+});
+
+/**
+ * The deepest fallback: no company name, no legal name and nobody on the
+ * record, so `displayName()` reaches for the organization. Two of them,
+ * because one would not be reported.
+ */
+it('lists customers who have no company name and nobody on the record', function (): void {
+    Customer::factory()->count(2)->create(['company_name' => null, 'legal_name' => null]);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers')
+        ->assertOk();
+});
+
+it('lists customer users for customers who have no company name', function (): void {
+    individuals(2);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customer-users')
+        ->assertOk();
+});
+
+/**
+ * The manage-users list shows the customer each person belongs to, and a
+ * second person on the same customer is the ordinary case — a company with
+ * an owner and an accountant. Both rows read the customer's display name.
+ */
+it('lists two users of the same customer without a company name', function (): void {
+    $customer = Customer::factory()->create(['company_name' => null, 'legal_name' => null]);
+
+    Contact::factory()->forCustomer($customer)->primary()->create();
+    Contact::factory()->forCustomer($customer)->create();
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customer-users')
+        ->assertOk();
+});

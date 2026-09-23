@@ -17,6 +17,7 @@ use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\InvoiceItem;
 use App\Infrastructure\Billing\Models\Payment;
 use App\Infrastructure\Billing\Models\Transaction;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,7 @@ final class InvoiceController extends Controller
         $status = $request->string('status')->toString();
 
         $invoices = Invoice::query()
-            ->with('customer.primaryContact')
+            ->with(Customer::displayNameWith('customer'))
             ->when(
                 InvoiceStatus::tryFrom($status) instanceof InvoiceStatus,
                 fn ($query) => $query->where('status', $status),
@@ -66,7 +67,7 @@ final class InvoiceController extends Controller
         $this->authorize('view', $invoice);
 
         $invoice->load([
-            'customer.primaryContact',
+            ...Customer::displayNameWith('customer'),
             'order',
             'items',
             'payments',

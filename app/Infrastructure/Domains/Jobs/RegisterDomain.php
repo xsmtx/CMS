@@ -11,6 +11,7 @@ use App\Domain\Domains\DomainOperation;
 use App\Domain\Domains\DomainStatus;
 use App\Domain\Operations\Contracts\ReportsToOperations;
 use App\Domain\Provisioning\OperationOutcome;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Operations\Concerns\RecordsOperation;
 use App\Support\Correlation\CorrelationContext;
@@ -139,7 +140,7 @@ final class RegisterDomain implements ReportsToOperations, ShouldBeUnique, Shoul
     {
         return Domain::query()
             ->withoutGlobalScope('organization')
-            ->with(['customer.primaryContact', 'tld'])
+            ->with([...Customer::displayNameWith('customer'), 'tld'])
             ->find($this->domainId);
     }
 }

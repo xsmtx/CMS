@@ -10,6 +10,7 @@ use App\Domain\Ordering\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ordering\OrderStatusRequest;
 use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
 use App\Infrastructure\Ordering\Models\OrderItemOption;
@@ -31,7 +32,7 @@ final class OrderController extends Controller
         $status = $request->string('status')->toString();
 
         $orders = Order::query()
-            ->with('customer.primaryContact')
+            ->with(Customer::displayNameWith('customer'))
             ->when(
                 OrderStatus::tryFrom($status) instanceof OrderStatus,
                 fn ($query) => $query->where('status', $status),
@@ -69,7 +70,7 @@ final class OrderController extends Controller
         return Inertia::render('Admin/Orders/Review', [
             'orders' => Order::query()
                 ->awaitingReview()
-                ->with('customer.primaryContact')
+                ->with(Customer::displayNameWith('customer'))
                 ->orderBy('placed_at')
                 ->get()
                 ->map(fn (Order $order): array => [
@@ -87,7 +88,7 @@ final class OrderController extends Controller
         $this->authorize('view', $order);
 
         $order->load([
-            'customer.primaryContact',
+            ...Customer::displayNameWith('customer'),
             'contact',
             'items.options',
             'items.children.options',

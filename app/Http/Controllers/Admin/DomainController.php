@@ -12,6 +12,7 @@ use App\Domain\Domains\DomainStatus;
 use App\Domain\Operations\OperationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Domains\DomainActionRequest;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Jobs\RegisterDomain;
 use App\Infrastructure\Domains\Jobs\RunDomainAction;
 use App\Infrastructure\Domains\Models\Domain;
@@ -48,7 +49,7 @@ final class DomainController extends Controller
         $expiring = $request->boolean('expiring');
 
         $domains = Domain::query()
-            ->with('customer.primaryContact')
+            ->with(Customer::displayNameWith('customer'))
             ->when(
                 DomainStatus::tryFrom($status) instanceof DomainStatus,
                 fn ($query) => $query->where('status', $status),
@@ -79,7 +80,7 @@ final class DomainController extends Controller
     {
         $this->authorize('view', $domain);
 
-        $domain->load(['customer.primaryContact', 'tld', 'order']);
+        $domain->load([...Customer::displayNameWith('customer'), 'tld', 'order']);
 
         $registrar = $domain->registrar === null ? null : $this->registrars->find($domain->registrar);
         $capabilities = $registrar instanceof DomainRegistrar ? $registrar->capabilities() : null;
