@@ -20,6 +20,7 @@ enum AutomationTask: string
     case DomainExpiry = 'domain-expiry';
     case Retries = 'retries';
     case Sync = 'sync';
+    case Webhooks = 'webhooks';
     case Cleanup = 'cleanup';
 
     public function labelKey(): string
@@ -47,7 +48,7 @@ enum AutomationTask: string
     public function intervalMinutes(): int
     {
         return match ($this) {
-            self::Retries => 5,
+            self::Retries, self::Webhooks => 5,
             self::Sync => 360,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

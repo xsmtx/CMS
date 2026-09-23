@@ -9,6 +9,7 @@ use App\Application\Automation\Runs\GenerateRenewalInvoices;
 use App\Application\Automation\Runs\MarkInvoicesOverdue;
 use App\Application\Automation\Runs\NotifyExpiringDomains;
 use App\Application\Automation\Runs\RetryFailedOperations;
+use App\Application\Automation\Runs\RetryWebhookDeliveries;
 use App\Application\Automation\Runs\RunDunningSequence;
 use App\Application\Automation\Runs\SyncWithProviders;
 use App\Domain\Automation\AutomationTask;
@@ -37,6 +38,7 @@ final readonly class TaskRegistry
             AutomationTask::DomainExpiry => NotifyExpiringDomains::class,
             AutomationTask::Retries => RetryFailedOperations::class,
             AutomationTask::Sync => SyncWithProviders::class,
+            AutomationTask::Webhooks => RetryWebhookDeliveries::class,
             AutomationTask::Cleanup => CleanUpExpiredRecords::class,
         });
     }

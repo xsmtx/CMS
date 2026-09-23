@@ -71,6 +71,12 @@ Schedule::command('platform:run sync')
     ->onOneServer()
     ->runInBackground();
 
+Schedule::command('platform:run webhooks')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run cleanup')
     ->dailyAt('03:00')
     ->withoutOverlapping()

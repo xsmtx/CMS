@@ -103,6 +103,27 @@ final readonly class CleanUpExpiredRecords implements AutomationRun
                 ->where('expires_at', '<', $now->subDays($this->days('tokens', 30)))
                 ->delete(),
 
+            // Holds a response body, which is customer data. Kept long
+            // enough to cover a client's retry window and no longer.
+            'idempotency_keys' => fn (): int => DB::table('idempotency_keys')
+                ->where('created_at', '<', $now->subHours(
+                    (int) config('platform.api.idempotency.retain_hours', 24),
+                ))
+                ->delete(),
+
+            'api_activity' => fn (): int => DB::table('api_requests')
+                ->where('created_at', '<', $now->subDays(
+                    (int) config('platform.api.activity.retain_days', 30),
+                ))
+                ->delete(),
+
+            'webhook_deliveries' => fn (): int => DB::table('webhook_deliveries')
+                ->whereNotNull('delivered_at')
+                ->where('created_at', '<', $now->subDays(
+                    (int) config('platform.api.webhooks.retain_days', 30),
+                ))
+                ->delete(),
+
             'run_details' => fn (): int => DB::table('automation_run_items')
                 ->whereIn(
                     'run_id',

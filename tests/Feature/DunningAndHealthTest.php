@@ -172,7 +172,7 @@ it('shows staff the tasks even before any of them has run', function (): void {
             ->component('Admin/Automation/Index')
             // A list of past runs alone cannot answer "is the renewal sweep
             // working", because the answer there is an absence.
-            ->has('tasks', 7)
+            ->has('tasks', 8)
             ->where('tasks.0.lastRun', null));
 });
 

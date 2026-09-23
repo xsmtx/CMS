@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Infrastructure\Api\Models\ApiRequestRecord;
 use App\Infrastructure\Audit\Models\AuditLog;
 use App\Infrastructure\Billing\Models\GatewayEventRecord;
 use App\Infrastructure\Identity\Models\LoginHistory;
@@ -43,11 +44,14 @@ it('bounds every model that carries an organization', function (): void {
 it('stamps the organization on write for every model that can carry one', function (): void {
     // Nullable-organization models are exempt by design: a failed sign-in
     // has no actor to attribute, a webhook arrives before anyone knows
-    // which organization it concerns, and a message to a staff member has
-    // no customer behind it. Refusing to record any of them would be worse
-    // than recording it without one. Each still carries the nullable
-    // boundary scope, which the test above checks.
+    // which organization it concerns, a message to a staff member has no
+    // customer behind it, and an API request refused for a bad token has
+    // no organization at all — which is exactly the request most worth
+    // recording. Refusing to record any of them would be worse than
+    // recording it without one. Each still carries the nullable boundary
+    // scope, which the test above checks.
     $nullable = [
+        ApiRequestRecord::class,
         AuditLog::class,
         GatewayEventRecord::class,
         InAppNotification::class,

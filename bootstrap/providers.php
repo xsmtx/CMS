@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Providers\AccessServiceProvider;
+use App\Providers\ApiServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AutomationServiceProvider;
 use App\Providers\BillingServiceProvider;
@@ -20,6 +21,7 @@ return [
     OrderingServiceProvider::class,
     BillingServiceProvider::class,
     ProvisioningServiceProvider::class,
+    ApiServiceProvider::class,
     AutomationServiceProvider::class,
     DomainServiceProvider::class,
     NotificationServiceProvider::class,

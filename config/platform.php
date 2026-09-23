@@ -338,6 +338,51 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Public API
+    |--------------------------------------------------------------------------
+    |
+    | Rate limits are per token, with a per-IP fallback for requests that
+    | never got as far as a token. Writes are limited harder than reads
+    | because a runaway loop that only reads is a nuisance and one that
+    | writes is an incident.
+    |
+    | Idempotency records are kept long enough to cover a client's retry
+    | window and no longer: they hold a response body, which is customer
+    | data, and keeping them for a year would be keeping a copy of the API's
+    | output forever.
+    |
+    */
+
+    'api' => [
+        'rate_limit' => [
+            'per_minute' => (int) env('API_RATE_LIMIT', 120),
+            'writes_per_minute' => (int) env('API_WRITE_RATE_LIMIT', 30),
+            'anonymous_per_minute' => (int) env('API_ANONYMOUS_RATE_LIMIT', 20),
+        ],
+
+        'idempotency' => [
+            'retain_hours' => (int) env('API_IDEMPOTENCY_RETAIN_HOURS', 24),
+        ],
+
+        'activity' => [
+            'retain_days' => (int) env('API_ACTIVITY_RETAIN_DAYS', 30),
+        ],
+
+        'webhooks' => [
+            'timeout' => (int) env('WEBHOOK_TIMEOUT', 10),
+            'max_attempts' => (int) env('WEBHOOK_MAX_ATTEMPTS', 6),
+            'retry_base_minutes' => (int) env('WEBHOOK_RETRY_BASE_MINUTES', 1),
+            'retry_cap_minutes' => (int) env('WEBHOOK_RETRY_CAP_MINUTES', 360),
+            // An endpoint that has failed this many times running is
+            // switched off rather than posted to forever. A dead URL is a
+            // slow denial of service against our own queue.
+            'disable_after_failures' => (int) env('WEBHOOK_DISABLE_AFTER', 20),
+            'retain_days' => (int) env('WEBHOOK_RETAIN_DAYS', 30),
+        ],
+    ],
+
     'automation' => [
         // How far ahead a renewal invoice is raised.
         'renewal_lead_days' => (int) env('RENEWAL_LEAD_DAYS', 14),
