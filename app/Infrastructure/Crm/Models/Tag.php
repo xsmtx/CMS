@@ -26,6 +26,7 @@ final class Tag extends Model implements AuditLabel
 
     /** @use HasFactory<TagFactory> */
     use HasFactory;
+
     use HasUlids;
 
     protected $table = 'tags';

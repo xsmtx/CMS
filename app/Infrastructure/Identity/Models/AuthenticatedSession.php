@@ -34,6 +34,7 @@ final class AuthenticatedSession extends Model
 
     /** @use HasFactory<AuthenticatedSessionFactory> */
     use HasFactory;
+
     use HasUlids;
 
     protected $table = 'authenticated_sessions';

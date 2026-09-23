@@ -39,6 +39,7 @@ final class CustomFieldDefinition extends Model implements AuditLabel
 
     /** @use HasFactory<CustomFieldDefinitionFactory> */
     use HasFactory;
+
     use HasUlids;
 
     protected $table = 'custom_field_definitions';

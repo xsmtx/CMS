@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Shared;
 
-use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Shared\Models\NumberSequence;
 use Illuminate\Support\Facades\DB;
 
@@ -30,9 +29,11 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class AllocateNumber
 {
+    public function __construct(private ResolveSeller $sellers) {}
+
     public function handle(string $organizationId, string $key, string $defaultPrefix = '', int $defaultPadding = 6): string
     {
-        $organizationId = $this->sellerFor($organizationId);
+        $organizationId = $this->sellers->forOrganization($organizationId);
 
         $sequence = NumberSequence::query()
             ->withoutGlobalScope('organization')
@@ -60,20 +61,5 @@ final readonly class AllocateNumber
             ->update(['next_value' => $value + 1, 'updated_at' => now()]);
 
         return $sequence->format($value);
-    }
-
-    /**
-     * Who is selling. Usually the provider; a reseller for its own
-     * customers, once Phase 11 gives them their own billing.
-     */
-    private function sellerFor(string $organizationId): string
-    {
-        $organization = Organization::query()
-            ->withoutGlobalScope('organization')
-            ->find($organizationId);
-
-        return $organization instanceof Organization
-            ? $organization->sellerId()
-            : $organizationId;
     }
 }

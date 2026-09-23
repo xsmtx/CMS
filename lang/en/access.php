@@ -35,6 +35,7 @@ return [
         'support' => 'Support',
         'content' => 'Content',
         'notifications' => 'Notifications',
+        'automation' => 'Automation',
         'portal' => 'Client portal',
     ],
 ];

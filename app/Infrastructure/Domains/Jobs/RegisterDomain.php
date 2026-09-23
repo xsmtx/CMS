@@ -9,8 +9,10 @@ use App\Application\Domains\RunDomainOperation;
 use App\Application\Domains\TransitionDomain;
 use App\Domain\Domains\DomainOperation;
 use App\Domain\Domains\DomainStatus;
+use App\Domain\Operations\Contracts\ReportsToOperations;
 use App\Domain\Provisioning\OperationOutcome;
 use App\Infrastructure\Domains\Models\Domain;
+use App\Infrastructure\Operations\Concerns\RecordsOperation;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Correlation\CorrelationId;
 use Illuminate\Bus\Queueable;
@@ -34,11 +36,12 @@ use Throwable;
  * rebooting comes back in a minute; a registry under load, or a TLD whose
  * registry runs batch windows, does not.
  */
-final class RegisterDomain implements ShouldBeUnique, ShouldQueue
+final class RegisterDomain implements ReportsToOperations, ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RecordsOperation;
     use SerializesModels;
 
     public int $uniqueFor = 1800;
@@ -76,36 +79,49 @@ final class RegisterDomain implements ShouldBeUnique, ShouldQueue
             $correlation->set($carried);
         }
 
+        $this->markRunning();
+
         $domain = $this->domain();
 
         if ($domain === null) {
+            $this->markCompleted();
+
             return;
         }
 
         if (! $domain->status->canRegister()) {
             // Already registered, or cancelled while this sat in the queue.
             // Registering a second time costs real money at a registry.
+            $this->markCompleted();
+
             return;
         }
 
         if ($domain->registrar === null || $domain->registrar === '') {
             // No registrar: an operator registers it by hand. Leaving it
-            // `pending` is correct — it is waiting for a person.
+            // `pending` is correct — it is waiting for a person, which is
+            // exactly what the manual-intervention state is for.
+            $this->markNeedingIntervention((string) __('domains.errors.no_registrar'));
+
             return;
         }
 
         $operations->register($domain);
+
+        $this->markCompleted();
     }
 
     public function failed(?Throwable $exception): void
     {
+        $message = $exception?->getMessage() ?? (string) __('domains.errors.job_failed');
+
+        $this->markFailed($message);
+
         $domain = $this->domain();
 
         if ($domain === null) {
             return;
         }
-
-        $message = $exception?->getMessage() ?? (string) __('domains.errors.job_failed');
 
         app(RecordDomainEvent::class)->handle(
             $domain,

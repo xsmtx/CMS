@@ -78,6 +78,8 @@ final class SystemRoleSeeder extends Seeder
                 'content.announcements.manage',
                 'content.kb.manage',
                 'notifications.view',
+                'operations.view',
+                'automation.view',
             ],
             SystemRole::AccountOwner => array_keys($registry->forScope(RoleScope::Customer)),
             // A technical contact or an employee: enough to see what was

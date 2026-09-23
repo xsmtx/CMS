@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Domains\TransitionDomain;
+use App\Application\Operations\WatchedDispatch;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Domains\DomainOperation;
 use App\Domain\Domains\DomainStatus;
+use App\Domain\Operations\OperationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Domains\DomainActionRequest;
 use App\Infrastructure\Domains\Jobs\RegisterDomain;
@@ -35,6 +37,7 @@ final class DomainController extends Controller
         private readonly CurrentActor $actor,
         private readonly RegistrarRegistry $registrars,
         private readonly CorrelationContext $correlation,
+        private readonly WatchedDispatch $dispatcher,
     ) {}
 
     public function index(Request $request): Response
@@ -137,7 +140,12 @@ final class DomainController extends Controller
     {
         $this->authorize('register', $domain);
 
-        dispatch(new RegisterDomain($domain->id, $this->correlation->id()));
+        $this->dispatcher->handle(
+            OperationType::DomainRegister,
+            $domain,
+            new RegisterDomain($domain->id, $this->correlation->id()),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('domains.domains.queued'));
     }
@@ -154,7 +162,21 @@ final class DomainController extends Controller
         /** @var list<string> $nameservers */
         $nameservers = array_values(array_filter((array) $request->input('nameservers', [])));
 
-        dispatch(new RunDomainAction($domain->id, $operation, $request->has('flag') ? $request->boolean('flag') : null, $nameservers, $request->integer('years') > 0 ? $request->integer('years') : 1, $this->correlation->id()));
+        $this->dispatcher->handle(
+            $operation === DomainOperation::Renew
+                ? OperationType::DomainRenew
+                : OperationType::DomainSync,
+            $domain,
+            new RunDomainAction(
+                $domain->id,
+                $operation,
+                $request->has('flag') ? $request->boolean('flag') : null,
+                $nameservers,
+                $request->integer('years') > 0 ? $request->integer('years') : 1,
+                $this->correlation->id(),
+            ),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('domains.domains.queued'));
     }

@@ -326,6 +326,72 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Automation
+    |--------------------------------------------------------------------------
+    |
+    | Every one of these is a question about state, so the numbers change
+    | what is asked rather than when. Retentions are generous on purpose: a
+    | cleanup that deleted something somebody wanted is not undone by a
+    | shorter run next time.
+    |
+    */
+
+    'automation' => [
+        // How far ahead a renewal invoice is raised.
+        'renewal_lead_days' => (int) env('RENEWAL_LEAD_DAYS', 14),
+
+        // A domain is the one thing a customer can lose permanently by not
+        // acting, so it is told more than once.
+        'domain_expiry_windows' => [30, 7, 1],
+
+        'sync_after_hours' => (int) env('PROVIDER_SYNC_AFTER_HOURS', 24),
+        'sync_batch' => (int) env('PROVIDER_SYNC_BATCH', 50),
+
+        'retention' => [
+            'notifications' => (int) env('RETAIN_READ_NOTIFICATIONS_DAYS', 90),
+            'tokens' => (int) env('RETAIN_EXPIRED_TOKENS_DAYS', 30),
+            'run_items' => (int) env('RETAIN_RUN_DETAIL_DAYS', 90),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Background operations
+    |--------------------------------------------------------------------------
+    |
+    | Retries are bounded and the backoff is exponential and capped. A
+    | provider refusing a request for a reason that will not change is not
+    | improved by asking it nine hundred more times.
+    |
+    */
+
+    'operations' => [
+        'max_attempts' => (int) env('OPERATION_MAX_ATTEMPTS', 3),
+        'retry_base_minutes' => (int) env('OPERATION_RETRY_BASE_MINUTES', 5),
+        'retry_cap_minutes' => (int) env('OPERATION_RETRY_CAP_MINUTES', 240),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Health
+    |--------------------------------------------------------------------------
+    |
+    | A health page never returns a configuration value. These are the
+    | thresholds at which a number stops being normal.
+    |
+    */
+
+    'health' => [
+        'queue_depth_warning' => (int) env('HEALTH_QUEUE_WARNING', 100),
+        'queue_depth_critical' => (int) env('HEALTH_QUEUE_CRITICAL', 1000),
+        'failed_jobs_warning' => (int) env('HEALTH_FAILED_JOBS_WARNING', 1),
+        'failed_jobs_critical' => (int) env('HEALTH_FAILED_JOBS_CRITICAL', 25),
+        // Twice the heartbeat interval, so one missed tick is not an alarm.
+        'heartbeat_stale_minutes' => (int) env('HEALTH_HEARTBEAT_STALE_MINUTES', 15),
+    ],
+
     'billing' => [
         'due_days' => (int) env('INVOICE_DUE_DAYS', 14),
 

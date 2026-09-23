@@ -7,9 +7,11 @@ namespace App\Infrastructure\Provisioning\Jobs;
 use App\Application\Provisioning\RecordServiceEvent;
 use App\Application\Provisioning\RunServiceOperation;
 use App\Application\Provisioning\TransitionService;
+use App\Domain\Operations\Contracts\ReportsToOperations;
 use App\Domain\Provisioning\OperationOutcome;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Infrastructure\Operations\Concerns\RecordsOperation;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Correlation\CorrelationId;
@@ -46,11 +48,12 @@ use Throwable;
  * The service id is carried rather than the model: a serialised model is a
  * snapshot, and by the time a retry runs the row has moved on.
  */
-final class ProvisionService implements ShouldBeUnique, ShouldQueue
+final class ProvisionService implements ReportsToOperations, ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RecordsOperation;
     use SerializesModels;
 
     /**
@@ -99,11 +102,15 @@ final class ProvisionService implements ShouldBeUnique, ShouldQueue
             $correlation->set($carried);
         }
 
+        $this->markRunning();
+
         $service = $this->service();
 
         if ($service === null) {
             // Deleted between dispatch and now. Nothing to do and nothing
             // wrong.
+            $this->markCompleted();
+
             return;
         }
 
@@ -111,10 +118,14 @@ final class ProvisionService implements ShouldBeUnique, ShouldQueue
             // Already set up, or somebody terminated it while this sat in
             // the queue. A second account is the one outcome worth
             // preventing at any cost.
+            $this->markCompleted();
+
             return;
         }
 
         $operations->provision($service);
+
+        $this->markCompleted();
     }
 
     /**
@@ -132,6 +143,8 @@ final class ProvisionService implements ShouldBeUnique, ShouldQueue
         }
 
         $message = $exception?->getMessage() ?? (string) __('provisioning.errors.job_failed');
+
+        $this->markFailed($message);
 
         app(RecordServiceEvent::class)->handle(
             $service,

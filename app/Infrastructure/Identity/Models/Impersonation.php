@@ -35,6 +35,7 @@ final class Impersonation extends Model
 
     /** @use HasFactory<ImpersonationFactory> */
     use HasFactory;
+
     use HasUlids;
 
     public $timestamps = false;

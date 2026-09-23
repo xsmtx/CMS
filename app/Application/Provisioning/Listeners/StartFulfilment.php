@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Provisioning\Listeners;
 
+use App\Application\Operations\WatchedDispatch;
 use App\Application\Provisioning\CreateServicesForOrder;
+use App\Domain\Operations\OperationType;
 use App\Domain\Ordering\Events\OrderPaid;
 use App\Domain\Provisioning\AutoSetup;
 use App\Infrastructure\Ordering\Models\Order;
@@ -30,6 +32,7 @@ final readonly class StartFulfilment
     public function __construct(
         private CreateServicesForOrder $services,
         private CorrelationContext $correlation,
+        private WatchedDispatch $dispatcher,
     ) {}
 
     public function handle(OrderPaid $event): void
@@ -50,7 +53,11 @@ final readonly class StartFulfilment
                 continue;
             }
 
-            dispatch(new ProvisionService($service->id, $event->correlationId ?? $this->correlation->id()));
+            $this->dispatcher->handle(
+                OperationType::ServiceProvision,
+                $service,
+                new ProvisionService($service->id, $event->correlationId ?? $this->correlation->id()),
+            );
         }
     }
 

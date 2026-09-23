@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Support;
 
+use App\Application\Shared\ResolveSeller;
 use App\Infrastructure\Crm\Models\Customer;
-use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Support\Models\Department;
 use App\Support\Organizations\OrganizationContext;
 use Illuminate\Support\Collection;
@@ -32,14 +32,17 @@ use Illuminate\Support\Collection;
  */
 final readonly class SellerDepartments
 {
-    public function __construct(private OrganizationContext $organizations) {}
+    public function __construct(
+        private OrganizationContext $organizations,
+        private ResolveSeller $sellers,
+    ) {}
 
     /**
      * @return Collection<int, Department>
      */
     public function forCustomer(Customer $customer): Collection
     {
-        $sellerId = $this->sellerFor($customer);
+        $sellerId = $this->sellers->forOrganization($customer->organization_id);
 
         /** @var Collection<int, Department> */
         return $this->organizations->withoutBoundary(
@@ -57,7 +60,7 @@ final readonly class SellerDepartments
      */
     public function find(Customer $customer, string $id): ?Department
     {
-        $sellerId = $this->sellerFor($customer);
+        $sellerId = $this->sellers->forOrganization($customer->organization_id);
 
         /** @var Department|null */
         return $this->organizations->withoutBoundary(
@@ -67,23 +70,5 @@ final readonly class SellerDepartments
                 ->whereKey($id)
                 ->first(),
         );
-    }
-
-    /**
-     * The organization that sells to this customer.
-     *
-     * Read past the boundary for the same reason the departments are: the
-     * seller is the customer's parent, and a parent is never inside its
-     * child's subtree.
-     */
-    private function sellerFor(Customer $customer): string
-    {
-        $organization = Organization::query()
-            ->withoutGlobalScope('organization')
-            ->find($customer->organization_id);
-
-        return $organization instanceof Organization
-            ? $organization->sellerId()
-            : $customer->organization_id;
     }
 }

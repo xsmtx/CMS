@@ -47,6 +47,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $external_id
  * @property CarbonImmutable|null $registered_on
  * @property CarbonImmutable|null $expires_on
+ * @property CarbonImmutable|null $renewal_invoiced_through
+ * @property int|null $expiry_notified_days
+ * @property CarbonImmutable|null $expiry_notified_for
  * @property bool $auto_renew
  * @property bool $registrar_lock
  * @property bool $whois_privacy
@@ -84,6 +87,9 @@ final class Domain extends Model implements AuditLabel
         'external_id',
         'registered_on',
         'expires_on',
+        'renewal_invoiced_through',
+        'expiry_notified_days',
+        'expiry_notified_for',
         'auto_renew',
         'registrar_lock',
         'whois_privacy',
@@ -201,6 +207,9 @@ final class Domain extends Model implements AuditLabel
             'renewal' => MoneyCast::class.':renewal_minor',
             'registered_on' => 'immutable_date',
             'expires_on' => 'immutable_date',
+            'renewal_invoiced_through' => 'immutable_date',
+            'expiry_notified_days' => 'integer',
+            'expiry_notified_for' => 'immutable_date',
             'auto_renew' => 'boolean',
             'registrar_lock' => 'boolean',
             'whois_privacy' => 'boolean',

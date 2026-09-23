@@ -7,8 +7,10 @@ namespace App\Infrastructure\Domains\Jobs;
 use App\Application\Domains\RecordDomainEvent;
 use App\Application\Domains\RunDomainOperation;
 use App\Domain\Domains\DomainOperation;
+use App\Domain\Operations\Contracts\ReportsToOperations;
 use App\Domain\Provisioning\OperationOutcome;
 use App\Infrastructure\Domains\Models\Domain;
+use App\Infrastructure\Operations\Concerns\RecordsOperation;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Correlation\CorrelationId;
 use Illuminate\Bus\Queueable;
@@ -29,11 +31,12 @@ use Throwable;
  * Registering has its own job, with its own uniqueness and its own failure
  * state, because it is the one that spends money.
  */
-final class RunDomainAction implements ShouldBeUnique, ShouldQueue
+final class RunDomainAction implements ReportsToOperations, ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RecordsOperation;
     use SerializesModels;
 
     public int $uniqueFor = 1800;
@@ -78,9 +81,13 @@ final class RunDomainAction implements ShouldBeUnique, ShouldQueue
             $correlation->set($carried);
         }
 
+        $this->markRunning();
+
         $domain = $this->domain();
 
         if ($domain === null) {
+            $this->markCompleted();
+
             return;
         }
 
@@ -94,10 +101,14 @@ final class RunDomainAction implements ShouldBeUnique, ShouldQueue
             // else is a no-op here rather than a surprise.
             default => null,
         };
+
+        $this->markCompleted();
     }
 
     public function failed(?Throwable $exception): void
     {
+        $this->markFailed($exception?->getMessage() ?? (string) __('domains.errors.job_failed'));
+
         $domain = $this->domain();
 
         if ($domain === null) {

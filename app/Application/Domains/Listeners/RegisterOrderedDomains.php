@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Domains\Listeners;
 
 use App\Application\Domains\CreateDomainsForOrder;
+use App\Application\Operations\WatchedDispatch;
+use App\Domain\Operations\OperationType;
 use App\Domain\Ordering\Events\OrderPaid;
 use App\Infrastructure\Domains\Jobs\RegisterDomain;
 use App\Infrastructure\Domains\Models\Domain;
@@ -26,6 +28,7 @@ final readonly class RegisterOrderedDomains
     public function __construct(
         private CreateDomainsForOrder $domains,
         private CorrelationContext $correlation,
+        private WatchedDispatch $dispatcher,
     ) {}
 
     public function handle(OrderPaid $event): void
@@ -44,7 +47,11 @@ final readonly class RegisterOrderedDomains
                 continue;
             }
 
-            dispatch(new RegisterDomain($domain->id, $event->correlationId ?? $this->correlation->id()));
+            $this->dispatcher->handle(
+                OperationType::DomainRegister,
+                $domain,
+                new RegisterDomain($domain->id, $event->correlationId ?? $this->correlation->id()),
+            );
         }
     }
 

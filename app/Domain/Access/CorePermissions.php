@@ -48,6 +48,17 @@ final class CorePermissions
             new PermissionDefinition('platform.health.view', 'platform', RoleScope::Staff),
             new PermissionDefinition('platform.queue.view', 'platform', RoleScope::Staff),
             new PermissionDefinition('platform.audit.view', 'platform', RoleScope::Staff),
+
+            new PermissionDefinition('automation.view', 'automation', RoleScope::Staff),
+            // Running a task by hand can invoice a thousand customers.
+            new PermissionDefinition('automation.run', 'automation', RoleScope::Staff, highRisk: true),
+            new PermissionDefinition('automation.dunning.manage', 'automation', RoleScope::Staff, highRisk: true),
+
+            new PermissionDefinition('operations.view', 'automation', RoleScope::Staff),
+            new PermissionDefinition('operations.manage', 'automation', RoleScope::Staff),
+
+            // Turning the storefront off is not a settings change.
+            new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
         ];
     }
 

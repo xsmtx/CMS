@@ -6,8 +6,10 @@ namespace App\Infrastructure\Provisioning\Jobs;
 
 use App\Application\Provisioning\RecordServiceEvent;
 use App\Application\Provisioning\RunServiceOperation;
+use App\Domain\Operations\Contracts\ReportsToOperations;
 use App\Domain\Provisioning\OperationOutcome;
 use App\Domain\Provisioning\ServiceOperation;
+use App\Infrastructure\Operations\Concerns\RecordsOperation;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Correlation\CorrelationId;
@@ -30,11 +32,12 @@ use Throwable;
  * Unique per service **and operation**: a suspend and a sync may run
  * alongside each other, two suspends may not.
  */
-final class RunServiceAction implements ShouldBeUnique, ShouldQueue
+final class RunServiceAction implements ReportsToOperations, ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RecordsOperation;
     use SerializesModels;
 
     public int $uniqueFor = 900;
@@ -74,9 +77,13 @@ final class RunServiceAction implements ShouldBeUnique, ShouldQueue
             $correlation->set($carried);
         }
 
+        $this->markRunning();
+
         $service = $this->service();
 
         if ($service === null) {
+            $this->markCompleted();
+
             return;
         }
 
@@ -90,10 +97,14 @@ final class RunServiceAction implements ShouldBeUnique, ShouldQueue
             // surprise.
             default => null,
         };
+
+        $this->markCompleted();
     }
 
     public function failed(?Throwable $exception): void
     {
+        $this->markFailed($exception?->getMessage() ?? (string) __('provisioning.errors.job_failed'));
+
         $service = $this->service();
 
         if ($service === null) {

@@ -31,6 +31,7 @@ final class ExchangeRateSnapshot extends Model
 
     /** @use HasFactory<ExchangeRateSnapshotFactory> */
     use HasFactory;
+
     use HasUlids;
 
     public $timestamps = false;

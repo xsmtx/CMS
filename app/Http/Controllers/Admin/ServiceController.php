@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Operations\WatchedDispatch;
 use App\Application\Provisioning\TransitionService;
+use App\Domain\Operations\OperationType;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
@@ -37,6 +39,7 @@ final class ServiceController extends Controller
         private readonly CurrentActor $actor,
         private readonly ModuleRegistry $modules,
         private readonly CorrelationContext $correlation,
+        private readonly WatchedDispatch $dispatcher,
     ) {}
 
     public function index(Request $request): Response
@@ -157,7 +160,12 @@ final class ServiceController extends Controller
     {
         $this->authorize('provision', $service);
 
-        dispatch(new ProvisionServiceJob($service->id, $this->correlation->id()));
+        $this->dispatcher->handle(
+            OperationType::ServiceProvision,
+            $service,
+            new ProvisionServiceJob($service->id, $this->correlation->id()),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('provisioning.services.queued'));
     }
@@ -172,7 +180,12 @@ final class ServiceController extends Controller
             default => 'update',
         }, $service);
 
-        dispatch(new RunServiceAction($service->id, $operation, $request->input('reason'), $this->correlation->id()));
+        $this->dispatcher->handle(
+            $this->operationTypeFor($operation),
+            $service,
+            new RunServiceAction($service->id, $operation, $request->input('reason'), $this->correlation->id()),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('provisioning.services.queued'));
     }
@@ -196,6 +209,25 @@ final class ServiceController extends Controller
         $transitions->handle($service, $target, $this->actor->model(), $request->input('reason'));
 
         return back()->with('status', __('provisioning.services.saved'));
+    }
+
+    /**
+     * The Operations Center's name for a service action.
+     *
+     * Mapped rather than reused: `ServiceOperation` is what an adapter is
+     * asked to do, `OperationType` is what an operator sees on a screen,
+     * and collapsing the two would tie a provider contract to a filter.
+     */
+    private function operationTypeFor(ServiceOperation $operation): OperationType
+    {
+        return match ($operation) {
+            ServiceOperation::Suspend => OperationType::ServiceSuspend,
+            ServiceOperation::Unsuspend => OperationType::ServiceUnsuspend,
+            ServiceOperation::Terminate => OperationType::ServiceTerminate,
+            ServiceOperation::ChangePackage => OperationType::ServiceChangePackage,
+            ServiceOperation::Sync, ServiceOperation::TestConnection => OperationType::ServiceSync,
+            ServiceOperation::Create => OperationType::ServiceProvision,
+        };
     }
 
     /**

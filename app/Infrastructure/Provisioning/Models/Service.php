@@ -52,6 +52,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<string, mixed>|null $configuration
  * @property CarbonImmutable|null $starts_on
  * @property CarbonImmutable|null $next_due_on
+ * @property CarbonImmutable|null $renewal_invoiced_through
  * @property CarbonImmutable|null $ends_on
  * @property CarbonImmutable|null $provisioned_at
  * @property CarbonImmutable|null $suspended_at
@@ -92,6 +93,7 @@ final class Service extends Model implements AuditLabel
         'configuration',
         'starts_on',
         'next_due_on',
+        'renewal_invoiced_through',
         'ends_on',
         'suspension_reason',
         'failure_reason',
@@ -225,6 +227,7 @@ final class Service extends Model implements AuditLabel
             'configuration' => 'array',
             'starts_on' => 'immutable_date',
             'next_due_on' => 'immutable_date',
+            'renewal_invoiced_through' => 'immutable_date',
             'ends_on' => 'immutable_date',
             'provisioned_at' => 'immutable_datetime',
             'suspended_at' => 'immutable_datetime',

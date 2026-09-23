@@ -47,6 +47,8 @@ final class InvoiceItem extends Model
         'organization_id',
         'invoice_id',
         'order_item_id',
+        'subject_type',
+        'subject_id',
         'description',
         'detail',
         'quantity',

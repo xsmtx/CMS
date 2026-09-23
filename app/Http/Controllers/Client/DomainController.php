@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Client;
 
 use App\Application\Domains\RunDomainOperation;
+use App\Application\Operations\WatchedDispatch;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Domains\DomainOperation;
 use App\Domain\Domains\DomainStatus;
 use App\Domain\Domains\RegistrarCapabilities;
+use App\Domain\Operations\OperationType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Domains\NameserverRequest;
 use App\Infrastructure\Domains\Jobs\RunDomainAction;
@@ -37,6 +39,7 @@ final class DomainController extends Controller
         private readonly CurrentActor $actor,
         private readonly RegistrarRegistry $registrars,
         private readonly CorrelationContext $correlation,
+        private readonly WatchedDispatch $dispatcher,
     ) {}
 
     public function index(): Response
@@ -93,7 +96,19 @@ final class DomainController extends Controller
         /** @var list<string> $nameservers */
         $nameservers = array_values(array_filter((array) $request->input('nameservers', [])));
 
-        dispatch(new RunDomainAction($record->id, DomainOperation::SetNameservers, null, $nameservers, 1, $this->correlation->id()));
+        $this->dispatcher->handle(
+            OperationType::DomainSync,
+            $record,
+            new RunDomainAction(
+                $record->id,
+                DomainOperation::SetNameservers,
+                null,
+                $nameservers,
+                1,
+                $this->correlation->id(),
+            ),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('domains.portal.nameservers_queued'));
     }
@@ -104,7 +119,19 @@ final class DomainController extends Controller
 
         $record = $this->find($domain);
 
-        dispatch(new RunDomainAction($record->id, DomainOperation::SetAutoRenew, ! $record->auto_renew, [], 1, $this->correlation->id()));
+        $this->dispatcher->handle(
+            OperationType::DomainSync,
+            $record,
+            new RunDomainAction(
+                $record->id,
+                DomainOperation::SetAutoRenew,
+                ! $record->auto_renew,
+                [],
+                1,
+                $this->correlation->id(),
+            ),
+            $this->actor->model(),
+        );
 
         return back()->with('status', __('domains.domains.queued'));
     }

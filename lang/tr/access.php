@@ -35,6 +35,7 @@ return [
         'support' => 'Destek',
         'content' => 'İçerik',
         'notifications' => 'Bildirimler',
+        'automation' => 'Otomasyon',
         'portal' => 'Müşteri paneli',
     ],
 ];
