@@ -98,16 +98,18 @@ interface NavItem {
   href: string
   permission?: string
   /**
-   * Apps and Integrations only. An Administrator holds every staff
-   * permission by design, so no permission could mean "owner of this
-   * installation".
+   * Owner-only rows. An Administrator holds every staff permission by
+   * design, so no permission could mean "owner of this installation".
    */
   superAdmin?: boolean
-}
-
-interface NavSection {
-  label?: string
-  items: NavItem[]
+  /**
+   * A second level, shown as a flyout to the side.
+   *
+   * Two levels and no more. Children inherit their parent's permission
+   * rather than declaring their own: a submenu whose rows were reachable
+   * when the row that opens them is not would be a gap nobody could see.
+   */
+  children?: NavItem[]
 }
 
 interface NavGroup {
@@ -115,7 +117,7 @@ interface NavGroup {
   /** A group with an href is a link rather than a dropdown. Dashboard. */
   href?: string
   permission?: string
-  sections?: NavSection[]
+  items?: NavItem[]
 }
 
 /**
@@ -132,349 +134,170 @@ const groups: NavGroup[] = [
   { label: 'Dashboard', href: '/admin', permission: 'platform.health.view' },
   {
     label: 'Clients',
-    sections: [
+    items: [
+      { label: 'View/Search Clients', href: '/admin/customers', permission: 'crm.customers.view' },
+      { label: 'Manage Users', href: '/admin/customer-users', permission: 'crm.customers.view' },
       {
-        items: [
-          {
-            label: 'View/Search Clients',
-            href: '/admin/customers',
-            permission: 'crm.customers.view',
-          },
-          {
-            label: 'Manage Users',
-            href: '/admin/customer-users',
-            permission: 'crm.customers.view',
-          },
-          {
-            label: 'Add New Client',
-            href: '/admin/clients/create',
-            permission: 'crm.customers.manage',
-          },
-        ],
+        label: 'Add New Client',
+        href: '/admin/clients/create',
+        permission: 'crm.customers.manage',
       },
       {
         label: 'Products/Services',
-        items: [
-          { label: 'All products/services', href: '/admin/services', permission: 'services.view' },
-          // The product types this platform sells. Filters on the same
-          // screen rather than screens of their own: the list already
-          // answers "show me the shared hosting", and a second page that
-          // did the same thing would drift from it.
-          {
-            label: 'Shared Hosting',
-            href: '/admin/services?product_type=shared_hosting',
-            permission: 'services.view',
-          },
-          {
-            label: 'Reseller Hosting',
-            href: '/admin/services?product_type=reseller',
-            permission: 'services.view',
-          },
-          { label: 'VPS', href: '/admin/services?product_type=vps', permission: 'services.view' },
-          {
-            label: 'Dedicated',
-            href: '/admin/services?product_type=dedicated',
-            permission: 'services.view',
-          },
-          { label: 'SSL', href: '/admin/services?product_type=ssl', permission: 'services.view' },
-          {
-            label: 'Service Addons',
-            href: '/admin/services/addons',
-            permission: 'services.view',
-          },
+        href: '/admin/services',
+        permission: 'services.view',
+        // The product types this platform sells, as filters on the one
+        // list. A screen of its own per type would drift from the list
+        // that already answers the question.
+        children: [
+          { label: 'All products/services', href: '/admin/services' },
+          { label: 'Shared Hosting', href: '/admin/services?product_type=shared_hosting' },
+          { label: 'Reseller Hosting', href: '/admin/services?product_type=reseller' },
+          { label: 'VPS', href: '/admin/services?product_type=vps' },
+          { label: 'Dedicated', href: '/admin/services?product_type=dedicated' },
+          { label: 'SSL', href: '/admin/services?product_type=ssl' },
+          { label: 'Email', href: '/admin/services?product_type=email' },
         ],
       },
-      {
-        items: [
-          { label: 'Domain Registrations', href: '/admin/domains', permission: 'domains.view' },
-          // A real filter on real rows: `cancel_pending` is the state a
-          // service enters when a customer asks to stop at the end of the
-          // term.
-          {
-            label: 'Cancellation Requests',
-            href: '/admin/services?status=cancel_pending',
-            permission: 'services.view',
-          },
-          {
-            label: 'Organizations',
-            href: '/admin/organizations',
-            permission: 'organizations.view',
-          },
-        ],
-      },
+      { label: 'Service Addons', href: '/admin/services/addons', permission: 'services.view' },
+      { label: 'Domain Registrations', href: '/admin/domains', permission: 'domains.view' },
+      { label: 'Cancellation Requests', href: '/admin/cancellations', permission: 'services.view' },
+      { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
     ],
   },
   {
     label: 'Orders',
-    sections: [
+    items: [
       {
-        items: [
-          { label: 'List All Orders', href: '/admin/orders', permission: 'orders.view' },
-          {
-            label: 'Pending Orders',
-            href: '/admin/orders?status=pending',
-            permission: 'orders.view',
-          },
-          {
-            label: 'Active Orders',
-            href: '/admin/orders?status=active',
-            permission: 'orders.view',
-          },
-          {
-            label: 'Fraud Orders',
-            href: '/admin/orders?status=fraud_review',
-            permission: 'orders.view',
-          },
-          {
-            label: 'Cancelled Orders',
-            href: '/admin/orders?status=cancelled',
-            permission: 'orders.view',
-          },
+        label: 'List All Orders',
+        href: '/admin/orders',
+        permission: 'orders.view',
+        children: [
+          { label: 'All orders', href: '/admin/orders' },
+          { label: 'Pending Orders', href: '/admin/orders?status=pending' },
+          { label: 'Active Orders', href: '/admin/orders?status=active' },
+          { label: 'Fraud Orders', href: '/admin/orders?status=fraud_review' },
+          { label: 'Cancelled Orders', href: '/admin/orders?status=cancelled' },
         ],
       },
-      {
-        items: [{ label: 'Review Queue', href: '/admin/orders/review', permission: 'orders.view' }],
-      },
+      { label: 'Review Queue', href: '/admin/orders/review', permission: 'orders.view' },
     ],
   },
   {
     label: 'Billing',
-    sections: [
+    items: [
       {
-        items: [
-          {
-            label: 'Transactions List',
-            href: '/admin/transactions',
-            permission: 'billing.invoices.view',
-          },
-        ],
+        label: 'Transactions List',
+        href: '/admin/transactions',
+        permission: 'billing.invoices.view',
       },
       {
         label: 'Invoices',
-        items: [
-          { label: 'All invoices', href: '/admin/invoices', permission: 'billing.invoices.view' },
-          {
-            label: 'Paid',
-            href: '/admin/invoices?status=paid',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Draft',
-            href: '/admin/invoices?status=draft',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Unpaid',
-            href: '/admin/invoices?status=unpaid',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Overdue',
-            href: '/admin/invoices?status=overdue',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Partially paid',
-            href: '/admin/invoices?status=partially_paid',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Cancelled',
-            href: '/admin/invoices?status=cancelled',
-            permission: 'billing.invoices.view',
-          },
-          {
-            label: 'Refunded',
-            href: '/admin/invoices?status=refunded',
-            permission: 'billing.invoices.view',
-          },
+        href: '/admin/invoices',
+        permission: 'billing.invoices.view',
+        children: [
+          { label: 'All invoices', href: '/admin/invoices' },
+          { label: 'Paid', href: '/admin/invoices?status=paid' },
+          { label: 'Draft', href: '/admin/invoices?status=draft' },
+          { label: 'Unpaid', href: '/admin/invoices?status=unpaid' },
+          { label: 'Overdue', href: '/admin/invoices?status=overdue' },
+          { label: 'Partially paid', href: '/admin/invoices?status=partially_paid' },
+          { label: 'Cancelled', href: '/admin/invoices?status=cancelled' },
+          { label: 'Refunded', href: '/admin/invoices?status=refunded' },
         ],
       },
       {
-        items: [
-          {
-            label: 'Gateway Log',
-            href: '/admin/billing/gateway-log',
-            permission: 'billing.payments.manage',
-          },
-          {
-            label: 'Unpaid invoice sequence',
-            href: '/admin/automation/dunning',
-            permission: 'automation.view',
-          },
-          {
-            label: 'Currencies',
-            href: '/admin/catalog/currencies',
-            permission: 'catalog.products.view',
-          },
-        ],
+        label: 'Gateway Log',
+        href: '/admin/billing/gateway-log',
+        permission: 'billing.payments.manage',
       },
-    ],
-  },
-  {
-    label: 'Services',
-    sections: [
       {
-        items: [
-          {
-            label: 'Products/Services',
-            href: '/admin/services',
-            permission: 'services.view',
-          },
-          {
-            label: 'Service addons',
-            href: '/admin/services/addons',
-            permission: 'services.view',
-          },
-        ],
+        label: 'Unpaid invoice sequence',
+        href: '/admin/automation/dunning',
+        permission: 'automation.view',
       },
-    ],
-  },
-  {
-    label: 'Domains',
-    sections: [
       {
-        items: [
-          { label: 'Domains', href: '/admin/domains', permission: 'domains.view' },
-          { label: 'Extensions', href: '/admin/catalog/tlds', permission: 'domains.tlds.manage' },
-        ],
+        label: 'Currencies',
+        href: '/admin/catalog/currencies',
+        permission: 'catalog.products.view',
       },
     ],
   },
   {
     label: 'Support',
-    sections: [
-      {
-        items: [
-          { label: 'Support Overview', href: '/admin/support', permission: 'support.tickets.view' },
-          {
-            label: 'Open New Ticket',
-            href: '/admin/support/create',
-            permission: 'support.tickets.manage',
-          },
-          {
-            label: 'Predefined Replies',
-            href: '/admin/support/replies',
-            permission: 'support.tickets.manage',
-          },
-        ],
-      },
+    items: [
+      { label: 'Support Overview', href: '/admin/support', permission: 'support.tickets.view' },
       {
         label: 'Support Tickets',
-        items: [
-          // Only the statuses this platform actually has. A menu offering
-          // "Technical Intervene" against an enum with no such member is a
-          // menu that returns an empty list and blames the operator.
-          {
-            label: 'All Active Tickets',
-            href: '/admin/support?status=open',
-            permission: 'support.tickets.view',
-          },
-          {
-            label: 'Open',
-            href: '/admin/support?status=open',
-            permission: 'support.tickets.view',
-          },
-          {
-            label: 'Customer-Reply',
-            href: '/admin/support?status=customer_reply',
-            permission: 'support.tickets.view',
-          },
-          {
-            label: 'Answered',
-            href: '/admin/support?status=answered',
-            permission: 'support.tickets.view',
-          },
-          {
-            label: 'On Hold',
-            href: '/admin/support?status=on_hold',
-            permission: 'support.tickets.view',
-          },
-          {
-            label: 'Closed',
-            href: '/admin/support?status=closed',
-            permission: 'support.tickets.view',
-          },
+        href: '/admin/support',
+        permission: 'support.tickets.view',
+        // Only the statuses this platform has. A row against an enum with
+        // no such member returns an empty list and blames the operator.
+        children: [
+          { label: 'All Active Tickets', href: '/admin/support?status=open' },
+          { label: 'Open', href: '/admin/support?status=open' },
+          { label: 'Customer-Reply', href: '/admin/support?status=customer_reply' },
+          { label: 'Answered', href: '/admin/support?status=answered' },
+          { label: 'On Hold', href: '/admin/support?status=on_hold' },
+          { label: 'Closed', href: '/admin/support?status=closed' },
         ],
       },
       {
-        label: 'Content',
-        items: [
-          {
-            label: 'Announcements',
-            href: '/admin/content/announcements',
-            permission: 'content.manage',
-          },
-          {
-            label: 'Knowledge base',
-            href: '/admin/content/articles',
-            permission: 'content.manage',
-          },
-        ],
+        label: 'Open New Ticket',
+        href: '/admin/support/create',
+        permission: 'support.tickets.manage',
       },
+      {
+        label: 'Predefined Replies',
+        href: '/admin/support/replies',
+        permission: 'support.tickets.manage',
+      },
+      {
+        label: 'Announcements',
+        href: '/admin/content/announcements',
+        permission: 'content.manage',
+      },
+      { label: 'Knowledge Base', href: '/admin/content/articles', permission: 'content.manage' },
     ],
   },
   {
     label: 'Utilities',
-    sections: [
+    items: [
+      // The passwordless way into a server's panel. Owner only, like
+      // everything that reaches somebody else's machine.
+      { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
+      // WHMCS calls this the Module Queue. It is the same thing: every
+      // background operation, what it was for, and what went wrong.
+      { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
+      { label: 'Todo List', href: '/admin/todo', permission: 'platform.health.view' },
+      { label: 'Automation', href: '/admin/automation', permission: 'automation.view' },
+      { label: 'System Health', href: '/admin/health', permission: 'platform.health.view' },
       {
-        items: [
-          // WHMCS calls this the Module Queue. It is the same thing: every
-          // background operation, what it was for, and what went wrong.
-          { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
-          { label: 'Automation', href: '/admin/automation', permission: 'automation.view' },
-          { label: 'System Health', href: '/admin/health', permission: 'platform.health.view' },
-        ],
+        label: 'Notification Log',
+        href: '/admin/notifications/log',
+        permission: 'notifications.view',
       },
-      {
-        label: 'Logs',
-        items: [
-          {
-            label: 'Notification log',
-            href: '/admin/notifications/log',
-            permission: 'notifications.view',
-          },
-          { label: 'API activity', href: '/admin/api/activity', permission: 'platform.audit.view' },
-        ],
-      },
+      { label: 'API Activity', href: '/admin/api/activity', permission: 'platform.audit.view' },
     ],
   },
   {
     label: 'Setup',
-    sections: [
+    items: [
+      { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
+      { label: 'Product Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
+      { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
       {
-        label: 'Products and services',
-        items: [
-          {
-            label: 'Products',
-            href: '/admin/catalog/products',
-            permission: 'catalog.products.view',
-          },
-          {
-            label: 'Product groups',
-            href: '/admin/catalog/groups',
-            permission: 'catalog.groups.view',
-          },
-          { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
-        ],
+        label: 'Domain Extensions',
+        href: '/admin/catalog/tlds',
+        permission: 'domains.tlds.manage',
       },
+      { label: 'Staff Members', href: '/admin/staff', permission: 'identity.staff.view' },
+      { label: 'Roles', href: '/admin/roles', permission: 'access.roles.view' },
+      { label: 'General Settings', href: '/admin/settings', permission: 'settings.view' },
       {
-        label: 'Staff',
-        items: [
-          { label: 'Staff members', href: '/admin/staff', permission: 'identity.staff.view' },
-          { label: 'Roles', href: '/admin/roles', permission: 'access.roles.view' },
-        ],
-      },
-      {
-        label: 'Platform',
-        items: [
-          { label: 'General settings', href: '/admin/settings', permission: 'settings.view' },
-          {
-            label: 'Notification templates',
-            href: '/admin/notifications/templates',
-            permission: 'notifications.view',
-          },
-        ],
+        label: 'Notification Templates',
+        href: '/admin/notifications/templates',
+        permission: 'notifications.view',
       },
     ],
   },
@@ -488,38 +311,34 @@ const groups: NavGroup[] = [
  * the platform's own.
  */
 const withAddons = computed<NavGroup[]>(() =>
-  addons.value.length === 0
-    ? groups
-    : [...groups, { label: 'Addons', sections: [{ items: addons.value }] }],
+  addons.value.length === 0 ? groups : [...groups, { label: 'Addons', items: addons.value }],
 )
+
+function isVisible(item: NavItem): boolean {
+  return (!item.superAdmin || isSuperAdmin.value) && (!item.permission || can(item.permission))
+}
 
 const visibleGroups = computed(() =>
   withAddons.value
-    .map((group) => ({
-      ...group,
-      sections: (group.sections ?? [])
-        .map((section) => ({
-          ...section,
-          items: section.items.filter(
-            (item) =>
-              (!item.superAdmin || isSuperAdmin.value) &&
-              (!item.permission || can(item.permission)),
-          ),
-        }))
-        .filter((section) => section.items.length > 0),
-    }))
+    .map((group) => ({ ...group, items: (group.items ?? []).filter(isVisible) }))
     .filter(
       (group) =>
-        (group.href !== undefined && (!group.permission || can(group.permission))) ||
-        group.sections.length > 0,
+        (group.href !== undefined && isVisible(group as NavItem)) || group.items.length > 0,
     ),
 )
+
+// Which row inside an open group has its own submenu showing. One at a
+// time: two flyouts overlapping is how a menu stops being readable.
+const openItem = ref<string | null>(null)
 
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
 
 function hrefsOf(group: NavGroup): string[] {
   return group.href === undefined
-    ? (group.sections ?? []).flatMap((section) => section.items.map((item) => item.href))
+    ? (group.items ?? []).flatMap((item) => [
+        item.href,
+        ...(item.children ?? []).map((c) => c.href),
+      ])
     : [group.href]
 }
 
@@ -546,14 +365,16 @@ function isCurrent(href: string): boolean {
   return currentHref.value === href
 }
 
-function isCurrentGroup(group: { href?: string; sections: NavSection[] }): boolean {
-  return currentHref.value !== null && hrefsOf(group as NavGroup).includes(currentHref.value)
+function isCurrentGroup(group: NavGroup): boolean {
+  return currentHref.value !== null && hrefsOf(group).includes(currentHref.value)
 }
 
 const openGroup = ref<string | null>(null)
 const mobileOpen = ref(false)
 
 function toggle(label: string): void {
+  openItem.value = null
+
   openGroup.value = openGroup.value === label ? null : label
 }
 
@@ -809,23 +630,25 @@ onBeforeUnmount(() => {
             <!-- Grows out of its own trigger: a panel anchored to the thing
                  you pressed needs no explanation. -->
             <div
-              v-if="group.sections.length > 0 && openGroup === group.label"
-              class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 origin-top-left rounded-[var(--radius-lg)] border shadow-(--shadow-panel)"
-              :class="group.sections.length > 1 ? 'flex gap-7 p-3.5' : 'min-w-[16rem] p-2.5'"
+              v-if="(group.items ?? []).length > 0 && openGroup === group.label"
+              class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
             >
-              <div v-for="(section, index) in group.sections" :key="index" class="min-w-[13rem]">
-                <p
-                  v-if="section.label"
-                  class="text-content-subtle px-2.5 pt-1 pb-2 text-[11px] font-semibold tracking-wide uppercase"
+              <ul class="space-y-0.5">
+                <li
+                  v-for="item in group.items"
+                  :key="item.label"
+                  class="relative"
+                  @mouseenter="item.children ? (openItem = item.label) : (openItem = null)"
                 >
-                  {{ section.label }}
-                </p>
-                <ul class="space-y-0.5">
-                  <li v-for="item in section.items" :key="item.href">
+                  <!-- A row with a submenu is a link *and* a door: clicking
+                       it goes to the list, the chevron opens the filters
+                       for it. An operator who wanted the whole list should
+                       not have to pick a filter first. -->
+                  <div class="flex items-stretch">
                     <Link
                       :href="item.href"
                       :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                      class="pressable block flex-1 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                       :class="
                         isCurrent(item.href)
                           ? 'bg-surface-sunken text-content font-medium'
@@ -834,9 +657,53 @@ onBeforeUnmount(() => {
                     >
                       {{ item.label }}
                     </Link>
-                  </li>
-                </ul>
-              </div>
+
+                    <button
+                      v-if="item.children"
+                      type="button"
+                      class="pressable text-content-subtle hover:text-content rounded-[var(--radius-sm)] px-1.5"
+                      :aria-expanded="openItem === item.label"
+                      :aria-label="`${item.label} submenu`"
+                      @click.stop="openItem = openItem === item.label ? null : item.label"
+                    >
+                      <svg class="size-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path
+                          d="M4.5 3 7.5 6 4.5 9"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- To the side, not underneath: a submenu that pushed the
+                       rows below it down moves the thing somebody was
+                       reaching for. -->
+                  <div
+                    v-if="item.children && openItem === item.label"
+                    class="border-line bg-surface-raised absolute top-0 left-full z-30 ml-1 min-w-[14rem] rounded-[var(--radius-lg)] border p-2 shadow-(--shadow-panel)"
+                  >
+                    <ul class="space-y-0.5">
+                      <li v-for="child in item.children" :key="child.href">
+                        <Link
+                          :href="child.href"
+                          :aria-current="isCurrent(child.href) ? 'page' : undefined"
+                          class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                          :class="
+                            isCurrent(child.href)
+                              ? 'bg-surface-sunken text-content font-medium'
+                              : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+                          "
+                        >
+                          {{ child.label }}
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
             </div>
           </li>
         </ul>
@@ -860,8 +727,8 @@ onBeforeUnmount(() => {
                   Overview
                 </Link>
               </li>
-              <template v-for="(section, index) in group.sections" :key="index">
-                <li v-for="item in section.items" :key="item.href">
+              <template v-for="item in group.items" :key="item.label">
+                <li>
                   <Link
                     :href="item.href"
                     :aria-current="isCurrent(item.href) ? 'page' : undefined"
@@ -873,6 +740,14 @@ onBeforeUnmount(() => {
                     "
                   >
                     {{ item.label }}
+                  </Link>
+                </li>
+                <li v-for="child in item.children ?? []" :key="child.href">
+                  <Link
+                    :href="child.href"
+                    class="text-content-muted hover:bg-surface-sunken block rounded-[var(--radius-sm)] py-1.5 pr-2 pl-6 text-sm"
+                  >
+                    {{ child.label }}
                   </Link>
                 </li>
               </template>

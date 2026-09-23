@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
+use App\Http\Controllers\Admin\CancellationController;
 use App\Http\Controllers\Admin\CannedResponseController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectController;
@@ -42,6 +43,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
+use App\Http\Controllers\Admin\TodoController;
 use App\Http\Controllers\Admin\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -183,6 +185,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::post('catalog/tlds', [TldController::class, 'store'])->name('tlds.store');
     Route::put('catalog/tlds/{tld}', [TldController::class, 'update'])->name('tlds.update');
     Route::delete('catalog/tlds/{tld}', [TldController::class, 'destroy'])->name('tlds.destroy');
+
+    // The cancellation queue. A request is paperwork; the service's own
+    // status is the truth about what is running.
+    Route::get('cancellations', [CancellationController::class, 'index'])
+        ->name('cancellations.index');
+    Route::post('cancellations/{request}/complete', [CancellationController::class, 'complete'])
+        ->name('cancellations.complete');
+    Route::post('cancellations/{request}/withdraw', [CancellationController::class, 'withdraw'])
+        ->name('cancellations.withdraw');
+
+    Route::get('todo', [TodoController::class, 'index'])->name('todo.index');
+    Route::post('todo', [TodoController::class, 'store'])->name('todo.store');
+    Route::put('todo/{todo}', [TodoController::class, 'update'])->name('todo.update');
+    Route::delete('todo/{todo}', [TodoController::class, 'destroy'])->name('todo.destroy');
 
     Route::get('services', [ServiceController::class, 'index'])->name('services.index');
     // Before `services/{service}`, or the word "addons" is read as an id.

@@ -96,8 +96,6 @@ describe('AdminLayout navigation', () => {
       'Clients',
       'Orders',
       'Billing',
-      'Services',
-      'Domains',
       'Support',
       'Utilities',
       'Setup',
@@ -144,15 +142,47 @@ describe('AdminLayout navigation', () => {
     expect(billing?.find('span[aria-hidden="true"]').exists()).toBe(true)
   })
 
-  it('sub-heads the long menus rather than listing fourteen links flat', async () => {
+  /**
+   * Two levels, and the second one opens to the side rather than pushing
+   * the rows below it down — a submenu that moved the thing somebody was
+   * reaching for is worse than no submenu.
+   */
+  it('opens a submenu beside the row that owns it', async () => {
     const wrapper = render()
-    const setup = wrapper.findAll('nav[data-admin-nav] > ul > li').at(-1)
+    const clients = wrapper.findAll('nav[data-admin-nav] > ul > li')[1]
 
-    await setup?.find('button').trigger('click')
+    await clients?.find('button').trigger('click')
 
-    const headings = setup?.findAll('p').map((heading) => heading.text())
+    // The parent is a link in its own right: an operator who wanted the
+    // whole list should not have to pick a filter first.
+    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/services"]').exists()).toBe(true)
+    // And its filters are not shown until asked for.
+    expect(
+      wrapper.find('nav[data-admin-nav] a[href="/admin/services?product_type=vps"]').exists(),
+    ).toBe(false)
 
-    expect(headings).toEqual(['Products and services', 'Staff', 'Platform'])
+    await clients?.find('button[aria-label="Products/Services submenu"]').trigger('click')
+
+    expect(
+      wrapper.find('nav[data-admin-nav] a[href="/admin/services?product_type=vps"]').exists(),
+    ).toBe(true)
+  })
+
+  it('lists each group flat, one level, until a submenu is opened', async () => {
+    const wrapper = render()
+    const billing = wrapper.findAll('nav[data-admin-nav] > ul > li')[3]
+
+    await billing?.find('button').trigger('click')
+
+    const rows = billing?.findAll('a').map((row) => row.text())
+
+    expect(rows).toEqual([
+      'Transactions List',
+      'Invoices',
+      'Gateway Log',
+      'Unpaid invoice sequence',
+      'Currencies',
+    ])
   })
 
   /**

@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 return [
+    'cancellations' => [
+        'completed' => 'Cancellation completed.',
+        'withdrawn' => 'Cancellation withdrawn. The service is running again.',
+        'types' => [
+            'immediate' => 'Immediate',
+            'end_of_term' => 'End of billing period',
+        ],
+        'statuses' => [
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'withdrawn' => 'Withdrawn',
+        ],
+    ],
     'errors' => [
         'information_required' => 'Your account details need attention before you can use the rest of the portal. Open a ticket and we will put it right.',
     ],

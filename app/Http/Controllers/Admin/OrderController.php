@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Ordering\SearchOrders;
 use App\Application\Ordering\TransitionOrder;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Ordering\OrderStatus;
@@ -25,21 +26,17 @@ final class OrderController extends Controller
 {
     public function __construct(private readonly CurrentActor $actor) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request, SearchOrders $search): Response
     {
         $this->authorize('viewAny', Order::class);
 
-        $status = $request->string('status')->toString();
+        /** @var array<string, string> $criteria */
+        $criteria = array_map(
+            static fn (mixed $value): string => is_string($value) ? trim($value) : '',
+            $request->only(['status', 'number', 'client', 'payment', 'from', 'to', 'amount', 'ip']),
+        );
 
-        $orders = Order::query()
-            ->with(Customer::displayNameWith('customer'))
-            ->when(
-                OrderStatus::tryFrom($status) instanceof OrderStatus,
-                fn ($query) => $query->where('status', $status),
-            )
-            ->latest('placed_at')->latest()
-            ->paginate(25)
-            ->withQueryString();
+        $orders = $search->paginate($criteria);
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => [
@@ -51,8 +48,9 @@ final class OrderController extends Controller
                 'lastPage' => $orders->lastPage(),
                 'total' => $orders->total(),
             ],
-            'filters' => ['status' => $status === '' ? null : $status],
+            'filters' => $criteria,
             'statuses' => self::statuses(),
+            'gateways' => $search->gateways(),
             'reviewCount' => Order::query()->awaitingReview()->count(),
         ]);
     }
@@ -196,7 +194,50 @@ final class OrderController extends Controller
             'total' => $order->total->format(app()->getLocale()),
             'placedAt' => $order->placed_at?->toIso8601String(),
             'riskDecision' => $order->risk_decision?->value,
+            'ipAddress' => $order->ip_address,
+            // Where the money stands, read from the invoices this order
+            // raised rather than from a second status on the order.
+            'paymentStatus' => $this->paymentStatus($order),
+            'paymentMethod' => $this->paymentMethod($order),
         ];
+    }
+
+    /**
+     * Where the money stands on this order.
+     *
+     * Derived from the invoices it raised, never stored. `unbilled` is a
+     * real answer and not a gap: an order in review has no invoice yet.
+     */
+    private function paymentStatus(Order $order): string
+    {
+        $order->loadMissing('invoices');
+
+        if ($order->invoices->isEmpty()) {
+            return 'unbilled';
+        }
+
+        if ($order->invoices->every(static fn (Invoice $invoice): bool => $invoice->status === InvoiceStatus::Paid)) {
+            return 'paid';
+        }
+
+        if ($order->invoices->contains(static fn (Invoice $invoice): bool => $invoice->status === InvoiceStatus::Overdue)) {
+            return 'overdue';
+        }
+
+        return 'unpaid';
+    }
+
+    private function paymentMethod(Order $order): ?string
+    {
+        $order->loadMissing('invoices.payments');
+
+        foreach ($order->invoices as $invoice) {
+            foreach ($invoice->payments as $payment) {
+                return $payment->gateway;
+            }
+        }
+
+        return null;
     }
 
     /**

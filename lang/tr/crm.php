@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 return [
+    'cancellations' => [
+        'completed' => 'İptal tamamlandı.',
+        'withdrawn' => 'İptal geri alındı. Hizmet yeniden çalışıyor.',
+        'types' => [
+            'immediate' => 'Hemen',
+            'end_of_term' => 'Dönem sonunda',
+        ],
+        'statuses' => [
+            'pending' => 'Bekliyor',
+            'completed' => 'Tamamlandı',
+            'withdrawn' => 'Geri alındı',
+        ],
+    ],
     'errors' => [
         'information_required' => 'Portalın geri kalanını kullanabilmeniz için hesap bilgilerinizin düzeltilmesi gerekiyor. Bir destek bileti açın, halledelim.',
     ],

@@ -7,6 +7,7 @@ namespace App\Infrastructure\Ordering\Models;
 use App\Domain\Ordering\OrderStatus;
 use App\Domain\Risk\RiskDecision;
 use App\Domain\Shared\Money;
+use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
@@ -95,6 +96,20 @@ final class Order extends Model implements AuditLabel
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class)->whereNull('parent_id')->orderBy('position');
+    }
+
+    /**
+     * The invoices this order raised.
+     *
+     * Declared so that "is it paid" can be answered from the ledger rather
+     * than from a flag on the order. Two places that answered it would
+     * disagree the first time somebody recorded a bank transfer.
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     /**

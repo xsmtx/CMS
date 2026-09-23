@@ -50,7 +50,7 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/clients/create',
     '/admin/services',
     '/admin/services?product_type=shared_hosting',
-    '/admin/services?status=cancel_pending',
+    '/admin/cancellations',
     '/admin/services/addons',
     '/admin/domains',
     '/admin/organizations',
@@ -59,6 +59,7 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/orders',
     '/admin/orders?status=pending',
     '/admin/orders?status=fraud_review',
+    '/admin/orders?client=zey&ip=10.0',
     '/admin/orders/review',
 
     // Billing
@@ -85,6 +86,7 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/operations',
     '/admin/automation',
     '/admin/health',
+    '/admin/todo',
     '/admin/notifications/log',
     '/admin/api/activity',
 
