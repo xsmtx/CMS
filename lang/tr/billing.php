@@ -111,6 +111,18 @@ return [
         'proforma' => 'Proforma',
         'download' => 'İndir',
         'print' => 'Yazdır',
+        'bulk' => [
+            'issue' => 'Kes',
+            'cancel' => 'İptal et',
+            'done' => ':changed fatura güncellendi.',
+            'skipped' => ':skipped fatura, bu işlem uygulanamadığı için değiştirilmedi.',
+            'failed' => 'Şu faturalarda yapılamadı: :numbers.',
+            'none' => 'Hiçbir şey değişmedi.',
+            'confirm_issue_title' => ':count fatura kesilsin mi?',
+            'confirm_issue_body' => 'Her biri numarasını alır ve dondurulur. Bundan sonra düzeltme, alacak dekontuyla yapılır.',
+            'confirm_cancel_title' => ':count fatura iptal edilsin mi?',
+            'confirm_cancel_body' => 'Artık borç olmaktan çıkarlar. Belgeler kalır ve gerekçe denetim kaydına yazılır.',
+        ],
     ],
 
     'payments' => [

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Billing\ApplyBulkInvoiceAction;
+use App\Application\Billing\BulkOutcome;
 use App\Application\Billing\CreateInvoiceFromOrder;
 use App\Application\Billing\IssueInvoice;
 use App\Application\Billing\Ledger;
 use App\Application\Billing\TransitionInvoice;
+use App\Domain\Billing\InvoiceBulkAction;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Shared\Money;
 use App\Http\Controllers\Controller;
@@ -22,6 +25,8 @@ use App\Infrastructure\Ordering\Models\Order;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,6 +63,7 @@ final class InvoiceController extends Controller
             ],
             'filters' => ['status' => $status === '' ? null : $status],
             'statuses' => self::statuses(),
+            'bulkActions' => self::bulkActions(),
             'owed' => $this->owedSummary(),
         ]);
     }
@@ -199,6 +205,69 @@ final class InvoiceController extends Controller
     }
 
     /**
+     * One action, several invoices.
+     *
+     * Authorization is per row and it is the two questions in order: the
+     * query is inside the organization boundary, and then the policy is asked
+     * about each invoice it returned. A single check on the list would be a
+     * check on nothing — the ids came from the browser.
+     *
+     * An id the operator may not touch is **left out silently** rather than
+     * answered with a 403. Telling them which of the twenty ids they posted
+     * belongs to somebody else is telling them that it exists.
+     */
+    public function bulk(Request $request, ApplyBulkInvoiceAction $bulk): RedirectResponse
+    {
+        $this->authorize('viewAny', Invoice::class);
+
+        $data = $request->validate([
+            'action' => ['required', 'string', Rule::enum(InvoiceBulkAction::class)],
+            'ids' => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*' => ['required', 'string', 'ulid'],
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $action = InvoiceBulkAction::from($data['action']);
+
+        // A rule that says "why" is not a formality: `TransitionInvoice`
+        // writes it to the audit record, and a cancellation with no reason is
+        // the row somebody cannot explain later.
+        if ($action->needsReason() && trim((string) ($data['reason'] ?? '')) === '') {
+            throw ValidationException::withMessages([
+                'reason' => __('validation.required', ['attribute' => __('billing.credit_notes.reason')]),
+            ]);
+        }
+
+        $invoices = Invoice::query()
+            ->with(['items', ...Customer::displayNameWith('customer')])
+            ->whereIn('id', $data['ids'])
+            ->get()
+            ->filter(fn (Invoice $invoice): bool => $this->actor->can('update', $invoice));
+
+        $outcome = $bulk->handle($invoices, $action, $this->actor->model(), $data['reason'] ?? null);
+
+        return back()->with(
+            $outcome->failed() > 0 ? 'error' : 'status',
+            $this->report($outcome),
+        );
+    }
+
+    /**
+     * @return list<array{value: string, label: string, needsReason: bool}>
+     */
+    public static function bulkActions(): array
+    {
+        return array_map(
+            fn (InvoiceBulkAction $action): array => [
+                'value' => $action->value,
+                'label' => (string) __($action->labelKey()),
+                'needsReason' => $action->needsReason(),
+            ],
+            InvoiceBulkAction::cases(),
+        );
+    }
+
+    /**
      * @return list<array{value: string, label: string}>
      */
     public static function statuses(): array
@@ -210,6 +279,30 @@ final class InvoiceController extends Controller
             ],
             InvoiceStatus::cases(),
         );
+    }
+
+    /**
+     * What happened, as one sentence an operator can act on.
+     */
+    private function report(BulkOutcome $outcome): string
+    {
+        if ($outcome->touched() === 0 || ($outcome->changed === 0 && $outcome->failed() === 0)) {
+            return (string) __('billing.invoices.bulk.none');
+        }
+
+        $parts = [__('billing.invoices.bulk.done', ['changed' => $outcome->changed])];
+
+        if ($outcome->skipped > 0) {
+            $parts[] = __('billing.invoices.bulk.skipped', ['skipped' => $outcome->skipped]);
+        }
+
+        if ($outcome->failed() > 0) {
+            $parts[] = __('billing.invoices.bulk.failed', [
+                'numbers' => implode(', ', $outcome->failures),
+            ]);
+        }
+
+        return implode(' ', $parts);
     }
 
     /**

@@ -111,6 +111,21 @@ return [
         'proforma' => 'Proforma',
         'download' => 'Download',
         'print' => 'Print',
+        'bulk' => [
+            'issue' => 'Issue',
+            'cancel' => 'Cancel',
+            // Three numbers rather than one: "done" is not something an
+            // operator can act on, and the rows that were skipped are the
+            // ones they will ask about.
+            'done' => ':changed invoice(s) updated.',
+            'skipped' => ':skipped left alone, because this cannot be done to them.',
+            'failed' => 'Could not be done to :numbers.',
+            'none' => 'Nothing was changed.',
+            'confirm_issue_title' => 'Issue :count invoice(s)?',
+            'confirm_issue_body' => 'Each one takes its number and is frozen. After this, a correction is a credit note.',
+            'confirm_cancel_title' => 'Cancel :count invoice(s)?',
+            'confirm_cancel_body' => 'They stop being owed. The documents stay, and the reason is written to the audit record.',
+        ],
     ],
 
     'payments' => [

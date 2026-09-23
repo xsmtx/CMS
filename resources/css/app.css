@@ -406,6 +406,74 @@
   }
 
   /*
+     * A selected row, and it has to survive being hovered.
+     *
+     * The tint alone would not: hover and selection are close enough in
+     * lightness that an operator dragging down a list cannot tell which
+     * rows they have picked. The inset edge on the left is the part that
+     * carries the meaning, which is also what makes it legible to somebody
+     * who cannot see the tint at all.
+     */
+  .data-table tbody tr[data-selected],
+  .data-table tbody tr[data-selected]:hover {
+    background-color: color-mix(in oklab, var(--color-brand) 10%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-brand);
+  }
+
+  /*
+     * Row actions, on hover.
+     *
+     * Always-visible actions turn a list into a wall of buttons and the eye
+     * stops reading the data. But hover is not the only way in: a keyboard
+     * reaches them by focus, and a touch screen has no hover at all, so
+     * both get them unconditionally. An action nobody can reveal is an
+     * action that does not exist.
+     */
+  .data-table .row-actions {
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+
+  .data-table tbody tr:hover .row-actions,
+  .data-table tbody tr:focus-within .row-actions,
+  .data-table tbody tr[data-selected] .row-actions {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .data-table .row-actions {
+      opacity: 1;
+    }
+  }
+
+  /*
+     * A placeholder bar, in the shape of the thing that is coming.
+     *
+     * The sweep is what separates "loading" from "empty and broken". It is
+     * slow on purpose: a fast shimmer across forty cells is the busiest
+     * thing on the page and the page has not loaded yet.
+     */
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-surface-sunken) 0%,
+      color-mix(in oklab, var(--color-surface-sunken) 55%, var(--color-line)) 50%,
+      var(--color-surface-sunken) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1600ms linear infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    from {
+      background-position: 150% 0;
+    }
+    to {
+      background-position: -50% 0;
+    }
+  }
+
+  /*
      * Numbers line up or they are not numbers.
      *
      * Every money and count cell is tabular and right-aligned, so a column
@@ -464,6 +532,16 @@
 
   .panel-enter {
     animation: none;
+  }
+
+  /*
+     * The skeleton keeps its colour and loses its sweep. A static bar still
+     * says "this is where the data goes", which is the whole job.
+     */
+  .skeleton {
+    animation: none;
+    background-image: none;
+    background-color: var(--color-surface-sunken);
   }
 
   *,

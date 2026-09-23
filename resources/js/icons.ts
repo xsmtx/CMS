@@ -29,6 +29,7 @@ import {
   PhCheck,
   PhCheckCircle,
   PhClockCounterClockwise,
+  PhCopySimple,
   PhCreditCard,
   PhCube,
   PhDatabase,
@@ -116,6 +117,7 @@ export const ICONS = {
   mail: PhEnvelopeSimple,
   security: PhShieldCheck,
   history: PhClockCounterClockwise,
+  copy: PhCopySimple,
   notifications: PhBell,
 
   // States and chrome

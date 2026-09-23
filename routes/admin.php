@@ -237,6 +237,9 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('infrastructure.servers.test');
 
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    // Before the `{invoice}` route: `bulk` would otherwise be read as an
+    // invoice id, and the 404 would be blamed on the record.
+    Route::post('invoices/bulk', [InvoiceController::class, 'bulk'])->name('invoices.bulk');
     Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::post('orders/{order}/invoice', [InvoiceController::class, 'storeForOrder'])
         ->name('orders.invoice');

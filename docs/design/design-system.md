@@ -173,7 +173,12 @@ storefront.
 | `MoneyInput` | admin | Integer minor units; the decimal exists only as the field's text. |
 | `AppRichText` | admin | Markdown with a toolbar. Stores what was typed; the server renders it. |
 | `AppCard` | all | Header separated by a hairline, not by whitespace. |
-| `AppTable` | admin, client | Sticky header, hairline rows, `.numeric` cells right-aligned and tabular. |
+| `AppTable` | admin, client | Sticky header, hairline rows, `.numeric` cells right-aligned and tabular. Columns, selection and the toolbar strip (§7). |
+| `AppTableRow` | admin | A row that can be selected. Exists because the checkbox cell cannot be injected into slot markup. |
+| `AppTableSkeleton` | admin | The table's own shape while it loads, so the page does not jump when rows land. |
+| `AppSelectionBar` | admin | The count, Clear, and the screen's own bulk actions. Above the table, never floating over it. |
+| `AppConfirm` | admin | §8's ladder: consequential, high-risk (reason), destructive (reason + typed name). |
+| `AppCopy` | admin, client | An id, IP or correlation id, one press away. |
 | `AppBadge` | all | A label. **Not** the way operational status is shown. |
 | `AppStatus` | all | Shape + text + colour. The way operational status is shown. |
 | `AppStat` | admin | A figure you can press to filter by it. |
@@ -186,14 +191,49 @@ storefront.
 | `CommandPalette` | admin | ⌘K / Ctrl+K / `/`. Destinations locally, records from the search endpoint. |
 | `ThemeSwitch` | all | light / dark / system. |
 
+### Table craft (§7)
+
+Three of the four are built, and the fourth is deliberately not a component.
+
+**Column visibility** is `localStorage`, keyed by the table's `name`. Which
+columns fit is a fact about the window somebody is looking at, so an operator
+on a laptop and on a 34-inch monitor wants a different answer on each and
+neither is "the setting". A column an operator may hide is marked `optional`,
+and the column that *names* the row never is — a table whose first column can
+be hidden is rows of numbers belonging to nothing. The cells are hidden
+through `data-col` and one generated rule scoped to the table's own id,
+because a `<td>` is slot markup no class or scoped style of ours reaches.
+
+**Selection** is `v-model:selected` on the table plus `AppTableRow` per row.
+Select-all means *this page* and says so next to the count; rows picked on an
+earlier page are kept, because somebody paging through a list is still
+choosing. The selected row is marked by `data-selected`, which is one rule
+next to the hover rule it has to stay distinguishable from — the tint alone
+is not enough, so there is an inset edge as well.
+
+**Bulk actions** belong to the screen, not to the table: only the screen knows
+what they do and which of them needs asking. Destructive ones go through
+`AppConfirm`. The server side is the interesting half, and `ApplyBulkInvoiceAction`
+is the worked example: the ids came from a browser, so the **policy is asked
+about every row**, a row the action cannot apply to is *skipped* rather than
+refused, one row failing never stops the rest, and what happened comes back as
+three numbers rather than the word "done".
+
+**Saved views** are not built. A named set of filters is a preference about the
+data rather than about the window, so it belongs on the server — a table, a
+policy and an owner per row — and that is a slice of its own rather than a
+component. Column visibility deliberately does *not* pretend to be it.
+
 ### Still to build (handoff §8, §9)
 
 - **Context drawer** — right-side inspection without losing the list.
 - **Background operations drawer** — running / retrying / failed, with the
   correlation ID.
 - **Danger zone** — separated at the bottom of a resource's settings.
-- **Saved views, column visibility, bulk actions** on tables (§7).
-- **Skeletons** matched to the table's shape, rather than a spinner.
+- **Saved views** — see above: server-side, not `localStorage`.
+- **Step-up authentication** for §8's fourth confirmation level. There is
+  two-factor at sign-in and no re-challenge, and `AppConfirm` says so rather
+  than pretending: level 4 is reason plus typing the record's name.
 - **Wallboard** (`/wallboard`, NOC, §4).
 - **Theme Studio** (§12).
 
