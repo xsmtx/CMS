@@ -121,7 +121,7 @@ final class OrderController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function item(OrderItem $item): array
+    private function item(OrderItem $item, bool $withChildren = true): array
     {
         return [
             'id' => $item->id,
@@ -139,10 +139,14 @@ final class OrderController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'children' => $item->children
-                ->map(fn (OrderItem $child): array => $this->item($child))
-                ->values()
-                ->all(),
+            // One level deep, matching the shape an order actually has.
+            // Blind recursion reaches a third level nothing loads.
+            'children' => $withChildren
+                ? $item->children
+                    ->map(fn (OrderItem $child): array => $this->item($child, withChildren: false))
+                    ->values()
+                    ->all()
+                : [],
         ];
     }
 

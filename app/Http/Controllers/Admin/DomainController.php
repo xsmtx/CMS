@@ -48,7 +48,7 @@ final class DomainController extends Controller
         $expiring = $request->boolean('expiring');
 
         $domains = Domain::query()
-            ->with('customer')
+            ->with('customer.primaryContact')
             ->when(
                 DomainStatus::tryFrom($status) instanceof DomainStatus,
                 fn ($query) => $query->where('status', $status),
@@ -79,7 +79,7 @@ final class DomainController extends Controller
     {
         $this->authorize('view', $domain);
 
-        $domain->load(['customer', 'tld', 'order']);
+        $domain->load(['customer.primaryContact', 'tld', 'order']);
 
         $registrar = $domain->registrar === null ? null : $this->registrars->find($domain->registrar);
         $capabilities = $registrar instanceof DomainRegistrar ? $registrar->capabilities() : null;

@@ -264,3 +264,21 @@ one without the narrowing that makes it safe.
 A `static fn` cannot reach `$this`. Phase 9 shipped one in a controller's
 `->map()` and every test passed, because no test loaded that page. If a
 screen has no feature test that renders it, it has not been tested.
+
+Strict mode only reports a lazy load when the query returned **more than
+one row** (`Builder::hydrate()`, Laravel's N+1 heuristic). A screen that is
+correct with one record and throws with two passes every test written
+against a single fixture and fails the first time an operator opens it.
+`tests/Feature/LazyLoadingTest.php` creates at least two of everything on
+purpose; keep it that way.
+
+`Customer::displayName()` falls back to `primaryContact` when there is no
+company or legal name, so **any list that renders a customer name must
+eager-load `customer.primaryContact`**, not just `customer`. A customer
+created at checkout by an individual has no company name, which is why this
+only ever breaks on real data.
+
+A presenter that recurses into a relation must stop at the depth the data
+actually has. An order line is a product with its addons under it — one
+level — and `item()` takes `withChildren` rather than recursing blindly
+into a third level nothing loads.

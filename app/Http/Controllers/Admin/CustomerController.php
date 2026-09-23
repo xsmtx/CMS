@@ -100,6 +100,11 @@ final class CustomerController extends Controller
     {
         $this->authorize('view', $customer);
 
+        // `displayName()` falls back to the primary contact when there is
+        // no company or legal name, so the relation is part of rendering a
+        // customer's name rather than an optional extra.
+        $customer->loadMissing('primaryContact');
+
         return Inertia::render('Admin/Customers/Show', [
             'customer' => [
                 'id' => $customer->id,

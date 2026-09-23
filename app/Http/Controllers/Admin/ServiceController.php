@@ -49,7 +49,7 @@ final class ServiceController extends Controller
         $status = $request->string('status')->toString();
 
         $services = Service::query()
-            ->with(['customer', 'server'])
+            ->with(['customer.primaryContact', 'server'])
             ->when(
                 ServiceStatus::tryFrom($status) instanceof ServiceStatus,
                 fn ($query) => $query->where('status', $status),
@@ -79,7 +79,7 @@ final class ServiceController extends Controller
     {
         $this->authorize('view', $service);
 
-        $service->load(['customer', 'server.group', 'product', 'options', 'order']);
+        $service->load(['customer.primaryContact', 'server.group', 'product', 'options', 'order']);
 
         $module = $service->module === null ? null : $this->modules->find($service->module);
         $capabilities = $module instanceof ProvisioningModule ? $module->capabilities() : null;

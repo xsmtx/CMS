@@ -43,7 +43,7 @@ final class TicketController extends Controller
         $breaching = $request->boolean('breaching');
 
         $tickets = Ticket::query()
-            ->with(['customer', 'department', 'assignee'])
+            ->with(['customer.primaryContact', 'department', 'assignee'])
             ->when(
                 TicketStatus::tryFrom($status) instanceof TicketStatus,
                 fn ($query) => $query->where('status', $status),
@@ -85,7 +85,7 @@ final class TicketController extends Controller
         $this->authorize('view', $ticket);
 
         $ticket->load([
-            'customer', 'contact', 'department', 'assignee',
+            'customer.primaryContact', 'contact', 'department', 'assignee',
             'replies.attachments', 'service', 'domain', 'invoice',
         ]);
 

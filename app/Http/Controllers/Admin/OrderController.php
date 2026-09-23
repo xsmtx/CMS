@@ -31,7 +31,7 @@ final class OrderController extends Controller
         $status = $request->string('status')->toString();
 
         $orders = Order::query()
-            ->with('customer')
+            ->with('customer.primaryContact')
             ->when(
                 OrderStatus::tryFrom($status) instanceof OrderStatus,
                 fn ($query) => $query->where('status', $status),
@@ -69,7 +69,7 @@ final class OrderController extends Controller
         return Inertia::render('Admin/Orders/Review', [
             'orders' => Order::query()
                 ->awaitingReview()
-                ->with('customer')
+                ->with('customer.primaryContact')
                 ->orderBy('placed_at')
                 ->get()
                 ->map(fn (Order $order): array => [
@@ -86,7 +86,13 @@ final class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        $order->load(['customer', 'contact', 'items.options', 'items.children.options', 'statusHistory']);
+        $order->load([
+            'customer.primaryContact',
+            'contact',
+            'items.options',
+            'items.children.options',
+            'statusHistory',
+        ]);
 
         $invoice = Invoice::query()
             ->where('order_id', $order->id)
@@ -195,7 +201,7 @@ final class OrderController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function item(OrderItem $item): array
+    private function item(OrderItem $item, bool $withChildren = true): array
     {
         return [
             'id' => $item->id,
@@ -220,10 +226,16 @@ final class OrderController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'children' => $item->children
-                ->map(fn (OrderItem $child): array => $this->item($child))
-                ->values()
-                ->all(),
+            // One level, because that is the shape an order has: a
+            // product line with its addons under it. Recursing blindly
+            // would reach for a third level that is never loaded, which
+            // Laravel only reports once a line has two addons on it.
+            'children' => $withChildren
+                ? $item->children
+                    ->map(fn (OrderItem $child): array => $this->item($child, withChildren: false))
+                    ->values()
+                    ->all()
+                : [],
         ];
     }
 

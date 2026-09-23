@@ -38,7 +38,7 @@ final class InvoiceController extends Controller
         $status = $request->string('status')->toString();
 
         $invoices = Invoice::query()
-            ->with('customer')
+            ->with('customer.primaryContact')
             ->when(
                 InvoiceStatus::tryFrom($status) instanceof InvoiceStatus,
                 fn ($query) => $query->where('status', $status),
@@ -65,7 +65,14 @@ final class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load(['customer', 'order', 'items', 'payments', 'transactions', 'creditNotes']);
+        $invoice->load([
+            'customer.primaryContact',
+            'order',
+            'items',
+            'payments',
+            'transactions',
+            'creditNotes',
+        ]);
 
         return Inertia::render('Admin/Invoices/Show', [
             'invoice' => [
