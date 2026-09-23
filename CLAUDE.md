@@ -322,3 +322,15 @@ the operators who will run this have spent years there. Services and
 Domains keep their own menus. `AdminLayout.test.ts` covers the map, the
 order and the dropdown behaviour; a new destination goes in the map and in
 that test.
+
+An addon is not a service and not just an order line (ADR 0035). A
+`service_addons` row has its own price, cycle, renewal date and status, and
+follows the service it hangs off — `TransitionService` is the one place that
+moves both. `AddonStatus` is deliberately smaller than `ServiceStatus`: an
+addon is never provisioned on its own here, so `provisioning` and `failed`
+would be members nothing can set. A `cancel_pending` addon follows nothing
+but termination, because suspending and resuming the service must not undo
+"they asked to stop paying for this". Addons are written on **every**
+fulfilment run, not only the one that created the service, and read from
+`OrderItem` directly — `$order->items` excludes children on purpose, and an
+addon line is exactly a child.

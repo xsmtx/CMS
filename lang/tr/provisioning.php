@@ -14,6 +14,14 @@ return [
         'failed' => 'Başarısız',
     ],
 
+    'addon_statuses' => [
+        'pending' => 'Bekliyor',
+        'active' => 'Aktif',
+        'suspended' => 'Askıya alındı',
+        'cancel_pending' => 'İptal ediliyor',
+        'terminated' => 'Sonlandırıldı',
+    ],
+
     'server_statuses' => [
         'active' => 'Aktif',
         'maintenance' => 'Bakımda',

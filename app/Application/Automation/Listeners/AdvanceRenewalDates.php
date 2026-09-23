@@ -10,10 +10,12 @@ use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\InvoiceItem;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Provisioning\Models\ServiceAddon;
 use App\Support\Organizations\OrganizationContext;
 
 /**
- * Moves a service or domain forward once its renewal has been paid.
+ * Moves a service, an addon or a domain forward once its renewal has been
+ * paid.
  *
  * **Payment is the event, not issuing.** An invoice that was raised is a
  * request; an invoice that was paid is the next term being bought. Advancing
@@ -57,11 +59,12 @@ final readonly class AdvanceRenewalDates
 
         $subject = match ($line->subject_type) {
             Service::class => Service::query()->find($line->subject_id),
+            ServiceAddon::class => ServiceAddon::query()->find($line->subject_id),
             Domain::class => Domain::query()->find($line->subject_id),
             default => null,
         };
 
-        if ($subject instanceof Service) {
+        if ($subject instanceof Service || $subject instanceof ServiceAddon) {
             $subject->forceFill(['next_due_on' => $line->period_end])->save();
 
             return;

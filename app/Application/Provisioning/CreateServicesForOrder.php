@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Application\Provisioning;
 
 use App\Domain\Ordering\LineKind;
+use App\Domain\Provisioning\AddonStatus;
 use App\Domain\Provisioning\AutoSetup;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Provisioning\Models\ServiceAddon;
 use App\Support\Audit\Facades\Audit;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -31,9 +33,12 @@ use Illuminate\Support\Facades\DB;
  * safe: a second run finds the service that exists rather than creating a
  * duplicate account's worth of intent.
  *
- * Addon lines do not become services of their own. They are part of what
+ * Addon lines do not become services of their own — they are part of what
  * the parent service is, and splitting them would give a customer two rows
- * for one thing they bought.
+ * for one thing they bought. They **do** become `service_addons`
+ * ([ADR 0035](../../../docs/adr/0035-an-addon-is-not-a-service.md)):
+ * something with its own price, its own cycle and its own renewal date,
+ * hanging off the service rather than standing beside it.
  */
 final readonly class CreateServicesForOrder
 {
@@ -56,6 +61,11 @@ final readonly class CreateServicesForOrder
             if ($service instanceof Service) {
                 $created[] = $service;
             }
+
+            // Asked for whether or not the service was created just now. A
+            // first run that crashed between the service and its addons
+            // must be able to finish the job on the next one.
+            $this->writeAddons($order, $item);
         }
 
         return $created;
@@ -139,6 +149,68 @@ final readonly class CreateServicesForOrder
             ->write();
 
         return $service;
+    }
+
+    /**
+     * The addons bought alongside this line.
+     *
+     * Each one is a copy, exactly as the service is: the name, the cycle
+     * and every amount come off the order line and are never read back
+     * through the catalog.
+     *
+     * Idempotent through the unique index on `order_item_id`, so an order
+     * paid twice — a webhook replayed, an operator recording a transfer a
+     * webhook then confirms — finds the row that exists.
+     */
+    private function writeAddons(Order $order, OrderItem $item): void
+    {
+        $service = Service::query()->where('order_item_id', $item->id)->first();
+
+        if (! $service instanceof Service) {
+            return;
+        }
+
+        // Queried rather than read off `$order->items`, which excludes
+        // children on purpose — an addon line is exactly a child, and
+        // reading the relation here found nothing at all.
+        $lines = OrderItem::query()
+            ->where('parent_id', $item->id)
+            ->where('kind', LineKind::Addon->value)
+            ->orderBy('position')
+            ->get();
+
+        foreach ($lines as $line) {
+            if (ServiceAddon::query()->where('order_item_id', $line->id)->exists()) {
+                continue;
+            }
+
+            try {
+                ServiceAddon::query()->create([
+                    'organization_id' => $order->organization_id,
+                    'customer_id' => $order->customer_id,
+                    'service_id' => $service->id,
+                    'order_id' => $order->id,
+                    'order_item_id' => $line->id,
+                    'addon_id' => $line->addon_id,
+                    // Starts where its service starts: pending until the
+                    // account it belongs to exists.
+                    'status' => AddonStatus::Pending->value,
+
+                    'name' => $line->name,
+                    'billing_cycle' => $line->billing_cycle?->value,
+                    'currency_code' => $order->currency_code,
+                    'recurring_minor' => $line->line_recurring->minorUnits,
+                    'setup_minor' => $line->line_setup->minorUnits,
+                    'quantity' => $line->quantity,
+
+                    'starts_on' => CarbonImmutable::now()->toDateString(),
+                    'next_due_on' => $this->nextDueDate($line),
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                // Two runs raced. The row that exists is the right answer.
+                continue;
+            }
+        }
     }
 
     /**

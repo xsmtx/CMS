@@ -14,6 +14,14 @@ return [
         'failed' => 'Failed',
     ],
 
+    'addon_statuses' => [
+        'pending' => 'Pending',
+        'active' => 'Active',
+        'suspended' => 'Suspended',
+        'cancel_pending' => 'Cancelling',
+        'terminated' => 'Terminated',
+    ],
+
     'server_statuses' => [
         'active' => 'Active',
         'maintenance' => 'Maintenance',

@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ServiceAddonController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
@@ -159,6 +160,8 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::delete('catalog/tlds/{tld}', [TldController::class, 'destroy'])->name('tlds.destroy');
 
     Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+    // Before `services/{service}`, or the word "addons" is read as an id.
+    Route::get('services/addons', [ServiceAddonController::class, 'index'])->name('services.addons');
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
     Route::post('services/{service}/provision', [ServiceController::class, 'provision'])
         ->name('services.provision');

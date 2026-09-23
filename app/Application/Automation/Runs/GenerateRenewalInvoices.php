@@ -12,6 +12,7 @@ use App\Domain\Automation\RunItem;
 use App\Domain\Automation\RunSummary;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Catalog\BillingCycle;
+use App\Domain\Provisioning\AddonStatus;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Billing\Models\Invoice;
@@ -19,6 +20,7 @@ use App\Infrastructure\Billing\Models\InvoiceItem;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Provisioning\Models\ServiceAddon;
 use App\Support\Organizations\OrganizationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +81,11 @@ final class GenerateRenewalInvoices implements AutomationRun
             $groups[$this->groupFor($service->customer_id, $service->currency_code, $service->id)]['services'][] = $service;
         }
 
+        foreach ($this->dueAddons($horizon) as $addon) {
+            $summary = $summary->examining();
+            $groups[$this->groupFor($addon->customer_id, $addon->currency_code, $addon->id)]['addons'][] = $addon;
+        }
+
         foreach ($this->dueDomains($horizon) as $domain) {
             $summary = $summary->examining();
             $groups[$this->groupFor($domain->customer_id, $domain->currency_code, $domain->id)]['domains'][] = $domain;
@@ -88,6 +95,7 @@ final class GenerateRenewalInvoices implements AutomationRun
             $summary = $summary->merge($this->invoiceFor(
                 $group['services'] ?? [],
                 $group['domains'] ?? [],
+                $group['addons'] ?? [],
             ));
         }
 
@@ -131,10 +139,11 @@ final class GenerateRenewalInvoices implements AutomationRun
     /**
      * @param  list<Service>  $services
      * @param  list<Domain>  $domains
+     * @param  list<ServiceAddon>  $addons
      */
-    private function invoiceFor(array $services, array $domains): RunSummary
+    private function invoiceFor(array $services, array $domains, array $addons = []): RunSummary
     {
-        $first = $services[0] ?? $domains[0] ?? null;
+        $first = $services[0] ?? $domains[0] ?? $addons[0] ?? null;
 
         if ($first === null) {
             return new RunSummary;
@@ -142,13 +151,14 @@ final class GenerateRenewalInvoices implements AutomationRun
 
         $label = implode(', ', [
             ...array_map(static fn (Service $service): string => $service->name, $services),
+            ...array_map(static fn (ServiceAddon $addon): string => $addon->name, $addons),
             ...array_map(static fn (Domain $domain): string => $domain->name, $domains),
         ]);
 
         try {
             $invoice = $this->organizations->withoutBoundary(
                 fn (): Invoice => DB::transaction(
-                    fn (): Invoice => $this->write($first, $services, $domains),
+                    fn (): Invoice => $this->write($first, $services, $domains, $addons),
                 ),
             );
 
@@ -177,8 +187,9 @@ final class GenerateRenewalInvoices implements AutomationRun
     /**
      * @param  list<Service>  $services
      * @param  list<Domain>  $domains
+     * @param  list<ServiceAddon>  $addons
      */
-    private function write(Service|Domain $first, array $services, array $domains): Invoice
+    private function write(Service|Domain|ServiceAddon $first, array $services, array $domains, array $addons = []): Invoice
     {
         $currency = $first->currency_code;
 
@@ -192,7 +203,7 @@ final class GenerateRenewalInvoices implements AutomationRun
             'discount_minor' => 0,
             'tax_minor' => 0,
             'total_minor' => 0,
-            'due_on' => $this->dueDateFor($services, $domains),
+            'due_on' => $this->dueDateFor($services, $domains, $addons),
         ]);
 
         $subtotal = Money::zero($currency);
@@ -216,6 +227,23 @@ final class GenerateRenewalInvoices implements AutomationRun
             // point leaves an invoice nobody sent, which is recoverable. A
             // crash before it would invoice the same term twice.
             $service->forceFill(['renewal_invoiced_through' => $service->next_due_on])->save();
+        }
+
+        foreach ($addons as $addon) {
+            $subtotal = $subtotal->plus($addon->recurring);
+
+            $this->line(
+                $invoice,
+                $addon->name,
+                $addon->recurring,
+                $addon->next_due_on,
+                $addon->billing_cycle?->nextDueDate($addon->next_due_on ?? CarbonImmutable::now()),
+                ServiceAddon::class,
+                $addon->id,
+                $position++,
+            );
+
+            $addon->forceFill(['renewal_invoiced_through' => $addon->next_due_on])->save();
         }
 
         foreach ($domains as $domain) {
@@ -292,11 +320,13 @@ final class GenerateRenewalInvoices implements AutomationRun
      *
      * @param  list<Service>  $services
      * @param  list<Domain>  $domains
+     * @param  list<ServiceAddon>  $addons
      */
-    private function dueDateFor(array $services, array $domains): string
+    private function dueDateFor(array $services, array $domains, array $addons = []): string
     {
         $dates = [
             ...array_map(static fn (Service $s): ?CarbonImmutable => $s->next_due_on, $services),
+            ...array_map(static fn (ServiceAddon $a): ?CarbonImmutable => $a->next_due_on, $addons),
             ...array_map(static fn (Domain $d): ?CarbonImmutable => $d->expires_on, $domains),
         ];
 
@@ -319,6 +349,42 @@ final class GenerateRenewalInvoices implements AutomationRun
         return $this->organizations->withoutBoundary(
             static fn (): array => array_values(Service::query()
                 ->whereIn('status', [ServiceStatus::Active->value, ServiceStatus::Suspended->value])
+                ->whereNotNull('next_due_on')
+                ->whereNotNull('billing_cycle')
+                ->whereNot('billing_cycle', BillingCycle::OneTime->value)
+                ->whereDate('next_due_on', '<=', $horizon->toDateString())
+                ->where(function ($query): void {
+                    $query->whereNull('renewal_invoiced_through')
+                        ->orWhereColumn('renewal_invoiced_through', '<', 'next_due_on');
+                })
+                ->orderBy('customer_id')
+                ->get()
+                ->all()),
+        );
+    }
+
+    /**
+     * The addons about to renew.
+     *
+     * Asked exactly as the services are, and for the same reason: "which
+     * rows are due and not yet invoiced through that date" is a question
+     * about state, so a scheduler that was down for three days catches up
+     * (ADR 0031).
+     *
+     * A cancelled addon is left out — it is still running until the term
+     * ends, and invoicing it would charge for a term the customer has said
+     * they do not want.
+     *
+     * @return list<ServiceAddon>
+     */
+    private function dueAddons(CarbonImmutable $horizon): array
+    {
+        return $this->organizations->withoutBoundary(
+            static fn (): array => array_values(ServiceAddon::query()
+                ->whereIn('status', array_map(
+                    static fn (AddonStatus $status): string => $status->value,
+                    AddonStatus::billable(),
+                ))
                 ->whereNotNull('next_due_on')
                 ->whereNotNull('billing_cycle')
                 ->whereNot('billing_cycle', BillingCycle::OneTime->value)

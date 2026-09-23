@@ -42,3 +42,4 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0032](0032-an-operation-is-visible-before-it-finishes.md) | An operation is visible before it finishes | accepted |
 | [0033](0033-the-api-is-a-surface.md) | The API is a surface, not a system | accepted |
 | [0034](0034-a-write-is-replayable.md) | A write is replayable, and so is a delivery | accepted |
+| [0035](0035-an-addon-is-not-a-service.md) | An addon is not a service, and not just an order line | accepted |
