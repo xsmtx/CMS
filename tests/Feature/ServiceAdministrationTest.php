@@ -116,6 +116,34 @@ it('queues a suspend with the reason an operator typed', function (): void {
     );
 });
 
+/**
+ * The danger zone's action (§8), and the reason that makes it accountable.
+ *
+ * Terminate used to sit in the same row as Suspend and Sync, which is a
+ * button muscle memory reaches on a Friday afternoon. It is now at the foot
+ * of the page behind a confirmation that wants the service's own name typed
+ * out — and the reason it collects reaches the job, which is what somebody
+ * will look for when the customer asks why their account is gone.
+ */
+it('queues a termination with the reason the danger zone collected', function (): void {
+    Queue::fake();
+
+    $this->service->forceFill(['status' => ServiceStatus::Active->value])->save();
+
+    $this->actingAs($this->operator, 'staff')
+        ->post("/admin/services/{$this->service->id}/actions", [
+            'operation' => 'terminate',
+            'reason' => 'Closed the account at their request',
+        ])
+        ->assertRedirect();
+
+    Queue::assertPushed(
+        RunServiceAction::class,
+        fn (RunServiceAction $job): bool => $job->operation === ServiceOperation::Terminate
+            && $job->reason === 'Closed the account at their request',
+    );
+});
+
 it('refuses an operation the route does not accept', function (): void {
     $this->actingAs($this->operator, 'staff')
         ->post("/admin/services/{$this->service->id}/actions", ['operation' => 'create'])

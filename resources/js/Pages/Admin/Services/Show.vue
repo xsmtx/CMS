@@ -6,8 +6,11 @@ import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import DangerZone from '../../../Components/DangerZone.vue'
+import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface ServiceEvent {
@@ -60,6 +63,7 @@ const page = usePage()
 
 const suspending = ref(false)
 const terminating = ref(false)
+const terminatingBusy = ref(false)
 const suspendForm = useForm({ operation: 'suspend', reason: '' })
 const statusForm = useForm({
   status: props.service.transitions[0]?.value ?? '',
@@ -95,11 +99,31 @@ function suspend(): void {
   })
 }
 
-function terminate(): void {
+/**
+ * Level 4 (§8): a reason, and the service's own name typed out.
+ *
+ * It used to be a sentence and two buttons in the same row as Suspend and
+ * Sync. That is a button muscle memory reaches on a Friday afternoon —
+ * distance and a different surface are what make the hand stop, and typing
+ * the name is the only guard there is nothing to click through.
+ *
+ * The reason goes to the audit record and to the operation's own row, which
+ * is where somebody will look when the customer asks why their account is
+ * gone.
+ */
+function terminate(reason: string | null): void {
+  terminatingBusy.value = true
+
   router.post(
     `/admin/services/${props.service.id}/actions`,
-    { operation: 'terminate' },
-    { preserveScroll: true, onSuccess: () => (terminating.value = false) },
+    { operation: 'terminate', reason },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        terminatingBusy.value = false
+        terminating.value = false
+      },
+    },
   )
 }
 
@@ -265,22 +289,9 @@ function formatDateTime(value: string | null): string {
               Sync from provider
             </AppButton>
 
-            <!-- Confirmed in place rather than with a browser dialog: the
-                 sentence explaining what it destroys is the confirmation. -->
-            <template v-if="can.terminate">
-              <template v-if="terminating">
-                <p class="text-danger text-xs leading-relaxed">
-                  This destroys the account at the provider. It cannot be undone.
-                </p>
-                <div class="flex gap-2">
-                  <AppButton size="sm" variant="danger" @click="terminate">Terminate</AppButton>
-                  <AppButton size="sm" variant="ghost" @click="terminating = false">
-                    Cancel
-                  </AppButton>
-                </div>
-              </template>
-              <AppButton v-else variant="ghost" @click="terminating = true">Terminate</AppButton>
-            </template>
+            <!-- Terminate is not here. It is in the danger zone at the
+                 foot of the page (§8), away from the buttons an operator
+                 presses every day. -->
           </div>
         </AppCard>
 
@@ -322,5 +333,33 @@ function formatDateTime(value: string | null): string {
         </AppCard>
       </div>
     </div>
+
+    <!--
+      Last on the page, always. Anything below this would be a reason to
+      scroll past it, and a thing people scroll past is a thing they stop
+      reading.
+    -->
+    <DangerZone
+      v-if="can.terminate"
+      description="These cannot be undone from here, and some of them cannot be undone at all."
+    >
+      <DangerZoneRow
+        title="Terminate this service"
+        description="The account is destroyed at the provider. Files, mailboxes and databases go with it, and nothing on this platform can bring them back. Billing stops."
+      >
+        <AppButton variant="danger" size="sm" @click="terminating = true">Terminate</AppButton>
+      </DangerZoneRow>
+    </DangerZone>
+
+    <AppConfirm
+      v-model:open="terminating"
+      level="destructive"
+      :title="`Terminate ${service.name}?`"
+      description="The account is destroyed at the provider and cannot be recovered. The reason is written to the audit record."
+      :phrase="service.name"
+      confirm-label="Terminate"
+      :busy="terminatingBusy"
+      @confirm="terminate"
+    />
   </AdminLayout>
 </template>

@@ -98,7 +98,7 @@ describe('AppDrawer', () => {
     expect(link?.getAttribute('href')).toBe('/admin/invoices/1')
   })
 
-  it('holds the panel\'s shape while the record is on its way', async () => {
+  it("holds the panel's shape while the record is on its way", async () => {
     const wrapper = mount(AppDrawer, {
       props: { open: true, title: 'Invoice', loading: true },
       slots: { default: '<p>Arrived</p>' },

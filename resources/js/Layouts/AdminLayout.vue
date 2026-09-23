@@ -7,6 +7,7 @@ import AppIcon from '../Components/AppIcon.vue'
 import CommandPalette, { type Destination } from '../Components/CommandPalette.vue'
 import { type IconName } from '../icons'
 import AppMenu from '../Components/AppMenu.vue'
+import OperationsDrawer from '../Components/OperationsDrawer.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { useBranding } from '../composables/useBranding'
@@ -906,6 +907,10 @@ onBeforeUnmount(() => {
 
         <div class="flex shrink-0 items-center gap-1 sm:gap-2">
           <CommandPalette :destinations="destinations" />
+
+          <!-- What the platform is doing, and what went wrong (§8). It draws
+               nothing at all for somebody who may not see operations. -->
+          <OperationsDrawer />
 
           <ThemeSwitch />
 

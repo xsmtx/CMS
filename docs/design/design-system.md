@@ -179,6 +179,8 @@ storefront.
 | `AppSelectionBar` | admin | The count, Clear, and the screen's own bulk actions. Above the table, never floating over it. |
 | `AppConfirm` | admin | §8's ladder: consequential, high-risk (reason), destructive (reason + typed name). |
 | `AppDrawer` | admin | Right-side context drawer. Inspection only, and always offers the way to the record. |
+| `OperationsDrawer` | admin | The background queue in the chrome, with the correlation ID per row. |
+| `DangerZone` / `DangerZoneRow` | admin | Separated, last on the page, one sentence per irreversible thing. |
 | `AppCopy` | admin, client | An id, IP or correlation id, one press away. |
 | `AppBadge` | all | A label. **Not** the way operational status is shown. |
 | `AppStatus` | all | Shape + text + colour. The way operational status is shown. |
@@ -248,15 +250,61 @@ Focus moves into the panel on open and back to whatever opened it on close,
 and the watcher is `immediate` so a drawer that mounts already open — a deep
 link — still listens for Escape. Without that it silently did neither.
 
+### The operations drawer (§8)
+
+An operation is visible before it finishes (ADR 0032). The Operations Center
+answers that for somebody who went looking; `OperationsDrawer` answers it for
+somebody who did not — a provisioning run that failed twenty minutes ago is a
+thing an operator should trip over.
+
+So the trigger is in the topbar and it carries a count. Two indexed counts on
+every admin render is a real cost and the only one worth paying: a badge that
+is always grey is worse than no badge. **A dot for "something is running", a
+number only for "something needs a person"** — nobody acts on "3 running".
+
+The counts are `null`, never zero, for anybody who may not see operations.
+Portal pages are shared the same props, and a count of the platform's failed
+provisioning runs is not a customer's to know; zero would be a claim about the
+queue, and null is "not yours".
+
+The rows are an `Inertia::optional` prop, fetched when the drawer opens and
+re-fetched every six seconds **only while it is open and something is still
+running**. A page polling in the background costs an operator's battery all
+afternoon and tells them nothing. Every row carries its correlation ID, which
+§8 names: it is the one string that ties a failure here to the lines in the
+log, so it is `AppCopy`.
+
+This is the one thing the earlier "not built" note said needed a query cheap
+enough to run on every request. It turned out `operations_state_index` is
+exactly that. The **notification count still is not**, and stays unbuilt.
+
+### The danger zone (§8)
+
+`DangerZone` plus a `DangerZoneRow` per irreversible thing, **last on the
+page, always**. Anything below it is a reason to scroll past it, and a thing
+people scroll past is a thing they stop reading.
+
+The separation is the point. A Terminate button in the same row as Suspend and
+Sync is a button muscle memory reaches on a Friday afternoon; distance and a
+different-looking surface are what make the hand stop. The border is
+`border-danger/35`, not solid — a section outlined in full red reads as an
+error that has already happened rather than a warning about one that could.
+
+Each row leads with **a sentence about what is destroyed**, not a verb, and
+the button is to its right so the sentence is read first. The confirmation is
+`AppConfirm` at the level the screen chooses. The service page is the worked
+example: terminating is level 4, so it wants a reason *and* the service's own
+name typed out, and the reason reaches the job and the audit record.
+
 ### Still to build (handoff §8, §9)
 
-- **Background operations drawer** — running / retrying / failed, with the
-  correlation ID.
-- **Danger zone** — separated at the bottom of a resource's settings.
-- **Saved views** — see above: server-side, not `localStorage`.
+- **Saved views** — server-side, not `localStorage`. See §7 above.
 - **Step-up authentication** for §8's fourth confirmation level. There is
   two-factor at sign-in and no re-challenge, and `AppConfirm` says so rather
   than pretending: level 4 is reason plus typing the record's name.
+- **The topbar notification count.** Unlike the operations count there is no
+  index behind an unread count, and a dot that is always grey is worse than
+  no dot.
 - **Wallboard** (`/wallboard`, NOC, §4).
 - **Theme Studio** (§12).
 
@@ -313,11 +361,15 @@ The topbar carries where you are (breadcrumbs) and what belongs to the
 session: ⌘K, appearance, tools, help, account. Nothing on it is page
 content, which is what keeps it from becoming a second header.
 
-**Not on the topbar yet**, and named here rather than faked: the health
-indicator and the notification count (§3). Each needs a query cheap enough
-to run on every request, and neither exists — health checks run on demand
-and an unread count has no index behind it. A dot that is always grey is
-worse than no dot.
+On the topbar: ⌘K, the **background operations count**, appearance, tools,
+help, account.
+
+**Not on the topbar**, and named here rather than faked: the health indicator
+and the notification count (§3). Each needs a query cheap enough to run on
+every request. Operations turned out to have one — `operations_state_index` —
+which is why that count exists. Health checks run on demand and an unread
+count has no index behind it, so those two do not. A dot that is always grey
+is worse than no dot.
 
 | Theme | Personality | Density | Status |
 | --- | --- | --- | --- |

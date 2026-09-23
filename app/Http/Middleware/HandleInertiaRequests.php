@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Identity\Impersonator;
+use App\Application\Operations\OperationFeed;
 use App\Domain\Modules\NavigationItem;
 use App\Infrastructure\Modules\ActiveModules;
 use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 /**
@@ -78,7 +80,48 @@ final class HandleInertiaRequests extends Middleware
                 'credentials' => fn (): ?array => $request->session()->get('credentials'),
             ],
             'correlationId' => app(CorrelationContext::class)->id(),
+
+            // An operation is visible before it finishes (ADR 0032), and the
+            // drawer is how somebody who was not looking finds out. Two
+            // counts on every admin render, and the list only when the
+            // drawer asks for it.
+            'operations' => $this->operationCounts(...),
+            'operationQueue' => Inertia::optional(fn (): array => $this->operationQueue()),
         ];
+    }
+
+    /**
+     * The two numbers the topbar shows, or `null` when nobody may see them.
+     *
+     * Staff only, and only with the permission the Operations screen needs:
+     * a customer's portal page shares these props too, and a count of the
+     * platform's failed provisioning runs is not theirs.
+     *
+     * @return array{active: int, attention: int}|null
+     */
+    private function operationCounts(): ?array
+    {
+        $actor = app(CurrentActor::class);
+
+        if (! $actor->isStaff() || ! $actor->can('operations.view')) {
+            return null;
+        }
+
+        return app(OperationFeed::class)->summary();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function operationQueue(): array
+    {
+        $actor = app(CurrentActor::class);
+
+        if (! $actor->isStaff() || ! $actor->can('operations.view')) {
+            return [];
+        }
+
+        return app(OperationFeed::class)->recent();
     }
 
     /**
