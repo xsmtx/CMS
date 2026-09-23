@@ -110,7 +110,7 @@ function isCurrent(href: string): boolean {
     </div>
 
     <header class="border-line bg-surface-raised border-b">
-      <div class="mx-auto flex h-16 w-full max-w-5xl items-center gap-6 px-5 sm:px-6">
+      <div class="mx-auto flex h-[4.5rem] w-full max-w-5xl items-center gap-6 px-5 sm:px-8">
         <Link
           href="/client"
           class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
@@ -130,7 +130,7 @@ function isCurrent(href: string): boolean {
               <Link
                 :href="item.href"
                 :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                class="pressable block rounded-[var(--radius-sm)] px-3 py-1.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable block rounded-[var(--radius-sm)] px-3.5 py-2 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrent(item.href)
                     ? 'bg-surface-sunken text-content font-medium'
@@ -149,12 +149,14 @@ function isCurrent(href: string): boolean {
       </div>
     </header>
 
-    <main id="main" class="mx-auto w-full max-w-5xl px-5 py-10 sm:px-6">
-      <div class="mb-8">
-        <h1 class="text-2xl font-semibold tracking-tight">{{ heading }}</h1>
+    <main id="main" class="mx-auto w-full max-w-5xl px-5 py-12 sm:px-8">
+      <div class="mb-9">
+        <h1 class="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em]">
+          {{ heading }}
+        </h1>
         <p
           v-if="description"
-          class="text-content-muted mt-1.5 max-w-[60ch] text-sm leading-relaxed"
+          class="text-content-muted mt-2.5 max-w-[62ch] text-[0.9375rem] leading-relaxed"
         >
           {{ description }}
         </p>

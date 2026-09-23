@@ -88,17 +88,17 @@ function formatDate(value: string | null): string {
       :headers="['Order', 'Customer', 'Status', 'Total', 'Placed', '']"
     >
       <tr v-for="order in orders.data" :key="order.id">
-        <td class="px-4 py-3 font-mono text-xs">{{ order.number }}</td>
-        <td class="px-4 py-3">{{ order.customer ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5 font-mono text-xs">{{ order.number }}</td>
+        <td class="px-5 py-3.5">{{ order.customer ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge>{{ order.statusLabel }}</AppBadge>
           <span v-if="order.riskDecision === 'review'" class="text-warning ml-2 text-xs">
             Held
           </span>
         </td>
-        <td class="px-4 py-3 tabular-nums">{{ order.total }}</td>
-        <td class="text-content-muted px-4 py-3 text-xs">{{ formatDate(order.placedAt) }}</td>
-        <td class="px-4 py-3 text-right">
+        <td class="px-5 py-3.5 tabular-nums">{{ order.total }}</td>
+        <td class="text-content-muted px-5 py-3.5 text-xs">{{ formatDate(order.placedAt) }}</td>
+        <td class="px-5 py-3.5 text-right">
           <Link
             :href="`/admin/orders/${order.id}`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

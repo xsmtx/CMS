@@ -54,18 +54,18 @@ function formatDate(value: string | null): string {
       :headers="['Code', 'Value', 'Scope', 'Usage', 'Ends', '']"
     >
       <tr v-for="promotion in promotions" :key="promotion.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <p class="font-mono text-sm font-medium">
             {{ promotion.code }}
             <AppBadge v-if="!promotion.isActive" class="ml-2">Inactive</AppBadge>
           </p>
           <p class="text-content-muted text-xs">{{ promotion.name }}</p>
         </td>
-        <td class="px-4 py-3 tabular-nums">{{ promotion.value ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-3 text-xs">{{ promotion.scope }}</td>
-        <td class="text-content-muted px-4 py-3 text-xs tabular-nums">{{ usage(promotion) }}</td>
-        <td class="text-content-muted px-4 py-3 text-xs">{{ formatDate(promotion.endsAt) }}</td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="px-5 py-3.5 tabular-nums">{{ promotion.value ?? '—' }}</td>
+        <td class="text-content-muted px-5 py-3.5 text-xs">{{ promotion.scope }}</td>
+        <td class="text-content-muted px-5 py-3.5 text-xs tabular-nums">{{ usage(promotion) }}</td>
+        <td class="text-content-muted px-5 py-3.5 text-xs">{{ formatDate(promotion.endsAt) }}</td>
+        <td class="px-5 py-3.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/promotions/${promotion.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

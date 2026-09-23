@@ -20,7 +20,7 @@ const role = computed(() => (props.tone === 'danger' ? 'alert' : 'status'))
 <template>
   <div
     :role="role"
-    class="rounded-[var(--radius-sm)] border px-3 py-2 text-sm leading-relaxed"
+    class="rounded-[var(--radius-md)] border px-4 py-3 text-sm leading-relaxed"
     :class="classes"
   >
     <slot />

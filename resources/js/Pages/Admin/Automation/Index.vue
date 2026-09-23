@@ -118,20 +118,20 @@ function summarise(run: Run | null): string {
       :headers="['Task', 'Started', 'Took', 'Examined', 'Changed', 'Skipped', 'Failed', '']"
     >
       <tr v-for="item in runs" :key="item.id">
-        <td class="px-4 py-3 font-medium">{{ item.taskLabel }}</td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+        <td class="px-5 py-3.5 font-medium">{{ item.taskLabel }}</td>
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
           {{ formatDateTime(item.startedAt) }}
         </td>
-        <td class="text-content-muted px-4 py-3 tabular-nums">
+        <td class="text-content-muted px-5 py-3.5 tabular-nums">
           {{ item.durationSeconds === null ? '—' : `${item.durationSeconds}s` }}
         </td>
-        <td class="text-content-muted px-4 py-3 tabular-nums">{{ item.examined }}</td>
-        <td class="px-4 py-3 tabular-nums">{{ item.changed }}</td>
-        <td class="text-content-muted px-4 py-3 tabular-nums">{{ item.skipped }}</td>
-        <td class="px-4 py-3 tabular-nums" :class="item.failed > 0 ? 'text-danger' : ''">
+        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ item.examined }}</td>
+        <td class="px-5 py-3.5 tabular-nums">{{ item.changed }}</td>
+        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ item.skipped }}</td>
+        <td class="px-5 py-3.5 tabular-nums" :class="item.failed > 0 ? 'text-danger' : ''">
           {{ item.failed }}
         </td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(item.status)">{{ item.statusLabel }}</AppBadge>
           <span v-if="item.error" class="text-content-muted block max-w-[40ch] text-xs">
             {{ item.error }}

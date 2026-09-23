@@ -36,15 +36,15 @@ function remove(role: RoleRow): void {
 
     <AppTable :headers="['Role', 'Scope', 'Permissions', '']">
       <tr v-for="role in roles" :key="role.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <p class="font-medium">
             {{ role.name }}
             <AppBadge v-if="role.isSystem" class="ml-2">System</AppBadge>
           </p>
           <p class="text-content-muted font-mono text-xs">{{ role.slug }}</p>
         </td>
-        <td class="text-content-muted px-4 py-3">{{ role.scope }}</td>
-        <td class="text-content-muted px-4 py-3">
+        <td class="text-content-muted px-5 py-3.5">{{ role.scope }}</td>
+        <td class="text-content-muted px-5 py-3.5">
           <span v-if="role.isSuperAdmin">
             All, by bypass
             <span class="text-content-subtle block text-xs">
@@ -53,7 +53,7 @@ function remove(role: RoleRow): void {
           </span>
           <span v-else>{{ role.permissionCount }}</span>
         </td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="px-5 py-3.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/roles/${role.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

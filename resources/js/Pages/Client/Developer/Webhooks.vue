@@ -163,8 +163,8 @@ function formatDateTime(value: string | null): string {
           :headers="['Event', 'Status', 'Attempt', 'When', '']"
         >
           <tr v-for="delivery in deliveries" :key="delivery.id">
-            <td class="px-4 py-3 font-mono text-xs">{{ delivery.event }}</td>
-            <td class="px-4 py-3">
+            <td class="px-5 py-3.5 font-mono text-xs">{{ delivery.event }}</td>
+            <td class="px-5 py-3.5">
               <AppBadge :tone="tone(delivery.status)">{{ delivery.statusLabel }}</AppBadge>
               <span v-if="delivery.responseStatus" class="text-content-muted ml-2 text-xs">
                 {{ delivery.responseStatus }}
@@ -173,11 +173,11 @@ function formatDateTime(value: string | null): string {
                 {{ delivery.error }}
               </span>
             </td>
-            <td class="text-content-muted px-4 py-3 tabular-nums">{{ delivery.attempt }}</td>
-            <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+            <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ delivery.attempt }}</td>
+            <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
               {{ formatDateTime(delivery.createdAt) }}
             </td>
-            <td class="px-4 py-3 text-right">
+            <td class="px-5 py-3.5 text-right">
               <AppButton size="sm" variant="ghost" @click="redeliver(delivery)">
                 {{ t('api.webhooks.redeliver') }}
               </AppButton>

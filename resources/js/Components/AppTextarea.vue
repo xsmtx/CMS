@@ -13,7 +13,7 @@ const id = useId()
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-1.5">
     <label :for="id" class="text-sm font-medium">{{ label }}</label>
 
     <textarea
@@ -21,7 +21,7 @@ const id = useId()
       v-model="model"
       :rows="rows"
       :aria-invalid="error ? true : undefined"
-      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3 py-2 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
       :class="error ? 'border-danger' : 'focus:border-accent'"
     />
 

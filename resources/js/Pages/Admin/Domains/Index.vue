@@ -104,16 +104,16 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
       :headers="['Domain', 'Customer', 'Status', 'Expires', 'Renewal']"
     >
       <tr v-for="domain in domains.data" :key="domain.id">
-        <td class="px-4 py-3 font-medium">
+        <td class="px-5 py-3.5 font-medium">
           <Link :href="`/admin/domains/${domain.id}`" class="underline-offset-4 hover:underline">
             {{ domain.name }}
           </Link>
         </td>
-        <td class="px-4 py-3">{{ domain.customer ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">{{ domain.customer ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
         </td>
-        <td class="px-4 py-3 whitespace-nowrap">
+        <td class="px-5 py-3.5 whitespace-nowrap">
           {{ domain.expiresOn ?? '—' }}
           <span
             v-if="domain.daysUntilExpiry !== null && domain.daysUntilExpiry < 45"
@@ -123,7 +123,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
             {{ domain.daysUntilExpiry }} days
           </span>
         </td>
-        <td class="px-4 py-3 tabular-nums">{{ domain.renewal }}</td>
+        <td class="px-5 py-3.5 tabular-nums">{{ domain.renewal }}</td>
       </tr>
     </AppTable>
 

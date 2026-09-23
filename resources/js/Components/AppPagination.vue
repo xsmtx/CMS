@@ -25,7 +25,7 @@ function readable(label: string): string {
   <nav
     v-if="links.length > 3"
     aria-label="Pagination"
-    class="mt-4 flex items-center justify-between gap-4"
+    class="mt-5 flex items-center justify-between gap-4"
   >
     <p class="text-content-muted text-xs">{{ total }} result(s)</p>
 

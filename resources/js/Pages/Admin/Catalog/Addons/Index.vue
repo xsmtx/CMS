@@ -49,20 +49,20 @@ function remove(addon: AddonRow): void {
 
     <AppTable v-if="addons.length > 0" :headers="['Addon', 'Status', 'Prices', '']">
       <tr v-for="addon in addons" :key="addon.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <p class="font-medium">{{ addon.name }}</p>
           <p class="text-content-muted font-mono text-xs">{{ addon.slug }}</p>
         </td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <AppBadge>{{ statusLabel(addon.status) }}</AppBadge>
         </td>
         <td
-          class="px-4 py-3 tabular-nums"
+          class="px-5 py-3.5 tabular-nums"
           :class="addon.priceCount === 0 ? 'text-danger' : 'text-content-muted'"
         >
           {{ addon.priceCount === 0 ? 'None' : addon.priceCount }}
         </td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="px-5 py-3.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/products/${product.id}/addons/${addon.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

@@ -23,18 +23,21 @@ withDefaults(
   >
     <header
       v-if="title || description || $slots.actions"
-      class="flex items-start justify-between gap-4 px-5 pt-5"
+      class="flex items-start justify-between gap-4 px-6 pt-6"
     >
       <div>
-        <h2 v-if="title" class="text-sm font-semibold">{{ title }}</h2>
-        <p v-if="description" class="text-content-muted mt-1 text-sm leading-relaxed">
+        <h2 v-if="title" class="text-[0.9375rem] font-semibold tracking-tight">{{ title }}</h2>
+        <p
+          v-if="description"
+          class="text-content-muted mt-1.5 max-w-[62ch] text-sm leading-relaxed"
+        >
           {{ description }}
         </p>
       </div>
       <slot name="actions" />
     </header>
 
-    <div class="px-5 py-5">
+    <div class="px-6 py-6">
       <slot />
     </div>
   </component>

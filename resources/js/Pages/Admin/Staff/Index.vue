@@ -75,23 +75,25 @@ function formatTime(value: string | null): string {
     <template v-else>
       <AppTable :headers="['Name', 'Roles', 'Status', 'Two-factor', 'Last sign-in', '']">
         <tr v-for="member in staff.data" :key="member.id">
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <p class="font-medium">{{ member.name }}</p>
             <p class="text-content-muted text-xs">{{ member.email }}</p>
           </td>
-          <td class="text-content-muted px-4 py-3">
+          <td class="text-content-muted px-5 py-3.5">
             {{ member.roles.length > 0 ? member.roles.join(', ') : 'No roles' }}
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <AppBadge :tone="statusTone(member.status)">{{ member.status }}</AppBadge>
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <AppBadge :tone="member.twoFactor ? 'success' : 'neutral'">
               {{ member.twoFactor ? 'On' : 'Off' }}
             </AppBadge>
           </td>
-          <td class="text-content-muted px-4 py-3 text-xs">{{ formatTime(member.lastLoginAt) }}</td>
-          <td class="px-4 py-3 text-right">
+          <td class="text-content-muted px-5 py-3.5 text-xs">
+            {{ formatTime(member.lastLoginAt) }}
+          </td>
+          <td class="px-5 py-3.5 text-right">
             <Link
               :href="`/admin/staff/${member.id}/edit`"
               class="text-content-muted hover:text-content text-xs underline underline-offset-4"

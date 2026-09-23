@@ -186,14 +186,14 @@ function verdict(article: ArticleRow): string {
           :headers="['Article', 'Category', 'Visibility', 'Views', 'Found it useful', '']"
         >
           <tr v-for="article in articles" :key="article.id">
-            <td class="px-4 py-3">
+            <td class="px-5 py-3.5">
               <span class="font-medium">{{ article.title }}</span>
             </td>
-            <td class="text-content-muted px-4 py-3">{{ article.category ?? '—' }}</td>
-            <td class="text-content-muted px-4 py-3">{{ article.visibility }}</td>
-            <td class="text-content-muted px-4 py-3 tabular-nums">{{ article.views }}</td>
-            <td class="text-content-muted px-4 py-3 tabular-nums">{{ verdict(article) }}</td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
+            <td class="text-content-muted px-5 py-3.5">{{ article.category ?? '—' }}</td>
+            <td class="text-content-muted px-5 py-3.5">{{ article.visibility }}</td>
+            <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ article.views }}</td>
+            <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ verdict(article) }}</td>
+            <td class="px-5 py-3.5 text-right whitespace-nowrap">
               <AppButton size="sm" variant="ghost" @click="edit(article)">Edit</AppButton>
               <AppButton size="sm" variant="ghost" @click="remove(article)">Delete</AppButton>
             </td>

@@ -400,7 +400,7 @@ function formatDate(value: string | null): string {
 
     <AppTable v-if="customers.data.length > 0" :headers="headers">
       <tr v-for="customer in customers.data" :key="customer.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <Link
             :href="`/admin/customers/${customer.id}`"
             class="text-content-subtle font-mono text-xs underline-offset-4 hover:underline"
@@ -408,10 +408,10 @@ function formatDate(value: string | null): string {
             {{ customer.id.slice(-8) }}
           </Link>
         </td>
-        <td class="px-4 py-3">{{ customer.firstName ?? '—' }}</td>
-        <td class="px-4 py-3">{{ customer.lastName ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-3">{{ customer.company ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">{{ customer.firstName ?? '—' }}</td>
+        <td class="px-5 py-3.5">{{ customer.lastName ?? '—' }}</td>
+        <td class="text-content-muted px-5 py-3.5">{{ customer.company ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <Link
             :href="`/admin/customers/${customer.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -419,8 +419,8 @@ function formatDate(value: string | null): string {
             {{ customer.name }}
           </Link>
         </td>
-        <td class="text-content-muted px-4 py-3">{{ customer.email ?? '—' }}</td>
-        <td class="px-4 py-3 tabular-nums">
+        <td class="text-content-muted px-5 py-3.5">{{ customer.email ?? '—' }}</td>
+        <td class="px-5 py-3.5 tabular-nums">
           {{ customer.activeServices }}
           <!-- Active, with anything not active in brackets: the shape an
                operator already reads at a glance. -->
@@ -428,10 +428,10 @@ function formatDate(value: string | null): string {
             ({{ customer.inactiveServices }})
           </span>
         </td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
           {{ formatDate(customer.createdAt) }}
         </td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(customer.status)">{{ customer.statusLabel }}</AppBadge>
         </td>
       </tr>

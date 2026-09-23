@@ -19,6 +19,7 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStat from '../../../Components/AppStat.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -112,6 +113,10 @@ const hasFilters = computed(() =>
   (Object.keys(EMPTY) as (keyof Criteria)[]).some((key) => form.value[key] !== ''),
 )
 
+const activeFilterCount = computed(
+  () => (Object.keys(EMPTY) as (keyof Criteria)[]).filter((key) => form.value[key] !== '').length,
+)
+
 function query(): Record<string, string> {
   const params: Record<string, string> = {}
 
@@ -178,24 +183,27 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       Three counts, because they are the three questions an operator opens
       this screen to answer: what is stuck, what broke, what is off.
     -->
-    <div class="mb-6 flex flex-wrap gap-6">
-      <button type="button" class="pressable text-left" @click="filterByStatus('pending')">
-        <p class="text-content-muted text-xs">Pending setup</p>
-        <p class="mt-0.5 text-xl font-semibold tabular-nums">{{ counts.pending }}</p>
-      </button>
-      <button type="button" class="pressable text-left" @click="filterByStatus('failed')">
-        <p class="text-content-muted text-xs">Failed</p>
-        <p
-          class="mt-0.5 text-xl font-semibold tabular-nums"
-          :class="counts.failed > 0 ? 'text-danger' : ''"
-        >
-          {{ counts.failed }}
-        </p>
-      </button>
-      <button type="button" class="pressable text-left" @click="filterByStatus('suspended')">
-        <p class="text-content-muted text-xs">Suspended</p>
-        <p class="mt-0.5 text-xl font-semibold tabular-nums">{{ counts.suspended }}</p>
-      </button>
+    <div class="mb-7 flex flex-wrap gap-3">
+      <AppStat
+        label="Pending setup"
+        :value="counts.pending"
+        :active="form.status === 'pending'"
+        @select="filterByStatus('pending')"
+      />
+      <AppStat
+        label="Failed"
+        :value="counts.failed"
+        :tone="counts.failed > 0 ? 'danger' : 'neutral'"
+        :active="form.status === 'failed'"
+        @select="filterByStatus('failed')"
+      />
+      <AppStat
+        label="Suspended"
+        :value="counts.suspended"
+        :tone="counts.suspended > 0 ? 'warning' : 'neutral'"
+        :active="form.status === 'suspended'"
+        @select="filterByStatus('suspended')"
+      />
     </div>
 
     <!--
@@ -203,7 +211,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       the rows: a drill-down that offers a type nobody sells is a
       drill-down into an empty page.
     -->
-    <div v-if="types.length > 0" class="mb-4 flex flex-wrap gap-1.5">
+    <div v-if="types.length > 0" class="mb-5 flex flex-wrap gap-1.5">
       <button
         v-for="type in types"
         :key="type.value"
@@ -222,9 +230,15 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       </button>
     </div>
 
-    <div class="mb-5 flex flex-wrap items-center gap-3">
-      <AppButton variant="ghost" :aria-expanded="open" @click="open = !open">
+    <div class="mb-5 flex flex-wrap items-center gap-2.5">
+      <AppButton :aria-expanded="open" @click="open = !open">
         {{ open ? 'Hide search' : 'Search / filter' }}
+        <span
+          v-if="hasFilters"
+          class="bg-accent text-accent-content -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+        >
+          {{ activeFilterCount }}
+        </span>
       </AppButton>
 
       <!-- A switch rather than a checkbox: it changes what the list is,
@@ -233,15 +247,15 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         type="button"
         role="switch"
         :aria-checked="!includeInactive"
-        class="pressable text-content-muted hover:text-content inline-flex items-center gap-2 text-xs"
+        class="pressable border-line bg-surface-raised text-content-muted hover:text-content hover:border-line-strong inline-flex items-center gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2 text-xs transition-colors duration-(--duration-fast)"
         @click="toggleInactive"
       >
         <span
-          class="border-line inline-flex h-4 w-7 items-center rounded-full border transition-colors duration-(--duration-fast)"
-          :class="!includeInactive ? 'bg-accent' : 'bg-surface-sunken'"
+          class="inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors duration-(--duration-fast)"
+          :class="!includeInactive ? 'bg-accent' : 'bg-line-strong'"
         >
           <span
-            class="bg-surface-raised size-3 rounded-full transition-transform duration-(--duration-fast)"
+            class="bg-surface-raised size-3 rounded-full shadow-(--shadow-raised) transition-transform duration-(--duration-fast) ease-(--ease-out)"
             :class="!includeInactive ? 'translate-x-3.5' : 'translate-x-0.5'"
           />
         </span>
@@ -316,7 +330,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
     >
       <template v-for="service in services.data" :key="service.id">
         <tr>
-          <td class="py-3 pl-4">
+          <td class="py-3.5 pl-5">
             <button
               type="button"
               class="pressable border-line text-content-muted hover:text-content inline-flex size-5 items-center justify-center rounded-[var(--radius-sm)] border font-mono text-xs leading-none"
@@ -327,10 +341,10 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ expanded === service.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-4 py-3 font-mono text-xs">
+          <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">
             {{ service.id.slice(-8) }}
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <Link
               :href="`/admin/services/${service.id}`"
               class="font-medium underline-offset-4 hover:underline"
@@ -338,8 +352,8 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ service.name }}
             </Link>
           </td>
-          <td class="text-content-muted px-4 py-3">{{ service.domain ?? '—' }}</td>
-          <td class="px-4 py-3">
+          <td class="text-content-muted px-5 py-3.5">{{ service.domain ?? '—' }}</td>
+          <td class="px-5 py-3.5">
             <Link
               v-if="service.customerId"
               :href="`/admin/customers/${service.customerId}`"
@@ -349,14 +363,14 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-4 py-3 tabular-nums">{{ service.recurring }}</td>
-          <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+          <td class="px-5 py-3.5 tabular-nums">{{ service.recurring }}</td>
+          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
             {{ service.billingCycleLabel ?? 'One time' }}
           </td>
-          <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
             {{ formatDate(service.nextDueOn) }}
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <AppBadge :tone="tone(service.status)">{{ service.statusLabel }}</AppBadge>
           </td>
         </tr>

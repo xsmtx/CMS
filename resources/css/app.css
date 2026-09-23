@@ -23,10 +23,10 @@
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo, monospace;
 
   /* Surfaces and text */
-  --color-surface: oklch(98.6% 0.003 250);
+  --color-surface: oklch(97.2% 0.004 250);
   --color-surface-raised: oklch(100% 0 0);
-  --color-surface-sunken: oklch(96% 0.005 250);
-  --color-line: oklch(91% 0.006 250);
+  --color-surface-sunken: oklch(94.8% 0.006 250);
+  --color-line: oklch(92.5% 0.005 250);
   --color-line-strong: oklch(84% 0.008 250);
   --color-content: oklch(21% 0.014 250);
   --color-content-muted: oklch(52% 0.014 250);
@@ -43,14 +43,15 @@
   --color-success: oklch(55% 0.13 155);
   --color-warning: oklch(70% 0.14 75);
 
-  /* One radius system: 6 for inputs, 10 for cards, 14 for panels,
+  /* One radius system: 8 for inputs, 12 for cards, 16 for panels,
        full only for badges. Nothing else. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
   /* Shadows are tinted to the surface hue, never pure black */
-  --shadow-raised: 0 1px 2px oklch(21% 0.014 250 / 0.06);
+  --shadow-raised:
+    0 1px 2px oklch(21% 0.014 250 / 0.05), 0 2px 8px -4px oklch(21% 0.014 250 / 0.08);
   --shadow-panel:
     0 1px 2px oklch(21% 0.014 250 / 0.05), 0 8px 24px -12px oklch(21% 0.014 250 / 0.12);
 
@@ -64,9 +65,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-surface: oklch(17.5% 0.012 250);
-    --color-surface-raised: oklch(21.5% 0.014 250);
-    --color-surface-sunken: oklch(14% 0.012 250);
+    --color-surface: oklch(16% 0.012 250);
+    --color-surface-raised: oklch(22.5% 0.014 250);
+    --color-surface-sunken: oklch(13% 0.012 250);
     --color-line: oklch(29% 0.014 250);
     --color-line-strong: oklch(37% 0.016 250);
     --color-content: oklch(96% 0.004 250);
@@ -88,9 +89,9 @@
 }
 
 :root[data-theme='dark'] {
-  --color-surface: oklch(17.5% 0.012 250);
-  --color-surface-raised: oklch(21.5% 0.014 250);
-  --color-surface-sunken: oklch(14% 0.012 250);
+  --color-surface: oklch(16% 0.012 250);
+  --color-surface-raised: oklch(22.5% 0.014 250);
+  --color-surface-sunken: oklch(13% 0.012 250);
   --color-line: oklch(29% 0.014 250);
   --color-line-strong: oklch(37% 0.016 250);
   --color-content: oklch(96% 0.004 250);
@@ -151,6 +152,21 @@
 
   .pressable:active {
     transform: scale(0.97);
+  }
+
+  /*
+     * Data tables.
+     *
+     * A row that lights up under the pointer is how somebody reading the
+     * eleventh line of twenty-five keeps their place. Colour only — moving
+     * a row people are trying to read is the opposite of helpful.
+     */
+  .data-table tbody tr {
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .data-table tbody tr:hover {
+    background-color: color-mix(in oklab, var(--color-surface-sunken) 55%, transparent);
   }
 }
 

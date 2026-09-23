@@ -103,6 +103,10 @@ const hasFilters = computed(() =>
   (Object.keys(EMPTY) as (keyof Criteria)[]).some((key) => form.value[key] !== ''),
 )
 
+const activeFilterCount = computed(
+  () => (Object.keys(EMPTY) as (keyof Criteria)[]).filter((key) => form.value[key] !== '').length,
+)
+
 function query(): Record<string, string> {
   const params: Record<string, string> = {}
 
@@ -159,24 +163,30 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
     heading="Service addons"
     description="What customers pay for on top of what they bought. Sold with a product, never added here."
   >
-    <div class="mb-5 flex flex-wrap items-center gap-3">
-      <AppButton variant="ghost" :aria-expanded="open" @click="open = !open">
+    <div class="mb-5 flex flex-wrap items-center gap-2.5">
+      <AppButton :aria-expanded="open" @click="open = !open">
         {{ open ? 'Hide search' : 'Search / filter' }}
+        <span
+          v-if="hasFilters"
+          class="bg-accent text-accent-content -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+        >
+          {{ activeFilterCount }}
+        </span>
       </AppButton>
 
       <button
         type="button"
         role="switch"
         :aria-checked="!includeInactive"
-        class="pressable text-content-muted hover:text-content inline-flex items-center gap-2 text-xs"
+        class="pressable border-line bg-surface-raised text-content-muted hover:text-content hover:border-line-strong inline-flex items-center gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2 text-xs transition-colors duration-(--duration-fast)"
         @click="toggleInactive"
       >
         <span
-          class="border-line inline-flex h-4 w-7 items-center rounded-full border transition-colors duration-(--duration-fast)"
-          :class="!includeInactive ? 'bg-accent' : 'bg-surface-sunken'"
+          class="inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors duration-(--duration-fast)"
+          :class="!includeInactive ? 'bg-accent' : 'bg-line-strong'"
         >
           <span
-            class="bg-surface-raised size-3 rounded-full transition-transform duration-(--duration-fast)"
+            class="bg-surface-raised size-3 rounded-full shadow-(--shadow-raised) transition-transform duration-(--duration-fast) ease-(--ease-out)"
             :class="!includeInactive ? 'translate-x-3.5' : 'translate-x-0.5'"
           />
         </span>
@@ -251,7 +261,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
     >
       <template v-for="addon in addons.data" :key="addon.id">
         <tr>
-          <td class="py-3 pl-4">
+          <td class="py-3.5 pl-5">
             <button
               type="button"
               class="pressable border-line text-content-muted hover:text-content inline-flex size-5 items-center justify-center rounded-[var(--radius-sm)] border font-mono text-xs leading-none"
@@ -262,9 +272,11 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ expanded === addon.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-4 py-3 font-mono text-xs">{{ addon.id.slice(-8) }}</td>
-          <td class="px-4 py-3 font-medium">{{ addon.name }}</td>
-          <td class="px-4 py-3">
+          <td class="text-content-subtle px-5 py-3.5 font-mono text-xs">
+            {{ addon.id.slice(-8) }}
+          </td>
+          <td class="px-5 py-3.5 font-medium">{{ addon.name }}</td>
+          <td class="px-5 py-3.5">
             <Link
               v-if="addon.serviceId"
               :href="`/admin/services/${addon.serviceId}`"
@@ -274,7 +286,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <Link
               v-if="addon.customerId"
               :href="`/admin/customers/${addon.customerId}`"
@@ -284,14 +296,14 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
             {{ addon.billingCycleLabel ?? 'One time' }}
           </td>
-          <td class="px-4 py-3 tabular-nums">{{ addon.recurring }}</td>
-          <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+          <td class="px-5 py-3.5 tabular-nums">{{ addon.recurring }}</td>
+          <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
             {{ formatDate(addon.nextDueOn) }}
           </td>
-          <td class="px-4 py-3">
+          <td class="px-5 py-3.5">
             <AppBadge :tone="tone(addon.status)">{{ addon.statusLabel }}</AppBadge>
           </td>
         </tr>

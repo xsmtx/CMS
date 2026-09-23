@@ -389,7 +389,7 @@ onBeforeUnmount(() => {
     <header class="border-line bg-surface-raised sticky top-0 z-20 border-b">
       <!-- Top strip: who you are and how you leave. Kept apart from the
            menu so that signing out is never one row away from Setup. -->
-      <div class="border-line flex h-12 items-center gap-3 border-b px-4 sm:px-6">
+      <div class="border-line flex h-14 items-center gap-3 border-b px-5 sm:px-8">
         <Link
           href="/admin"
           class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
@@ -426,7 +426,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <nav data-admin-nav aria-label="Admin" class="px-2 sm:px-4">
+      <nav data-admin-nav aria-label="Admin" class="px-3 sm:px-6">
         <button
           type="button"
           class="pressable text-content-muted hover:text-content my-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-sm lg:hidden"
@@ -442,7 +442,7 @@ onBeforeUnmount(() => {
               v-if="group.href"
               :href="group.href"
               :aria-current="isCurrentGroup(group) ? 'page' : undefined"
-              class="pressable inline-flex h-11 items-center rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+              class="pressable inline-flex h-12 items-center rounded-[var(--radius-sm)] px-3.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
               :class="
                 isCurrentGroup(group)
                   ? 'text-content font-medium'
@@ -455,7 +455,7 @@ onBeforeUnmount(() => {
             <button
               v-else
               type="button"
-              class="pressable inline-flex h-11 items-center gap-1.5 rounded-[var(--radius-sm)] px-3 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+              class="pressable inline-flex h-12 items-center gap-1.5 rounded-[var(--radius-sm)] px-3.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
               :class="
                 isCurrentGroup(group) || openGroup === group.label
                   ? 'text-content font-medium'
@@ -486,7 +486,7 @@ onBeforeUnmount(() => {
                  a group and its open panel read as one object. -->
             <span
               v-if="isCurrentGroup(group)"
-              class="bg-accent absolute inset-x-3 bottom-0 h-0.5 rounded-full"
+              class="bg-accent absolute inset-x-3.5 bottom-0 h-0.5 rounded-full"
               aria-hidden="true"
             />
 
@@ -495,12 +495,12 @@ onBeforeUnmount(() => {
             <div
               v-if="group.sections.length > 0 && openGroup === group.label"
               class="border-line bg-surface-raised absolute top-full left-0 z-20 mt-1 origin-top-left rounded-[var(--radius-lg)] border shadow-(--shadow-panel)"
-              :class="group.sections.length > 1 ? 'flex gap-6 p-3' : 'min-w-[15rem] p-2'"
+              :class="group.sections.length > 1 ? 'flex gap-7 p-3.5' : 'min-w-[16rem] p-2.5'"
             >
               <div v-for="(section, index) in group.sections" :key="index" class="min-w-[13rem]">
                 <p
                   v-if="section.label"
-                  class="text-content-subtle px-2 pt-1 pb-1.5 text-[11px] font-medium"
+                  class="text-content-subtle px-2.5 pt-1 pb-2 text-[11px] font-semibold tracking-wide uppercase"
                 >
                   {{ section.label }}
                 </p>
@@ -509,7 +509,7 @@ onBeforeUnmount(() => {
                     <Link
                       :href="item.href"
                       :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                      class="pressable block rounded-[var(--radius-sm)] px-2.5 py-2 text-sm whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                       :class="
                         isCurrent(item.href)
                           ? 'bg-surface-sunken text-content font-medium'
@@ -562,23 +562,25 @@ onBeforeUnmount(() => {
       </nav>
     </header>
 
-    <main id="main" class="px-4 py-8 sm:px-6 sm:py-10">
+    <main id="main" class="px-5 py-9 sm:px-8 sm:py-12">
       <!-- Wider than the sidebar allowed: the horizontal space the menu
            gave back belongs to the tables, which is where an operator
            actually spends the day. -->
       <div class="mx-auto max-w-7xl">
-        <div class="mb-8">
-          <h1 class="text-2xl font-semibold tracking-tight">{{ heading }}</h1>
+        <div class="mb-9">
+          <h1 class="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em]">
+            {{ heading }}
+          </h1>
           <p
             v-if="description"
-            class="text-content-muted mt-1.5 max-w-[60ch] text-sm leading-relaxed"
+            class="text-content-muted mt-2.5 max-w-[62ch] text-[0.9375rem] leading-relaxed"
           >
             {{ description }}
           </p>
         </div>
 
-        <AppAlert v-if="flash?.error" tone="danger" class="mb-5">{{ flash.error }}</AppAlert>
-        <AppAlert v-else-if="flash?.status" tone="success" class="mb-5">
+        <AppAlert v-if="flash?.error" tone="danger" class="mb-6">{{ flash.error }}</AppAlert>
+        <AppAlert v-else-if="flash?.status" tone="success" class="mb-6">
           {{ flash.status }}
         </AppAlert>
 

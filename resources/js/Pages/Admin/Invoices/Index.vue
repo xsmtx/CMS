@@ -94,25 +94,25 @@ function formatDate(value: string | null): string {
       :headers="['Invoice', 'Customer', 'Status', 'Total', 'Balance', 'Due', '']"
     >
       <tr v-for="invoice in invoices.data" :key="invoice.id">
-        <td class="px-4 py-3 font-mono text-xs">{{ invoice.number }}</td>
-        <td class="px-4 py-3">{{ invoice.customer ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5 font-mono text-xs">{{ invoice.number }}</td>
+        <td class="px-5 py-3.5">{{ invoice.customer ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge>{{ invoice.statusLabel }}</AppBadge>
         </td>
-        <td class="px-4 py-3 tabular-nums">{{ invoice.total }}</td>
+        <td class="px-5 py-3.5 tabular-nums">{{ invoice.total }}</td>
         <td
-          class="px-4 py-3 tabular-nums"
+          class="px-5 py-3.5 tabular-nums"
           :class="invoice.balanceMinor > 0 ? 'text-content' : 'text-content-muted'"
         >
           {{ invoice.balance }}
         </td>
         <td
-          class="px-4 py-3 text-xs"
+          class="px-5 py-3.5 text-xs"
           :class="invoice.isPastDue ? 'text-danger' : 'text-content-muted'"
         >
           {{ formatDate(invoice.dueOn) }}
         </td>
-        <td class="px-4 py-3 text-right">
+        <td class="px-5 py-3.5 text-right">
           <Link
             :href="`/admin/invoices/${invoice.id}`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

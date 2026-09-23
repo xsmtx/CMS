@@ -107,9 +107,9 @@ function formatDateTime(value: string | null): string {
       :headers="['Operation', 'Subject', 'State', 'Attempt', 'Started', '']"
     >
       <tr v-for="operation in operations.data" :key="operation.id">
-        <td class="px-4 py-3 font-medium">{{ operation.typeLabel }}</td>
-        <td class="text-content-muted px-4 py-3">{{ operation.subject ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5 font-medium">{{ operation.typeLabel }}</td>
+        <td class="text-content-muted px-5 py-3.5">{{ operation.subject ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(operation.state)">{{ operation.stateLabel }}</AppBadge>
           <!-- Already redacted on the way in. Shown because an operator
                cannot act on "something went wrong". -->
@@ -117,16 +117,16 @@ function formatDateTime(value: string | null): string {
             {{ operation.error }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap tabular-nums">
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap tabular-nums">
           {{ operation.attempt }} / {{ operation.maxAttempts }}
           <span v-if="operation.nextAttemptAt" class="block text-xs">
             next {{ formatDateTime(operation.nextAttemptAt) }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
           {{ formatDateTime(operation.startedAt ?? operation.createdAt) }}
         </td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="px-5 py-3.5 text-right whitespace-nowrap">
           <AppButton
             v-if="can.manage && operation.canRetry"
             size="sm"

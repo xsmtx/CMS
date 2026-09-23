@@ -84,20 +84,20 @@ function formatDateTime(value: string | null): string {
       :headers="['Request', 'Token', 'Status', 'Took', 'From', 'When']"
     >
       <tr v-for="item in requests.data" :key="item.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <span class="text-content-subtle font-mono text-xs">{{ item.method }}</span>
           <span class="ml-2 font-medium">/{{ item.path }}</span>
         </td>
-        <td class="text-content-muted px-4 py-3">{{ item.token ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="text-content-muted px-5 py-3.5">{{ item.token ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(item.status)">{{ item.status }}</AppBadge>
           <span v-if="item.errorCode" class="text-content-muted block text-xs">
             {{ item.errorCode }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-3 tabular-nums">{{ item.durationMs }}ms</td>
-        <td class="text-content-muted px-4 py-3 font-mono text-xs">{{ item.ip ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ item.durationMs }}ms</td>
+        <td class="text-content-muted px-5 py-3.5 font-mono text-xs">{{ item.ip ?? '—' }}</td>
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
           {{ formatDateTime(item.createdAt) }}
           <!-- The way from a line here to the rest of the story. -->
           <span v-if="item.correlationId" class="text-content-subtle block font-mono text-[11px]">

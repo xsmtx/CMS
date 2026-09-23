@@ -46,16 +46,16 @@ function remove(group: OptionGroupRow): void {
 
     <AppTable v-if="groups.length > 0" :headers="['Group', 'Type', 'Choices', '']">
       <tr v-for="group in groups" :key="group.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <p class="font-medium">
             {{ group.name }}
             <AppBadge v-if="group.isRequired" class="ml-2">Required</AppBadge>
           </p>
           <p class="text-content-muted font-mono text-xs">{{ group.key }}</p>
         </td>
-        <td class="text-content-muted px-4 py-3">{{ group.typeLabel }}</td>
-        <td class="text-content-muted px-4 py-3 tabular-nums">{{ group.choices }}</td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="text-content-muted px-5 py-3.5">{{ group.typeLabel }}</td>
+        <td class="text-content-muted px-5 py-3.5 tabular-nums">{{ group.choices }}</td>
+        <td class="px-5 py-3.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/products/${product.id}/options/${group.id}/edit`"
             class="text-content-muted hover:text-content text-xs underline underline-offset-4"

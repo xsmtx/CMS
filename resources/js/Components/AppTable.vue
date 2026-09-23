@@ -10,21 +10,23 @@ defineProps<{ headers: string[] }>()
 </script>
 
 <template>
-  <div class="border-line overflow-x-auto rounded-[var(--radius-lg)] border">
-    <table class="w-full text-left text-sm">
+  <div
+    class="border-line bg-surface-raised overflow-x-auto rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
+  >
+    <table class="data-table w-full text-left text-sm">
       <thead class="bg-surface-sunken text-content-muted">
         <tr>
           <th
             v-for="header in headers"
             :key="header"
             scope="col"
-            class="px-4 py-2.5 text-xs font-medium whitespace-nowrap"
+            class="px-5 py-3 text-[11px] font-semibold tracking-wide whitespace-nowrap uppercase"
           >
             {{ header }}
           </th>
         </tr>
       </thead>
-      <tbody class="divide-line bg-surface-raised divide-y">
+      <tbody class="divide-line divide-y">
         <slot />
       </tbody>
     </table>

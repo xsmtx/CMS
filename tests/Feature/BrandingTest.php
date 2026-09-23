@@ -6,6 +6,7 @@ use App\Application\Access\SyncPermissions;
 use App\Application\Branding\ResolveBrand;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Branding\Brand;
 use App\Domain\Licensing\Contracts\Entitlements;
 use App\Domain\Licensing\Feature;
 use App\Infrastructure\Branding\Models\BrandSetting;
@@ -15,6 +16,7 @@ use App\Infrastructure\Organizations\Models\Organization;
 use App\Support\Branding\CurrentBrand;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia;
 
 beforeEach(function (): void {
@@ -233,4 +235,47 @@ it('refuses settings to staff without the permission', function (): void {
     $this->actingAs(StaffUser::factory()->create(), 'staff')
         ->get('/admin/settings')
         ->assertForbidden();
+});
+
+/**
+ * A brand is a public thing: a name, an address, colours, URLs. It appears
+ * on a storefront, in an email footer and on a document a customer keeps.
+ *
+ * So nothing on it may be a credential. The email *identity* lives here —
+ * the from-name and the from-address, which every recipient sees anyway —
+ * while whatever sends that mail stays in configuration, with the rest of
+ * this platform's secrets. This test is the shape of that promise: a
+ * column added later called `smtp_password` fails here rather than in a
+ * support ticket.
+ */
+it('holds nothing that could be a secret', function (): void {
+    $columns = Schema::getColumnListing('brand_settings');
+
+    $suspicious = array_values(array_filter(
+        $columns,
+        static fn (string $column): bool => (bool) preg_match(
+            '/(secret|password|token|api_?key|credential|private)/i',
+            $column,
+        ),
+    ));
+
+    expect($suspicious)->toBe([]);
+
+    // And the value object that reaches a template carries no more than
+    // the row does: a brand handed to a Blade view is a brand a theme
+    // author can print in full.
+    $public = array_map(
+        static fn (ReflectionProperty $property): string => $property->getName(),
+        (new ReflectionClass(Brand::class))->getProperties(ReflectionProperty::IS_PUBLIC),
+    );
+
+    $leaks = array_values(array_filter(
+        $public,
+        static fn (string $name): bool => (bool) preg_match(
+            '/(secret|password|token|apiKey|credential|private)/i',
+            $name,
+        ),
+    ));
+
+    expect($leaks)->toBe([]);
 });

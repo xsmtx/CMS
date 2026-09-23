@@ -55,7 +55,7 @@ function formatDate(value: string | null): string {
       ]"
     >
       <tr v-for="ticket in tickets" :key="ticket.id">
-        <td class="px-4 py-3">
+        <td class="px-5 py-3.5">
           <Link
             :href="`/client/support/${ticket.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -64,11 +64,11 @@ function formatDate(value: string | null): string {
           </Link>
           <span class="text-content-muted block text-xs">{{ ticket.number }}</span>
         </td>
-        <td class="text-content-muted px-4 py-3">{{ ticket.department ?? '—' }}</td>
-        <td class="px-4 py-3">
+        <td class="text-content-muted px-5 py-3.5">{{ ticket.department ?? '—' }}</td>
+        <td class="px-5 py-3.5">
           <AppBadge :tone="tone(ticket.status)">{{ ticket.statusLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted px-4 py-3 whitespace-nowrap">
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
           {{ formatDate(ticket.lastReplyAt) }}
         </td>
       </tr>

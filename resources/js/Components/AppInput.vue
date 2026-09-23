@@ -47,7 +47,7 @@ const describedBy = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-1.5">
     <label :for="id" class="text-sm font-medium">
       {{ label }}
       <span v-if="required" class="text-content-subtle" aria-hidden="true">*</span>
@@ -63,7 +63,7 @@ const describedBy = computed(() => {
       :placeholder="placeholder"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3 py-2 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
       :class="error ? 'border-danger' : 'focus:border-accent'"
     />
 
