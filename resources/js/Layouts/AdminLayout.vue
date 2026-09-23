@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
 import AppIcon from '../Components/AppIcon.vue'
@@ -8,6 +8,7 @@ import CommandPalette, { type Destination } from '../Components/CommandPalette.v
 import { type IconName } from '../icons'
 import AppMenu from '../Components/AppMenu.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
+import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { useBranding } from '../composables/useBranding'
 import { usePermissions } from '../composables/usePermissions'
 
@@ -540,7 +541,7 @@ function readRail(): boolean {
 
 function toggleRail(): void {
   railOpen.value = !railOpen.value
-  openGroup.value = null
+  close()
 
   try {
     window.localStorage.setItem(RAIL_KEY, railOpen.value ? 'open' : 'closed')
@@ -549,28 +550,62 @@ function toggleRail(): void {
   }
 }
 
-function toggle(label: string): void {
+/**
+ * The collapsed rail's flyout, teleported out of the bar.
+ *
+ * It used to be `absolute left-full` inside the nav — and the nav scrolls,
+ * so the nav clips, so the flyout opened *inside* a 72px bar and was cut off
+ * at its edge. The same bug the row menus had, for the same reason, fixed
+ * the same way: `fixed`, against the button's own rectangle, outside every
+ * ancestor's overflow. `useAnchoredPanel` is that one place.
+ */
+const flyout = useAnchoredPanel({ side: 'right', width: '15.5rem' })
+
+// Template refs and bindings want a setup-scope name, so the pieces the
+// template touches are named here rather than reached through `flyout.`.
+const flyoutOpen = flyout.open
+const flyoutPanel = flyout.panel
+const flyoutStyle = flyout.style
+
+/** The group the flyout is showing, or null when it is shut. */
+const flyoutGroup = computed(
+  () => visibleGroups.value.find((group) => group.label === openGroup.value) ?? null,
+)
+
+// Click rather than hover: a hover menu is unreachable on a touch screen and
+// unforgiving with a trackpad.
+function toggle(label: string, event?: Event): void {
   openItem.value = null
 
-  openGroup.value = openGroup.value === label ? null : label
+  const next = openGroup.value === label ? null : label
+
+  openGroup.value = next
+
+  // Expanded, the group opens in place and there is no panel to place.
+  if (railOpen.value) {
+    flyout.open.value = false
+
+    return
+  }
+
+  if (next !== null && event?.currentTarget instanceof HTMLElement) {
+    flyout.trigger.value = event.currentTarget
+  }
+
+  flyout.open.value = next !== null
 }
 
 function close(): void {
   openGroup.value = null
+  flyout.open.value = false
 }
 
-// Click rather than hover: a hover menu is unreachable on a touch screen and
-// unforgiving with a trackpad.
-function onDocumentClick(event: MouseEvent): void {
-  const target = event.target
-
-  // Only when collapsed: an inline group in an open rail is not a popover
-  // and closing it because somebody clicked the page would be a section
-  // that will not stay open.
-  if (!railOpen.value && target instanceof Element && target.closest('[data-admin-nav]') === null) {
-    close()
-  }
-}
+// The panel closes itself on an outside press or on Escape, and the group
+// has to go with it. Two pieces of state that disagree is a flyout that
+// will not reopen until you press something else first.
+watch(flyoutOpen, (isOpen) => {
+  if (!isOpen) openGroup.value = null
+})
 
 function onKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') {
@@ -589,7 +624,6 @@ onMounted(() => {
     openGroup.value = visibleGroups.value.find(isCurrentGroup)?.label ?? null
   }
 
-  document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onKeydown)
 
   // A menu still hanging open over the page it has just navigated to is the
@@ -601,7 +635,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('keydown', onKeydown)
   stopNavigation?.()
 })
@@ -640,7 +673,17 @@ onBeforeUnmount(() => {
       :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
       aria-label="Sections"
     >
-      <div class="flex h-14 shrink-0 items-center gap-2 px-3">
+      <!--
+        Collapsed, the header stacks: the mark, and the control that opens
+        the bar directly under it. Side by side they do not fit in 72px, and
+        a control that does not fit is a control that gets dropped.
+      -->
+      <div
+        class="border-line flex h-14 shrink-0 border-b"
+        :class="
+          railOpen ? 'items-center gap-2 px-3' : 'flex-col items-center justify-center gap-0.5 px-1'
+        "
+      >
         <!-- The way home, and the only one. -->
         <Link
           href="/admin"
@@ -664,6 +707,32 @@ onBeforeUnmount(() => {
           <span v-if="railOpen" class="text-title truncate font-semibold">{{ brand.name }}</span>
           <span v-else class="sr-only">{{ brand.name }} dashboard</span>
         </Link>
+
+        <!--
+          The collapse control, in the rail's header.
+
+          It used to sit at the foot of the bar, under a list long enough to
+          scroll — findable only by somebody who already knew it was there,
+          which is the same as not being collapsible. Here it is the first
+          thing in the rail after the way home, at both widths.
+        -->
+        <button
+          type="button"
+          data-rail-toggle
+          class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-[var(--radius-sm)] transition-colors duration-(--duration-fast)"
+          :class="railOpen ? 'ml-auto p-1.5' : 'p-0.5'"
+          :aria-expanded="railOpen"
+          :aria-label="railOpen ? 'Collapse the sidebar' : 'Expand the sidebar'"
+          :title="railOpen ? 'Collapse the sidebar' : 'Expand the sidebar'"
+          @click="toggleRail"
+        >
+          <span
+            class="block transition-transform duration-(--duration-base) ease-(--ease-out)"
+            :class="railOpen ? 'rotate-180' : ''"
+          >
+            <AppIcon name="chevronRight" :size="railOpen ? 16 : 13" />
+          </span>
+        </button>
       </div>
 
       <nav class="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
@@ -688,7 +757,7 @@ onBeforeUnmount(() => {
                 ]"
                 :aria-expanded="openGroup === group.label"
                 :title="railOpen ? undefined : group.label"
-                @click="toggle(group.label)"
+                @click="toggle(group.label, $event)"
               >
                 <AppIcon :name="group.icon" :size="17" />
                 <template v-if="railOpen">
@@ -756,54 +825,49 @@ onBeforeUnmount(() => {
                   </ul>
                 </li>
               </ul>
-
-              <!-- Collapsed: a flyout, because 72px has nowhere to put a list. -->
-              <div
-                v-if="!railOpen && openGroup === group.label"
-                class="panel-enter border-line bg-surface-elevated absolute top-0 left-full z-50 ml-1.5 min-w-[15rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
-              >
-                <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
-                  {{ group.label }}
-                </p>
-                <ul class="space-y-0.5">
-                  <li v-for="item in group.items" :key="item.label">
-                    <Link
-                      :href="item.href"
-                      :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable text-body block rounded-[var(--radius-sm)] border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
-                      :class="
-                        isCurrent(item.href)
-                          ? 'bg-surface-hover text-content border-accent font-medium'
-                          : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
-                      "
-                    >
-                      {{ item.label }}
-                    </Link>
-                  </li>
-                </ul>
-              </div>
             </li>
           </ul>
         </div>
       </nav>
-
-      <button
-        type="button"
-        class="pressable border-line text-content-subtle hover:text-content text-chrome flex shrink-0 items-center gap-2 border-t px-3 py-2.5 transition-colors duration-(--duration-fast)"
-        :class="railOpen ? '' : 'justify-center'"
-        :aria-expanded="railOpen"
-        @click="toggleRail"
-      >
-        <span
-          class="transition-transform duration-(--duration-base) ease-(--ease-out)"
-          :class="railOpen ? 'rotate-180' : ''"
-        >
-          <AppIcon name="chevronRight" :size="15" />
-        </span>
-        <span v-if="railOpen">Collapse</span>
-        <span v-else class="sr-only">Expand the rail</span>
-      </button>
     </aside>
+
+    <!--
+      Collapsed, a group opens as a flyout, because 72px has nowhere to put a
+      list. One panel rather than one per group: only one can be open, and a
+      panel per row would be seven hidden panels on every page load.
+
+      Teleported to the body and positioned `fixed`, which is the only
+      placement no ancestor's `overflow` can clip.
+    -->
+    <Teleport to="body">
+      <div
+        v-if="flyoutOpen && !railOpen && flyoutGroup"
+        ref="flyoutPanel"
+        data-rail-flyout
+        :style="flyoutStyle"
+        class="panel-enter border-line bg-surface-elevated text-content z-50 rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
+      >
+        <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
+          {{ flyoutGroup.label }}
+        </p>
+        <ul class="max-h-[70dvh] space-y-0.5 overflow-y-auto">
+          <li v-for="item in flyoutGroup.items" :key="item.label">
+            <Link
+              :href="item.href"
+              :aria-current="isCurrent(item.href) ? 'page' : undefined"
+              class="pressable text-body block rounded-[var(--radius-sm)] border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
+              :class="
+                isCurrent(item.href)
+                  ? 'bg-surface-hover text-content border-accent font-medium'
+                  : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
+              "
+            >
+              {{ item.label }}
+            </Link>
+          </li>
+        </ul>
+      </div>
+    </Teleport>
 
     <div class="flex min-h-dvh flex-col lg:ml-(--rail-w)">
       <!--

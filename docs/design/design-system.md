@@ -178,7 +178,7 @@ storefront.
 | `AppStatus` | all | Shape + text + colour. The way operational status is shown. |
 | `AppStat` | admin | A figure you can press to filter by it. |
 | `AppBarChart` | admin | SVG, no library, with an `sr-only` table of the same numbers. |
-| `AppMenu` | admin, client | Teleported, origin-aware, escapes table overflow. |
+| `AppMenu` | admin, client | Teleported, origin-aware, escapes table overflow. Positioning is `useAnchoredPanel`'s. |
 | `AppIcon` | all | Phosphor `regular`, one family, concepts not drawings. |
 | `AppAlert` | all | Page-level message. |
 | `EmptyState` | all | Left-aligned where the data will be, so arriving rows do not move the page. |
@@ -229,8 +229,22 @@ Business, Operations, Support, System, Extensions. A heading appears only
 when a group it owns is visible, so a rail never advertises Security before
 a security screen exists.
 
+The **collapse control is in the rail's header**, next to the mark, at both
+widths. It sat at the foot of the bar first, under a list long enough to
+scroll, which made it findable only by somebody who already knew it was
+there — and a collapse control nobody can find is a rail that is not
+collapsible.
+
 Expanded, a group opens **in place**. Collapsed, it opens as a flyout,
-because 72px has nowhere to put a nested list.
+because 72px has nowhere to put a nested list — and that flyout is
+**teleported to the body and positioned `fixed`**, not `absolute` inside the
+bar. The rail's nav scrolls, a scrolling container clips horizontally as well
+as vertically, and the flyout was therefore cut off at 72px: the menu opened
+*inside* the bar. It is the same bug the table row menus had, so it has the
+same fix and now the same implementation — `useAnchoredPanel`, which is the
+one place in this product that answers "a panel that must escape whatever is
+clipping it". A new dropdown uses it rather than writing `absolute` and
+finding out later.
 
 The topbar carries where you are (breadcrumbs) and what belongs to the
 session: ⌘K, appearance, tools, help, account. Nothing on it is page

@@ -1,5 +1,5 @@
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
 /**
@@ -12,6 +12,11 @@ import { ref } from 'vue'
  * sidebar actually goes wrong: collapsed it must open a flyout (72px has
  * nowhere to put a nested list), expanded it must open in place and stay
  * open when somebody clicks the page.
+ *
+ * The collapsed flyout is **teleported to the body**, so the assertions
+ * about it read `document` rather than the wrapper. That is the whole point
+ * of it: a panel still inside the bar is a panel the bar's own `overflow`
+ * cuts off at 72px, which is exactly the bug this shape shipped with.
  */
 const navigateHandlers: Array<() => void> = []
 
@@ -97,10 +102,28 @@ function groupTriggers(wrapper: ReturnType<typeof render>) {
 }
 
 async function expandRail(wrapper: ReturnType<typeof render>): Promise<void> {
-  await wrapper.find('[data-admin-nav] > button').trigger('click')
+  await wrapper.find('[data-admin-nav] [data-rail-toggle]').trigger('click')
+}
+
+/** The teleported flyout, wherever in the document it landed. */
+function flyout(): HTMLElement | null {
+  return document.querySelector('[data-rail-flyout]')
+}
+
+function flyoutLink(href: string): Element | null {
+  return flyout()?.querySelector('a[href="' + href + '"]') ?? null
 }
 
 describe('AdminLayout navigation', () => {
+  // A teleported panel is appended to the body and outlives the wrapper
+  // that made it, so one test's flyout would still be in the document when
+  // the next one asked.
+  enableAutoUnmount(afterEach)
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
   beforeEach(() => {
     navigateHandlers.length = 0
     permissionState.superAdmin = true
@@ -149,7 +172,55 @@ describe('AdminLayout navigation', () => {
   })
 
   it('keeps every group shut until it is asked for', () => {
-    expect(render().findAll('[data-admin-nav] a[href="/admin/customers"]')).toHaveLength(0)
+    render()
+
+    expect(flyout()).toBeNull()
+    expect(document.querySelector('a[href="/admin/customers"]')).toBeNull()
+  })
+
+  /**
+   * The bug this shape shipped with: the flyout was `absolute` inside a
+   * `nav` that scrolls, so it opened *inside* a 72px bar and was clipped at
+   * its edge. Teleporting it to the body is what makes it impossible for an
+   * ancestor's `overflow` to cut it off, so that is what is asserted — not a
+   * class name, which would have passed the whole time the menu was
+   * invisible.
+   */
+  it('opens the collapsed flyout outside the bar, not inside it', async () => {
+    const wrapper = render()
+
+    await groupTriggers(wrapper)[0]?.trigger('click')
+
+    const panel = flyout()
+
+    expect(panel).not.toBeNull()
+    expect(panel?.closest('[data-admin-nav]')).toBeNull()
+    expect(panel?.style.position).toBe('fixed')
+  })
+
+  /**
+   * The other half of the same report: the control was at the foot of a list
+   * long enough to scroll, which made it findable only by somebody who
+   * already knew it was there. It belongs in the header, at both widths.
+   */
+  it('puts the collapse control in the rail header, at both widths', async () => {
+    const wrapper = render()
+    const toggles = wrapper.findAll('[data-admin-nav] [data-rail-toggle]')
+
+    expect(toggles).toHaveLength(1)
+    expect(toggles[0]?.attributes('aria-label')).toBe('Expand the sidebar')
+
+    // Above the scrolling list rather than after it.
+    const nav = wrapper.find('[data-admin-nav] nav').element
+    const toggle = toggles[0]?.element as HTMLElement
+
+    expect(nav.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+
+    await expandRail(wrapper)
+
+    expect(wrapper.find('[data-admin-nav] [data-rail-toggle]').attributes('aria-label')).toBe(
+      'Collapse the sidebar',
+    )
   })
 
   it('opens a group on click and closes it when another opens', async () => {
@@ -157,26 +228,38 @@ describe('AdminLayout navigation', () => {
     const buttons = groupTriggers(wrapper)
 
     await buttons[0]?.trigger('click')
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/customers"]').exists()).toBe(true)
+    expect(flyoutLink('/admin/customers')).not.toBeNull()
 
-    // A second group replaces the first rather than joining it.
+    // A second group replaces the first rather than joining it. One panel,
+    // so this also asserts a second one is never left hanging about.
     await buttons[1]?.trigger('click')
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/customers"]').exists()).toBe(false)
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/orders"]').exists()).toBe(true)
+    expect(document.querySelectorAll('[data-rail-flyout]')).toHaveLength(1)
+    expect(flyoutLink('/admin/customers')).toBeNull()
+    expect(flyoutLink('/admin/orders')).not.toBeNull()
+  })
+
+  it('shuts the flyout when the same group is pressed again', async () => {
+    const wrapper = render()
+
+    await groupTriggers(wrapper)[0]?.trigger('click')
+    expect(flyout()).not.toBeNull()
+
+    await groupTriggers(wrapper)[0]?.trigger('click')
+    expect(flyout()).toBeNull()
   })
 
   it('shuts the rail and its group when the page navigates', async () => {
     const wrapper = render()
 
     await groupTriggers(wrapper)[0]?.trigger('click')
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/customers"]').exists()).toBe(true)
+    expect(flyoutLink('/admin/customers')).not.toBeNull()
 
     // A panel still hanging over the page it just went to is the commonest
     // way navigation feels broken.
     navigateHandlers.forEach((handler) => handler())
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/customers"]').exists()).toBe(false)
+    expect(flyout()).toBeNull()
   })
 
   it('marks the group the current page belongs to', () => {
@@ -241,9 +324,9 @@ describe('AdminLayout navigation', () => {
 
     await groupTriggers(wrapper)[2]?.trigger('click')
 
-    const rows = groupsOf(wrapper)[2]
-      ?.findAll('a')
-      .map((row) => row.text())
+    const rows = [...(flyout()?.querySelectorAll('a') ?? [])].map((row) =>
+      (row.textContent ?? '').trim(),
+    )
 
     expect(rows).toEqual([
       'Transactions List',
