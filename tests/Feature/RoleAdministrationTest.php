@@ -179,3 +179,27 @@ it('builds the permission matrix from the registry', function (): void {
             expect($slugs)->toEqualCanonicalizing(app(PermissionRegistry::class)->slugs());
         });
 });
+
+/**
+ * The matrix is what somebody reads while deciding what a role may do, so
+ * every row on it is asserted to be words rather than the identifier the
+ * code checks.
+ */
+it('sends a name and a sentence for every row on the matrix', function (): void {
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/roles/create')
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page): void {
+            $permissions = collect($page->toArray()['props']['permissionGroups'])
+                ->flatMap(fn (array $group): array => $group['permissions']);
+
+            expect($permissions)->not->toBeEmpty();
+
+            foreach ($permissions as $permission) {
+                expect($permission['label'])
+                    ->not->toBe($permission['slug'], $permission['slug'].' is shown as its slug')
+                    ->and($permission['label'])->not->toContain('.')
+                    ->and($permission['description'])->toBeString();
+            }
+        });
+});
