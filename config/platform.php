@@ -572,6 +572,25 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Import / migration
+    |--------------------------------------------------------------------------
+    |
+    | Which Laravel database connection holds the legacy system. The importer
+    | issues nothing but `select` against it, and the credentials live in the
+    | operator's environment file next to their own database's — where such
+    | things belong. This platform never stores them.
+    |
+    | A connection that is not configured means the source is not offered,
+    | rather than offered and then refused.
+    |
+    */
+
+    'import' => [
+        'whmcs_connection' => env('IMPORT_WHMCS_CONNECTION', 'legacy'),
+    ],
+
     'licensing' => [
         'api_url' => env('LICENSE_API_URL'),
         'key' => env('LICENSE_KEY'),

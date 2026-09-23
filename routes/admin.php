@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\GatewayLogController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
@@ -342,6 +343,16 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('licence.heartbeat');
     Route::post('licence/deactivate', [LicenceController::class, 'deactivate'])
         ->name('licence.deactivate');
+
+    /*
+     * Bringing a previous system across. Owner only: an import writes
+     * customers, invoices and ledger rows straight into the database — by
+     * design, because it is a copy of history rather than a set of new business
+     * events — and it reads a second database over a configured connection.
+     */
+    Route::get('import', [ImportController::class, 'index'])->name('import');
+    Route::post('import', [ImportController::class, 'store'])->name('import.store');
+    Route::get('import/{run}', [ImportController::class, 'show'])->name('import.show');
 
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');

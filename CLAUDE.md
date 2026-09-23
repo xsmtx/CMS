@@ -90,11 +90,10 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 14 are complete (`docs/architecture/phase-0-result.md` through
-`phase-14-result.md`). **Phase 15, Import / Migration, is next and is not
+Phases 0 to 15 are complete (`docs/architecture/phase-0-result.md` through
+`phase-15-result.md`). **Phase 16, Reporting / Operations, is next and is not
 started.** The roadmap is the V2 addendum's (handoff §22) and runs to
-Phase 17: 15 Import / Migration, 16 Reporting / Operations,
-17 Production Hardening.
+Phase 17: 16 Reporting / Operations, 17 Production Hardening.
 
 Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
 owner's instruction. None has ever talked to its real provider.
@@ -532,6 +531,33 @@ reaches neither an audit row, a health report nor a rendered page.
 The vendor's licence API is a separate application this repository does not
 contain. `docs/licensing/api.md` is the contract; `Tests\Support\FakeLicenceClient`
 is what the tests drive.
+
+An import writes rows and dispatches nothing (ADR 0042). It is a copy of
+history, and it is the **one write path in this product not covered by the
+use-case rules** — so a phase that adds a required column to invoices has to
+add it to `InvoiceMapper` too, and nothing but a test will catch that.
+`IssueInvoice` would renumber a document the customer has on paper;
+`OrderPaid` for two years of history would provision two years of services and
+email everybody.
+
+`import_mappings` is one unique index that buys three requirements: duplicate
+protection, resumability and "which of my old clients came across". A dry run
+is the same code path with one flag read in `ImportWriter`, and it writes no
+mappings either — or the live run would skip every row. `renewal_invoiced_through`
+is set on every imported service and domain, because without it the first
+nightly renewal sweep after a migration invoices every customer again.
+
+Imported records are written into states that assert nothing is in flight: a
+service is never `provisioning`, a domain never `registering`, an invoice never
+`draft`, and every ticket is closed. `0000-00-00` is read as no date, because
+Carbon parses it into the year zero without complaint. Exactly one hard parent
+exists — a record belongs to a customer or to nobody; products are not a hard
+parent of services, and a test found that listing the soft ones refused
+"customers and services only".
+
+`WhmcsImportSource` has never read a real WHMCS database. Every column it
+reads is in one constant and `check()` verifies all of them before anything is
+written.
 
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap

@@ -354,6 +354,9 @@ const groups: NavGroup[] = [
       // Owner only, like Connect: it is about who somebody is rather than what
       // they may do, and a reseller's Administrator is an Administrator.
       { label: 'Licence', href: '/admin/licence', superAdmin: true },
+      // Owner only for the same reason: an import bypasses every use case and
+      // reads a second database.
+      { label: 'Import', href: '/admin/import', superAdmin: true },
       // WHMCS calls this the Module Queue. It is the same thing: every
       // background operation, what it was for, and what went wrong.
       { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },

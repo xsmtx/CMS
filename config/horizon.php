@@ -215,6 +215,28 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+
+        /*
+         * Imports get a supervisor of their own, and it is not an
+         * optimisation. A migration runs for minutes and holds more memory
+         * than anything else here; sharing a worker with `provisioning` would
+         * mean a customer waiting for an account behind twelve thousand
+         * invoices. `nice` is positive for the same reason: an import is the
+         * one job nobody is watching a spinner for.
+         */
+        'supervisor-imports' => [
+            'connection' => 'redis',
+            'queue' => ['imports'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 512,
+            'tries' => 1,
+            'timeout' => 3600,
+            'nice' => 5,
+        ],
     ],
 
     'environments' => [
