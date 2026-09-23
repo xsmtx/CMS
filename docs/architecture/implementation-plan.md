@@ -111,8 +111,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | **complete** - see `phase-9-result.md` |
 | 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | **complete** - see `phase-10-result.md` |
 | 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | **complete** - see `phase-11-result.md` |
-| 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | next |
-| 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | |
+| 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | **complete** - see `phase-12-result.md` |
+| 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | next |
 | 14 | Licensing Control Plane: separate API/admin/database, signed entitlements, activations, heartbeat, grace, update entitlement | |
 | 15 | Import / Migration: importer framework, first WHMCS-compatible adapter | |
 | 16 | Reporting / Operations: MRR/ARR, churn, aging, revenue by product and gateway, renewals, support metrics | |

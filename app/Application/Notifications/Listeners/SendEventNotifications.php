@@ -12,6 +12,7 @@ use App\Domain\Billing\Events\PaymentReceived;
 use App\Domain\Domains\Events\DomainRegistered;
 use App\Domain\Notifications\NotificationEvent;
 use App\Domain\Ordering\Events\OrderPaid;
+use App\Domain\Ordering\Events\OrderPlaced;
 use App\Domain\Provisioning\Events\ServiceProvisioned;
 use App\Domain\Provisioning\Events\ServiceSuspended;
 use App\Domain\Provisioning\Events\ServiceTerminated;
@@ -44,6 +45,31 @@ final readonly class SendEventNotifications
         private Notifier $notifier,
         private ResolveRecipients $recipients,
     ) {}
+
+    /**
+     * The receipt. "We have emailed a confirmation" is what the checkout
+     * page has always said; this is what makes it true.
+     */
+    public function orderPlaced(OrderPlaced $event): void
+    {
+        $order = $this->find(Order::query(), $event->orderId);
+
+        if (! $order instanceof Order || ! $order->customer instanceof Customer) {
+            return;
+        }
+
+        $this->notifier->send(
+            NotificationEvent::OrderPlaced,
+            $this->recipients->forCustomer($order->customer, NotificationEvent::OrderPlaced),
+            [
+                'customer' => $order->customer->displayName(),
+                'order_number' => $order->number,
+                'total' => $order->total->format(app()->getLocale()),
+            ],
+            url('/client/orders/'.$order->id),
+            organizationId: $event->organizationId,
+        );
+    }
 
     public function orderPaid(OrderPaid $event): void
     {

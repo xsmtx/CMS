@@ -91,8 +91,15 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 ## Current state
 
 Phases 0 to 12 are complete (`docs/architecture/phase-0-result.md` through
-`phase-12-result.md`). The roadmap's phases are done; there is no Phase 13.
-Do not begin new work of that size without being asked for it.
+`phase-12-result.md`). **Phase 13, Reseller, is next and is not started.**
+The roadmap is the V2 addendum's (handoff §22) and runs to Phase 17:
+13 Reseller, 14 Licensing Control Plane, 15 Import / Migration,
+16 Reporting / Operations, 17 Production Hardening. Do not begin a phase
+without being asked for it.
+
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is a second handoff, and
+it is **not** to be started until the first one is finished — that means
+through Phase 17.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which

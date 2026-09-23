@@ -7,6 +7,7 @@ namespace App\Application\Ordering;
 use App\Application\Ordering\Exceptions\CartNotOrderable;
 use App\Application\Shared\AllocateNumber;
 use App\Domain\Crm\AddressType;
+use App\Domain\Ordering\Events\OrderPlaced;
 use App\Domain\Ordering\OrderStatus;
 use App\Domain\Risk\RiskDecision;
 use App\Domain\Shared\Money;
@@ -17,6 +18,7 @@ use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
 use App\Infrastructure\Promotions\Models\Promotion;
 use App\Support\Audit\Facades\Audit;
+use App\Support\Correlation\CorrelationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +105,18 @@ final readonly class PlaceOrder
 
         $this->transitions->record($order, $actor);
         $order = $this->transitions->handle($order, OrderStatus::Pending, $actor);
+
+        // After the transaction, like every event here: a listener must
+        // never see a row that is not committed yet. A context raises an
+        // event and never sends a mail (ADR 0029) — who hears about this
+        // one is `SendEventNotifications`' business.
+        if ($request->notify) {
+            event(new OrderPlaced(
+                $order->id,
+                $order->organization_id,
+                app(CorrelationContext::class)->id(),
+            ));
+        }
 
         Audit::action('ordering.order.placed')
             ->by($actor)

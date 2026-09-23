@@ -11,6 +11,7 @@ use App\Domain\Billing\Events\PaymentFailed;
 use App\Domain\Billing\Events\PaymentReceived;
 use App\Domain\Domains\Events\DomainRegistered;
 use App\Domain\Ordering\Events\OrderPaid;
+use App\Domain\Ordering\Events\OrderPlaced;
 use App\Domain\Provisioning\Events\ServiceProvisioned;
 use App\Domain\Provisioning\Events\ServiceSuspended;
 use App\Domain\Provisioning\Events\ServiceTerminated;
@@ -69,6 +70,7 @@ final class NotificationServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Event::listen(OrderPlaced::class, [SendEventNotifications::class, 'orderPlaced']);
         Event::listen(OrderPaid::class, [SendEventNotifications::class, 'orderPaid']);
         Event::listen(InvoiceIssued::class, [SendEventNotifications::class, 'invoiceIssued']);
         Event::listen(PaymentReceived::class, [SendEventNotifications::class, 'paymentReceived']);

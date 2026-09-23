@@ -3,7 +3,7 @@
 Status: complete
 Date: 2026-09-23
 Plan: `phase-12-plan.md`
-Next phase: none scheduled — the roadmap's phases are done
+Next phase: Phase 13 (Reseller) — **not started**
 
 ---
 

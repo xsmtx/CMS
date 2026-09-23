@@ -6,12 +6,9 @@ namespace App\Application\Ordering;
 
 use App\Application\Billing\RaiseInvoiceForOrder;
 use App\Application\Domains\AddDomainToCart;
-use App\Application\Notifications\Notifier;
-use App\Application\Notifications\ResolveRecipients;
 use App\Application\Ordering\Exceptions\CartNotOrderable;
 use App\Domain\Domains\DomainAction;
 use App\Domain\Domains\DomainOrderType;
-use App\Domain\Notifications\NotificationEvent;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Ordering\Models\Cart;
 use App\Infrastructure\Ordering\Models\Order;
@@ -49,8 +46,6 @@ final readonly class PlaceOrderForCustomer
         private ApplyPromotionCode $promotions,
         private PlaceOrder $orders,
         private RaiseInvoiceForOrder $invoices,
-        private Notifier $notifier,
-        private ResolveRecipients $recipients,
     ) {}
 
     public function handle(PlaceOrderForCustomerRequest $request, ?Model $actor = null): Order
@@ -76,6 +71,11 @@ final readonly class PlaceOrderForCustomer
                 termsAccepted: false,
                 notes: $request->notes,
                 onBehalfBy: $actor?->getKey() === null ? 'desk' : (string) $actor->getKey(),
+                // The same path a customer's order takes. This screen used
+                // to send the confirmation itself, which meant a context
+                // sending a mail (ADR 0029) and two places that could
+                // announce one order.
+                notify: $request->confirm && $request->sendEmail,
             ), $actor);
         } catch (Throwable $exception) {
             // A cart that never became an order is litter. Left behind it
@@ -164,39 +164,7 @@ final readonly class PlaceOrderForCustomer
             $this->invoices->handle($order, $actor, $request->sendEmail);
         }
 
-        if ($request->confirm && $request->sendEmail) {
-            $this->confirm($order);
-        }
-
         return $order->refresh();
-    }
-
-    /**
-     * Tell the customer the order exists.
-     *
-     * Not a bespoke mail: the wording is a template an operator can edit
-     * and the send is recorded in the delivery log like every other
-     * (ADR 0029).
-     */
-    private function confirm(Order $order): void
-    {
-        $customer = $order->customer;
-
-        if ($customer === null) {
-            return;
-        }
-
-        $this->notifier->send(
-            NotificationEvent::OrderPlaced,
-            $this->recipients->forCustomer($customer, NotificationEvent::OrderPlaced),
-            [
-                'customer' => $customer->displayName(),
-                'number' => $order->number,
-                'total' => $order->total->format(app()->getLocale()),
-            ],
-            url('/client/orders/'.$order->id),
-            organizationId: $order->organization_id,
-        );
     }
 
     private function discard(Cart $cart): void

@@ -6,6 +6,7 @@ use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Catalog\OptionType;
 use App\Domain\Catalog\ProductType;
+use App\Domain\Notifications\NotificationEvent;
 use App\Domain\Ordering\OrderStatus;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Catalog\Models\Option;
@@ -15,6 +16,7 @@ use App\Infrastructure\Catalog\Models\ProductGroup;
 use App\Infrastructure\Catalog\Models\ProductPrice;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
+use App\Infrastructure\Notifications\Models\NotificationDelivery;
 use App\Infrastructure\Ordering\Models\Cart;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Organizations\Models\Organization;
@@ -191,6 +193,32 @@ it('places an order for a new visitor and creates their account', function (): v
         ->and($contact->portal_access)->toBeTrue()
         ->and($contact->password)->not->toBeNull()
         ->and(Hash::check('', (string) $contact->password))->toBeFalse();
+});
+
+/**
+ * The confirmation page has always said "we have emailed a confirmation".
+ * Nothing sent one, because there was no event for anybody to subscribe
+ * to — so the one sentence a customer reads after paying was untrue.
+ */
+it('emails the confirmation the checkout page promises', function (): void {
+    addToCart();
+
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ])->assertRedirect();
+
+    $delivery = NotificationDelivery::query()
+        ->withoutGlobalScope('organization')
+        ->where('event', NotificationEvent::OrderPlaced->value)
+        ->first();
+
+    expect($delivery)->not->toBeNull()
+        ->and($delivery->recipient_address)->toBe('ayse@example.com');
 });
 
 it('refuses an order with the terms unticked', function (): void {

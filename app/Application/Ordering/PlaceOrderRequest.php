@@ -34,5 +34,14 @@ final readonly class PlaceOrderRequest
          * instead, which is where "a person did this" belongs.
          */
         public ?string $onBehalfBy = null,
+        /**
+         * Whether to announce that the order exists.
+         *
+         * True for a customer at checkout, who is looking at a page that
+         * says a confirmation has been emailed. False when the desk took
+         * the order and will hand it over itself — the order is written
+         * either way, so what is skipped is the message, not the history.
+         */
+        public bool $notify = true,
     ) {}
 }
