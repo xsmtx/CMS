@@ -76,10 +76,10 @@ final class InvalidModule extends RuntimeException
         return new self("Module [{$slug}] entrypoint [{$class}] does not implement the module contract.");
     }
 
-    public static function capabilityNotPermitted(string $slug, string $type, string $capability): self
+    public static function extensionPointNotPermitted(string $slug, string $type, string $point): self
     {
         return new self(
-            "Module [{$slug}] declares itself a [{$type}] and registers a [{$capability}]. "
+            "Module [{$slug}] declares itself a [{$type}] and registers a [{$point}]. "
             .'A package that can quietly become something else is a package whose type nobody can rely on.'
         );
     }
@@ -87,6 +87,24 @@ final class InvalidModule extends RuntimeException
     public static function inUse(string $slug, string $reason): self
     {
         return new self("Module [{$slug}] cannot be uninstalled: {$reason}.");
+    }
+
+    public static function notFound(string $slug): self
+    {
+        return new self("Module [{$slug}] is not on disk, or its manifest could not be read.");
+    }
+
+    public static function disabledByConfiguration(): self
+    {
+        return new self('This installation does not load modules.');
+    }
+
+    public static function missingConfiguration(string $slug, string $keys): self
+    {
+        return new self(
+            "Module [{$slug}] needs [{$keys}] before it can be enabled. "
+            .'A module registered without its configuration fails at the moment a customer is waiting.'
+        );
     }
 
     public static function notInstalled(string $slug): self

@@ -9,6 +9,7 @@ use App\Providers\AutomationServiceProvider;
 use App\Providers\BillingServiceProvider;
 use App\Providers\DomainServiceProvider;
 use App\Providers\HorizonServiceProvider;
+use App\Providers\ModuleServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\OrderingServiceProvider;
 use App\Providers\OrganizationServiceProvider;
@@ -18,6 +19,8 @@ use App\Providers\ProvisioningServiceProvider;
 return [
     AppServiceProvider::class,
     OrganizationServiceProvider::class,
+    // Before the registries that ask it what modules add.
+    ModuleServiceProvider::class,
     OrderingServiceProvider::class,
     BillingServiceProvider::class,
     ProvisioningServiceProvider::class,

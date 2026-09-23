@@ -51,6 +51,13 @@ return new class extends Migration
             // is a module an operator reinstalls three times.
             $table->text('failure_reason')->nullable();
 
+            // What it registered when it was last enabled: the extension
+            // points and the keys. Stored rather than asked, so that
+            // uninstall can refuse a module with live services behind it
+            // **without loading the module's code** — which is the one
+            // thing uninstall must not have to do.
+            $table->json('capabilities')->nullable();
+
             // The whole configuration as one encrypted blob rather than a
             // column per field: the schema belongs to the module, changes
             // with the module, and must never become a migration core has

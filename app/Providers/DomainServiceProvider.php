@@ -10,6 +10,8 @@ use App\Domain\Ordering\Events\OrderPaid;
 use App\Infrastructure\Domains\RegistrarRegistry;
 use App\Infrastructure\Domains\Registrars\ManualRegistrar;
 use App\Infrastructure\Domains\Registrars\NamecheapRegistrar;
+use App\Infrastructure\Modules\ActiveModules;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,7 +28,7 @@ final class DomainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(RegistrarRegistry::class, function (): RegistrarRegistry {
+        $this->app->singleton(RegistrarRegistry::class, function (Application $app): RegistrarRegistry {
             $registry = new RegistrarRegistry;
 
             $registry->register(new ManualRegistrar);
@@ -47,6 +49,13 @@ final class DomainServiceProvider extends ServiceProvider
                     ),
                     timeout: (int) config('platform.domains.timeout', 30),
                 ));
+            }
+
+            // And whatever the enabled modules add. Asked last, so a module
+            // cannot displace an adapter this installation ships with: a
+            // registry keys by name, and core has already claimed its own.
+            foreach ($app->make(ActiveModules::class)->registrars() as $registrar) {
+                $registry->register($registrar);
             }
 
             return $registry;

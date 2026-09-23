@@ -6,9 +6,11 @@ namespace App\Providers;
 
 use App\Application\Provisioning\Listeners\StartFulfilment;
 use App\Domain\Ordering\Events\OrderPaid;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use App\Infrastructure\Provisioning\Modules\CpanelModule;
 use App\Infrastructure\Provisioning\Modules\ManualModule;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,7 +29,7 @@ final class ProvisioningServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ModuleRegistry::class, function (): ModuleRegistry {
+        $this->app->singleton(ModuleRegistry::class, function (Application $app): ModuleRegistry {
             $registry = new ModuleRegistry;
 
             $registry->register(new ManualModule);
@@ -37,6 +39,13 @@ final class ProvisioningServiceProvider extends ServiceProvider
                     timeout: (int) config('platform.provisioning.timeout', 30),
                     retries: (int) config('platform.provisioning.retries', 2),
                 ));
+            }
+
+            // And whatever the enabled modules add. Asked last, so a module
+            // cannot displace an adapter this installation ships with: a
+            // registry keys by name, and core has already claimed its own.
+            foreach ($app->make(ActiveModules::class)->provisioningModules() as $module) {
+                $registry->register($module);
             }
 
             return $registry;

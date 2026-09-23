@@ -53,31 +53,31 @@ enum ModuleType: string
      * operator reaches it, and refusing them per type would mean a gateway
      * that cannot say whether it is reachable.
      *
-     * @return list<ModuleCapability>
+     * @return list<ExtensionPoint>
      */
     public function allows(): array
     {
         $common = [
-            ModuleCapability::HealthCheck,
-            ModuleCapability::Permission,
-            ModuleCapability::Navigation,
-            ModuleCapability::Widget,
+            ExtensionPoint::HealthCheck,
+            ExtensionPoint::Permission,
+            ExtensionPoint::Navigation,
+            ExtensionPoint::Widget,
         ];
 
         return match ($this) {
-            self::PaymentGateway => [ModuleCapability::Gateway, ...$common],
-            self::Provisioning => [ModuleCapability::ProvisioningModule, ...$common],
-            self::Registrar => [ModuleCapability::Registrar, ...$common],
-            self::NotificationChannel => [ModuleCapability::Channel, ...$common],
-            self::Fraud => [ModuleCapability::RiskEvaluator, ...$common],
-            self::Tax => [ModuleCapability::TaxCalculator, ...$common],
+            self::PaymentGateway => [ExtensionPoint::Gateway, ...$common],
+            self::Provisioning => [ExtensionPoint::ProvisioningModule, ...$common],
+            self::Registrar => [ExtensionPoint::Registrar, ...$common],
+            self::NotificationChannel => [ExtensionPoint::Channel, ...$common],
+            self::Fraud => [ExtensionPoint::RiskEvaluator, ...$common],
+            self::Tax => [ExtensionPoint::TaxCalculator, ...$common],
             self::Report, self::AdminWidget, self::ClientWidget => $common,
-            self::Addon => ModuleCapability::cases(),
+            self::Addon => ExtensionPoint::cases(),
         };
     }
 
-    public function permits(ModuleCapability $capability): bool
+    public function permits(ExtensionPoint $point): bool
     {
-        return in_array($capability, $this->allows(), strict: true);
+        return in_array($point, $this->allows(), strict: true);
     }
 }

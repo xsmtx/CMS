@@ -16,10 +16,12 @@ use App\Domain\Provisioning\Events\ServiceSuspended;
 use App\Domain\Provisioning\Events\ServiceTerminated;
 use App\Domain\Support\Events\TicketOpened;
 use App\Domain\Support\Events\TicketReplied;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Notifications\ChannelRegistry;
 use App\Infrastructure\Notifications\Channels\DatabaseChannel;
 use App\Infrastructure\Notifications\Channels\MailChannel;
 use App\Infrastructure\Notifications\Channels\WebhookChannel;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,7 +37,7 @@ final class NotificationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ChannelRegistry::class, function (): ChannelRegistry {
+        $this->app->singleton(ChannelRegistry::class, function (Application $app): ChannelRegistry {
             $registry = new ChannelRegistry;
 
             $registry->register(new MailChannel);
@@ -52,6 +54,13 @@ final class NotificationServiceProvider extends ServiceProvider
                     secret: $secret,
                     timeout: (int) config('platform.notifications.webhook.timeout', 10),
                 ));
+            }
+
+            // And whatever the enabled modules add. Asked last, so a module
+            // cannot displace an adapter this installation ships with: a
+            // registry keys by name, and core has already claimed its own.
+            foreach ($app->make(ActiveModules::class)->channels() as $channel) {
+                $registry->register($channel);
             }
 
             return $registry;

@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $path
  * @property ModuleState $state
  * @property string|null $failure_reason
+ * @property array<string, list<string>>|null $capabilities
  * @property array<string, mixed>|null $config
  * @property CarbonImmutable|null $installed_at
  * @property CarbonImmutable|null $enabled_at
@@ -59,6 +60,7 @@ final class ModuleRecord extends Model implements AuditLabel
         'path',
         'state',
         'failure_reason',
+        'capabilities',
         'config',
         'installed_at',
         'enabled_at',
@@ -92,6 +94,7 @@ final class ModuleRecord extends Model implements AuditLabel
         return [
             'type' => ModuleType::class,
             'state' => ModuleState::class,
+            'capabilities' => 'array',
             // Encrypted, because a module's API key lives in here and a
             // database dump is the commonest way one leaves a company.
             'config' => 'encrypted:array',
