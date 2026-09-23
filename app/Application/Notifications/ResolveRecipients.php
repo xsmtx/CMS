@@ -63,6 +63,10 @@ final readonly class ResolveRecipients
         );
     }
 
+    /**
+     * Staff have no per-category opt-out: an agent who does not want
+     * ticket mail changes their assignment, not their preferences.
+     */
     public function forStaff(StaffUser $staff): NotificationRecipient
     {
         return new NotificationRecipient(
@@ -80,12 +84,11 @@ final readonly class ResolveRecipients
      *
      * @return list<NotificationRecipient>
      */
-    public function staffFor(NotificationEvent $event): array
+    public function staffFor(): array
     {
         $recipients = [];
-
         foreach (StaffUser::query()->active()->get() as $staff) {
-            $recipients[] = $this->forStaff($staff, $event);
+            $recipients[] = $this->forStaff($staff);
         }
 
         return $recipients;

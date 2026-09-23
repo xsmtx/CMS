@@ -116,10 +116,10 @@ final readonly class SendTicketNotifications
         $assignee = $ticket->assignee;
 
         if ($assignee instanceof StaffUser) {
-            return [$this->recipients->forStaff($assignee, NotificationEvent::TicketReplied)];
+            return [$this->recipients->forStaff($assignee)];
         }
 
-        return $this->recipients->staffFor(NotificationEvent::TicketReplied);
+        return $this->recipients->staffFor();
     }
 
     /**

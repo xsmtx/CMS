@@ -9,6 +9,7 @@ return [
         'domains' => 'Alan adları',
         'orders' => 'Siparişler',
         'billing' => 'Faturalandırma',
+        'support' => 'Destek',
         'contacts' => 'Kişiler',
         'developer' => 'Geliştirici',
         'profile' => 'Profil',

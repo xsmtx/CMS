@@ -65,11 +65,19 @@ final class SystemRoleSeeder extends Seeder
         return match ($role) {
             SystemRole::SuperAdmin => [],
             SystemRole::Administrator => array_keys($registry->forScope(RoleScope::Staff)),
+            // A support agent answers tickets and writes the article that
+            // stops the next one. Not the delete permission, and not the
+            // template editor: one changes what every customer is told.
             SystemRole::Support => [
                 'platform.health.view',
                 'platform.audit.view',
                 'access.roles.view',
                 'settings.view',
+                'support.tickets.view',
+                'support.tickets.manage',
+                'content.announcements.manage',
+                'content.kb.manage',
+                'notifications.view',
             ],
             SystemRole::AccountOwner => array_keys($registry->forScope(RoleScope::Customer)),
             // A technical contact or an employee: enough to see what was

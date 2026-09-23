@@ -62,9 +62,15 @@ final class FrontEndTranslations
         'ordering.portal',
         'ordering.statuses',
 
+        'notifications.portal',
+
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',
+
+        'support.portal',
+        'support.statuses',
+        'support.tickets',
     ];
 
     /**

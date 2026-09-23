@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 7 are complete (`docs/architecture/phase-0-result.md` through
-`phase-7-result.md`). Phase 8, Support + Content + Notifications, is next
-and is not started. Do not begin a phase without being asked for it.
+Phases 0 to 8 are complete (`docs/architecture/phase-0-result.md` through
+`phase-8-result.md`). Phase 9, Automation + Operations, is next and is not
+started. Do not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -187,3 +187,36 @@ and is the only correct one when the extension is being priced.
 
 Before writing a file under `app/Domain/<Context>/`, check whether it
 already exists. Phase 7 overwrote two Phase 3 classes this way.
+
+An event is not a message (ADR 0029). A context raises an event and never
+sends a mail. `NotificationEvent` is the complete list of what this
+installation can say, `Notifier` is the one place a message leaves the
+platform, and every send writes a `notification_deliveries` row — including
+`suppressed`, because "they asked us not to" and "it bounced" are different
+answers. One channel failing never stops the others and nothing thrown
+escapes. Opt-out is applied once, in `ResolveRecipients`, and a
+transactional event bypasses it. Wording falls back operator-locale →
+operator-default → shipped `lang/`, and a placeholder with no value is left
+as itself so a mistake is visible.
+
+A ticket has one clock and one place that moves it (ADR 0030). A department
+states its SLA once at normal priority; priority scales it. No SLA is a real
+configuration. `TransitionTicket` owns the status and the clock fields —
+`ReplyToTicket` decides which status a reply implies and then asks for it,
+because two places that can set `resolved_at` is one too many.
+
+`OrganizationContext::withoutBoundary()` must **execute** the query inside
+the callback. A global scope is applied when a query runs, not when it is
+built, so a builder handed back out of the callback is scoped again by the
+time anyone calls `get()` on it — and the symptom is an empty result with no
+error. `SellerDepartments` is the worked example: a department belongs to
+the seller, and a seller is never inside its customer's own subtree.
+
+Never `use` a global class in a Pest test file (`use RuntimeException;`).
+The suite passes and the process still exits 1, with nothing printed. Write
+`RuntimeException` directly — a test file has no namespace, so it already
+resolves.
+
+A role gets the permissions of a phase when that phase lands. Phase 8 found
+`support` holding none of the support permissions, which made the role
+called Support unable to open a ticket.

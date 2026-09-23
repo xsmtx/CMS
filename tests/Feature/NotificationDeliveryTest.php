@@ -23,7 +23,6 @@ use App\Infrastructure\Notifications\Models\NotificationDelivery;
 use App\Infrastructure\Notifications\Models\NotificationTemplate;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Illuminate\Support\Facades\Mail;
-use RuntimeException;
 
 beforeEach(function (): void {
     $this->seed(ProviderOrganizationSeeder::class);

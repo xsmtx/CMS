@@ -36,3 +36,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0026](0026-provisioning-is-idempotent-and-failure-is-a-state.md) | Provisioning is idempotent, and failure is a state | accepted |
 | [0027](0027-contexts-meet-through-events.md) | Contexts meet through events, not through calls | accepted |
 | [0028](0028-a-domain-is-not-a-service.md) | A domain is not a service, and silence is not availability | accepted |
+| [0029](0029-an-event-is-not-a-message.md) | An event is not a message | accepted |
+| [0030](0030-the-ticket-clock.md) | A ticket has one clock, and one place that moves it | accepted |

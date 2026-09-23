@@ -9,6 +9,7 @@ return [
         'domains' => 'Domains',
         'orders' => 'Orders',
         'billing' => 'Billing',
+        'support' => 'Support',
         'contacts' => 'Contacts',
         'developer' => 'Developer',
         'profile' => 'Profile',

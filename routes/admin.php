@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
+use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OptionGroupController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderReviewController;
@@ -23,6 +25,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
 use Illuminate\Support\Facades\Route;
 
@@ -98,6 +101,42 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     // Billing. Every action that moves money is its own route, because
     // each answers to its own permission.
+    Route::get('support', [TicketController::class, 'index'])->name('support.index');
+    Route::get('support/{ticket}', [TicketController::class, 'show'])->name('support.show');
+    Route::post('support/{ticket}/replies', [TicketController::class, 'reply'])
+        ->name('support.reply');
+    Route::put('support/{ticket}', [TicketController::class, 'update'])->name('support.update');
+
+    Route::get('content/announcements', [ContentController::class, 'announcements'])
+        ->name('content.announcements');
+    Route::post('content/announcements', [ContentController::class, 'storeAnnouncement'])
+        ->name('content.announcements.store');
+    Route::put('content/announcements/{announcement}', [ContentController::class, 'updateAnnouncement'])
+        ->name('content.announcements.update');
+    Route::delete('content/announcements/{announcement}', [ContentController::class, 'destroyAnnouncement'])
+        ->name('content.announcements.destroy');
+
+    Route::get('content/articles', [ContentController::class, 'articles'])->name('content.articles');
+    Route::post('content/articles', [ContentController::class, 'storeArticle'])
+        ->name('content.articles.store');
+    Route::put('content/articles/{article}', [ContentController::class, 'updateArticle'])
+        ->name('content.articles.update');
+    Route::delete('content/articles/{article}', [ContentController::class, 'destroyArticle'])
+        ->name('content.articles.destroy');
+    Route::post('content/categories', [ContentController::class, 'storeCategory'])
+        ->name('content.categories.store');
+
+    Route::get('notifications/templates', [NotificationTemplateController::class, 'index'])
+        ->name('notifications.templates');
+    Route::put('notifications/templates/{event}/{locale}', [NotificationTemplateController::class, 'update'])
+        ->name('notifications.templates.update');
+    Route::delete('notifications/templates/{template}', [NotificationTemplateController::class, 'reset'])
+        ->name('notifications.templates.reset');
+    Route::post('notifications/templates/{event}/{locale}/test', [NotificationTemplateController::class, 'test'])
+        ->name('notifications.templates.test');
+    Route::get('notifications/log', [NotificationTemplateController::class, 'log'])
+        ->name('notifications.log');
+
     Route::get('domains', [DomainController::class, 'index'])->name('domains.index');
     Route::get('domains/{domain}', [DomainController::class, 'show'])->name('domains.show');
     Route::post('domains/{domain}/register', [DomainController::class, 'register'])

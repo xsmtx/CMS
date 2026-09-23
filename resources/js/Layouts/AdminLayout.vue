@@ -98,6 +98,18 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'Support',
+    items: [
+      { label: 'Tickets', href: '/admin/support', permission: 'support.tickets.view' },
+      {
+        label: 'Announcements',
+        href: '/admin/content/announcements',
+        permission: 'content.announcements.manage',
+      },
+      { label: 'Knowledge base', href: '/admin/content/articles', permission: 'content.kb.manage' },
+    ],
+  },
+  {
     label: 'Products',
     items: [
       { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
@@ -112,6 +124,11 @@ const groups: NavGroup[] = [
       { label: 'Staff', href: '/admin/staff', permission: 'identity.staff.view' },
       { label: 'Roles', href: '/admin/roles', permission: 'access.roles.view' },
       { label: 'Settings', href: '/admin/settings', permission: 'settings.view' },
+      {
+        label: 'Notifications',
+        href: '/admin/notifications/templates',
+        permission: 'notifications.view',
+      },
       { label: 'Audit log', href: '/admin/audit', permission: 'platform.audit.view' },
       { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
     ],

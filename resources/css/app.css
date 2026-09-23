@@ -174,3 +174,72 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Long-form text: knowledge-base articles and announcements.
+ *
+ * Written here rather than with a typography plugin because the whole set
+ * of tags an operator can produce is small and known — the Markdown
+ * renderer escapes everything else — and a plugin would bring a full
+ * cascade to style six elements.
+ */
+.prose-article > * + * {
+  margin-top: 1em;
+}
+
+.prose-article h2,
+.prose-article h3 {
+  margin-top: 1.8em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.prose-article h2 {
+  font-size: 1.25rem;
+}
+
+.prose-article h3 {
+  font-size: 1.05rem;
+}
+
+.prose-article ul,
+.prose-article ol {
+  padding-left: 1.4em;
+  list-style: revert;
+}
+
+.prose-article li + li {
+  margin-top: 0.35em;
+}
+
+.prose-article a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.prose-article code {
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+}
+
+.prose-article pre {
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  padding: 1em;
+  font-size: 0.85em;
+}
+
+.prose-article pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose-article blockquote {
+  border-left: 2px solid var(--color-line-strong);
+  padding-left: 1em;
+  color: var(--color-content-muted);
+}

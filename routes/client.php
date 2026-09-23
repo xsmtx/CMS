@@ -10,9 +10,11 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\DomainController;
 use App\Http\Controllers\Client\InvoiceController;
+use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\ServiceController;
+use App\Http\Controllers\Client\TicketController;
 use App\Http\Controllers\Client\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -60,6 +62,19 @@ Route::middleware(['auth:client'])->prefix('client')->group(function (): void {
 
     Route::get('services', [ServiceController::class, 'index'])->name('services');
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('service');
+
+    Route::get('support', [TicketController::class, 'index'])->name('tickets');
+    Route::get('support/new', [TicketController::class, 'create'])->name('tickets.create');
+    Route::post('support', [TicketController::class, 'store'])->name('tickets.store');
+    Route::get('support/{ticket}', [TicketController::class, 'show'])->name('ticket');
+    Route::post('support/{ticket}/replies', [TicketController::class, 'reply'])
+        ->name('tickets.reply');
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
+    Route::post('notifications/read', [NotificationController::class, 'markRead'])
+        ->name('notifications.read');
+    Route::put('notifications/preferences', [NotificationController::class, 'updatePreferences'])
+        ->name('notifications.preferences');
 
     Route::get('domains', [DomainController::class, 'index'])->name('domains');
     Route::get('domains/{domain}', [DomainController::class, 'show'])->name('domain');

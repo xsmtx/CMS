@@ -230,6 +230,21 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Locales
+    |--------------------------------------------------------------------------
+    |
+    | The languages this installation ships strings for. A notification
+    | template exists per locale, so this is the list an operator is
+    | offered when editing one.
+    |
+    */
+
+    'locales' => array_values(array_filter(
+        explode(',', (string) env('PLATFORM_LOCALES', 'en,tr')),
+    )),
+
     'notifications' => [
         'channels' => array_values(array_filter(
             explode(',', (string) env('NOTIFICATION_CHANNELS', 'mail,database')),
