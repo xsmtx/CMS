@@ -214,6 +214,33 @@ storefront.
 
 ## 8. Themes
 
+### The Core shell
+
+A **248px collapsible rail plus a topbar** (§3), and the rail ships
+collapsed to 72px. Collapsed is the right default for a panel whose screens
+are mostly tables: an operator recognises seven glyphs within a day and gets
+the width back for the data, and the one who wants labels presses once. The
+preference is `localStorage`, not the account — somebody who opens this on a
+laptop and a 34-inch monitor wants a different answer on each.
+
+The rail keeps **WHMCS's group names** under **§3's category headings**:
+Business, Operations, Support, System, Extensions. A heading appears only
+when a group it owns is visible, so a rail never advertises Security before
+a security screen exists.
+
+Expanded, a group opens **in place**. Collapsed, it opens as a flyout,
+because 72px has nowhere to put a nested list.
+
+The topbar carries where you are (breadcrumbs) and what belongs to the
+session: ⌘K, appearance, tools, help, account. Nothing on it is page
+content, which is what keeps it from becoming a second header.
+
+**Not on the topbar yet**, and named here rather than faked: the health
+indicator and the notification count (§3). Each needs a query cheap enough
+to run on every request, and neither exists — health checks run on demand
+and an unread count has no index behind it. A dot that is always grey is
+worse than no dot.
+
 | Theme | Personality | Density | Status |
 | --- | --- | --- | --- |
 | `infracms-core` | Enterprise, calm, balanced | Default | **This is what ships.** T0 done, T1 in progress. |
