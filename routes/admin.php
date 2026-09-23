@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
+use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
@@ -223,6 +224,8 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('operations.retry');
     Route::post('operations/{operation}/resolve', [OperationController::class, 'resolve'])
         ->name('operations.resolve');
+
+    Route::get('api/activity', [ApiActivityController::class, 'index'])->name('api.activity');
 
     Route::get('health', [HealthController::class, 'index'])->name('health');
     Route::put('health/maintenance', [AutomationController::class, 'maintenance'])

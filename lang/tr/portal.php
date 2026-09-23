@@ -12,6 +12,7 @@ return [
         'support' => 'Destek',
         'contacts' => 'Kişiler',
         'developer' => 'Geliştirici',
+        'webhooks' => 'Webhooklar',
         'profile' => 'Profil',
         'security' => 'Güvenlik',
     ],

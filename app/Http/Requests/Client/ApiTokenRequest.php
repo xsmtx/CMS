@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Client;
 
+use App\Domain\Api\ApiScope;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Issuing an API token.
@@ -23,12 +25,14 @@ final class ApiTokenRequest extends FormRequest
     }
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<mixed>>
      */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:96'],
+            'scopes' => ['sometimes', 'array', 'max:32'],
+            'scopes.*' => [Rule::enum(ApiScope::class)],
             'expires_in_days' => ['nullable', 'integer', 'min:1', 'max:730'],
         ];
     }

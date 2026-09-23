@@ -16,6 +16,7 @@ use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\ServiceController;
 use App\Http\Controllers\Client\TicketController;
 use App\Http\Controllers\Client\TransactionController;
+use App\Http\Controllers\Client\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -106,5 +107,13 @@ Route::middleware(['auth:client'])->prefix('client')->group(function (): void {
         Route::post('developer/tokens', [ApiTokenController::class, 'store'])->name('tokens.store');
         Route::delete('developer/tokens/{token}', [ApiTokenController::class, 'destroy'])
             ->name('tokens.destroy');
+
+        Route::get('developer/webhooks', [WebhookController::class, 'index'])->name('webhooks');
+        Route::post('developer/webhooks', [WebhookController::class, 'store'])
+            ->name('webhooks.store');
+        Route::delete('developer/webhooks/{endpoint}', [WebhookController::class, 'destroy'])
+            ->name('webhooks.destroy');
+        Route::post('developer/webhooks/deliveries/{delivery}/redeliver', [WebhookController::class, 'redeliver'])
+            ->name('webhooks.redeliver');
     });
 });

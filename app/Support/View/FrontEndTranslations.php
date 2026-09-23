@@ -56,6 +56,10 @@ final class FrontEndTranslations
         'domains.statuses',
 
         'identity.tokens',
+        'api.tokens',
+        'api.scopes',
+        'api.webhooks',
+        'api.deliveries',
 
         'ordering.cart',
         'ordering.orders',

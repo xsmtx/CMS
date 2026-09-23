@@ -61,6 +61,11 @@ const items = computed(() =>
       href: '/client/developer/tokens',
       permission: 'portal.tokens.manage',
     },
+    {
+      label: t('portal.nav.webhooks'),
+      href: '/client/developer/webhooks',
+      permission: 'portal.tokens.manage',
+    },
     { label: t('portal.nav.profile'), href: '/client/profile', permission: null },
     { label: t('portal.nav.security'), href: '/security', permission: null },
   ].filter((item) => item.permission === null || can.value.has(item.permission)),

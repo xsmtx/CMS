@@ -189,6 +189,11 @@ const groups: NavGroup[] = [
             href: '/admin/notifications/log',
             permission: 'notifications.view',
           },
+          {
+            label: 'API activity',
+            href: '/admin/api/activity',
+            permission: 'platform.audit.view',
+          },
           { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
         ],
       },

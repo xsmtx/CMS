@@ -12,6 +12,7 @@ return [
         'support' => 'Support',
         'contacts' => 'Contacts',
         'developer' => 'Developer',
+        'webhooks' => 'Webhooks',
         'profile' => 'Profile',
         'security' => 'Security',
     ],

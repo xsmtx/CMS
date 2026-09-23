@@ -40,3 +40,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0030](0030-the-ticket-clock.md) | A ticket has one clock, and one place that moves it | accepted |
 | [0031](0031-a-run-is-a-record.md) | A run is a record, and time is not a trigger | accepted |
 | [0032](0032-an-operation-is-visible-before-it-finishes.md) | An operation is visible before it finishes | accepted |
+| [0033](0033-the-api-is-a-surface.md) | The API is a surface, not a system | accepted |
+| [0034](0034-a-write-is-replayable.md) | A write is replayable, and so is a delivery | accepted |
