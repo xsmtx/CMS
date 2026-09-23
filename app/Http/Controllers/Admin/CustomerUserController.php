@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Shared\SearchPattern;
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Identity\SetContactPasswordRequest;
@@ -55,12 +56,12 @@ final class CustomerUserController extends Controller
         $users = Contact::query()
             ->where('portal_access', true)
             ->when($search !== '', function (Builder $query) use ($search): void {
-                $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $search).'%';
+                $like = SearchPattern::like($search);
 
                 $query->where(function (Builder $inner) use ($like): void {
-                    $inner->where('email', 'like', $like)
-                        ->orWhere('first_name', 'like', $like)
-                        ->orWhere('last_name', 'like', $like);
+                    $inner->where('email', 'like', $like);
+
+                    SearchPattern::name($inner, $like);
                 });
             })
             ->select('contacts.*')

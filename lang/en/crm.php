@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'errors' => [
+        'information_required' => 'Your account details need attention before you can use the rest of the portal. Open a ticket and we will put it right.',
+    ],
+
     'search' => [
         'advanced' => 'Advanced',
         'basic' => 'Search',
@@ -10,6 +14,7 @@ return [
         'clear' => 'Clear',
         'show_inactive' => 'Include closed accounts',
         'name' => 'Client or company name',
+        'wildcard' => 'A whole name works. % anchors: Zeyn% or %nep.',
         'email' => 'Email address',
         'phone' => 'Phone number',
         'tag' => 'Client group',
@@ -87,6 +92,7 @@ return [
     'contact_not_on_customer' => 'That contact does not belong to this customer.',
 
     'statuses' => [
+        'information_required' => 'Information required',
         'pending' => 'Pending',
         'active' => 'Active',
         'suspended' => 'Suspended',

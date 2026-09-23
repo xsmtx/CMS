@@ -236,7 +236,11 @@ function formatDate(value: string | null): string {
     <form class="mb-6" @submit.prevent="submit">
       <!-- The plain box, because nine times out of ten a name is enough. -->
       <div class="grid gap-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
-        <AppInput v-model="form.search" :label="labels.name ?? 'Name'" />
+        <AppInput
+          v-model="form.search"
+          :label="labels.name ?? 'Name'"
+          :hint="labels.wildcard ?? 'A full name works. % anchors: Zeyn% or %nep.'"
+        />
         <AppInput v-model="form.email" :label="labels.email ?? 'Email'" />
         <AppInput v-model="form.phone" :label="labels.phone ?? 'Phone'" />
         <div class="flex gap-2">

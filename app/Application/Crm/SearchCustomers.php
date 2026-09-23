@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Crm;
 
+use App\Application\Shared\SearchPattern;
 use App\Domain\Crm\CustomerStatus;
 use App\Domain\Crm\CustomFieldEntity;
 use App\Domain\Provisioning\ServiceStatus;
@@ -87,15 +88,18 @@ final readonly class SearchCustomers
             // builder — and a search that silently stopped matching
             // contacts would be worse than a little repetition.
             $query->where(function (Builder $inner) use ($term): void {
-                $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
+                $like = SearchPattern::like($term);
 
                 $inner->where('company_name', 'like', $like)
                     ->orWhere('legal_name', 'like', $like)
                     ->orWhere('tax_id', 'like', $like)
                     ->orWhereHas('contacts', function (Builder $contacts) use ($like): void {
-                        $contacts->where('email', 'like', $like)
-                            ->orWhere('first_name', 'like', $like)
-                            ->orWhere('last_name', 'like', $like);
+                        // The whole name as well as either half: an
+                        // operator looking at "Zeynep Kaya" types that,
+                        // not one word of it.
+                        $contacts->where('email', 'like', $like);
+
+                        SearchPattern::name($contacts, $like);
                     });
             });
         }
@@ -405,7 +409,7 @@ final readonly class SearchCustomers
     {
         [$relation, $column] = explode(':', $target, 2);
 
-        $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $value).'%';
+        $like = SearchPattern::like($value);
 
         match ($relation) {
             'customer' => $query->where($column, 'like', $like),

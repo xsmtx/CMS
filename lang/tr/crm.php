@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'errors' => [
+        'information_required' => 'Portalın geri kalanını kullanabilmeniz için hesap bilgilerinizin düzeltilmesi gerekiyor. Bir destek bileti açın, hallededelim.',
+    ],
+
     'search' => [
         'advanced' => 'Gelişmiş',
         'basic' => 'Ara',
@@ -10,6 +14,7 @@ return [
         'clear' => 'Temizle',
         'show_inactive' => 'Kapatılmış hesapları da göster',
         'name' => 'Müşteri veya firma adı',
+        'wildcard' => 'Ad soyad birlikte aranabilir. % ile: Zeyn% veya %nep.',
         'email' => 'E-posta adresi',
         'phone' => 'Telefon numarası',
         'tag' => 'Müşteri grubu',
@@ -87,6 +92,7 @@ return [
     'contact_not_on_customer' => 'Bu kişi bu müşteriye ait değil.',
 
     'statuses' => [
+        'information_required' => 'Eksik/hatalı bilgi',
         'pending' => 'Beklemede',
         'active' => 'Aktif',
         'suspended' => 'Askıda',

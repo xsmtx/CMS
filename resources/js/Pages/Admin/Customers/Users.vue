@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
+import AppMenu from '../../../Components/AppMenu.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -27,7 +28,6 @@ const props = defineProps<{
 }>()
 
 const search = ref(props.filters.search)
-const openMenu = ref<string | null>(null)
 const changing = ref<UserRow | null>(null)
 
 const passwordForm = useForm({ password: '', password_confirmation: '', reason: '' })
@@ -39,13 +39,13 @@ function submitSearch(): void {
   })
 }
 
-function sendReset(user: UserRow): void {
-  openMenu.value = null
+function sendReset(user: UserRow, close: () => void): void {
+  close()
   router.post(`/admin/customer-users/${user.id}/reset`, {}, { preserveScroll: true })
 }
 
-function startChange(user: UserRow): void {
-  openMenu.value = null
+function startChange(user: UserRow, close: () => void): void {
+  close()
   passwordForm.reset()
   passwordForm.clearErrors()
   changing.value = user
@@ -59,34 +59,6 @@ function savePassword(): void {
     onSuccess: () => (changing.value = null),
   })
 }
-
-// Click rather than hover, and closed by anything that is not the menu —
-// a row action that stays open over the next row is how an operator resets
-// the wrong person's password.
-function onDocumentClick(event: MouseEvent): void {
-  const target = event.target
-
-  if (target instanceof Element && target.closest('[data-user-menu]') === null) {
-    openMenu.value = null
-  }
-}
-
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') {
-    openMenu.value = null
-    changing.value = null
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', onDocumentClick)
-  document.addEventListener('keydown', onKeydown)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocumentClick)
-  document.removeEventListener('keydown', onKeydown)
-})
 
 function formatDateTime(value: string | null): string {
   return value === null ? 'Never' : new Date(value).toLocaleString()
@@ -103,7 +75,11 @@ function formatDateTime(value: string | null): string {
     <form class="mb-5 max-w-lg" @submit.prevent="submitSearch">
       <div class="flex items-end gap-2">
         <div class="flex-1">
-          <AppInput v-model="search" label="User name or email address" />
+          <AppInput
+            v-model="search"
+            label="User name or email address"
+            hint="A full name works. % anchors: Zeyn% or %nep."
+          />
         </div>
         <AppButton type="submit" variant="primary">Search</AppButton>
       </div>
@@ -181,45 +157,27 @@ function formatDateTime(value: string | null): string {
         <td class="text-content-muted px-4 py-3 whitespace-nowrap">
           {{ formatDateTime(user.lastLoginAt) }}
         </td>
-        <td class="relative px-4 py-3 text-right" data-user-menu>
-          <button
-            v-if="can.manage"
-            type="button"
-            class="pressable text-content-muted hover:text-content inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-sm"
-            :aria-expanded="openMenu === user.id"
-            @click="openMenu = openMenu === user.id ? null : user.id"
-          >
-            Manage user
-            <svg class="size-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path
-                d="M3 4.5 6 7.5 9 4.5"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-
-          <div
-            v-if="openMenu === user.id"
-            class="border-line bg-surface-raised absolute top-full right-4 z-10 mt-1 min-w-[15rem] rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
-          >
+        <td class="px-4 py-3 text-right">
+          <!-- The panel is teleported out of the table: an `absolute` one
+               is clipped by the table's own horizontal scroll. -->
+          <AppMenu v-if="can.manage" v-slot="{ close }" label="Manage user">
             <button
               type="button"
               class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
-              @click="sendReset(user)"
+              role="menuitem"
+              @click="sendReset(user, close)"
             >
               Send password reset email
             </button>
             <button
               type="button"
               class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
-              @click="startChange(user)"
+              role="menuitem"
+              @click="startChange(user, close)"
             >
               Change password
             </button>
-          </div>
+          </AppMenu>
         </td>
       </tr>
     </AppTable>

@@ -329,3 +329,95 @@ it('refuses manage users to staff without the permission', function (): void {
         ->get('/admin/customer-users')
         ->assertForbidden();
 });
+
+/**
+ * Nobody searches for one half of a name they can see in front of them.
+ */
+it('finds a person by their whole name', function (): void {
+    $customer = Customer::factory()->create(['company_name' => null, 'legal_name' => null]);
+
+    Contact::factory()->forCustomer($customer)->primary()->create([
+        'first_name' => 'Zeynep',
+        'last_name' => 'Kaya',
+    ]);
+
+    Customer::factory()->create(['company_name' => 'Somebody Else Ltd']);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers?search=Zeynep+Kaya')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('customers.data', 1)
+            ->where('customers.data.0.id', $customer->id));
+});
+
+it('finds a person typed surname first', function (): void {
+    $customer = Customer::factory()->create(['company_name' => null, 'legal_name' => null]);
+
+    Contact::factory()->forCustomer($customer)->primary()->create([
+        'first_name' => 'Zeynep',
+        'last_name' => 'Kaya',
+    ]);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers?search=Kaya+Zeynep')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('customers.data', 1));
+});
+
+/**
+ * A per cent sign an operator typed is an anchor, not a character. Escaping
+ * it into a literal answers a question nobody asked.
+ */
+it('reads a trailing per cent as starts-with', function (): void {
+    Customer::factory()->create(['company_name' => 'Zeynep Holding']);
+    Customer::factory()->create(['company_name' => 'Holding Zeynep']);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers?search=Zeyn%25')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('customers.data', 1)
+            ->where('customers.data.0.company', 'Zeynep Holding'));
+});
+
+it('reads a leading per cent as ends-with', function (): void {
+    Customer::factory()->create(['company_name' => 'Kadıköy Bilişim']);
+    Customer::factory()->create(['company_name' => 'Bilişim Kadıköy']);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customers?search=%25Kadıköy')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('customers.data', 1)
+            ->where('customers.data.0.company', 'Bilişim Kadıköy'));
+});
+
+it('finds a user by their whole name on the manage users list', function (): void {
+    $customer = Customer::factory()->create();
+
+    Contact::factory()->forCustomer($customer)->primary()->create([
+        'first_name' => 'Zeynep',
+        'last_name' => 'Kaya',
+    ]);
+
+    Contact::factory()->forCustomer($customer)->create([
+        'first_name' => 'Mehmet',
+        'last_name' => 'Demir',
+    ]);
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customer-users?search=Zeynep+Kaya')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('users.data', 1)
+            ->where('users.data.0.firstName', 'Zeynep'));
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/customer-users?search=%25mir')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('users.data', 1)
+            ->where('users.data.0.lastName', 'Demir'));
+});

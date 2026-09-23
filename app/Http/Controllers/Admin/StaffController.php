@@ -8,6 +8,7 @@ use App\Application\Identity\CreateStaffMember;
 use App\Application\Identity\DeleteStaffMember;
 use App\Application\Identity\StaffAttributes;
 use App\Application\Identity\UpdateStaffMember;
+use App\Application\Shared\SearchPattern;
 use App\Domain\Access\RoleScope;
 use App\Domain\Identity\AccountStatus;
 use App\Http\Controllers\Controller;
@@ -43,7 +44,7 @@ final class StaffController extends Controller
         $staff = StaffUser::query()
             ->with('roles:id,name,slug')
             ->when($search !== '', function (Builder $query) use ($search): void {
-                $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $search).'%';
+                $like = SearchPattern::like($search);
 
                 $query->where(fn (Builder $inner) => $inner
                     ->where('name', 'like', $like)
