@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Domains\Models;
 
 use App\Domain\Domains\DomainName;
+use App\Domain\Domains\DomainOrderType;
 use App\Domain\Domains\DomainReference;
 use App\Domain\Domains\DomainStatus;
 use App\Domain\Shared\Money;
@@ -53,6 +54,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $auto_renew
  * @property bool $registrar_lock
  * @property bool $whois_privacy
+ * @property bool $dns_management
+ * @property bool $email_forwarding
+ * @property bool $id_protection
+ * @property bool $is_premium
+ * @property DomainOrderType $order_type
  * @property list<string>|null $nameservers
  * @property string|null $failure_reason
  * @property CarbonImmutable|null $synced_at
@@ -93,6 +99,11 @@ final class Domain extends Model implements AuditLabel
         'auto_renew',
         'registrar_lock',
         'whois_privacy',
+        'dns_management',
+        'email_forwarding',
+        'id_protection',
+        'is_premium',
+        'order_type',
         'nameservers',
         'failure_reason',
         'synced_at',
@@ -213,6 +224,11 @@ final class Domain extends Model implements AuditLabel
             'auto_renew' => 'boolean',
             'registrar_lock' => 'boolean',
             'whois_privacy' => 'boolean',
+            'dns_management' => 'boolean',
+            'email_forwarding' => 'boolean',
+            'id_protection' => 'boolean',
+            'is_premium' => 'boolean',
+            'order_type' => DomainOrderType::class,
             'nameservers' => 'array',
             'synced_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',

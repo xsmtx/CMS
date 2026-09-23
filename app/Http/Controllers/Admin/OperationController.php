@@ -8,7 +8,10 @@ use App\Application\Operations\Operations;
 use App\Domain\Operations\OperationState;
 use App\Domain\Operations\OperationType;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Operations\Models\Operation;
+use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
@@ -136,6 +139,10 @@ final class OperationController extends Controller
             'state' => $operation->state->value,
             'stateLabel' => (string) __($operation->state->labelKey()),
             'subject' => $operation->subject_label,
+            // Where the subject lives, so the row can be followed back to
+            // the service or the domain it is about rather than just
+            // naming it.
+            'subjectHref' => $this->subjectHref($operation),
             'attempt' => $operation->attempt,
             'maxAttempts' => $operation->max_attempts,
             'progress' => $operation->progress,
@@ -150,6 +157,27 @@ final class OperationController extends Controller
             'error' => $operation->error,
             'createdAt' => $operation->created_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * The screen this operation is about.
+     *
+     * Mapped from the subject type rather than stored, because the type is
+     * the honest source: a column holding a URL would be a second place
+     * routing lived, and it would go stale the day a path changed.
+     */
+    private function subjectHref(Operation $operation): ?string
+    {
+        if ($operation->subject_id === null) {
+            return null;
+        }
+
+        return match ($operation->subject_type) {
+            Service::class => '/admin/services/'.$operation->subject_id,
+            Domain::class => '/admin/domains/'.$operation->subject_id,
+            Invoice::class => '/admin/invoices/'.$operation->subject_id,
+            default => null,
+        };
     }
 
     private function authorizeFor(string $permission): void

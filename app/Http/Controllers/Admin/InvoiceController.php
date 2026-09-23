@@ -39,7 +39,7 @@ final class InvoiceController extends Controller
         $status = $request->string('status')->toString();
 
         $invoices = Invoice::query()
-            ->with(Customer::displayNameWith('customer'))
+            ->with([...Customer::displayNameWith('customer'), 'payments'])
             ->when(
                 InvoiceStatus::tryFrom($status) instanceof InvoiceStatus,
                 fn ($query) => $query->where('status', $status),
@@ -233,7 +233,26 @@ final class InvoiceController extends Controller
             'dueOn' => $invoice->due_on?->toDateString(),
             'isPastDue' => $invoice->isPastDue(),
             'isProforma' => $invoice->is_proforma,
+            // When we last tried to take the money, and what happened.
+            // Without it, "unpaid" makes an operator guess whether the
+            // gateway is broken or the card is.
+            'lastCaptureAt' => $invoice->last_capture_at?->toIso8601String(),
+            'lastCaptureOutcome' => $invoice->last_capture_outcome,
+            // What paid it, read from the payments rather than stored on
+            // the invoice: the ledger is the truth.
+            'paymentMethod' => $this->paymentMethod($invoice),
         ];
+    }
+
+    private function paymentMethod(Invoice $invoice): ?string
+    {
+        $invoice->loadMissing('payments');
+
+        foreach ($invoice->payments as $payment) {
+            return $payment->gateway;
+        }
+
+        return null;
     }
 
     /**

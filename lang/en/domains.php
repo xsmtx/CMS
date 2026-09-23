@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'order_types' => [
+        'register' => 'Registration',
+        'transfer' => 'Transfer',
+        'renewal' => 'Renewal',
+    ],
+
     'statuses' => [
         'pending' => 'Pending',
         'registering' => 'Registering',

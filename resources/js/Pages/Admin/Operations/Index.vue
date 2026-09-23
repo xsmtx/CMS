@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
@@ -25,6 +25,7 @@ interface OperationRow {
   canRetry: boolean
   error: string | null
   createdAt: string | null
+  subjectHref: string | null
 }
 
 defineProps<{
@@ -104,18 +105,32 @@ function formatDateTime(value: string | null): string {
 
     <AppTable
       v-if="operations.data.length > 0"
-      :headers="['Operation', 'Subject', 'State', 'Attempt', 'Started', '']"
+      :headers="['Client / service', 'Module / action', 'Failure reason', 'Attempt', 'Started', '']"
     >
       <tr v-for="operation in operations.data" :key="operation.id">
-        <td class="px-5 py-3.5 font-medium">{{ operation.typeLabel }}</td>
-        <td class="text-content-muted px-5 py-3.5">{{ operation.subject ?? '—' }}</td>
         <td class="px-5 py-3.5">
-          <AppBadge :tone="tone(operation.state)">{{ operation.stateLabel }}</AppBadge>
+          <Link
+            v-if="operation.subjectHref"
+            :href="operation.subjectHref"
+            class="font-medium underline-offset-4 hover:underline"
+          >
+            {{ operation.subject ?? '—' }}
+          </Link>
+          <span v-else class="font-medium">{{ operation.subject ?? '—' }}</span>
+        </td>
+        <td class="px-5 py-3.5">
+          {{ operation.typeLabel }}
+          <AppBadge :tone="tone(operation.state)" class="ml-2">
+            {{ operation.stateLabel }}
+          </AppBadge>
+        </td>
+        <td class="px-5 py-3.5">
           <!-- Already redacted on the way in. Shown because an operator
                cannot act on "something went wrong". -->
-          <span v-if="operation.error" class="text-content-muted block max-w-[42ch] text-xs">
+          <span v-if="operation.error" class="text-content-muted block max-w-[46ch] text-xs">
             {{ operation.error }}
           </span>
+          <span v-else class="text-content-muted text-xs">—</span>
         </td>
         <td class="text-content-muted px-5 py-3.5 whitespace-nowrap tabular-nums">
           {{ operation.attempt }} / {{ operation.maxAttempts }}
@@ -133,7 +148,7 @@ function formatDateTime(value: string | null): string {
             variant="ghost"
             @click="retry(operation)"
           >
-            Try again
+            Retry
           </AppButton>
           <AppButton
             v-if="can.manage && operation.needsAttention"
@@ -141,7 +156,7 @@ function formatDateTime(value: string | null): string {
             variant="ghost"
             @click="resolve(operation)"
           >
-            Mark as handled
+            Mark solved
           </AppButton>
         </td>
       </tr>

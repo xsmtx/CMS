@@ -20,6 +20,10 @@ interface InvoiceRow {
   issuedOn: string | null
   dueOn: string | null
   isPastDue: boolean
+  customerId: string | null
+  lastCaptureAt: string | null
+  lastCaptureOutcome: string | null
+  paymentMethod: string | null
 }
 
 const props = defineProps<{
@@ -36,6 +40,10 @@ function filterBy(status: string | null): void {
     preserveState: true,
     replace: true,
   })
+}
+
+function formatDateTime(value: string | null): string {
+  return value === null ? 'Never' : new Date(value).toLocaleString()
 }
 
 function formatDate(value: string | null): string {
@@ -91,26 +99,57 @@ function formatDate(value: string | null): string {
 
     <AppTable
       v-if="invoices.data.length > 0"
-      :headers="['Invoice', 'Customer', 'Status', 'Total', 'Balance', 'Due', '']"
+      :headers="[
+        'Invoice #',
+        'Client name',
+        'Invoice date',
+        'Due date',
+        'Last capture attempt',
+        'Total',
+        'Payment method',
+        'Status',
+        '',
+      ]"
     >
       <tr v-for="invoice in invoices.data" :key="invoice.id">
         <td class="px-5 py-3.5 font-mono text-xs">{{ invoice.number }}</td>
-        <td class="px-5 py-3.5">{{ invoice.customer ?? '—' }}</td>
         <td class="px-5 py-3.5">
-          <AppBadge>{{ invoice.statusLabel }}</AppBadge>
+          <Link
+            v-if="invoice.customerId"
+            :href="`/admin/customers/${invoice.customerId}`"
+            class="underline-offset-4 hover:underline"
+          >
+            {{ invoice.customer ?? '—' }}
+          </Link>
+          <span v-else>—</span>
         </td>
-        <td class="px-5 py-3.5 tabular-nums">{{ invoice.total }}</td>
-        <td
-          class="px-5 py-3.5 tabular-nums"
-          :class="invoice.balanceMinor > 0 ? 'text-content' : 'text-content-muted'"
-        >
-          {{ invoice.balance }}
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          {{ formatDate(invoice.issuedOn) }}
         </td>
         <td
-          class="px-5 py-3.5 text-xs"
+          class="px-5 py-3.5 whitespace-nowrap"
           :class="invoice.isPastDue ? 'text-danger' : 'text-content-muted'"
         >
           {{ formatDate(invoice.dueOn) }}
+        </td>
+        <td class="text-content-muted px-5 py-3.5 whitespace-nowrap">
+          {{ formatDateTime(invoice.lastCaptureAt) }}
+          <span v-if="invoice.lastCaptureOutcome" class="block text-xs">
+            {{ invoice.lastCaptureOutcome }}
+          </span>
+        </td>
+        <td class="px-5 py-3.5 tabular-nums">
+          {{ invoice.total }}
+          <span
+            v-if="invoice.balanceMinor > 0"
+            class="text-content-muted block text-xs tabular-nums"
+          >
+            {{ invoice.balance }} owed
+          </span>
+        </td>
+        <td class="text-content-muted px-5 py-3.5">{{ invoice.paymentMethod ?? '—' }}</td>
+        <td class="px-5 py-3.5">
+          <AppBadge>{{ invoice.statusLabel }}</AppBadge>
         </td>
         <td class="px-5 py-3.5 text-right">
           <Link

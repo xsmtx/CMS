@@ -84,6 +84,16 @@ final readonly class StartPayment
             'received_at' => $result->status === PaymentStatus::Completed ? CarbonImmutable::now() : null,
         ])->save();
 
+        // What the invoice screen shows as the last capture attempt.
+        // Recorded whether or not it worked, which is the whole point: a
+        // successful one makes the invoice paid and needs no column, and
+        // an operator looking at an unpaid invoice needs to know whether
+        // the gateway is broken or the card is.
+        $invoice->forceFill([
+            'last_capture_at' => CarbonImmutable::now(),
+            'last_capture_outcome' => $result->status->value,
+        ])->save();
+
         // Believed because it is the answer to a call this server made, not
         // something a browser told us on the way back.
         if ($result->status === PaymentStatus::Completed) {

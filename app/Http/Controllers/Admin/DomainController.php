@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Domains\SearchDomains;
 use App\Application\Domains\TransitionDomain;
 use App\Application\Operations\WatchedDispatch;
 use App\Domain\Domains\Contracts\DomainRegistrar;
@@ -41,23 +42,17 @@ final class DomainController extends Controller
         private readonly WatchedDispatch $dispatcher,
     ) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request, SearchDomains $search): Response
     {
         $this->authorize('viewAny', Domain::class);
 
-        $status = $request->string('status')->toString();
-        $expiring = $request->boolean('expiring');
+        /** @var array<string, string> $criteria */
+        $criteria = array_map(
+            static fn (mixed $value): string => is_string($value) ? trim($value) : '',
+            $request->only(['domain', 'status', 'registrar', 'client']),
+        );
 
-        $domains = Domain::query()
-            ->with(Customer::displayNameWith('customer'))
-            ->when(
-                DomainStatus::tryFrom($status) instanceof DomainStatus,
-                fn ($query) => $query->where('status', $status),
-            )
-            ->when($expiring, fn ($query) => $query->expiringWithin(45))
-            ->orderByRaw('expires_on IS NULL, expires_on ASC')
-            ->paginate(25)
-            ->withQueryString();
+        $domains = $search->paginate($criteria);
 
         return Inertia::render('Admin/Domains/Index', [
             'domains' => [
@@ -66,8 +61,9 @@ final class DomainController extends Controller
                 'lastPage' => $domains->lastPage(),
                 'total' => $domains->total(),
             ],
-            'filters' => ['status' => $status === '' ? null : $status, 'expiring' => $expiring],
+            'filters' => $criteria,
             'statuses' => $this->statuses(),
+            'registrars' => $search->registrars(),
             'counts' => [
                 'expiring' => Domain::query()->expiringWithin(45)->count(),
                 'failed' => Domain::query()->where('status', DomainStatus::Failed->value)->count(),
@@ -214,7 +210,49 @@ final class DomainController extends Controller
             'expiresOn' => $domain->expires_on?->toDateString(),
             'daysUntilExpiry' => $domain->daysUntilExpiry(),
             'renewal' => $domain->renewal->format(app()->getLocale()),
+            'years' => $domain->years,
+            'registrar' => $domain->registrar,
+            // The renewal sweep's date, which is what an operator means by
+            // "next due": the expiry is the registry's date and the two
+            // differ by however long this installation invoices ahead.
+            'nextDueOn' => $domain->renewal_invoiced_through?->toDateString()
+                ?? $domain->expires_on?->toDateString(),
+            'detail' => [
+                'orderNumber' => $domain->order?->number,
+                'orderId' => $domain->order_id,
+                'orderType' => (string) __($domain->order_type->labelKey()),
+                'registeredOn' => $domain->registered_on?->toDateString(),
+                'dnsManagement' => $domain->dns_management,
+                'emailForwarding' => $domain->email_forwarding,
+                'idProtection' => $domain->id_protection,
+                'premium' => $domain->is_premium,
+                'paymentMethod' => $this->paymentMethod($domain),
+            ],
         ];
+    }
+
+    /**
+     * What paid for this name, if anything did.
+     *
+     * Read from the payments against the order's invoices rather than from
+     * a column on the domain: a domain is not paid by a method, an invoice
+     * is, and a second answer here would drift from the ledger.
+     */
+    private function paymentMethod(Domain $domain): ?string
+    {
+        $order = $domain->order;
+
+        if ($order === null) {
+            return null;
+        }
+
+        foreach ($order->invoices as $invoice) {
+            foreach ($invoice->payments as $payment) {
+                return $payment->gateway;
+            }
+        }
+
+        return null;
     }
 
     /**
