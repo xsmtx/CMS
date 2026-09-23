@@ -23,5 +23,10 @@ final readonly class RecordPaymentRequest
         public ?CarbonImmutable $receivedAt = null,
         public ?string $recordedBy = null,
         public ?string $note = null,
+        /**
+         * What the gateway kept. Not subtracted from the amount: the
+         * customer paid all of it and the invoice is settled in full.
+         */
+        public ?Money $fees = null,
     ) {}
 }

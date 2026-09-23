@@ -27,10 +27,23 @@ final class TransactionFactory extends Factory
             'currency_code' => 'EUR',
             'amount_minor' => 999,
             'credit_balance_minor' => 0,
+            'fees_minor' => 0,
+            'gateway' => 'manual',
+            'reference' => null,
             'description' => null,
             'recorded_by' => null,
             'occurred_at' => now(),
         ];
+    }
+
+    public function forCustomer(Customer|string $customer): static
+    {
+        $id = $customer instanceof Customer ? $customer->id : $customer;
+
+        return $this->state(fn (): array => [
+            'customer_id' => $id,
+            'organization_id' => $this->organizationOf($id),
+        ]);
     }
 
     private function organizationOf(string $customerId): string

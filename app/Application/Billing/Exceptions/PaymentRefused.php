@@ -45,6 +45,24 @@ final class PaymentRefused extends PlatformException
         );
     }
 
+    public static function ambiguousDirection(): self
+    {
+        return new self(__('billing.errors.transaction_direction'));
+    }
+
+    /**
+     * Money that arrived and is attributed to nothing.
+     *
+     * Refused rather than parked on a dangling row: an amount in belongs
+     * either against an invoice or on the client's credit balance, and a
+     * ledger entry that points at neither is one nobody can ever reconcile
+     * or spend.
+     */
+    public static function nowhereToPutIt(): self
+    {
+        return new self(__('billing.errors.transaction_unattributed'));
+    }
+
     public static function alreadyPaid(): self
     {
         return new self(__('billing.errors.already_paid'));

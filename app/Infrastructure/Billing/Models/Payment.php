@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property PaymentStatus $status
  * @property Money $amount
  * @property Money $refunded
+ * @property Money $fees
  * @property string|null $reference
  * @property CarbonImmutable|null $received_at
  */
@@ -51,6 +52,7 @@ final class Payment extends Model implements AuditLabel
         'currency_code',
         'amount_minor',
         'refunded_minor',
+        'fees_minor',
         'reference',
         'idempotency_key',
         'failure_reason',
@@ -66,6 +68,7 @@ final class Payment extends Model implements AuditLabel
     protected $attributes = [
         'amount_minor' => 0,
         'refunded_minor' => 0,
+        'fees_minor' => 0,
     ];
 
     /**
@@ -116,8 +119,10 @@ final class Payment extends Model implements AuditLabel
             'status' => PaymentStatus::class,
             'amount' => MoneyCast::class.':amount_minor,currency_code',
             'refunded' => MoneyCast::class.':refunded_minor,currency_code',
+            'fees' => MoneyCast::class.':fees_minor,currency_code',
             'amount_minor' => 'integer',
             'refunded_minor' => 'integer',
+            'fees_minor' => 'integer',
             'received_at' => 'immutable_datetime',
             'failed_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',

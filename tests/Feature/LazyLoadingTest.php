@@ -3,10 +3,15 @@
 declare(strict_types=1);
 
 use App\Application\Access\SyncPermissions;
+use App\Application\Billing\AddTransaction;
+use App\Application\Billing\AddTransactionRequest;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Ordering\LineKind;
+use App\Domain\Shared\Money;
 use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Billing\Models\Transaction;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Identity\Models\Contact;
@@ -14,6 +19,7 @@ use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Ordering\Models\OrderItem;
 use App\Infrastructure\Provisioning\Models\Service;
+use Carbon\CarbonImmutable;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
 use Illuminate\Database\Eloquent\Model;
@@ -192,4 +198,56 @@ it('lists two users of the same customer without a company name', function (): v
     $this->actingAs($this->admin, 'staff')
         ->get('/admin/customer-users')
         ->assertOk();
+});
+
+/**
+ * The ledger lists a client name on every row, and a client who paid by
+ * bank transfer is exactly the individual with no company name.
+ */
+it('lists transactions for customers who have no company name', function (): void {
+    for ($i = 0; $i < 2; $i++) {
+        $customer = Customer::factory()->create(['company_name' => null, 'legal_name' => null]);
+
+        Contact::factory()->forCustomer($customer)->primary()->create();
+
+        Transaction::factory()->forCustomer($customer)->create();
+    }
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/transactions')
+        ->assertOk();
+});
+
+/**
+ * Splitting one transfer across two invoices is the case that found the
+ * lazy load in `RecordPayment::attach()`: it reads `$invoice->customer`,
+ * and one invoice would never have reported it.
+ */
+it('pays two invoices from one transfer without lazy loading either', function (): void {
+    $customer = Customer::factory()->create([
+        'company_name' => null,
+        'legal_name' => null,
+        'currency_code' => 'EUR',
+    ]);
+
+    Contact::factory()->forCustomer($customer)->primary()->create();
+
+    $invoices = collect(range(1, 2))->map(fn (): Invoice => Invoice::factory()
+        ->forCustomer($customer)
+        ->create([
+            'currency_code' => 'EUR',
+            'subtotal_minor' => 1000,
+            'total_minor' => 1000,
+            'status' => InvoiceStatus::Unpaid->value,
+        ]));
+
+    app(AddTransaction::class)->handle($customer, new AddTransactionRequest(
+        amountIn: Money::ofMinor(2000, 'EUR'),
+        amountOut: Money::zero('EUR'),
+        occurredAt: CarbonImmutable::now(),
+        invoiceIds: $invoices->pluck('number')->all(),
+    ), $this->admin);
+
+    expect($invoices->map->fresh()->pluck('status')->all())
+        ->each->toBe(InvoiceStatus::Paid);
 });

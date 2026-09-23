@@ -190,6 +190,16 @@ const groups: NavGroup[] = [
         label: 'Transactions List',
         href: '/admin/transactions',
         permission: 'billing.invoices.view',
+        children: [
+          { label: 'All transactions', href: '/admin/transactions' },
+          { label: 'Amount in', href: '/admin/transactions?direction=in' },
+          { label: 'Amount out', href: '/admin/transactions?direction=out' },
+        ],
+      },
+      {
+        label: 'Add Transaction',
+        href: '/admin/transactions/add',
+        permission: 'billing.payments.record',
       },
       {
         label: 'Invoices',

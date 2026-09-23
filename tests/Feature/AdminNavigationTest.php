@@ -65,6 +65,9 @@ it('answers every destination in the admin menu', function (string $path): void 
 
     // Billing
     '/admin/transactions',
+    '/admin/transactions?direction=in',
+    '/admin/transactions?direction=out',
+    '/admin/transactions/add',
     '/admin/transactions?kind=payment',
     '/admin/invoices',
     '/admin/invoices?status=overdue',

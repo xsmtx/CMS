@@ -33,6 +33,10 @@ final readonly class Ledger
         ?Payment $payment = null,
         ?string $description = null,
         ?string $recordedBy = null,
+        ?Money $fees = null,
+        ?string $gateway = null,
+        ?string $reference = null,
+        ?CarbonImmutable $occurredAt = null,
     ): Transaction {
         $credit = $this->creditBalance($customer, $amount->currency->code);
 
@@ -51,9 +55,18 @@ final readonly class Ledger
             'currency_code' => $amount->currency->code,
             'amount_minor' => abs($amount->minorUnits),
             'credit_balance_minor' => $credit->minorUnits,
+            // What it cost us to take the money, not a smaller payment.
+            // The customer paid the full amount and the invoice is settled
+            // in full; a fee subtracted from the amount would make one of
+            // those two numbers a lie.
+            'fees_minor' => $fees instanceof Money ? abs($fees->minorUnits) : 0,
+            'gateway' => $gateway,
+            'reference' => $reference,
             'description' => $description,
             'recorded_by' => $recordedBy,
-            'occurred_at' => CarbonImmutable::now(),
+            // When the money moved, which is not always when somebody got
+            // round to writing it down.
+            'occurred_at' => $occurredAt ?? CarbonImmutable::now(),
         ]);
     }
 

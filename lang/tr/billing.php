@@ -61,6 +61,10 @@ return [
 
     'transactions' => [
         'kind' => 'Tür',
+        'title' => 'İşlemler',
+        'add' => 'İşlem Ekle',
+        'added' => 'Kaydedildi. :count muhasebe satırı yazıldı.',
+        'recorded_by_hand' => 'Elle kaydedildi',
     ],
 
     'transaction_kinds' => [
@@ -149,6 +153,8 @@ return [
     ],
 
     'errors' => [
+        'transaction_direction' => 'Bir işlem parayı tek yöne taşır. Gelen ya da giden tutardan yalnızca birini doldurun.',
+        'transaction_unattributed' => 'Gelen paranın bir yeri olmalı: bir fatura seçin ya da müşterinin bakiye alacağına ekleyin.',
         'not_editable' => 'Kesilmiş bir fatura değiştirilemez. Bunun yerine iade faturası kesin.',
         'no_lines' => 'Bir faturanın kesilebilmesi için en az bir kalemi olmalı.',
         'invalid_transition' => 'Bir fatura :from durumundan :to durumuna geçemez.',

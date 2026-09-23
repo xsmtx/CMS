@@ -61,6 +61,10 @@ return [
 
     'transactions' => [
         'kind' => 'Kind',
+        'title' => 'Transactions',
+        'add' => 'Add Transaction',
+        'added' => 'Recorded. :count ledger row(s) written.',
+        'recorded_by_hand' => 'Recorded by hand',
     ],
 
     'transaction_kinds' => [
@@ -149,6 +153,8 @@ return [
     ],
 
     'errors' => [
+        'transaction_direction' => 'A transaction moves money one way. Fill in an amount in or an amount out, not both and not neither.',
+        'transaction_unattributed' => 'Money that arrived has to go somewhere: name an invoice, or add it to the client’s credit balance.',
         'not_editable' => 'An issued invoice cannot be changed. Issue a credit note instead.',
         'no_lines' => 'An invoice needs at least one line before it can be issued.',
         'invalid_transition' => 'An invoice cannot go from :from to :to.',

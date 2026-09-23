@@ -30,6 +30,7 @@ use RuntimeException;
  * @property TransactionKind $kind
  * @property Money $amount
  * @property Money $credit_balance
+ * @property Money $fees
  * @property CarbonImmutable $occurred_at
  */
 final class Transaction extends Model
@@ -46,6 +47,20 @@ final class Transaction extends Model
     protected $table = 'transactions';
 
     protected $guarded = [];
+
+    /**
+     * The database defaults, repeated.
+     *
+     * A default fills the row but leaves the model in memory without the
+     * attribute, and `MoneyCast` reads that absence as null. It bit the
+     * money columns in Phase 4; `fees_minor` is the same shape.
+     *
+     * @var array<string, int>
+     */
+    protected $attributes = [
+        'credit_balance_minor' => 0,
+        'fees_minor' => 0,
+    ];
 
     /**
      * @return BelongsTo<Customer, $this>
@@ -91,8 +106,10 @@ final class Transaction extends Model
             'kind' => TransactionKind::class,
             'amount' => MoneyCast::class.':amount_minor,currency_code',
             'credit_balance' => MoneyCast::class.':credit_balance_minor,currency_code',
+            'fees' => MoneyCast::class.':fees_minor,currency_code',
             'amount_minor' => 'integer',
             'credit_balance_minor' => 'integer',
+            'fees_minor' => 'integer',
             'occurred_at' => 'immutable_datetime',
         ];
     }

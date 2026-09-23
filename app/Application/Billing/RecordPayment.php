@@ -57,6 +57,7 @@ final readonly class RecordPayment
             'status' => PaymentStatus::Completed->value,
             'currency_code' => $request->amount->currency->code,
             'amount_minor' => $request->amount->minorUnits,
+            'fees_minor' => $request->fees instanceof Money ? abs($request->fees->minorUnits) : 0,
             'reference' => $request->reference ?? 'man_'.Str::lower(Str::random(20)),
             'idempotency_key' => $request->idempotencyKey ?? Str::lower(Str::random(32)),
             'received_at' => $request->receivedAt ?? CarbonImmutable::now(),
@@ -116,6 +117,13 @@ final readonly class RecordPayment
                     payment: $payment,
                     description: $payment->note,
                     recordedBy: $payment->recorded_by,
+                    fees: $payment->fees,
+                    // Copied onto the row rather than joined: the ledger is
+                    // read as a statement, and a row that needs a join to
+                    // say how the money moved reads wrong in a list.
+                    gateway: $payment->gateway,
+                    reference: $payment->reference,
+                    occurredAt: $payment->received_at,
                 );
             }
 
@@ -130,6 +138,9 @@ final readonly class RecordPayment
                     payment: $payment,
                     description: 'Overpayment on '.$invoice->number,
                     recordedBy: $payment->recorded_by,
+                    gateway: $payment->gateway,
+                    reference: $payment->reference,
+                    occurredAt: $payment->received_at,
                 );
             }
         });
@@ -159,11 +170,20 @@ final readonly class RecordPayment
 
         $invoice->forceFill(['paid_minor' => $paid->minorUnits])->save();
 
+        $covered = $paid->isGreaterThan($invoice->total) || $paid->equals($invoice->total);
+
         $target = match (true) {
+            // Money went back out of an invoice that was settled. An
+            // issued invoice is frozen (ADR 0023), so it does not walk
+            // backwards to unpaid — `Refunded` is the one move out of
+            // `Paid`, and it is the truthful one. Without this the
+            // document says Paid while the ledger says the money left,
+            // which is the disagreement this screen exists to find.
+            $invoice->status === InvoiceStatus::Paid && ! $covered => InvoiceStatus::Refunded,
             ! $paid->isPositive() && $invoice->status !== InvoiceStatus::Draft => $invoice->isPastDue()
                 ? InvoiceStatus::Overdue
                 : InvoiceStatus::Unpaid,
-            $paid->isGreaterThan($invoice->total) || $paid->equals($invoice->total) => InvoiceStatus::Paid,
+            $covered => InvoiceStatus::Paid,
             default => InvoiceStatus::PartiallyPaid,
         };
 

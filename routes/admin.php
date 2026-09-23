@@ -320,6 +320,12 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('apps.connect.session');
 
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    // Before `{transaction}` would ever be, if one is added: a literal
+    // segment registered after a wildcard is a literal nobody can reach.
+    Route::get('transactions/add', [TransactionController::class, 'create'])
+        ->name('transactions.create');
+    Route::post('transactions', [TransactionController::class, 'store'])
+        ->name('transactions.store');
     Route::get('billing/gateway-log', [GatewayLogController::class, 'index'])
         ->name('billing.gateway-log');
 

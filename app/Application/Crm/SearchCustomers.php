@@ -172,6 +172,43 @@ final readonly class SearchCustomers
     }
 
     /**
+     * A short list of candidates for a picker.
+     *
+     * Not the list screen with a smaller page size: a picker wants the few
+     * rows somebody is about to choose between, without the service counts
+     * and tags a list renders. An operator adding a transaction types three
+     * letters of a company name and expects the client, not a report.
+     *
+     * Closed accounts are included here on purpose. Money arrives for
+     * accounts that closed last month, and a picker that hid them would
+     * make the one transaction that matters impossible to record.
+     *
+     * @return list<array{id: string, name: string, email: string|null, currency: string}>
+     */
+    public function lookup(string $term, int $limit = 10): array
+    {
+        if (trim($term) === '') {
+            return [];
+        }
+
+        return array_values($this->apply(Customer::query(), ['search' => $term])
+            // `displayNameWith()` already names the relations the name
+            // falls back through. Never a partial select on top of it: a
+            // column the caller did not anticipate is the same lazy-load
+            // exception by another route.
+            ->with(Customer::displayNameWith())
+            ->limit($limit)
+            ->get()
+            ->map(static fn (Customer $customer): array => [
+                'id' => $customer->id,
+                'name' => $customer->displayName(),
+                'email' => $customer->primaryContact?->email,
+                'currency' => $customer->currency_code,
+            ])
+            ->all());
+    }
+
+    /**
      * What the screen should offer, built from what this installation has.
      *
      * @return array<string, mixed>
