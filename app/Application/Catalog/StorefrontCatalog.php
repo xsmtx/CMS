@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Catalog;
 
+use App\Application\Resellers\ResolveSellingPrice;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Catalog\CatalogStatus;
 use App\Domain\Shared\Money;
@@ -28,7 +29,10 @@ use Illuminate\Support\Collection;
  */
 final readonly class StorefrontCatalog
 {
-    public function __construct(private OrganizationContext $context) {}
+    public function __construct(
+        private OrganizationContext $context,
+        private ResolveSellingPrice $sellingPrices,
+    ) {}
 
     /**
      * Listed groups, each with the products that can be bought in this
@@ -99,7 +103,10 @@ final readonly class StorefrontCatalog
         $best = null;
 
         foreach ($product->availableCycles($currency) as $cycle) {
-            $money = $product->recurringFor($cycle, $currency);
+            // The seller's price, not the catalogue's: a card showing the
+            // provider's number and a cart charging the reseller's is the
+            // one pricing bug a customer always notices.
+            $money = $this->sellingPrices->recurring($product, $cycle, $currency);
 
             if ($money === null || ! $cycle->isRecurring()) {
                 continue;
@@ -115,7 +122,7 @@ final readonly class StorefrontCatalog
         if ($best === null) {
             // Nothing recurring: a one-time product still needs a price on
             // the card.
-            $money = $product->recurringFor(BillingCycle::OneTime, $currency);
+            $money = $this->sellingPrices->recurring($product, BillingCycle::OneTime, $currency);
 
             return $money === null ? null : ['money' => $money, 'cycle' => BillingCycle::OneTime];
         }

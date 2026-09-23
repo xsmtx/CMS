@@ -10,6 +10,7 @@ use App\Application\Ordering\PlaceOrderForCustomer;
 use App\Application\Ordering\PlaceOrderForCustomerRequest;
 use App\Application\Ordering\SearchOrders;
 use App\Application\Ordering\TransitionOrder;
+use App\Application\Resellers\ResolveSellingPrice;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Domains\DomainOrderType;
@@ -33,7 +34,10 @@ use Inertia\Response;
 
 final class OrderController extends Controller
 {
-    public function __construct(private readonly CurrentActor $actor) {}
+    public function __construct(
+        private readonly CurrentActor $actor,
+        private readonly ResolveSellingPrice $sellingPrices,
+    ) {}
 
     /**
      * The form for taking an order over the phone.
@@ -61,7 +65,7 @@ final class OrderController extends Controller
                 'currency' => $customer->currency_code,
             ],
             'currency' => $currency,
-            'products' => $this->sellableProducts($currency),
+            'products' => $this->sellableProducts($currency, $customer?->organization_id),
             'gateways' => $this->gateways(),
             'domainActions' => array_values(array_map(
                 static fn (DomainOrderType $case): array => [
@@ -345,7 +349,7 @@ final class OrderController extends Controller
      *
      * @return list<array<string, mixed>>
      */
-    private function sellableProducts(string $currency): array
+    private function sellableProducts(string $currency, ?string $organizationId): array
     {
         $locale = app()->getLocale();
         $rows = [];
@@ -363,13 +367,15 @@ final class OrderController extends Controller
             $cycles = [];
 
             foreach (BillingCycle::cases() as $cycle) {
-                $recurring = $product->recurringFor($cycle, $currency);
+                // What this client will actually be charged, which for a
+                // reseller's client is the reseller's number.
+                $recurring = $this->sellingPrices->recurring($product, $cycle, $currency, $organizationId);
 
                 if ($recurring === null) {
                     continue;
                 }
 
-                $setup = $product->setupFor($cycle, $currency);
+                $setup = $this->sellingPrices->setup($product, $cycle, $currency, $organizationId);
 
                 $cycles[] = [
                     'value' => $cycle->value,

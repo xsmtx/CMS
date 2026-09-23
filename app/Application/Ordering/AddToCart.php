@@ -7,6 +7,7 @@ namespace App\Application\Ordering;
 use App\Application\Ordering\Exceptions\InvalidCartItem;
 use App\Application\Ordering\Exceptions\PriceUnavailable;
 use App\Application\Ordering\Exceptions\ProductNotOrderable;
+use App\Application\Resellers\ResellerCatalogue;
 use App\Domain\Catalog\OptionType;
 use App\Domain\Domains\DomainName;
 use App\Domain\Ordering\LineKind;
@@ -28,12 +29,26 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class AddToCart
 {
+    public function __construct(private ResellerCatalogue $catalogue) {}
+
     public function handle(Cart $cart, AddToCartRequest $request): CartItem
     {
-        $product = Product::query()
-            ->with(['prices', 'optionGroups.options', 'addons.prices'])
-            ->whereKey($request->productId)
-            ->firstOrFail();
+        // Through the reseller catalogue, not a scoped `firstOrFail()`. The
+        // catalogue belongs to the provider, so a reseller's customer is
+        // nowhere near it in the tree and a scoped read finds nothing —
+        // correct for their invoices, wrong for the shop they are standing
+        // in. `ResellerCatalogue` is the one place that escapes the boundary
+        // for this, and it narrows by what the provider said the reseller
+        // may sell.
+        $product = $this->catalogue->product(
+            $request->productId,
+            $cart->organization_id,
+            ['prices', 'optionGroups.options', 'addons.prices'],
+        );
+
+        if (! $product instanceof Product) {
+            throw ProductNotOrderable::notAvailable($request->productId);
+        }
 
         $this->assertOrderable($product);
         $this->assertSold($product, $request, $cart->currency_code);

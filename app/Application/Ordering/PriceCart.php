@@ -6,6 +6,7 @@ namespace App\Application\Ordering;
 
 use App\Application\Ordering\Exceptions\PriceUnavailable;
 use App\Application\Promotions\PromotionEngine;
+use App\Application\Resellers\ResolveSellingPrice;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Ordering\LineKind;
 use App\Domain\Shared\Money;
@@ -16,6 +17,7 @@ use App\Infrastructure\Catalog\Models\Option;
 use App\Infrastructure\Ordering\Models\Cart;
 use App\Infrastructure\Ordering\Models\CartItem;
 use App\Infrastructure\Ordering\Models\CartItemOption;
+use App\Support\Organizations\OrganizationContext;
 
 /**
  * Works out what a cart costs.
@@ -31,11 +33,24 @@ use App\Infrastructure\Ordering\Models\CartItemOption;
  * lines with a largest-remainder split so the parts sum exactly to the
  * whole.
  */
-final readonly class PriceCart
+final class PriceCart
 {
+    /**
+     * Product line id => the markup on it, for this cart.
+     *
+     * Not readonly for this: the map is per call and is rebuilt at the top
+     * of `handle()`, because a cart is priced on every read and a map left
+     * over from the last one would be a price from somebody else's cart.
+     *
+     * @var array<string, string|null>
+     */
+    private array $margins = [];
+
     public function __construct(
         private PromotionEngine $promotions,
         private TaxCalculator $tax,
+        private ResolveSellingPrice $sellingPrices,
+        private OrganizationContext $organizations,
     ) {}
 
     public function handle(Cart $cart, ?TaxableSupply $supply = null): CartTotals
@@ -43,15 +58,34 @@ final readonly class PriceCart
         $currency = $cart->currency_code;
         $zero = Money::zero($currency);
 
-        $cart->load([
-            'allItems.product.prices',
-            // The line copies the group name, so the group has to be here
-            // rather than fetched one product at a time.
-            'allItems.product.group',
-            'allItems.addon.prices',
-            'allItems.options.option.prices',
-            'allItems.options.group',
-        ]);
+        // Outside the boundary, deliberately. **The catalogue belongs to the
+        // provider**, and a cart being priced for a reseller's customer is
+        // nowhere near it in the tree — a scoped eager load returns a line
+        // whose product is null, and the symptom is "price unavailable" for
+        // a product that is plainly on sale.
+        //
+        // Whether the seller may offer a product was decided when the line
+        // was added (`AddToCart` asks `ResellerCatalogue`). Pricing a line
+        // that already exists must not re-decide it: a product withdrawn
+        // while somebody had it in their basket should still total up, or
+        // checkout breaks halfway with nothing the customer can do.
+        $this->organizations->withoutBoundary(static function () use ($cart): void {
+            $cart->load([
+                'allItems.product.prices',
+                // The line copies the group name, so the group has to be
+                // here rather than fetched one product at a time.
+                'allItems.product.group',
+                'allItems.addon.prices',
+                'allItems.options.option.prices',
+                'allItems.options.group',
+            ]);
+        });
+
+        // The markup per product line, worked out once and then read by the
+        // addon lines hanging off it. A `parent()` relation would have been
+        // a query per addon, and strict mode only reports that once a cart
+        // holds two of them.
+        $this->margins = [];
 
         $lines = [];
 
@@ -119,18 +153,32 @@ final readonly class PriceCart
             throw PriceUnavailable::for($item->id, $cycle, $currency);
         }
 
-        $recurring = $product->recurringFor($cycle, $currency);
+        // Not `$product->recurringFor()` directly: when the seller is a
+        // reseller, what the customer pays is the reseller's number. One
+        // place works that out (`ResolveSellingPrice`) so the cart, the
+        // storefront and the admin order form cannot disagree.
+        $price = $this->sellingPrices->resolve($product, $cycle, $currency);
 
-        if ($recurring === null) {
+        if ($price === null) {
             throw PriceUnavailable::for($product->name, $cycle, $currency);
         }
 
-        $setup = $product->setupFor($cycle, $currency) ?? Money::zero($currency);
+        $recurring = $price->recurring;
+        $setup = $price->setup;
+
+        // The plan's markup, carried onto its extras: an addon or an option
+        // is sold with the plan, and one that went out at cost would be a
+        // discount nobody agreed to.
+        $margin = $price->marginPercent;
+
+        // Remembered for the addon lines, which are priced later in the same
+        // pass and carry the plan's markup rather than one of their own.
+        $this->margins[$item->id] = $margin;
 
         $options = [];
 
         foreach ($item->options as $choice) {
-            $priced = $this->priceOption($choice, $cycle, $currency);
+            $priced = $this->priceOption($choice, $cycle, $currency, $margin);
 
             if ($priced === null) {
                 continue;
@@ -162,15 +210,34 @@ final readonly class PriceCart
             throw PriceUnavailable::for($addon->name, $cycle, $currency);
         }
 
+        // The markup belongs to the plan this addon hangs off, which is the
+        // parent line. An addon has no margin of its own to look up.
+        $margin = $this->marginOfParent($item);
+
         return $this->assemble(
             $item,
             $addon->name,
             null,
             $cycle,
-            $recurring,
-            $addon->setupFor($cycle, $currency) ?? Money::zero($currency),
+            $this->sellingPrices->markUp($recurring, $margin),
+            $this->sellingPrices->markUp(
+                $addon->setupFor($cycle, $currency) ?? Money::zero($currency),
+                $margin,
+            ),
             [],
         );
+    }
+
+    /**
+     * The markup on the plan an addon line was bought with.
+     *
+     * A domain line has no parent and no markup: a domain is priced from the
+     * TLD matrix and written onto the line when it is added (ADR 0021), so
+     * there is nothing here to mark up.
+     */
+    private function marginOfParent(CartItem $item): ?string
+    {
+        return $item->parent_id === null ? null : ($this->margins[$item->parent_id] ?? null);
     }
 
     /**
@@ -197,8 +264,12 @@ final readonly class PriceCart
         );
     }
 
-    private function priceOption(CartItemOption $choice, BillingCycle $cycle, string $currency): ?PricedOption
-    {
+    private function priceOption(
+        CartItemOption $choice,
+        BillingCycle $cycle,
+        string $currency,
+        ?string $marginPercent = null,
+    ): ?PricedOption {
         $group = $choice->group;
 
         if ($group === null) {
@@ -230,8 +301,8 @@ final readonly class PriceCart
             label: $option instanceof Option ? $option->label : (string) $quantity,
             value: $option instanceof Option ? $option->value : (string) $quantity,
             quantity: $quantity,
-            recurring: $recurring->multipliedBy($quantity),
-            setup: $setup->multipliedBy($quantity),
+            recurring: $this->sellingPrices->markUp($recurring, $marginPercent)->multipliedBy($quantity),
+            setup: $this->sellingPrices->markUp($setup, $marginPercent)->multipliedBy($quantity),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Catalog\StorefrontCatalog;
+use App\Application\Resellers\ResolveSellingPrice;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Catalog\Models\Addon;
@@ -34,6 +35,7 @@ final class StorefrontCatalogController extends Controller
         private readonly StorefrontCatalog $catalog,
         private readonly StorefrontCurrency $currency,
         private readonly StorefrontRenderer $renderer,
+        private readonly ResolveSellingPrice $sellingPrices,
     ) {}
 
     public function index(): Renderable
@@ -218,13 +220,15 @@ final class StorefrontCatalogController extends Controller
         $rows = [];
 
         foreach ($product->availableCycles($currency) as $cycle) {
-            $recurring = $product->recurringFor($cycle, $currency);
+            // Through the resolver, so the page, the cart and the order
+            // all say one number.
+            $recurring = $this->sellingPrices->recurring($product, $cycle, $currency);
 
             if ($recurring === null) {
                 continue;
             }
 
-            $setup = $product->setupFor($cycle, $currency);
+            $setup = $this->sellingPrices->setup($product, $cycle, $currency);
 
             $rows[] = [
                 ...$this->present($recurring, $cycle),

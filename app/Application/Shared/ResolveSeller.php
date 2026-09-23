@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Shared;
 
+use App\Domain\Organizations\OrganizationType;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Support\Organizations\OrganizationContext;
 
@@ -41,5 +42,26 @@ final readonly class ResolveSeller
         return $organization instanceof Organization
             ? $organization->sellerId()
             : $organizationId;
+    }
+
+    /**
+     * Whether the seller is a reseller rather than the provider.
+     *
+     * Asked by pricing, which behaves differently for the two: a reseller's
+     * customer pays the reseller's number, and the provider's own customer
+     * pays the matrix. Lives here because this is the class that already
+     * escapes the boundary to look at an ancestor, and a second escape
+     * written somewhere else is a second chance to forget the narrowing.
+     */
+    public function isReseller(string $organizationId): bool
+    {
+        $organization = $this->organizations->withoutBoundary(
+            static fn (): ?Organization => Organization::query()
+                ->withoutGlobalScope('organization')
+                ->find($organizationId),
+        );
+
+        return $organization instanceof Organization
+            && $organization->type === OrganizationType::Reseller;
     }
 }

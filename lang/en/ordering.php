@@ -189,6 +189,7 @@ return [
         'currency_mismatch' => 'Everything in one cart has to be in the same currency.',
         'product_not_orderable' => 'That product cannot be ordered right now.',
         'product_sold_out' => 'That product is sold out.',
+        'product_unavailable' => 'That product is not available.',
         'price_unavailable' => 'That product is not sold on that billing cycle in :currency.',
         'option_required' => 'Choose an option for :group.',
         'option_not_on_product' => 'That option does not belong to this product.',

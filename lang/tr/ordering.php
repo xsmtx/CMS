@@ -189,6 +189,7 @@ return [
         'currency_mismatch' => 'Bir sepetteki her şeyin aynı para biriminde olması gerekir.',
         'product_not_orderable' => 'Bu ürün şu anda sipariş edilemiyor.',
         'product_sold_out' => 'Bu ürün tükendi.',
+        'product_unavailable' => 'Bu ürün satışta değil.',
         'price_unavailable' => 'Bu ürün :currency cinsinden bu fatura döneminde satılmıyor.',
         'option_required' => ':group için bir seçim yapın.',
         'option_not_on_product' => 'Bu seçenek bu ürüne ait değil.',
