@@ -8,6 +8,7 @@ use App\Application\Support\OpenTicket;
 use App\Application\Support\ReplyToTicket;
 use App\Application\Support\SellerDepartments;
 use App\Application\Support\StoreAttachment;
+use App\Application\Support\TicketMarkdown;
 use App\Domain\Support\TicketPriority;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Support\OpenTicketRequest;
@@ -126,7 +127,7 @@ final class TicketController extends Controller
             ->with('status', __('support.portal.opened', ['number' => $ticket->number]));
     }
 
-    public function show(string $ticket): Response
+    public function show(string $ticket, TicketMarkdown $markdown): Response
     {
         $this->authorizeTickets('portal.tickets.view');
 
@@ -147,6 +148,13 @@ final class TicketController extends Controller
                         'author' => $reply->author_name,
                         'fromStaff' => $reply->isFromStaff(),
                         'body' => $reply->body,
+                        // Rendered on the way out, never stored as
+                        // markup. `TicketMarkdown` strips author HTML
+                        // rather than escaping it: a support inbox is
+                        // the most attractive place in a hosting
+                        // platform to put a script tag, because anybody
+                        // can open a ticket and somebody will read it.
+                        'html' => $markdown->toHtml($reply->body),
                         'createdAt' => $reply->created_at->toIso8601String(),
                         'attachments' => $reply->attachments
                             ->map(fn (TicketAttachment $file): array => [

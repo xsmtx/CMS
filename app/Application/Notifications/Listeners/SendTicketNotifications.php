@@ -43,11 +43,19 @@ final readonly class SendTicketNotifications
             return;
         }
 
-        // The customer gets a receipt, so they know it arrived.
-        if ($ticket->contact !== null) {
+        // The customer gets a receipt, so they know it arrived — and so
+        // does anybody the desk copied in.
+        $customerSide = [
+            ...($ticket->contact === null
+                ? []
+                : [$this->recipients->forContact($ticket->contact, NotificationEvent::TicketOpened)]),
+            ...$this->carbonCopies($ticket),
+        ];
+
+        if ($customerSide !== []) {
             $this->notifier->send(
                 NotificationEvent::TicketOpened,
-                [$this->recipients->forContact($ticket->contact, NotificationEvent::TicketOpened)],
+                $customerSide,
                 $this->dataFor($ticket),
                 url('/client/support/'.$ticket->id),
                 organizationId: $event->organizationId,
@@ -88,7 +96,10 @@ final readonly class SendTicketNotifications
 
             $this->notifier->send(
                 NotificationEvent::TicketReplied,
-                [$this->recipients->forContact($ticket->contact, NotificationEvent::TicketReplied)],
+                [
+                    $this->recipients->forContact($ticket->contact, NotificationEvent::TicketReplied),
+                    ...$this->carbonCopies($ticket),
+                ],
                 $this->dataFor($ticket),
                 url('/client/support/'.$ticket->id),
                 organizationId: $event->organizationId,
@@ -104,6 +115,36 @@ final readonly class SendTicketNotifications
             url('/admin/support/'.$ticket->id),
             organizationId: $event->organizationId,
         );
+    }
+
+    /**
+     * The addresses the desk copied in.
+     *
+     * A bare address, with no contact and no portal account behind it —
+     * the developer the customer hired for a fortnight, the accounts
+     * mailbox that wants the thread. There is no preference to consult
+     * because there is nobody here to hold one; the desk put them on the
+     * conversation and taking them off it is the desk's job too.
+     *
+     * @return list<NotificationRecipient>
+     */
+    private function carbonCopies(Ticket $ticket): array
+    {
+        $recipients = [];
+
+        foreach ($ticket->cc_recipients ?? [] as $address) {
+            if (! is_string($address) || trim($address) === '') {
+                continue;
+            }
+
+            $recipients[] = new NotificationRecipient(
+                name: $address,
+                email: $address,
+                locale: (string) config('app.locale', 'en'),
+            );
+        }
+
+        return $recipients;
     }
 
     /**

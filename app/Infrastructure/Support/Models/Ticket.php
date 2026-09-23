@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $subject
  * @property TicketStatus $status
  * @property TicketPriority $priority
+ * @property list<string>|null $cc_recipients
  * @property CarbonImmutable|null $first_response_due_at
  * @property CarbonImmutable|null $resolution_due_at
  * @property CarbonImmutable|null $first_responded_at

@@ -22,6 +22,7 @@ interface Reply {
   fromStaff: boolean
   isInternal: boolean
   body: string
+  html: string
   createdAt: string
   attachments: Attachment[]
 }
@@ -128,7 +129,11 @@ function formatDateTime(value: string | null): string {
               <p class="text-content-subtle text-xs">{{ formatDateTime(reply.createdAt) }}</p>
             </div>
 
-            <p class="text-sm leading-relaxed whitespace-pre-line">{{ reply.body }}</p>
+            <!-- Rendered by TicketMarkdown, which strips author HTML
+                 rather than escaping it. The raw body is never
+                 interpolated anywhere. -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div class="prose-article text-sm leading-relaxed" v-html="reply.html" />
 
             <ul v-if="reply.attachments.length > 0" class="mt-3 flex flex-wrap gap-2">
               <li v-for="file in reply.attachments" :key="file.id">

@@ -44,7 +44,7 @@ final readonly class TicketMarkdown
         $environment->addExtension(new CommonMarkCoreExtension);
 
         try {
-            return (new MarkdownConverter($environment))->convert($body)->getContent();
+            return new MarkdownConverter($environment)->convert($body)->getContent();
         } catch (Throwable) {
             // A body that cannot be parsed is still a body somebody needs
             // to read. Shown as the text it is rather than as an error
