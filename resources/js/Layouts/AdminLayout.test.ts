@@ -335,6 +335,9 @@ describe('AdminLayout navigation', () => {
       'Gateway Log',
       'Unpaid invoice sequence',
       'Currencies',
+      // Phase 16 added the monthly review here, because an operator looking
+      // for money looks under Billing.
+      'Reports',
     ])
   })
 

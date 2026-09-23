@@ -90,10 +90,12 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 15 are complete (`docs/architecture/phase-0-result.md` through
-`phase-15-result.md`). **Phase 16, Reporting / Operations, is next and is not
-started.** The roadmap is the V2 addendum's (handoff §22) and runs to
-Phase 17: 16 Reporting / Operations, 17 Production Hardening.
+Phases 0 to 16 are complete (`docs/architecture/phase-0-result.md` through
+`phase-16-result.md`). **Phase 17, Production Hardening, is the last one on
+the V2 addendum's roadmap (handoff §22) and is next.**
+
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is a second handoff and is
+**not** to be started until Phase 17 is finished.
 
 Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
 owner's instruction. None has ever talked to its real provider.
@@ -558,6 +560,26 @@ parent of services, and a test found that listing the soft ones refused
 `WhmcsImportSource` has never read a real WHMCS database. Every column it
 reads is in one constant and `check()` verifies all of them before anything is
 written.
+
+Every monetary answer is `MoneyByCurrency` — a list, never a number. There is
+no rate anywhere in this product, so a total across currencies is a figure that
+means nothing and it is the figure somebody would quote.
+
+MRR is a snapshot of active services divided down to a month by integer
+division; **ARR is twelve times that and the card says so**. Printing one and
+calling it the other is the classic reporting lie. A one-time line is skipped
+rather than counted as zero, or a setup fee lands inside a recurring figure.
+
+Aging is measured from the **due date** and by what is **outstanding**: an
+invoice issued ninety days ago on sixty-day terms is thirty days overdue, and a
+partially paid one ages at its remainder. An invoice with no due date gets its
+own bucket, because there is no honest arithmetic to do with a missing date.
+
+Money in comes from the ledger, not from invoices — an invoice's date is when it
+was issued, so a chart built on it is a chart of intent. Gateway revenue is net
+of refunds. Product revenue comes from the **services**, never from invoice
+lines: a line copies a description (ADR 0021), so grouping by it merges two
+products renamed the same thing and splits one renamed last March.
 
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap

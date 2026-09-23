@@ -298,6 +298,18 @@ const groups: NavGroup[] = [
         href: '/admin/catalog/currencies',
         permission: 'catalog.products.view',
       },
+      // Under Billing, because an operator looking for money looks here. The
+      // reseller roll-up hangs off the Resellers group instead, where the
+      // question is about a reseller rather than about the business.
+      {
+        label: 'Reports',
+        href: '/admin/reports',
+        permission: 'billing.invoices.view',
+        children: [
+          { label: 'Monthly review', href: '/admin/reports' },
+          { label: 'Reseller performance', href: '/admin/reports/resellers' },
+        ],
+      },
     ],
   },
   {

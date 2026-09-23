@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResellerController;
 use App\Http\Controllers\Admin\ResellerReportController;
 use App\Http\Controllers\Admin\RoleController;
@@ -322,6 +323,17 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('resellers.prices');
     Route::post('resellers/{reseller}/ledger', [ResellerController::class, 'ledger'])
         ->name('resellers.ledger');
+
+    /*
+     * The monthly review, on one page. Boundary-scoped, so the same screen
+     * answers the provider's question and a reseller's without a second
+     * implementation.
+     *
+     * Before `reports/resellers`? No — both are literals, so order does not
+     * matter here; they are listed with the general one first because that is
+     * the one an operator opens.
+     */
+    Route::get('reports', ReportController::class)->name('reports');
 
     // The roll-up the provider cannot get from the boundary. A reseller's own
     // numbers are the dashboard they already have.

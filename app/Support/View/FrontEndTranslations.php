@@ -68,6 +68,11 @@ final class FrontEndTranslations
 
         'notifications.portal',
 
+        // The aging buckets, which are the one set of report labels a Vue
+        // component draws. Everything else on the reports screen is a figure
+        // the server already formatted.
+        'reports.aging',
+
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',
