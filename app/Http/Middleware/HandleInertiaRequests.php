@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Identity\Impersonator;
+use App\Domain\Modules\NavigationItem;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
@@ -55,6 +57,12 @@ final class HandleInertiaRequests extends Middleware
                 // who somebody is rather than what they may do.
                 'isSuperAdmin' => $actor->isSuperAdmin(),
             ],
+            // Rows the enabled modules added, and where this installation
+            // sends its operators for help. Both are closures: neither is
+            // needed to render a redirect, and the modules one would load
+            // every enabled package to answer.
+            'moduleNavigation' => $this->moduleNavigation(...),
+            'help' => fn (): array => array_filter((array) config('platform.help', [])),
             'impersonation' => fn (): ?array => $this->impersonation($request),
             // A brand is a row, not a config value (ADR 0036). Resolved
             // per request from whoever is looking: reseller staff see their
@@ -79,6 +87,36 @@ final class HandleInertiaRequests extends Middleware
      * Not dismissible and not optional: the whole safeguard is that the
      * person can always see it is not really their session.
      *
+     * @return array<string, mixed>|null
+     */
+    /**
+     * What the enabled modules want in the menu.
+     *
+     * Only rows whose permission the viewer holds, and only from modules
+     * that are running. A module cannot choose where its row goes: it lands
+     * under Addons, because a row that looked like Billing would be
+     * indistinguishable from the platform's own.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function moduleNavigation(): array
+    {
+        $actor = app(CurrentActor::class);
+
+        if (! $actor->isStaff()) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (NavigationItem $item): ?array => $item->permission !== null
+                && ! $actor->can($item->permission)
+                    ? null
+                    : ['label' => $item->label, 'href' => $item->path],
+            app(ActiveModules::class)->navigation(),
+        )));
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     private function impersonation(Request $request): ?array

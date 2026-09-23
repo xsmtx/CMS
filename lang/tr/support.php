@@ -159,7 +159,15 @@ return [
         'view' => 'Görüntüle',
     ],
 
+    'replies' => [
+        'saved' => 'Hazır yanıt kaydedildi.',
+        'deleted' => 'Hazır yanıt silindi.',
+    ],
+
+    'tickets_opened' => 'Destek bileti açıldı.',
+
     'errors' => [
+        'not_permitted' => 'Destekte bunu yapma yetkiniz yok.',
         'invalid_transition' => 'Bir talep :from durumundan :to durumuna geçemez.',
         'attachment_extension' => '.:extension uzantılı dosyaları kabul etmiyoruz.',
         'attachment_type' => 'Bu dosya türü kabul edilmiyor.',

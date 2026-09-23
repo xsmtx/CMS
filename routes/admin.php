@@ -7,7 +7,9 @@ use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
+use App\Http\Controllers\Admin\CannedResponseController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\ConnectController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CurrencyController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerUserController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
+use App\Http\Controllers\Admin\GatewayLogController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
@@ -26,17 +29,20 @@ use App\Http\Controllers\Admin\OperationController;
 use App\Http\Controllers\Admin\OptionGroupController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderReviewController;
+use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\ServiceAddonController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
+use App\Http\Controllers\Admin\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -116,6 +122,19 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // Billing. Every action that moves money is its own route, because
     // each answers to its own permission.
     Route::get('support', [TicketController::class, 'index'])->name('support.index');
+    // Before `support/{ticket}`, or the words are read as ids.
+    Route::get('support/create', [TicketController::class, 'create'])->name('support.create');
+    Route::post('support', [TicketController::class, 'store'])->name('support.store');
+
+    Route::get('support/replies', [CannedResponseController::class, 'index'])
+        ->name('support.replies');
+    Route::post('support/replies', [CannedResponseController::class, 'store'])
+        ->name('support.replies.store');
+    Route::put('support/replies/{reply}', [CannedResponseController::class, 'update'])
+        ->name('support.replies.update');
+    Route::delete('support/replies/{reply}', [CannedResponseController::class, 'destroy'])
+        ->name('support.replies.destroy');
+
     Route::get('support/{ticket}', [TicketController::class, 'show'])->name('support.show');
     Route::post('support/{ticket}/replies', [TicketController::class, 'reply'])
         ->name('support.reply');
@@ -251,6 +270,11 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
     Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
 
+    // The provider, its resellers and their customers. Read-only: an
+    // organization is created by whatever needs one.
+    Route::get('organizations', [OrganizationController::class, 'index'])
+        ->name('organizations.index');
+
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');
     Route::post('customer-users/{contact}/reset', [CustomerUserController::class, 'sendReset'])
@@ -263,7 +287,23 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // Apps and Integrations: one door, and it is shut to everybody but a
     // super administrator. See `AppsController` for why that is not a
     // permission.
+    // One box, every kind of record. A support call carries one fact and
+    // no idea which screen it belongs to.
+    Route::get('search', SearchController::class)->name('search');
+
     Route::get('apps', [AppsController::class, 'index'])->name('apps.index');
+
+    // Connect: what this installation is joined to, and a way into the
+    // servers whose credentials it already holds. The session is issued by
+    // the panel, expires, and is audited — none of which is true of
+    // revealing a stored password, which this platform does not do.
+    Route::get('apps/connect', [ConnectController::class, 'index'])->name('apps.connect');
+    Route::post('apps/connect/servers/{server}/session', [ConnectController::class, 'openSession'])
+        ->name('apps.connect.session');
+
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('billing/gateway-log', [GatewayLogController::class, 'index'])
+        ->name('billing.gateway-log');
 
     Route::get('apps/modules', [ModuleController::class, 'index'])->name('modules.index');
     Route::post('apps/modules', [ModuleController::class, 'install'])->name('modules.install');

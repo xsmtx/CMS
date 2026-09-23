@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 
 /**
  * The admin menu is the one piece of this panel nobody can be trained out
@@ -60,9 +61,13 @@ vi.mock('@inertiajs/vue3', () => ({
 vi.mock('../composables/usePermissions', () => ({
   // Everything visible, so the tests are about the map rather than about
   // one role's slice of it.
+  //
+  // A real `ref`, not `{ value }`: Vue unwraps a ref in a template and
+  // leaves a plain object alone, so `v-if="isSuperAdmin"` on the latter is
+  // always truthy — which is how this mock passed while hiding nothing.
   usePermissions: () => ({
     can: () => true,
-    isSuperAdmin: { value: permissionState.superAdmin },
+    isSuperAdmin: ref(permissionState.superAdmin),
   }),
 }))
 
@@ -147,45 +152,30 @@ describe('AdminLayout navigation', () => {
 
     const headings = setup?.findAll('p').map((heading) => heading.text())
 
-    expect(headings).toEqual([
-      'Products and services',
-      'Staff',
-      'Apps and integrations',
-      'Platform',
-    ])
+    expect(headings).toEqual(['Products and services', 'Staff', 'Platform'])
   })
 
   /**
-   * The one gate in the map that is not a permission. An administrator
-   * holds every staff permission by design, so hiding these rows cannot be
-   * expressed as one.
+   * The one gate that is not a permission. An administrator holds every
+   * staff permission by design, so "only the owner of this installation"
+   * cannot be expressed as one — and Apps and Integrations lives behind
+   * the spanner in the header rather than in the map, because it is not
+   * somewhere an operator goes to do their job.
    */
-  it('hides Apps and Integrations from anybody but the owner', async () => {
+  it('hides the spanner from anybody but the owner', () => {
     permissionState.superAdmin = false
 
-    const wrapper = render()
-    const setup = wrapper.findAll('nav[data-admin-nav] > ul > li').at(-1)
-
-    await setup?.find('button').trigger('click')
-
-    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps"]').exists()).toBe(false)
-    expect(setup?.findAll('p').map((heading) => heading.text())).toEqual([
-      'Products and services',
-      'Staff',
-      'Platform',
-    ])
+    expect(render().find('button[aria-label="Tools"]').exists()).toBe(false)
   })
 
-  it('shows the owner the door, and what is behind it', async () => {
+  it('shows the owner the spanner', () => {
+    expect(render().find('button[aria-label="Tools"]').exists()).toBe(true)
+  })
+
+  it('offers the search box and the help menu to everybody', () => {
     const wrapper = render()
-    const setup = wrapper.findAll('nav[data-admin-nav] > ul > li').at(-1)
 
-    await setup?.find('button').trigger('click')
-
-    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps"]').exists()).toBe(true)
-    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps/modules"]').exists()).toBe(true)
-    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps/infrastructure"]').exists()).toBe(
-      true,
-    )
+    expect(wrapper.find('button[aria-label="Search"]').exists()).toBe(true)
+    expect(wrapper.find('button[aria-label="Help"]').exists()).toBe(true)
   })
 })

@@ -27,9 +27,17 @@ use Illuminate\Database\Eloquent\Model;
  * concerns, and refusing to record it until we do would lose the evidence
  * of the events we could not match.
  *
+ * @property string $id
+ * @property string|null $organization_id
+ * @property string $gateway
  * @property string $event_id
+ * @property string $type
+ * @property string|null $payment_reference
+ * @property string $outcome
+ * @property string|null $error
  * @property array<string, mixed>|null $payload
  * @property CarbonImmutable $received_at
+ * @property CarbonImmutable|null $processed_at
  */
 final class GatewayEventRecord extends Model
 {

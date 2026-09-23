@@ -94,6 +94,7 @@ return [
     ],
 
     'servers' => [
+        'no_session' => 'Bu sunucunun paneli oturum veremiyor ya da kimlik bilgisi buna izin vermiyor.',
         'title' => 'Sunucular',
         'subtitle' => 'Hizmetlerin yerleştirildiği düğümler.',
         'groups_title' => 'Sunucu grupları',

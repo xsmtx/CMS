@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Infrastructure\Provisioning\Modules;
 
 use App\Domain\Provisioning\ConnectionResult;
+use App\Domain\Provisioning\Contracts\OpensPanelSessions;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
 use App\Domain\Provisioning\ModuleCapabilities;
 use App\Domain\Provisioning\PackageChange;
+use App\Domain\Provisioning\PanelSession;
 use App\Domain\Provisioning\ProvisioningRequest;
 use App\Domain\Provisioning\ProvisioningResult;
 use App\Domain\Provisioning\ServerConnection;
 use App\Domain\Provisioning\ServiceReference;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Domain\Provisioning\SyncResult;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -46,7 +49,7 @@ use Throwable;
  * idempotency are tested against faked HTTP, which proves the code and not
  * the integration.
  */
-final readonly class CpanelModule implements ProvisioningModule
+final readonly class CpanelModule implements OpensPanelSessions, ProvisioningModule
 {
     public function __construct(
         private int $timeout = 30,
@@ -206,6 +209,48 @@ final readonly class CpanelModule implements ProvisioningModule
                 'disk_limit' => $account['disklimit'] ?? null,
                 'ip' => $account['ip'] ?? null,
             ], static fn (mixed $value): bool => $value !== null),
+        );
+    }
+
+    /**
+     * A one-time way into WHM, issued by WHM.
+     *
+     * `create_user_session` is the panel's own answer to "let this person
+     * in without typing anything": it returns a short-lived URL bound to
+     * that panel and that user. The API token stays here; the operator
+     * receives a URL and nothing else.
+     *
+     * Null rather than an exception when the panel will not issue one. An
+     * older WHM, or a token without the right rights, is "this server does
+     * not offer it" — not a fault to put in front of somebody as an error.
+     */
+    public function openServerSession(ServerConnection $server): ?PanelSession
+    {
+        $response = $this->client($server)
+            ->get($this->url($server, 'create_user_session'), [
+                'user' => $server->username,
+                'service' => 'whostmgrd',
+            ]);
+
+        $payload = $this->payload($response);
+
+        if (! $response->successful() || ! $this->succeeded($payload)) {
+            return null;
+        }
+
+        $data = $payload['data'] ?? [];
+        $url = is_array($data) ? ($data['url'] ?? null) : null;
+
+        if (! is_string($url) || $url === '') {
+            return null;
+        }
+
+        $expires = is_array($data) ? ($data['expires'] ?? null) : null;
+
+        return new PanelSession(
+            url: $url,
+            expiresAt: is_numeric($expires) ? CarbonImmutable::createFromTimestamp((int) $expires) : null,
+            panel: 'WHM',
         );
     }
 

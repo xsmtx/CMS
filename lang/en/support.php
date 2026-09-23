@@ -159,7 +159,15 @@ return [
         'view' => 'View',
     ],
 
+    'replies' => [
+        'saved' => 'Predefined reply saved.',
+        'deleted' => 'Predefined reply deleted.',
+    ],
+
+    'tickets_opened' => 'Ticket opened.',
+
     'errors' => [
+        'not_permitted' => 'You do not have permission to do that in support.',
         'invalid_transition' => 'A ticket cannot go from :from to :to.',
         'attachment_extension' => 'We do not accept .:extension files.',
         'attachment_type' => 'That file type is not accepted.',

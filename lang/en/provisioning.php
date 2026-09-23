@@ -94,6 +94,7 @@ return [
     ],
 
     'servers' => [
+        'no_session' => 'This server cannot issue a panel session, or the stored credential does not allow it.',
         'title' => 'Servers',
         'subtitle' => 'The nodes services are placed on.',
         'groups_title' => 'Server groups',

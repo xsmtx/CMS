@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Support\OpenTicket;
 use App\Application\Support\ReplyToTicket;
 use App\Application\Support\StoreAttachment;
 use App\Application\Support\TransitionTicket;
@@ -79,6 +80,71 @@ final class TicketController extends Controller
                     ->count(),
             ],
         ]);
+    }
+
+    /**
+     * Open a ticket on a customer's behalf.
+     *
+     * The call that starts "I rang about this last week" ends with an
+     * operator typing it into the queue, and until now there was nowhere
+     * to type it: the client area could open a ticket and the desk could
+     * not. It goes through the same `OpenTicket` the portal uses, so the
+     * SLA clock, the notification and the department's rules are identical
+     * — a second path that opened tickets differently would drift, and the
+     * drift would be invisible until somebody measured response times.
+     */
+    public function create(): Response
+    {
+        $this->authorize('create', Ticket::class);
+
+        return Inertia::render('Admin/Support/Create', [
+            'departments' => array_values(Department::query()
+                ->orderBy('name')
+                ->get()
+                ->map(static fn (Department $department): array => [
+                    'value' => $department->id,
+                    'label' => $department->name,
+                ])
+                ->all()),
+            'priorities' => array_values(array_map(
+                static fn (TicketPriority $priority): array => [
+                    'value' => $priority->value,
+                    'label' => (string) __($priority->labelKey()),
+                ],
+                TicketPriority::cases(),
+            )),
+        ]);
+    }
+
+    public function store(Request $request, OpenTicket $tickets): RedirectResponse
+    {
+        $this->authorize('create', Ticket::class);
+
+        $data = $request->validate([
+            'customer_id' => ['required', 'ulid', 'exists:customers,id'],
+            'department_id' => ['nullable', 'ulid', 'exists:departments,id'],
+            'subject' => ['required', 'string', 'max:191'],
+            'body' => ['required', 'string', 'max:20000'],
+            'priority' => ['nullable', 'string'],
+        ]);
+
+        $customer = Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+
+        $ticket = $tickets->handle(
+            customer: $customer,
+            // Opened by the desk, so it belongs to the account rather than
+            // to one person on it. A reply reaches whoever the customer's
+            // notification settings say it should.
+            contact: null,
+            department: $data['department_id'] === null
+                ? null
+                : Department::query()->whereKey($data['department_id'])->first(),
+            subject: (string) $data['subject'],
+            body: (string) $data['body'],
+            priority: TicketPriority::tryFrom((string) ($data['priority'] ?? '')) ?? TicketPriority::Normal,
+        );
+
+        return to_route('admin.support.show', $ticket)->with('status', __('support.tickets_opened'));
     }
 
     public function show(Ticket $ticket): Response

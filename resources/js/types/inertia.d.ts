@@ -11,6 +11,13 @@ export interface AuthProps {
   isSuperAdmin?: boolean
 }
 
+/** A menu row an enabled module contributed. */
+export interface ModuleNavItem {
+  label: string
+  href: string
+  permission?: string
+}
+
 export interface BrandLink {
   label: string
   url: string
@@ -72,6 +79,8 @@ declare module '@inertiajs/core' {
   interface PageProps {
     auth: AuthProps
     brand: BrandProps
+    moduleNavigation?: ModuleNavItem[]
+    help?: Record<string, string>
     impersonation: ImpersonationProps | null
     locale: string
     flash: FlashProps

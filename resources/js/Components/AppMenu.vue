@@ -32,8 +32,14 @@ const props = withDefaults(
      * page is somebody's identifier on a screen other people walk past.
      */
     avatar?: boolean
+    /**
+     * Draw the trigger as an icon button. The label stays, as the
+     * accessible name — an icon with no name is a button screen readers
+     * announce as "button".
+     */
+    icon?: 'wrench' | 'question' | null
   }>(),
-  { align: 'end', width: '15rem', avatar: false },
+  { align: 'end', width: '15rem', avatar: false, icon: null },
 )
 
 const open = ref(false)
@@ -134,7 +140,37 @@ defineExpose({ close })
 
 <template>
   <button
-    v-if="avatar"
+    v-if="icon"
+    ref="trigger"
+    type="button"
+    class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
+    :aria-expanded="open"
+    aria-haspopup="menu"
+    :aria-label="label"
+    @click="toggle"
+  >
+    <svg v-if="icon === 'wrench'" class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M10.7 2.3a3.5 3.5 0 0 0-4.5 4.3L2.4 10.4a1.4 1.4 0 0 0 2 2l3.8-3.8a3.5 3.5 0 0 0 4.3-4.5l-1.9 1.9-1.8-.4-.4-1.8 1.9-1.9Z"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <svg v-else class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3" />
+      <path
+        d="M6.3 6.1a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1v.3"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+      />
+      <circle cx="8" cy="11.4" r="0.75" fill="currentColor" />
+    </svg>
+  </button>
+
+  <button
+    v-else-if="avatar"
     ref="trigger"
     type="button"
     class="pressable bg-surface-sunken text-content-muted hover:text-content border-line hover:border-line-strong inline-flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-(--duration-fast)"

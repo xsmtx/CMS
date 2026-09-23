@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
 import AppMenu from '../Components/AppMenu.vue'
@@ -44,6 +44,36 @@ const { brand } = useBranding()
 // redirects has no page left to report on.
 const flash = computed(() => page.props.flash)
 const user = computed(() => page.props.auth.user)
+
+// Rows the enabled modules contribute. Empty on almost every installation,
+// so the group disappears rather than sitting there saying nothing.
+const addons = computed(() => page.props.moduleNavigation ?? [])
+
+const help = computed(() => page.props.help ?? {})
+
+const HELP_LABELS: Record<string, string> = {
+  documentation: 'Documentation',
+  support: 'Technical Support',
+  community: 'Community Forums',
+  license: 'License Information',
+}
+
+const searching = ref(false)
+const term = ref('')
+const searchField = ref<HTMLInputElement | null>(null)
+
+async function openSearch(): Promise<void> {
+  searching.value = true
+  await nextTick()
+  searchField.value?.focus()
+}
+
+function submitSearch(): void {
+  if (term.value.trim() === '') return
+
+  router.get('/admin/search', { q: term.value })
+  searching.value = false
+}
 
 /**
  * The placeholder face: whatever letters the account already has.
@@ -105,28 +135,64 @@ const groups: NavGroup[] = [
     sections: [
       {
         items: [
-          { label: 'Customers', href: '/admin/customers', permission: 'crm.customers.view' },
           {
-            label: 'Manage users',
+            label: 'View/Search Clients',
+            href: '/admin/customers',
+            permission: 'crm.customers.view',
+          },
+          {
+            label: 'Manage Users',
             href: '/admin/customer-users',
             permission: 'crm.customers.view',
           },
           {
-            label: 'Add new client',
+            label: 'Add New Client',
             href: '/admin/clients/create',
             permission: 'crm.customers.manage',
           },
-          // The same screens the Services menu opens. They are listed
-          // twice on purpose: a WHMCS operator looks for them under
-          // Clients, and a hosting operator looks under Services.
+        ],
+      },
+      {
+        label: 'Products/Services',
+        items: [
+          { label: 'All products/services', href: '/admin/services', permission: 'services.view' },
+          // The product types this platform sells. Filters on the same
+          // screen rather than screens of their own: the list already
+          // answers "show me the shared hosting", and a second page that
+          // did the same thing would drift from it.
           {
-            label: 'Products/Services',
-            href: '/admin/services',
+            label: 'Shared Hosting',
+            href: '/admin/services?product_type=shared_hosting',
             permission: 'services.view',
           },
           {
-            label: 'Service addons',
+            label: 'Reseller Hosting',
+            href: '/admin/services?product_type=reseller',
+            permission: 'services.view',
+          },
+          { label: 'VPS', href: '/admin/services?product_type=vps', permission: 'services.view' },
+          {
+            label: 'Dedicated',
+            href: '/admin/services?product_type=dedicated',
+            permission: 'services.view',
+          },
+          { label: 'SSL', href: '/admin/services?product_type=ssl', permission: 'services.view' },
+          {
+            label: 'Service Addons',
             href: '/admin/services/addons',
+            permission: 'services.view',
+          },
+        ],
+      },
+      {
+        items: [
+          { label: 'Domain Registrations', href: '/admin/domains', permission: 'domains.view' },
+          // A real filter on real rows: `cancel_pending` is the state a
+          // service enters when a customer asks to stop at the end of the
+          // term.
+          {
+            label: 'Cancellation Requests',
+            href: '/admin/services?status=cancel_pending',
             permission: 'services.view',
           },
           {
@@ -143,9 +209,31 @@ const groups: NavGroup[] = [
     sections: [
       {
         items: [
-          { label: 'All orders', href: '/admin/orders', permission: 'orders.view' },
-          { label: 'Review queue', href: '/admin/orders/review', permission: 'orders.view' },
+          { label: 'List All Orders', href: '/admin/orders', permission: 'orders.view' },
+          {
+            label: 'Pending Orders',
+            href: '/admin/orders?status=pending',
+            permission: 'orders.view',
+          },
+          {
+            label: 'Active Orders',
+            href: '/admin/orders?status=active',
+            permission: 'orders.view',
+          },
+          {
+            label: 'Fraud Orders',
+            href: '/admin/orders?status=fraud_review',
+            permission: 'orders.view',
+          },
+          {
+            label: 'Cancelled Orders',
+            href: '/admin/orders?status=cancelled',
+            permission: 'orders.view',
+          },
         ],
+      },
+      {
+        items: [{ label: 'Review Queue', href: '/admin/orders/review', permission: 'orders.view' }],
       },
     ],
   },
@@ -154,7 +242,61 @@ const groups: NavGroup[] = [
     sections: [
       {
         items: [
-          { label: 'Invoices', href: '/admin/invoices', permission: 'billing.invoices.view' },
+          {
+            label: 'Transactions List',
+            href: '/admin/transactions',
+            permission: 'billing.invoices.view',
+          },
+        ],
+      },
+      {
+        label: 'Invoices',
+        items: [
+          { label: 'All invoices', href: '/admin/invoices', permission: 'billing.invoices.view' },
+          {
+            label: 'Paid',
+            href: '/admin/invoices?status=paid',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Draft',
+            href: '/admin/invoices?status=draft',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Unpaid',
+            href: '/admin/invoices?status=unpaid',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Overdue',
+            href: '/admin/invoices?status=overdue',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Partially paid',
+            href: '/admin/invoices?status=partially_paid',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Cancelled',
+            href: '/admin/invoices?status=cancelled',
+            permission: 'billing.invoices.view',
+          },
+          {
+            label: 'Refunded',
+            href: '/admin/invoices?status=refunded',
+            permission: 'billing.invoices.view',
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            label: 'Gateway Log',
+            href: '/admin/billing/gateway-log',
+            permission: 'billing.payments.manage',
+          },
           {
             label: 'Unpaid invoice sequence',
             href: '/admin/automation/dunning',
@@ -170,9 +312,6 @@ const groups: NavGroup[] = [
     ],
   },
   {
-    // Where the platform meets somebody else's machines. Its own menu
-    // rather than a corner of Setup, because an operator adding a node is
-    // thinking about what runs on it.
     label: 'Services',
     sections: [
       {
@@ -197,7 +336,7 @@ const groups: NavGroup[] = [
       {
         items: [
           { label: 'Domains', href: '/admin/domains', permission: 'domains.view' },
-          { label: 'TLD pricing', href: '/admin/catalog/tlds', permission: 'catalog.tlds.view' },
+          { label: 'Extensions', href: '/admin/catalog/tlds', permission: 'domains.tlds.manage' },
         ],
       },
     ],
@@ -207,49 +346,95 @@ const groups: NavGroup[] = [
     sections: [
       {
         items: [
-          { label: 'Tickets', href: '/admin/support', permission: 'support.tickets.view' },
+          { label: 'Support Overview', href: '/admin/support', permission: 'support.tickets.view' },
+          {
+            label: 'Open New Ticket',
+            href: '/admin/support/create',
+            permission: 'support.tickets.manage',
+          },
+          {
+            label: 'Predefined Replies',
+            href: '/admin/support/replies',
+            permission: 'support.tickets.manage',
+          },
+        ],
+      },
+      {
+        label: 'Support Tickets',
+        items: [
+          // Only the statuses this platform actually has. A menu offering
+          // "Technical Intervene" against an enum with no such member is a
+          // menu that returns an empty list and blames the operator.
+          {
+            label: 'All Active Tickets',
+            href: '/admin/support?status=open',
+            permission: 'support.tickets.view',
+          },
+          {
+            label: 'Open',
+            href: '/admin/support?status=open',
+            permission: 'support.tickets.view',
+          },
+          {
+            label: 'Customer-Reply',
+            href: '/admin/support?status=customer_reply',
+            permission: 'support.tickets.view',
+          },
+          {
+            label: 'Answered',
+            href: '/admin/support?status=answered',
+            permission: 'support.tickets.view',
+          },
+          {
+            label: 'On Hold',
+            href: '/admin/support?status=on_hold',
+            permission: 'support.tickets.view',
+          },
+          {
+            label: 'Closed',
+            href: '/admin/support?status=closed',
+            permission: 'support.tickets.view',
+          },
+        ],
+      },
+      {
+        label: 'Content',
+        items: [
           {
             label: 'Announcements',
             href: '/admin/content/announcements',
-            permission: 'content.announcements.manage',
+            permission: 'content.manage',
           },
           {
             label: 'Knowledge base',
             href: '/admin/content/articles',
-            permission: 'content.kb.manage',
+            permission: 'content.manage',
           },
         ],
       },
     ],
   },
   {
-    // WHMCS's Utilities: what an operator opens when something looks wrong,
-    // rather than when they are configuring something.
     label: 'Utilities',
     sections: [
       {
-        label: 'Automation',
         items: [
-          { label: 'Scheduled tasks', href: '/admin/automation', permission: 'automation.view' },
-          { label: 'Operations', href: '/admin/operations', permission: 'operations.view' },
+          // WHMCS calls this the Module Queue. It is the same thing: every
+          // background operation, what it was for, and what went wrong.
+          { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
+          { label: 'Automation', href: '/admin/automation', permission: 'automation.view' },
+          { label: 'System Health', href: '/admin/health', permission: 'platform.health.view' },
         ],
       },
       {
-        label: 'Logs and health',
+        label: 'Logs',
         items: [
-          { label: 'System health', href: '/admin/health', permission: 'platform.health.view' },
-          { label: 'Audit log', href: '/admin/audit', permission: 'platform.audit.view' },
           {
             label: 'Notification log',
             href: '/admin/notifications/log',
             permission: 'notifications.view',
           },
-          {
-            label: 'API activity',
-            href: '/admin/api/activity',
-            permission: 'platform.audit.view',
-          },
-          { label: 'Queues', href: '/horizon', permission: 'platform.queue.view' },
+          { label: 'API activity', href: '/admin/api/activity', permission: 'platform.audit.view' },
         ],
       },
     ],
@@ -281,14 +466,6 @@ const groups: NavGroup[] = [
         ],
       },
       {
-        label: 'Apps and integrations',
-        items: [
-          { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
-          { label: 'Modules', href: '/admin/apps/modules', superAdmin: true },
-          { label: 'Servers', href: '/admin/apps/infrastructure', superAdmin: true },
-        ],
-      },
-      {
         label: 'Platform',
         items: [
           { label: 'General settings', href: '/admin/settings', permission: 'settings.view' },
@@ -303,8 +480,21 @@ const groups: NavGroup[] = [
   },
 ]
 
+/**
+ * The map, plus whatever the enabled modules added.
+ *
+ * Appended rather than woven in: a module cannot put a row next to Billing,
+ * because a row that looked like Billing would be indistinguishable from
+ * the platform's own.
+ */
+const withAddons = computed<NavGroup[]>(() =>
+  addons.value.length === 0
+    ? groups
+    : [...groups, { label: 'Addons', sections: [{ items: addons.value }] }],
+)
+
 const visibleGroups = computed(() =>
-  groups
+  withAddons.value
     .map((group) => ({
       ...group,
       sections: (group.sections ?? [])
@@ -437,7 +627,84 @@ onBeforeUnmount(() => {
         <span class="text-content-subtle text-xs">Admin</span>
 
         <div class="ml-auto flex items-center gap-1 sm:gap-2">
+          <!-- One box, every kind of record: a support call carries one
+               fact and no idea which screen it belongs to. -->
+          <form v-if="searching" class="flex items-center gap-1.5" @submit.prevent="submitSearch">
+            <input
+              ref="searchField"
+              v-model="term"
+              type="search"
+              placeholder="Client, domain, hostname, invoice…"
+              aria-label="Search everything"
+              class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-56 rounded-[var(--radius-sm)] border px-3 py-1.5 text-sm sm:w-72"
+              @keydown.escape="searching = false"
+            />
+          </form>
+          <button
+            v-else
+            type="button"
+            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
+            aria-label="Search"
+            @click="openSearch"
+          >
+            <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+              <path
+                d="m10.5 10.5 3 3"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+
           <ThemeSwitch />
+
+          <!-- The spanner: what an installation is wired to, and what it
+               wrote down. Shut to everybody but the owner. -->
+          <AppMenu v-if="isSuperAdmin" label="Tools" align="end" width="15rem" icon="wrench">
+            <Link
+              href="/admin/apps"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              Apps &amp; Integrations
+            </Link>
+            <Link
+              href="/admin/apps/connect"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              Connect
+            </Link>
+            <Link
+              href="/admin/api/activity"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              System logs
+            </Link>
+          </AppMenu>
+
+          <!-- Where to get help. Every link is configurable, because a
+               white-label installation sends its operators to its own
+               documentation, not to ours. -->
+          <AppMenu label="Help" align="end" width="15rem" icon="question">
+            <a
+              v-for="(url, key) in help"
+              :key="key"
+              :href="url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              {{ HELP_LABELS[key] ?? key }}
+            </a>
+            <p v-if="Object.keys(help).length === 0" class="text-content-muted px-2 py-1.5 text-xs">
+              No help links are configured for this installation.
+            </p>
+          </AppMenu>
 
           <!-- A face rather than an address. An email read across the top of
                every page is somebody's identifier on a screen other people
@@ -453,8 +720,15 @@ onBeforeUnmount(() => {
               class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
-              Security
+              My Account
             </Link>
+            <a
+              href="/client"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              Visit Client Area
+            </a>
             <Link
               href="/admin/logout"
               method="post"
@@ -566,6 +840,10 @@ onBeforeUnmount(() => {
             </div>
           </li>
         </ul>
+
+        <!-- Addons. Rendered from what the enabled modules registered, so
+             an installation with none sees nothing rather than an empty
+             menu promising extensions. -->
 
         <!-- Below lg the whole map is one list. A dropdown inside a drawer
              is two taps to reach one link. -->

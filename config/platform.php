@@ -390,6 +390,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Help
+    |--------------------------------------------------------------------------
+    |
+    | Where this installation sends its operators for help. Every link is
+    | configurable and any of them may be blank: a white-label installation
+    | points its staff at its own documentation, not at ours, and a menu
+    | offering a link nobody set is a menu that lies.
+    |
+    */
+
+    'help' => [
+        'documentation' => env('PLATFORM_HELP_DOCUMENTATION'),
+        'support' => env('PLATFORM_HELP_SUPPORT'),
+        'community' => env('PLATFORM_HELP_COMMUNITY'),
+        'license' => env('PLATFORM_HELP_LICENSE'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Modules
     |--------------------------------------------------------------------------
     |
