@@ -38,26 +38,26 @@
                 @if ($hasCatalog)
                     <a
                         href="{{ route('storefront.catalog') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('storefront.plans') }}
                     </a>
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-sunken"
+                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-secondary"
                     >
                         {{ __('storefront.client_area') }}
                     </a>
                 @else
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('storefront.client_area') }}
                     </a>
                     <a
                         href="{{ url('/admin') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-sunken"
+                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-secondary"
                     >
                         {{ __('storefront.admin') }}
                     </a>
@@ -67,7 +67,7 @@
 
         @unless ($hasCatalog)
             <div class="lg:col-span-5">
-                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6 shadow-(--shadow-panel) sm:p-7">
+                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) sm:p-7">
                     <h2 class="text-sm font-semibold">{{ __('storefront.next_steps_title') }}</h2>
                     <p class="mt-1.5 text-sm leading-relaxed text-content-muted">
                         {{ __('storefront.next_steps_body') }}
@@ -77,7 +77,7 @@
                         @foreach (__('storefront.next_steps') as $index => $step)
                             <li class="flex gap-4">
                                 <span
-                                    class="mt-px flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-sunken font-mono text-[11px] font-medium text-content-muted"
+                                    class="mt-px flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-secondary font-mono text-[11px] font-medium text-content-muted"
                                     aria-hidden="true"
                                 >{{ $index + 1 }}</span>
                                 <span class="text-sm leading-relaxed">

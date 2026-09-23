@@ -78,7 +78,7 @@ const columns = computed(() =>
 
       <div class="flex items-center gap-3 text-xs">
         <span class="flex items-center gap-1.5">
-          <span v-if="compare" class="bg-accent size-2 rounded-full" aria-hidden="true" />
+          <span v-if="compare" class="bg-brand size-2 rounded-full" aria-hidden="true" />
           <span class="text-content-muted tabular-nums">
             <template v-if="seriesLabel">{{ seriesLabel }} </template>{{ write(total) }}
             {{ unit }}
@@ -106,9 +106,9 @@ const columns = computed(() =>
         class="grid grid-cols-[10rem_1fr_3rem] items-center gap-3"
       >
         <span class="text-content-muted truncate text-xs">{{ row.label }}</span>
-        <span class="bg-surface-sunken h-2 overflow-hidden rounded-full">
+        <span class="bg-surface-secondary h-2 overflow-hidden rounded-full">
           <span
-            class="bg-accent block h-full rounded-full transition-[width] duration-(--duration-base) ease-(--ease-out)"
+            class="bg-brand block h-full rounded-full transition-[width] duration-(--duration-base) ease-(--ease-out)"
             :style="{ width: `${percent(row.value)}%` }"
           />
         </span>
@@ -125,15 +125,15 @@ const columns = computed(() =>
       >
         <span class="flex h-full w-full items-end justify-center gap-px">
           <span
-            class="bg-accent w-full rounded-t-[3px] transition-[height] duration-(--duration-base) ease-(--ease-out)"
-            :class="column.value === 0 ? 'bg-surface-sunken' : ''"
+            class="bg-brand w-full rounded-t-[3px] transition-[height] duration-(--duration-base) ease-(--ease-out)"
+            :class="column.value === 0 ? 'bg-surface-secondary' : ''"
             :style="{ height: `${Math.max(2, percent(column.value))}%` }"
             :title="`${column.label}: ${write(column.value)}`"
           />
           <span
             v-if="column.compare !== null"
             class="bg-content-subtle w-full rounded-t-[3px] transition-[height] duration-(--duration-base) ease-(--ease-out)"
-            :class="column.compare === 0 ? 'bg-surface-sunken' : ''"
+            :class="column.compare === 0 ? 'bg-surface-secondary' : ''"
             :style="{ height: `${Math.max(2, percent(column.compare))}%` }"
             :title="`${column.label}: ${write(column.compare)}`"
           />

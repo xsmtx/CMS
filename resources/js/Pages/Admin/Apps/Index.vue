@@ -47,7 +47,7 @@ function copy(key: string) {
         v-for="area in areas"
         :key="area.key"
         :href="area.href"
-        class="pressable border-line bg-surface-raised hover:border-line-strong block rounded-[var(--radius-lg)] border p-6 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
+        class="pressable border-line bg-surface-primary hover:border-line-strong block rounded-[var(--radius-lg)] border p-6 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
       >
         <div class="flex items-start justify-between gap-4">
           <h2 class="text-title font-semibold tracking-tight">{{ copy(area.key).label }}</h2>

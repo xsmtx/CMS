@@ -28,7 +28,7 @@
                  without arithmetic. --}}
             <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($group['products'] as $product)
-                    <article class="flex flex-col rounded-[var(--radius-lg)] border border-line bg-surface-raised p-5 shadow-(--shadow-raised)">
+                    <article class="flex flex-col rounded-[var(--radius-lg)] border border-line bg-surface-primary p-5 shadow-(--shadow-raised)">
                         <h3 class="text-base font-semibold tracking-tight">{{ $product['name'] }}</h3>
 
                         @if ($product['tagline'])
@@ -68,7 +68,7 @@
                             @else
                                 <a
                                     href="{{ route('storefront.product', $product['slug']) }}"
-                                    class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                                    class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-4 py-2 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                                 >
                                     {{ __('catalog.storefront.configure') }}
                                 </a>
@@ -79,7 +79,7 @@
             </div>
         </section>
     @empty
-        <div class="mt-14 rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6">
+        <div class="mt-14 rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6">
             <p class="text-sm font-medium">{{ __('catalog.storefront.empty') }}</p>
             <p class="mt-1 max-w-[52ch] text-sm leading-relaxed text-content-muted">
                 {{ __('storefront.next_steps_body') }}

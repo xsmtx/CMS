@@ -1,0 +1,81 @@
+/*
+ * InfraCMS Horizon — spacious, premium, white-label.
+ *
+ * **Not built yet.** Handoff #3 §19.7, same as NOC.
+ *
+ * The reference theme for the Client Area and the Storefront. Where Core is
+ * balanced and NOC is dense, Horizon gives things room: a customer opens
+ * their portal twice a month, not for eight hours, and the measure of it is
+ * whether they can find the invoice without reading.
+ *
+ * Indigo rather than blue, so a reseller's customer does not mistake the
+ * portal for the panel their provider uses.
+ */
+:root[data-theme-package='infracms-horizon'] {
+  --background: #f6f8fc;
+  --background-subtle: #f0f4fa;
+
+  --surface-primary: #ffffff;
+  --surface-secondary: #f0f4fa;
+  --surface-elevated: #ffffff;
+  --surface-hover: #f0f4fa;
+  --surface-selected: #e0e7ff;
+  --surface-chrome: #ffffff;
+
+  --border-default: #dce4ef;
+  --border-subtle: #eaf0f8;
+  --border-strong: #c3cfe0;
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #7c8798;
+  --text-inverse: #ffffff;
+
+  --brand-primary: #4f46e5;
+  --brand-primary-hover: #4338ca;
+  --brand-accent: #06b6d4;
+
+  --status-success: #059669;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
+  --status-info: #0284c7;
+  --status-maintenance: #4f46e5;
+  --status-unknown: #7c8798;
+
+  --focus-ring: #4f46e5;
+
+  /* §5: cards 16, controls 10, modals 18. More whitespace. */
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-badge: 8px;
+  --radius-modal: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme-package='infracms-horizon']:not([data-theme='light']) {
+    --background: #0b1020;
+    --background-subtle: #101731;
+
+    --surface-primary: #121a2b;
+    --surface-secondary: #172136;
+    --surface-elevated: #172136;
+    --surface-hover: #1d2942;
+    --surface-selected: #252f57;
+    --surface-chrome: #101731;
+
+    --border-default: #26344d;
+    --border-subtle: #1b2740;
+    --border-strong: #35486a;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #b2bed0;
+    --text-muted: #7c8aa0;
+    --text-inverse: #0b1020;
+
+    --brand-primary: #818cf8;
+    --brand-primary-hover: #a5b4fc;
+    --brand-accent: #22d3ee;
+
+    --focus-ring: #a5b4fc;
+  }
+}

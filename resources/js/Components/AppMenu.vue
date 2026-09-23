@@ -159,7 +159,7 @@ defineExpose({ close })
     v-else-if="avatar"
     ref="trigger"
     type="button"
-    class="pressable bg-surface-sunken text-content-muted hover:text-content border-line hover:border-line-strong inline-flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-(--duration-fast)"
+    class="pressable bg-surface-secondary text-content-muted hover:text-content border-line hover:border-line-strong inline-flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-(--duration-fast)"
     :aria-expanded="open"
     aria-haspopup="menu"
     aria-label="Account"
@@ -192,7 +192,7 @@ defineExpose({ close })
         v-if="open"
         ref="panel"
         role="menu"
-        class="panel-enter border-line bg-surface-raised z-50 origin-top-right rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
+        class="panel-enter border-line bg-surface-primary z-50 origin-top-right rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
         :style="style"
       >
         <slot :close="close" />

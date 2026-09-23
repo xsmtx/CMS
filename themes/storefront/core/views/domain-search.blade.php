@@ -25,11 +25,11 @@
                 autocomplete="off"
                 autocapitalize="off"
                 spellcheck="false"
-                class="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-line bg-surface-raised px-3.5 py-2.5 text-base"
+                class="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3.5 py-2.5 text-base"
             >
             <button
                 type="submit"
-                class="pressable shrink-0 rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised)"
+                class="pressable shrink-0 rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised)"
             >
                 {{ __('domains.search.submit') }}
             </button>
@@ -43,19 +43,19 @@
     </form>
 
     @if ($error)
-        <p class="mt-6 max-w-xl rounded-[var(--radius-sm)] border border-line bg-surface-sunken px-3 py-2 text-sm">
+        <p class="mt-6 max-w-xl rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-sm">
             {{ $error }}
         </p>
     @endif
 
     @if (session('error'))
-        <p class="mt-6 max-w-xl rounded-[var(--radius-sm)] border border-danger/30 bg-surface-sunken px-3 py-2 text-sm text-danger" role="alert">
+        <p class="mt-6 max-w-xl rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-sm text-danger" role="alert">
             {{ session('error') }}
         </p>
     @endif
 
     @foreach ($offers as $offer)
-        <div class="mt-8 max-w-xl rounded-[var(--radius-lg)] border border-line bg-surface-raised p-5 shadow-(--shadow-raised)">
+        <div class="mt-8 max-w-xl rounded-[var(--radius-lg)] border border-line bg-surface-primary p-5 shadow-(--shadow-raised)">
             @if ($offer['available'])
                 <p class="text-base font-semibold tracking-tight">
                     {{ __('domains.search.available', ['name' => $offer['name']]) }}
@@ -75,7 +75,7 @@
                         <input type="hidden" name="years" value="{{ $offer['years'] }}">
                         <button
                             type="submit"
-                            class="pressable rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised)"
+                            class="pressable rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised)"
                         >
                             {{ __('domains.search.add') }}
                         </button>
@@ -116,7 +116,7 @@
         <section class="mt-10 max-w-xl" aria-labelledby="suggestions">
             <h2 id="suggestions" class="text-sm font-semibold">{{ __('domains.search.suggestions') }}</h2>
 
-            <ul class="mt-3 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-raised">
+            <ul class="mt-3 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary">
                 @foreach ($suggestions as $suggestion)
                     <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                         <span class="text-sm font-medium">

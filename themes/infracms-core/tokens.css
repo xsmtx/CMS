@@ -1,0 +1,19 @@
+/*
+ * InfraCMS Core — the default theme.
+ *
+ * Empty on purpose, and that is the point of it.
+ *
+ * Core *is* the platform's token layer. Its values live in
+ * `resources/css/app.css` because every surface falls back to them and a
+ * theme that restated them would be a second copy of the truth — the first
+ * time somebody changed one and not the other, half the product would
+ * change colour.
+ *
+ * A theme file carries the **differences** from Core. NOC and Horizon have
+ * one each; Core has none, by definition.
+ *
+ * What this file is for: an installation that wants to nudge the default
+ * without writing a theme of its own. Anything here overrides the platform
+ * and is overridden in turn by a child theme and then by the brand — the
+ * order in Handoff #3 §1.
+ */

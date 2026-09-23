@@ -22,11 +22,11 @@
                 type="search"
                 value="{{ $query }}"
                 placeholder="{{ __('support.kb.search_placeholder') }}"
-                class="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-line bg-surface-raised px-3.5 py-2.5 text-base"
+                class="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3.5 py-2.5 text-base"
             >
             <button
                 type="submit"
-                class="pressable shrink-0 rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised)"
+                class="pressable shrink-0 rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised)"
             >
                 {{ __('support.kb.search') }}
             </button>

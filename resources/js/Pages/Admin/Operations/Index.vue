@@ -79,8 +79,8 @@ function formatDateTime(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           filters.state === null
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="filterByState(null)"
       >
@@ -94,8 +94,8 @@ function formatDateTime(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           filters.state === state.value
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="filterByState(state.value)"
       >

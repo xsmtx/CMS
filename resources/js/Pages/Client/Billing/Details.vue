@@ -154,7 +154,7 @@ function remove(id: string): void {
                 <span v-if="method.lastFour" class="text-content-muted">
                   •••• {{ method.lastFour }}
                 </span>
-                <AppBadge v-if="method.isDefault" class="ml-2" tone="accent">
+                <AppBadge v-if="method.isDefault" class="ml-2" tone="brand">
                   {{ t('billing.portal.default') }}
                 </AppBadge>
               </p>

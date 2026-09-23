@@ -18,7 +18,16 @@ import { computed } from 'vue'
  */
 const props = withDefaults(
   defineProps<{
-    tone?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'automation'
+    tone?:
+      | 'neutral'
+      | 'brand'
+      | 'success'
+      | 'warning'
+      | 'danger'
+      | 'info'
+      | 'maintenance'
+      | 'unknown'
+      | 'automation'
   }>(),
   { tone: 'neutral' },
 )
@@ -26,9 +35,9 @@ const props = withDefaults(
 const classes = computed(
   () =>
     ({
-      neutral: 'bg-surface-sunken text-content-muted ring-line',
-      accent:
-        'bg-[color-mix(in_oklab,var(--color-accent)_14%,transparent)] text-accent ring-[color-mix(in_oklab,var(--color-accent)_30%,transparent)]',
+      neutral: 'bg-surface-secondary text-content-muted ring-line',
+      brand:
+        'bg-[color-mix(in_oklab,var(--brand-primary)_14%,transparent)] text-brand ring-[color-mix(in_oklab,var(--brand-primary)_30%,transparent)]',
       success:
         'bg-[color-mix(in_oklab,var(--color-success)_14%,transparent)] text-success ring-[color-mix(in_oklab,var(--color-success)_30%,transparent)]',
       warning:
@@ -38,6 +47,12 @@ const classes = computed(
       // Neither a success nor a warning. "This ran" and "this is fine" are
       // different sentences, and a grey pill said neither.
       info: 'bg-[color-mix(in_oklab,var(--color-info)_14%,transparent)] text-info ring-[color-mix(in_oklab,var(--color-info)_30%,transparent)]',
+      // "We took it down" and "the check did not answer" are not shades of
+      // warning. Every panel that coloured them amber taught its users to
+      // ignore amber.
+      maintenance:
+        'bg-[color-mix(in_oklab,var(--color-maintenance)_14%,transparent)] text-maintenance ring-[color-mix(in_oklab,var(--color-maintenance)_30%,transparent)]',
+      unknown: 'bg-surface-secondary text-unknown ring-line',
       automation:
         'bg-[color-mix(in_oklab,var(--color-automation)_14%,transparent)] text-automation ring-[color-mix(in_oklab,var(--color-automation)_30%,transparent)]',
     })[props.tone],

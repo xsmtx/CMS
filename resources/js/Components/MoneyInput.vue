@@ -83,7 +83,7 @@ function onBlur(): void {
         :disabled="disabled"
         :placeholder="placeholder"
         :aria-label="ariaLabel"
-        class="border-line bg-surface-raised text-content placeholder:text-content-subtle focus:border-accent w-full rounded-[var(--radius-sm)] border py-2 text-right text-sm tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+        class="border-line bg-surface-primary text-content placeholder:text-content-subtle focus:border-brand w-full rounded-[var(--radius-sm)] border py-2 text-right text-sm tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
         :class="symbol ? 'pr-3 pl-9' : 'px-3'"
         @focus="focused = true"
         @input="onInput"

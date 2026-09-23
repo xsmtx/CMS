@@ -173,7 +173,7 @@ function formatTime(value: string | null): string {
               <div>
                 <p class="text-sm font-medium">
                   {{ contact.name }}
-                  <AppBadge v-if="contact.isPrimary" tone="accent" class="ml-2">Primary</AppBadge>
+                  <AppBadge v-if="contact.isPrimary" tone="brand" class="ml-2">Primary</AppBadge>
                   <AppBadge v-if="!contact.portalAccess" class="ml-2">No portal access</AppBadge>
                 </p>
                 <p class="text-content-muted mt-0.5 text-xs">
@@ -254,7 +254,7 @@ function formatTime(value: string | null): string {
             <p>{{ note.body }}</p>
             <p class="text-content-muted mt-1 text-xs">
               {{ note.author ?? 'Unknown' }} · {{ formatTime(note.createdAt) }}
-              <AppBadge v-if="note.customerVisible" tone="accent" class="ml-2">
+              <AppBadge v-if="note.customerVisible" tone="brand" class="ml-2">
                 Visible to customer
               </AppBadge>
             </p>

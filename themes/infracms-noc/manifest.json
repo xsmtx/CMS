@@ -1,0 +1,14 @@
+{
+  "slug": "infracms-noc",
+  "name": "InfraCMS NOC",
+  "version": "0.1.0",
+  "author": "InfraCMS",
+  "personality": "Dense, precise, operational, low-distraction, real-time.",
+  "platform": ">=1.0",
+  "surfaces": ["admin"],
+  "appearances": ["dark"],
+  "density": "compact",
+  "tokens": "tokens.css",
+  "preview": "preview.png",
+  "settings": "settings.schema.json"
+}

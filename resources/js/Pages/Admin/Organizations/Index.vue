@@ -31,8 +31,8 @@ interface OrganizationRow {
 
 defineProps<{ organizations: OrganizationRow[] }>()
 
-function tone(type: string): 'neutral' | 'accent' | 'success' {
-  if (type === 'provider') return 'accent'
+function tone(type: string): 'neutral' | 'brand' | 'success' {
+  if (type === 'provider') return 'brand'
   if (type === 'reseller') return 'success'
   return 'neutral'
 }

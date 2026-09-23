@@ -115,8 +115,8 @@ function formatDateTime(value: string | null): string {
             class="rounded-[var(--radius-lg)] border p-4"
             :class="
               reply.isInternal
-                ? 'border-warning/40 bg-surface-sunken'
-                : 'border-line bg-surface-raised'
+                ? 'border-warning/40 bg-surface-secondary'
+                : 'border-line bg-surface-primary'
             "
           >
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -139,7 +139,7 @@ function formatDateTime(value: string | null): string {
               <li v-for="file in reply.attachments" :key="file.id">
                 <a
                   :href="`/attachments/${file.id}`"
-                  class="border-line hover:bg-surface-sunken inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs"
+                  class="border-line hover:bg-surface-secondary inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs"
                 >
                   {{ file.name }}
                   <span class="text-content-subtle">{{ file.size }}</span>

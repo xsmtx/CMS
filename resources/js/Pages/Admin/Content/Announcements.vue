@@ -151,7 +151,7 @@ function formatDate(value: string | null): string {
           <div class="min-w-0">
             <p class="text-sm font-semibold">
               {{ announcement.title }}
-              <AppBadge v-if="announcement.isPinned" class="ml-2" tone="accent">Pinned</AppBadge>
+              <AppBadge v-if="announcement.isPinned" class="ml-2" tone="brand">Pinned</AppBadge>
               <!-- Scheduled and published look identical in a list of rows
                    unless one of them says so. -->
               <AppBadge v-if="announcement.isScheduled" class="ml-2" tone="warning">

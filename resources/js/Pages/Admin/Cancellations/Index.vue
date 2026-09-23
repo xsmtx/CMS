@@ -105,7 +105,7 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
         <AppInput v-model="form.reason" label="Reason" />
         <AppInput v-model="form.client" label="Client" />

@@ -9,7 +9,7 @@
     </h1>
 
     @if ($errors->any())
-        <div role="alert" class="mt-5 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-sunken px-3 py-2 text-sm text-danger">
+        <div role="alert" class="mt-5 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-sm text-danger">
             {{ $errors->first() }}
         </div>
     @endif
@@ -26,7 +26,7 @@
             <h2 class="text-sm font-semibold">{{ __('ordering.checkout.account') }}</h2>
 
             @if ($contact)
-                <div class="mt-3 rounded-[var(--radius-md)] border border-line bg-surface-raised px-4 py-3 text-sm">
+                <div class="mt-3 rounded-[var(--radius-md)] border border-line bg-surface-primary px-4 py-3 text-sm">
                     <p class="font-medium">{{ $contact['name'] }}</p>
                     <p class="text-content-muted">{{ $contact['email'] }}</p>
                     @if ($contact['company'])
@@ -62,7 +62,7 @@
                                 autocomplete="{{ $autocomplete }}"
                                 value="{{ old($field) }}"
                                 @required($required)
-                                class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-raised px-3 py-2 text-sm"
+                                class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3 py-2 text-sm"
                             >
                             @error($field)
                                 <p class="text-xs text-danger">{{ $message }}</p>
@@ -74,7 +74,7 @@
 
             <div class="mt-8 flex flex-col gap-3">
                 <label class="flex items-start gap-3 text-sm">
-                    <input type="checkbox" name="terms" value="1" class="accent-accent mt-0.5 size-4" required>
+                    <input type="checkbox" name="terms" value="1" class="accent-brand mt-0.5 size-4" required>
                     <span>
                         {{ __('ordering.checkout.terms') }}
                         <span class="mt-0.5 block text-xs text-content-subtle">
@@ -85,7 +85,7 @@
 
                 @unless ($contact)
                     <label class="flex items-start gap-3 text-sm">
-                        <input type="checkbox" name="marketing_opt_in" value="1" class="accent-accent mt-0.5 size-4">
+                        <input type="checkbox" name="marketing_opt_in" value="1" class="accent-brand mt-0.5 size-4">
                         <span class="text-content-muted">Send me occasional product news.</span>
                     </label>
                 @endunless
@@ -93,7 +93,7 @@
         </div>
 
         <div class="lg:col-span-5">
-            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
+            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
                 <h2 class="text-sm font-semibold">{{ __('ordering.checkout.summary') }}</h2>
 
                 <ul class="mt-4 divide-y divide-line">
@@ -142,7 +142,7 @@
 
                 <button
                     type="submit"
-                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                 >
                     {{ __('ordering.checkout.place_order') }}
                 </button>

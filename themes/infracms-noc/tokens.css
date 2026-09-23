@@ -1,0 +1,57 @@
+/*
+ * InfraCMS NOC — dark-first, dense, operational.
+ *
+ * **Not built yet.** Handoff #3 §19.7: do not build NOC until Core's
+ * primitives and the accessibility baseline are stable. The palette is here
+ * so the manifest is honest about what it will be, and so the first person
+ * to pick this theme up is not starting from the prose.
+ *
+ * Dark only — `appearances` says so. A NOC screen is looked at in a dim room
+ * for eight hours and a light appearance would be a setting nobody should
+ * find.
+ *
+ * Never a neon hacker theme (§4). The colours below are quiet on purpose:
+ * the only thing on a NOC screen that should attract the eye is a status
+ * that changed.
+ */
+:root[data-theme-package='infracms-noc'] {
+  --background: #05080d;
+  --background-subtle: #080c13;
+
+  --surface-primary: #0c121b;
+  --surface-secondary: #111925;
+  --surface-elevated: #111925;
+  --surface-hover: #162131;
+  --surface-selected: #14263a;
+  --surface-chrome: #080c13;
+
+  --border-default: #1e2a3a;
+  --border-subtle: #16202c;
+  --border-strong: #2b3a4e;
+
+  --text-primary: #e6edf6;
+  --text-secondary: #9aa8ba;
+  --text-muted: #64748b;
+  --text-inverse: #05080d;
+
+  --brand-primary: #38bdf8;
+  --brand-primary-hover: #7dd3fc;
+  --brand-accent: #2dd4bf;
+
+  --status-success: #22c55e;
+  --status-warning: #f59e0b;
+  --status-danger: #f43f5e;
+  --status-info: #38bdf8;
+  --status-maintenance: #3b82f6;
+  --status-unknown: #64748b;
+
+  --accent-automation: #a78bfa;
+
+  --focus-ring: #7dd3fc;
+
+  /* §4: 6px, compact rows and controls. */
+  --radius-control: 6px;
+  --radius-card: 6px;
+  --radius-badge: 4px;
+  --radius-modal: 8px;
+}

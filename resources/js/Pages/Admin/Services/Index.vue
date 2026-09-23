@@ -219,8 +219,8 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         class="pressable inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           form.product_type === type.value
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="pickType(type.value)"
       >
@@ -235,7 +235,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         {{ open ? 'Hide search' : 'Search / filter' }}
         <span
           v-if="hasFilters"
-          class="bg-accent text-accent-content -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+          class="bg-brand text-content-inverse -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
         >
           {{ activeFilterCount }}
         </span>
@@ -247,15 +247,15 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         type="button"
         role="switch"
         :aria-checked="!includeInactive"
-        class="pressable border-line bg-surface-raised text-content-muted hover:text-content hover:border-line-strong inline-flex items-center gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable border-line bg-surface-primary text-content-muted hover:text-content hover:border-line-strong inline-flex items-center gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2 text-xs transition-colors duration-(--duration-fast)"
         @click="toggleInactive"
       >
         <span
           class="inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors duration-(--duration-fast)"
-          :class="!includeInactive ? 'bg-accent' : 'bg-line-strong'"
+          :class="!includeInactive ? 'bg-brand' : 'bg-line-strong'"
         >
           <span
-            class="bg-surface-raised size-3 rounded-full shadow-(--shadow-raised) transition-transform duration-(--duration-fast) ease-(--ease-out)"
+            class="bg-surface-primary size-3 rounded-full shadow-(--shadow-raised) transition-transform duration-(--duration-fast) ease-(--ease-out)"
             :class="!includeInactive ? 'translate-x-3.5' : 'translate-x-0.5'"
           />
         </span>
@@ -267,7 +267,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
         <AppSelect
           v-model="form.product_type"
@@ -375,7 +375,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
           </td>
         </tr>
 
-        <tr v-if="expanded === service.id" class="bg-surface-sunken">
+        <tr v-if="expanded === service.id" class="bg-surface-secondary">
           <td colspan="9" class="px-4 py-4">
             <dl class="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
               <div>

@@ -260,7 +260,7 @@ function submit(): void {
               <input
                 type="radio"
                 :checked="choice.isDefault"
-                class="accent-accent size-4"
+                class="accent-brand size-4"
                 :name="`default-choice`"
                 @change="setDefault(index)"
               />

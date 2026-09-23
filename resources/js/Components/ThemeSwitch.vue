@@ -13,7 +13,7 @@ const { choice, set, options } = useTheme()
 
 <template>
   <div
-    class="border-line bg-surface-sunken inline-flex gap-0.5 rounded-[var(--radius-sm)] border p-0.5"
+    class="border-line bg-surface-secondary inline-flex gap-0.5 rounded-[var(--radius-sm)] border p-0.5"
     role="radiogroup"
     aria-label="Colour theme"
   >
@@ -26,7 +26,7 @@ const { choice, set, options } = useTheme()
       class="pressable text-label rounded-[calc(var(--radius-sm)-2px)] px-2 py-1 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
       :class="
         choice === option.value
-          ? 'bg-surface-raised text-content shadow-(--shadow-raised)'
+          ? 'bg-surface-primary text-content shadow-(--shadow-raised)'
           : 'text-content-muted hover:text-content'
       "
       @click="set(option.value)"

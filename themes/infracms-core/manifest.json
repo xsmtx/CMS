@@ -1,0 +1,14 @@
+{
+  "slug": "infracms-core",
+  "name": "InfraCMS Core",
+  "version": "1.0.0",
+  "author": "InfraCMS",
+  "personality": "Enterprise, cloud, calm, technical, balanced.",
+  "platform": ">=1.0",
+  "surfaces": ["admin", "client", "reseller", "storefront"],
+  "appearances": ["light", "dark", "system"],
+  "density": "default",
+  "tokens": "tokens.css",
+  "preview": "preview.png",
+  "settings": "settings.schema.json"
+}

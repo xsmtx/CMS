@@ -29,10 +29,10 @@ withDefaults(
 
 <template>
   <div
-    class="border-line bg-surface-raised flex items-start gap-4 rounded-[var(--radius-lg)] border border-dashed px-5 py-8"
+    class="border-line bg-surface-primary flex items-start gap-4 rounded-[var(--radius-lg)] border border-dashed px-5 py-8"
   >
     <span
-      class="bg-surface-sunken text-content-subtle grid size-9 shrink-0 place-items-center rounded-[var(--radius-md)]"
+      class="bg-surface-secondary text-content-subtle grid size-9 shrink-0 place-items-center rounded-[var(--radius-md)]"
       aria-hidden="true"
     >
       <AppIcon :name="icon" :size="18" />

@@ -196,7 +196,7 @@ function submit(): void {
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="hover:bg-surface-sunken flex w-full items-center justify-between gap-3 rounded-[var(--radius-sm)] px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
+                  class="hover:bg-surface-secondary flex w-full items-center justify-between gap-3 rounded-[var(--radius-sm)] px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
                   @click="choose(candidate)"
                 >
                   <span>
@@ -295,7 +295,7 @@ function submit(): void {
               <label class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="border-line-strong accent-accent size-4 rounded-[4px] border"
+                  class="border-line-strong accent-brand size-4 rounded-[4px] border"
                   :checked="ticked.includes(invoice.number)"
                   @change="toggleInvoice(invoice)"
                 />

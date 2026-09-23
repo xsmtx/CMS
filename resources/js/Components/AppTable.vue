@@ -24,7 +24,7 @@ function isNumeric(index: number): boolean {
 
 <template>
   <div
-    class="border-line bg-surface-raised overflow-x-auto rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
+    class="border-line bg-surface-primary overflow-x-auto rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
   >
     <table class="data-table text-body w-full text-left">
       <thead>

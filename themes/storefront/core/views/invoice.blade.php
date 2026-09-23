@@ -19,12 +19,12 @@
         </p>
 
         @if ($errors->any())
-            <div role="alert" class="mt-6 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-sunken px-3 py-2 text-sm text-danger">
+            <div role="alert" class="mt-6 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-sm text-danger">
                 {{ $errors->first() }}
             </div>
         @endif
 
-        <ul class="mt-8 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-raised">
+        <ul class="mt-8 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary">
             @foreach ($invoice['items'] as $item)
                 <li class="flex items-start justify-between gap-4 px-5 py-3 text-sm">
                     <span>
@@ -57,19 +57,19 @@
         </dl>
 
         @if ($invoice['isOwed'] && ! empty($gateways))
-            <section class="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6">
+            <section class="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6">
                 <h2 class="text-sm font-semibold">{{ __('billing.payments.choose_method') }}</h2>
 
                 <form method="POST" action="{{ route('storefront.invoice.pay', $invoice['number']) }}" class="mt-4 flex flex-col gap-3">
                     @csrf
 
                     @foreach ($gateways as $index => $gateway)
-                        <label class="flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-line px-4 py-3 text-sm has-checked:border-accent">
+                        <label class="flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-line px-4 py-3 text-sm has-checked:border-brand">
                             <input
                                 type="radio"
                                 name="gateway"
                                 value="{{ $gateway['value'] }}"
-                                class="accent-accent mt-0.5 size-4"
+                                class="accent-brand mt-0.5 size-4"
                                 @checked($index === 0)
                                 required
                             >
@@ -85,7 +85,7 @@
                     <div class="mt-2">
                         <button
                             type="submit"
-                            class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                            class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                         >
                             {{ __('billing.payments.pay_now') }} — {{ $invoice['balance'] }}
                         </button>

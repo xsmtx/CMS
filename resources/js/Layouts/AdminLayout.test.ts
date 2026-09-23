@@ -153,10 +153,10 @@ describe('AdminLayout navigation', () => {
     // you are on even though the menu is shut. A filled row rather than an
     // underline: saying it twice is how a bar gets noisy.
     expect(billing?.text()).toContain('Billing')
-    expect(billing?.find('[class*="bg-surface-sunken"]').exists()).toBe(true)
+    expect(billing?.find('[class*="bg-surface-secondary"]').exists()).toBe(true)
 
     // And nothing else claims it.
-    const marked = groups.filter((group) => group.find('[class*="bg-surface-sunken"]').exists())
+    const marked = groups.filter((group) => group.find('[class*="bg-surface-secondary"]').exists())
 
     expect(marked).toHaveLength(1)
   })

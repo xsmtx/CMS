@@ -8,9 +8,9 @@ const props = withDefaults(defineProps<{ tone?: 'info' | 'success' | 'danger' }>
 const classes = computed(
   () =>
     ({
-      info: 'border-line bg-surface-sunken text-content',
-      success: 'border-success/30 bg-surface-sunken text-success',
-      danger: 'border-danger/30 bg-surface-sunken text-danger',
+      info: 'border-line bg-surface-secondary text-content',
+      success: 'border-success/30 bg-surface-secondary text-success',
+      danger: 'border-danger/30 bg-surface-secondary text-danger',
     })[props.tone],
 )
 

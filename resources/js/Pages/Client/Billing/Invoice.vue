@@ -198,8 +198,8 @@ function formatDate(value: string | null): string {
             <label
               v-for="gateway in gateways"
               :key="gateway.value"
-              class="border-line hover:bg-surface-sunken flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] border px-3 py-2.5 text-sm transition-colors duration-(--duration-fast)"
-              :class="form.gateway === gateway.value ? 'border-accent' : ''"
+              class="border-line hover:bg-surface-secondary flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] border px-3 py-2.5 text-sm transition-colors duration-(--duration-fast)"
+              :class="form.gateway === gateway.value ? 'border-brand' : ''"
             >
               <input
                 type="radio"
@@ -215,7 +215,7 @@ function formatDate(value: string | null): string {
 
           <p
             v-if="chosen?.instructions"
-            class="border-line bg-surface-sunken mt-3 rounded-[var(--radius-sm)] border px-3 py-2 text-xs leading-relaxed whitespace-pre-line"
+            class="border-line bg-surface-secondary mt-3 rounded-[var(--radius-sm)] border px-3 py-2 text-xs leading-relaxed whitespace-pre-line"
           >
             {{ chosen.instructions }}
           </p>

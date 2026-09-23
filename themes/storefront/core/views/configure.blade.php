@@ -18,7 +18,7 @@
     </h1>
 
     @if ($errors->any())
-        <div role="alert" class="mt-6 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-sunken px-3 py-2 text-sm text-danger">
+        <div role="alert" class="mt-6 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-sm text-danger">
             {{ $errors->first() }}
         </div>
     @endif
@@ -36,13 +36,13 @@
                      charged. --}}
                 <div class="mt-3 grid gap-2 sm:grid-cols-2">
                     @foreach ($product['cycles'] as $index => $cycle)
-                        <label class="flex cursor-pointer items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-surface-raised px-4 py-3 text-sm has-checked:border-accent">
+                        <label class="flex cursor-pointer items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-surface-primary px-4 py-3 text-sm has-checked:border-brand">
                             <span class="flex items-center gap-3">
                                 <input
                                     type="radio"
                                     name="billing_cycle"
                                     value="{{ $cycle['cycle'] }}"
-                                    class="accent-accent size-4"
+                                    class="accent-brand size-4"
                                     @checked($index === 0)
                                     required
                                 >
@@ -73,7 +73,7 @@
                         placeholder="example.com"
                         value="{{ old('domain') }}"
                         required
-                        class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-raised px-3 py-2 text-sm"
+                        class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3 py-2 text-sm"
                     >
                     <p class="text-xs text-content-muted">{{ __('ordering.configure.domain_hint') }}</p>
                 </div>
@@ -99,7 +99,7 @@
                             value="{{ $group['minQuantity'] }}"
                             min="{{ $group['minQuantity'] }}"
                             @if ($group['maxQuantity']) max="{{ $group['maxQuantity'] }}" @endif
-                            class="mt-3 w-28 rounded-[var(--radius-sm)] border border-line bg-surface-raised px-3 py-2 text-sm tabular-nums"
+                            class="mt-3 w-28 rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3 py-2 text-sm tabular-nums"
                         >
                     @else
                         <div class="mt-3 divide-y divide-line rounded-[var(--radius-md)] border border-line">
@@ -110,7 +110,7 @@
                                             type="radio"
                                             name="options[{{ $group['id'] }}][option_id]"
                                             value="{{ $option['id'] }}"
-                                            class="accent-accent size-4"
+                                            class="accent-brand size-4"
                                             @checked($option['isDefault'])
                                             @required($group['isRequired'])
                                         >
@@ -136,7 +136,7 @@
                                         type="checkbox"
                                         name="addons[]"
                                         value="{{ $addon['id'] }}"
-                                        class="accent-accent mt-0.5 size-4"
+                                        class="accent-brand mt-0.5 size-4"
                                     >
                                     <span>
                                         {{ $addon['name'] }}
@@ -154,7 +154,7 @@
         </div>
 
         <div class="lg:col-span-5">
-            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
+            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
                 <h2 class="text-sm font-semibold">{{ $product['name'] }}</h2>
 
                 @if ($product['tagline'])
@@ -172,13 +172,13 @@
                         value="1"
                         min="1"
                         max="100"
-                        class="w-24 rounded-[var(--radius-sm)] border border-line bg-surface px-3 py-2 text-sm tabular-nums"
+                        class="w-24 rounded-[var(--radius-sm)] border border-line bg-background px-3 py-2 text-sm tabular-nums"
                     >
                 </div>
 
                 <button
                     type="submit"
-                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                 >
                     {{ __('ordering.configure.add_to_cart') }}
                 </button>

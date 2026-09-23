@@ -117,16 +117,16 @@ defineExpose({ insert })
     <label class="text-sm font-medium">{{ props.label }}</label>
 
     <div
-      class="border-line focus-within:border-accent overflow-hidden rounded-[var(--radius-sm)] border transition-colors duration-(--duration-fast)"
+      class="border-line focus-within:border-brand overflow-hidden rounded-[var(--radius-sm)] border transition-colors duration-(--duration-fast)"
     >
       <div
-        class="border-line bg-surface-sunken flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1"
+        class="border-line bg-surface-secondary flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1"
       >
         <button
           v-for="tool in TOOLS"
           :key="tool.key"
           type="button"
-          class="pressable text-content-muted hover:bg-surface-raised hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-xs transition-colors duration-(--duration-fast)"
+          class="pressable text-content-muted hover:bg-surface-primary hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-xs transition-colors duration-(--duration-fast)"
           :class="tool.key === 'bold' ? 'font-bold' : tool.key === 'italic' ? 'italic' : ''"
           :title="tool.title"
           :aria-label="tool.title"
@@ -144,7 +144,7 @@ defineExpose({ insert })
         ref="field"
         v-model="model"
         :rows="props.rows"
-        class="bg-surface-raised text-content placeholder:text-content-subtle block w-full resize-y px-3 py-2.5 text-sm leading-relaxed outline-none"
+        class="bg-surface-primary text-content placeholder:text-content-subtle block w-full resize-y px-3 py-2.5 text-sm leading-relaxed outline-none"
       />
     </div>
 

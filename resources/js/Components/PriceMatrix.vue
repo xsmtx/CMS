@@ -109,7 +109,7 @@ watch(
 
     <template v-else>
       <div
-        class="border-line bg-surface-sunken inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-[var(--radius-sm)] border p-0.5"
+        class="border-line bg-surface-secondary inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-[var(--radius-sm)] border p-0.5"
         role="tablist"
         aria-label="Currency"
       >
@@ -122,7 +122,7 @@ watch(
           class="pressable text-body rounded-[calc(var(--radius-sm)-2px)] px-3 py-1.5 font-medium whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
           :class="
             currency.code === active
-              ? 'bg-surface-raised text-content shadow-(--shadow-raised)'
+              ? 'bg-surface-primary text-content shadow-(--shadow-raised)'
               : 'text-content-muted hover:text-content'
           "
           @click="active = currency.code"
@@ -136,21 +136,21 @@ watch(
 
       <div class="border-line overflow-x-auto rounded-[var(--radius-lg)] border">
         <table class="w-full text-left text-sm">
-          <thead class="bg-surface-sunken text-content-muted">
+          <thead class="bg-surface-secondary text-content-muted">
             <tr>
               <th scope="col" class="px-4 py-2.5 text-xs font-medium">Billing cycle</th>
               <th scope="col" class="w-40 px-4 py-2.5 text-xs font-medium">Recurring</th>
               <th scope="col" class="w-40 px-4 py-2.5 text-xs font-medium">Setup fee</th>
             </tr>
           </thead>
-          <tbody class="divide-line bg-surface-raised divide-y">
+          <tbody class="divide-line bg-surface-primary divide-y">
             <tr v-for="cycle in cycles" :key="cycle.value">
               <td class="px-4 py-2.5">
                 <label class="flex items-center gap-3">
                   <input
                     v-model="cell(cycle.value).enabled"
                     type="checkbox"
-                    class="border-line-strong accent-accent size-4 shrink-0 rounded-[4px] border"
+                    class="border-line-strong accent-brand size-4 shrink-0 rounded-[4px] border"
                   />
                   <span :class="cell(cycle.value).enabled ? '' : 'text-content-subtle'">
                     {{ cycle.label }}

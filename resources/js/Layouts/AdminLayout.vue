@@ -488,15 +488,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="bg-surface min-h-[100dvh]">
+  <div class="bg-background min-h-[100dvh]">
     <a
       href="#main"
-      class="focus:bg-surface-raised sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-30 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
+      class="focus:bg-surface-primary sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-30 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
     >
       Skip to content
     </a>
 
-    <header class="border-line bg-chrome sticky top-0 z-20 border-b">
+    <header class="border-line bg-surface-chrome sticky top-0 z-20 border-b">
       <!-- One row. The map, the search box and the account live on the
            same line, because a second full-width strip costs an inch of
            every screen an operator spends the day scrolling. -->
@@ -509,7 +509,7 @@ onBeforeUnmount(() => {
           :aria-current="currentPath === '/admin' ? 'page' : undefined"
           :title="`${brand.name} dashboard`"
           class="pressable text-title mr-1 flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] font-semibold transition-colors duration-(--duration-fast)"
-          :class="currentPath === '/admin' ? 'text-content' : 'text-content hover:text-accent'"
+          :class="currentPath === '/admin' ? 'text-content' : 'text-content hover:text-brand'"
         >
           <img
             v-if="brand.logoUrl"
@@ -519,7 +519,7 @@ onBeforeUnmount(() => {
           />
           <template v-else>
             <span
-              class="bg-accent text-accent-content grid size-5 place-items-center rounded-[5px] text-[10px] font-bold"
+              class="bg-brand text-content-inverse grid size-5 place-items-center rounded-[5px] text-[10px] font-bold"
               aria-hidden="true"
             >
               {{ brand.name.slice(0, 1).toUpperCase() }}
@@ -550,7 +550,7 @@ onBeforeUnmount(() => {
                 class="pressable text-body inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group)
-                    ? 'bg-surface-sunken text-content'
+                    ? 'bg-surface-secondary text-content'
                     : 'text-content-muted hover:text-content'
                 "
               >
@@ -564,7 +564,7 @@ onBeforeUnmount(() => {
                 class="pressable text-body inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group) || openGroup === group.label
-                    ? 'bg-surface-sunken text-content'
+                    ? 'bg-surface-secondary text-content'
                     : 'text-content-muted hover:text-content'
                 "
                 :aria-expanded="openGroup === group.label"
@@ -584,7 +584,7 @@ onBeforeUnmount(() => {
                  you pressed needs no explanation. -->
               <div
                 v-if="(group.items ?? []).length > 0 && openGroup === group.label"
-                class="panel-enter border-line bg-surface-raised absolute top-full left-0 z-20 mt-1.5 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
+                class="panel-enter border-line bg-surface-primary absolute top-full left-0 z-20 mt-1.5 min-w-[16rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
               >
                 <ul class="space-y-0.5">
                   <li
@@ -604,8 +604,8 @@ onBeforeUnmount(() => {
                         class="pressable text-body block flex-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                         :class="
                           isCurrent(item.href)
-                            ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
-                            : 'text-content-muted hover:bg-surface-sunken hover:text-content border-l-2 border-transparent'
+                            ? 'bg-surface-secondary text-content border-accent border-l-2 font-medium'
+                            : 'text-content-muted hover:bg-surface-secondary hover:text-content border-l-2 border-transparent'
                         "
                       >
                         {{ item.label }}
@@ -628,7 +628,7 @@ onBeforeUnmount(() => {
                        reaching for. -->
                     <div
                       v-if="item.children && openItem === item.label"
-                      class="panel-enter border-line bg-surface-raised absolute top-0 left-full z-30 ml-1.5 min-w-[14rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
+                      class="panel-enter border-line bg-surface-primary absolute top-0 left-full z-30 ml-1.5 min-w-[14rem] origin-top-left rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
                     >
                       <ul class="space-y-0.5">
                         <li v-for="child in item.children" :key="child.href">
@@ -638,8 +638,8 @@ onBeforeUnmount(() => {
                             class="pressable text-body block rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
                             :class="
                               isCurrent(child.href)
-                                ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
-                                : 'text-content-muted hover:bg-surface-sunken hover:text-content border-l-2 border-transparent'
+                                ? 'bg-surface-secondary text-content border-accent border-l-2 font-medium'
+                                : 'text-content-muted hover:bg-surface-secondary hover:text-content border-l-2 border-transparent'
                             "
                           >
                             {{ child.label }}
@@ -668,21 +668,21 @@ onBeforeUnmount(() => {
           <AppMenu v-if="isSuperAdmin" label="Tools" align="end" width="15rem" icon="utilities">
             <Link
               href="/admin/apps"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               Apps &amp; Integrations
             </Link>
             <Link
               href="/admin/apps/connect"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               Connect
             </Link>
             <Link
               href="/admin/api/activity"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               System logs
@@ -699,7 +699,7 @@ onBeforeUnmount(() => {
               :href="url"
               target="_blank"
               rel="noopener noreferrer"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               {{ HELP_LABELS[key] ?? key }}
@@ -720,14 +720,14 @@ onBeforeUnmount(() => {
             </p>
             <Link
               href="/admin/security"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               My Account
             </Link>
             <a
               href="/client"
-              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
               Visit Client Area
@@ -736,7 +736,7 @@ onBeforeUnmount(() => {
               href="/admin/logout"
               method="post"
               as="button"
-              class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
               role="menuitem"
             >
               Sign out
@@ -762,7 +762,7 @@ onBeforeUnmount(() => {
               <li v-if="group.href">
                 <Link
                   :href="group.href"
-                  class="text-content-muted hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+                  class="text-content-muted hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
                 >
                   Overview
                 </Link>
@@ -775,8 +775,8 @@ onBeforeUnmount(() => {
                     class="block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
                     :class="
                       isCurrent(item.href)
-                        ? 'bg-surface-sunken text-content border-highlight border-l-2 font-medium'
-                        : 'text-content-muted hover:bg-surface-sunken'
+                        ? 'bg-surface-secondary text-content border-accent border-l-2 font-medium'
+                        : 'text-content-muted hover:bg-surface-secondary'
                     "
                   >
                     {{ item.label }}
@@ -785,7 +785,7 @@ onBeforeUnmount(() => {
                 <li v-for="child in item.children ?? []" :key="child.href">
                   <Link
                     :href="child.href"
-                    class="text-content-muted hover:bg-surface-sunken block rounded-[var(--radius-sm)] py-1.5 pr-2 pl-6 text-sm"
+                    class="text-content-muted hover:bg-surface-secondary block rounded-[var(--radius-sm)] py-1.5 pr-2 pl-6 text-sm"
                   >
                     {{ child.label }}
                   </Link>
@@ -833,7 +833,7 @@ onBeforeUnmount(() => {
          hundred rows into a list still needs the link that reports what is
          wrong with the page they are looking at. -->
     <footer
-      class="border-line bg-chrome text-content-muted fixed inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-3 text-xs sm:px-8"
+      class="border-line bg-surface-chrome text-content-muted fixed inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-3 text-xs sm:px-8"
     >
       <p>&copy; {{ year }} {{ brand.name }}</p>
 

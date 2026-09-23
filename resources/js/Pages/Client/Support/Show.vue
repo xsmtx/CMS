@@ -74,7 +74,7 @@ function formatDateTime(value: string): string {
       <li
         v-for="reply in ticket.replies"
         :key="reply.id"
-        class="border-line bg-surface-raised rounded-[var(--radius-lg)] border p-4"
+        class="border-line bg-surface-primary rounded-[var(--radius-lg)] border p-4"
         :class="reply.fromStaff ? '' : 'ml-auto'"
       >
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -92,7 +92,7 @@ function formatDateTime(value: string): string {
           <li v-for="file in reply.attachments" :key="file.id">
             <a
               :href="`/attachments/${file.id}`"
-              class="border-line hover:bg-surface-sunken inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs"
+              class="border-line hover:bg-surface-secondary inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs"
             >
               {{ file.name }}
               <span class="text-content-subtle">{{ file.size }}</span>

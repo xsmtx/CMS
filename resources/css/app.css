@@ -6,56 +6,298 @@
 @source '../js/**/*.{vue,ts}';
 
 /*
- * Design tokens.
+ * Design tokens — Handoff #3 §2.
  *
- * Every value a component uses is a semantic token, never a raw palette
- * value. White-labelling in Phase 11 rewrites these custom properties from
- * the brand settings and the components do not change.
+ * **The custom properties are the API.** A theme package overrides
+ * `--surface-primary`, a brand overrides `--brand-primary`, and a
+ * third-party theme written against the handoff finds the names the handoff
+ * printed. Renaming one of these is a breaking change for code this
+ * repository does not contain, exactly like the module SDK.
+ *
+ * Tailwind's colour names sit *on top* of those, in `@theme`, and are
+ * deliberately shorter where Tailwind's own utility prefix already says the
+ * family: `--color-content` resolves `--text-primary`, so markup reads
+ * `text-content-muted` rather than `text-text-secondary`. One vocabulary,
+ * two spellings, and the mapping is one table in
+ * `docs/design/design-system.md` — the alternative was six hundred
+ * occurrences of a name nobody can read, and unreadable is how mistakes get
+ * made.
  *
  * Typography is a system stack on purpose: this product is installed on
  * servers that may have no outbound network access, and shipping a webfont
  * would either add a CDN dependency or bake a licence decision into core.
- * Brands supply their own face through the same token in Phase 11.
+ * A brand supplies its own face through `--font-sans`.
+ */
+:root {
+  /* ---- Backgrounds ---------------------------------------------------- */
+  --background: #f8fafc;
+  --background-subtle: #f1f5f9;
+
+  /* ---- Surfaces ------------------------------------------------------- */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f1f5f9;
+  --surface-elevated: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #dbeafe;
+
+  /*
+   * Chrome: the sidebar and the header strip.
+   *
+   * Beyond the handoff's required families, and named because the Core
+   * palette gives the sidebar its own colour in both appearances — white in
+   * light, a shade above the page in dark. `background-subtle` cannot carry
+   * it: in light those are two different colours.
+   */
+  --surface-chrome: #ffffff;
+
+  /* ---- Borders -------------------------------------------------------- */
+  --border-default: #e2e8f0;
+  --border-subtle: #eef2f7;
+  --border-strong: #cbd5e1;
+
+  /* ---- Text ----------------------------------------------------------- */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* ---- Brand ---------------------------------------------------------- */
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
+  /* The second hue, and the only one. Never a second way of saying
+     "click here". */
+  --brand-accent: #0891b2;
+
+  /* ---- Status --------------------------------------------------------- */
+  --status-success: #059669;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
+  --status-info: #0284c7;
+  /*
+   * Maintenance and unknown are statuses, not shades of warning. "We took it
+   * down on purpose" and "the check did not answer" are the two things an
+   * operator most needs to tell apart from "it is broken", and colouring
+   * either as a warning taught every previous panel's users to ignore both.
+   */
+  --status-maintenance: #2563eb;
+  --status-unknown: #64748b;
+
+  /* ---- Module accents (§2) -------------------------------------------- */
+  /* Accents, never large fills. A module that flooded a page with its own
+     colour would be a module competing with status. */
+  --accent-billing: #2563eb;
+  --accent-infrastructure: #0891b2;
+  --accent-network: #4f46e5;
+  --accent-security: #dc2626;
+  --accent-automation: #7c3aed;
+  --accent-dns: #0284c7;
+  --accent-storage: #0d9488;
+
+  /* ---- Focus ---------------------------------------------------------- */
+  /* Its own token because it must survive a rebrand: a brand that set an
+     accent nobody can see against the page would otherwise take the focus
+     ring with it. */
+  --focus-ring: #2563eb;
+
+  /* ---- Geometry (§3) -------------------------------------------------- */
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --radius-badge: 6px;
+  --radius-modal: 12px;
+
+  /* ---- Space (§6) ----------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---- Shadow --------------------------------------------------------- */
+  --shadow-raised-token: 0 1px 1px oklch(21% 0.03 255 / 0.04);
+  --shadow-panel-token:
+    0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
+
+  /* ---- Density (§6) --------------------------------------------------- */
+  /*
+   * Three presets, applied by `data-density` on the root. A row height is
+   * the one measurement that decides whether a panel feels like a tool, and
+   * it is not the same answer for a NOC wallboard and a customer portal.
+   */
+  --row-y: 10px;
+  --control-y: 8px;
+  --card-p: 20px;
+}
+
+:root[data-density='compact'] {
+  --row-y: 6px;
+  --control-y: 5px;
+  --card-p: 14px;
+}
+
+:root[data-density='comfortable'] {
+  --row-y: 14px;
+  --control-y: 10px;
+  --card-p: 28px;
+}
+
+/*
+ * Dark, declared once and applied two ways: by preference unless the
+ * operator overrode it, and by an explicit choice. Both point at the same
+ * block through a shared class so the values cannot drift apart — which is
+ * what happened when they were written out twice.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: #080d17;
+    --background-subtle: #0c1424;
+
+    --surface-primary: #111c2e;
+    --surface-secondary: #17243a;
+    --surface-elevated: #17243a;
+    --surface-hover: #1c2b44;
+    --surface-selected: #1b2e52;
+    --surface-chrome: #0c1424;
+
+    --border-default: #253550;
+    --border-subtle: #1b2942;
+    --border-strong: #334869;
+
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    /* Dark, not white: #3b82f6 against white is 3.7:1 and fails AA for body
+       text, which a button label is. */
+    --text-inverse: #080d17;
+
+    --brand-primary: #3b82f6;
+    --brand-primary-hover: #60a5fa;
+    --brand-accent: #22d3ee;
+
+    --status-success: #10b981;
+    --status-warning: #f59e0b;
+    --status-danger: #ef4444;
+    --status-info: #38bdf8;
+    --status-maintenance: #3b82f6;
+    --status-unknown: #64748b;
+
+    --accent-billing: #3b82f6;
+    --accent-infrastructure: #22d3ee;
+    --accent-network: #818cf8;
+    --accent-security: #ef4444;
+    --accent-automation: #8b5cf6;
+    --accent-dns: #38bdf8;
+    --accent-storage: #2dd4bf;
+
+    --focus-ring: #60a5fa;
+
+    /* Almost nothing. A dark panel is defined by its hairline; a drop
+       shadow on near-black is a smudge. */
+    --shadow-raised-token: 0 0 0 0 transparent;
+    --shadow-panel-token: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
+  }
+}
+
+:root[data-theme='dark'] {
+  --background: #080d17;
+  --background-subtle: #0c1424;
+
+  --surface-primary: #111c2e;
+  --surface-secondary: #17243a;
+  --surface-elevated: #17243a;
+  --surface-hover: #1c2b44;
+  --surface-selected: #1b2e52;
+  --surface-chrome: #0c1424;
+
+  --border-default: #253550;
+  --border-subtle: #1b2942;
+  --border-strong: #334869;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #080d17;
+
+  --brand-primary: #3b82f6;
+  --brand-primary-hover: #60a5fa;
+  --brand-accent: #22d3ee;
+
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-info: #38bdf8;
+  --status-maintenance: #3b82f6;
+  --status-unknown: #64748b;
+
+  --accent-billing: #3b82f6;
+  --accent-infrastructure: #22d3ee;
+  --accent-network: #818cf8;
+  --accent-security: #ef4444;
+  --accent-automation: #8b5cf6;
+  --accent-dns: #38bdf8;
+  --accent-storage: #2dd4bf;
+
+  --focus-ring: #60a5fa;
+
+  --shadow-raised-token: 0 0 0 0 transparent;
+  --shadow-panel-token: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
+}
+
+/*
+ * Tailwind's view of the same tokens.
+ *
+ * Every entry resolves a custom property rather than holding a colour, so a
+ * theme or a brand overriding the property moves the utility with it and no
+ * stylesheet is regenerated.
  */
 @theme {
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo, monospace;
 
-  /* Surfaces and text */
-  --color-surface: #f8fafc;
-  --color-chrome: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
-  --color-content: #0f172a;
-  --color-content-muted: #475569;
-  --color-content-subtle: #94a3b8;
+  --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
 
-  /* One primary, used identically everywhere. A brand overrides
-     `--color-accent` and `--color-accent-content` at runtime (ADR 0036) and
-     nothing else moves. */
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-content: #ffffff;
-  --color-accent-subtle: #dbeafe;
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
+  --color-surface-chrome: var(--surface-chrome);
 
-  /* The second hue, and the only one. Reserved for something that has to
-     stand apart from the primary without becoming a status colour —
-     never used as a second way of saying "click here". */
-  --color-highlight: #0891b2;
+  /* `border-line` rather than `border-border-default`. */
+  --color-line: var(--border-default);
+  --color-line-subtle: var(--border-subtle);
+  --color-line-strong: var(--border-strong);
 
-  /* Status */
-  --color-danger: #dc2626;
-  --color-success: #059669;
-  --color-warning: #d97706;
-  --color-info: #0284c7;
+  /* `text-content-muted` rather than `text-text-secondary`. */
+  --color-content: var(--text-primary);
+  --color-content-muted: var(--text-secondary);
+  --color-content-subtle: var(--text-muted);
+  --color-content-inverse: var(--text-inverse);
 
-  /* Automation reads as its own thing: a scheduled sweep is neither a
-     success nor a warning, and colouring it as either taught operators to
-     read a run as a problem. */
-  --color-automation: #7c3aed;
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-accent: var(--brand-accent);
+
+  --color-success: var(--status-success);
+  --color-warning: var(--status-warning);
+  --color-danger: var(--status-danger);
+  --color-info: var(--status-info);
+  --color-maintenance: var(--status-maintenance);
+  --color-unknown: var(--status-unknown);
+
+  --color-billing: var(--accent-billing);
+  --color-infrastructure: var(--accent-infrastructure);
+  --color-network: var(--accent-network);
+  --color-security: var(--accent-security);
+  --color-automation: var(--accent-automation);
+  --color-dns: var(--accent-dns);
+  --color-storage: var(--accent-storage);
 
   /*
    * The type scale, because an operator panel lives or dies by it.
@@ -82,16 +324,16 @@
   --text-page--line-height: 1.625rem;
   --text-page--letter-spacing: -0.015em;
 
-  /* One radius system: 8 for inputs, 10 for cards, 14 for panels,
-       full only for badges. Nothing else. */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
+  /* Geometry, resolved from the tokens above so a theme changes it in one
+     place (§3: cards 10, controls 8, badges 6, modals 12). */
+  --radius-sm: var(--radius-badge);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-card);
+  --radius-xl: var(--radius-modal);
 
-  /* Shadows are tinted to the surface hue, never pure black */
-  --shadow-raised: 0 1px 1px oklch(21% 0.03 255 / 0.04);
-  --shadow-panel:
-    0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
+  /* Resolved from the tokens, so a theme moves them with everything else. */
+  --shadow-raised: var(--shadow-raised-token);
+  --shadow-panel: var(--shadow-panel-token);
 
   /* Motion. The built-in CSS easings are too weak to read as intentional. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -99,80 +341,6 @@
   --duration-press: 120ms;
   --duration-fast: 160ms;
   --duration-base: 220ms;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --color-surface: #080d17;
-    --color-chrome: #0c1424;
-    --color-surface-raised: #111c2e;
-    /* Lighter than the card, not darker: the page is already the darkest
-       thing on screen, so an inset panel reads as a lift. The token means
-       "the other surface", which is why it inverts between the themes. */
-    --color-surface-sunken: #17243a;
-    --color-line: #253550;
-    --color-line-strong: #334869;
-    --color-content: #f1f5f9;
-    --color-content-muted: #94a3b8;
-    --color-content-subtle: #64748b;
-
-    --color-accent: #3b82f6;
-    --color-accent-hover: #60a5fa;
-    /* Dark text on the primary, not white: #3b82f6 against white is 3.7:1
-       and fails AA for body text, which a button label is. */
-    --color-accent-content: #080d17;
-    --color-accent-subtle: #1b2e52;
-
-    --color-highlight: #22d3ee;
-
-    --color-danger: #ef4444;
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-info: #38bdf8;
-
-    --color-automation: #8b5cf6;
-
-    /* Almost nothing. A dark panel is defined by its hairline; a
-       drop shadow on near-black is a smudge. */
-    --shadow-raised: 0 0 0 0 transparent;
-    --shadow-panel: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
-  }
-}
-
-:root[data-theme='dark'] {
-  --color-surface: #080d17;
-  --color-chrome: #0c1424;
-  --color-surface-raised: #111c2e;
-  /* Lighter than the card, not darker: the page is already the darkest
-     thing on screen, so an inset panel reads as a lift. The token means
-     "the other surface", which is why it inverts between the themes. */
-  --color-surface-sunken: #17243a;
-  --color-line: #253550;
-  --color-line-strong: #334869;
-  --color-content: #f1f5f9;
-  --color-content-muted: #94a3b8;
-  --color-content-subtle: #64748b;
-
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
-  /* Dark text on the primary, not white: #3b82f6 against white is 3.7:1
-     and fails AA for body text, which a button label is. */
-  --color-accent-content: #080d17;
-  --color-accent-subtle: #1b2e52;
-
-  --color-highlight: #22d3ee;
-
-  --color-danger: #ef4444;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-info: #38bdf8;
-
-  --color-automation: #8b5cf6;
-
-  /* Almost nothing. A dark panel is defined by its hairline; a
-     drop shadow on near-black is a smudge. */
-  --shadow-raised: 0 0 0 0 transparent;
-  --shadow-panel: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
 }
 
 @layer base {
@@ -194,13 +362,13 @@
 
   /* One focus treatment for the whole product. Never removed, only styled. */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
   }
 
   ::selection {
-    background-color: var(--color-accent-subtle);
+    background-color: var(--surface-selected);
     color: var(--color-content);
   }
 }

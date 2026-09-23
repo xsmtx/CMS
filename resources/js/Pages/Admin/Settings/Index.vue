@@ -355,7 +355,7 @@ function removeLink(index: number): void {
                   <div class="min-w-0">
                     <p class="text-sm">
                       {{ theme.label }}
-                      <AppBadge v-if="theme.value === surface.current" class="ml-2" tone="accent">
+                      <AppBadge v-if="theme.value === surface.current" class="ml-2" tone="brand">
                         In use
                       </AppBadge>
                     </p>

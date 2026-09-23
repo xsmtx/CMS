@@ -90,7 +90,7 @@ function formatDateTime(value: string | null): string {
          reason goes. -->
     <div
       v-if="changing"
-      class="border-line bg-surface-raised mb-6 rounded-[var(--radius-lg)] border p-4"
+      class="border-line bg-surface-primary mb-6 rounded-[var(--radius-lg)] border p-4"
     >
       <p class="text-sm font-semibold">
         Change the password for {{ changing.firstName }} {{ changing.lastName }}
@@ -163,7 +163,7 @@ function formatDateTime(value: string | null): string {
           <AppMenu v-if="can.manage" v-slot="{ close }" label="Manage user">
             <button
               type="button"
-              class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
               role="menuitem"
               @click="sendReset(user, close)"
             >
@@ -171,7 +171,7 @@ function formatDateTime(value: string | null): string {
             </button>
             <button
               type="button"
-              class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
               role="menuitem"
               @click="startChange(user, close)"
             >

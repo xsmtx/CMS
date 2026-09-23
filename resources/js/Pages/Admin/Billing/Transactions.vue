@@ -172,7 +172,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
         <button
           type="button"
           class="pressable border-line hover:border-line-strong rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
-          :class="form.direction === 'in' ? 'border-accent text-content font-medium' : ''"
+          :class="form.direction === 'in' ? 'border-brand text-content font-medium' : ''"
           :aria-pressed="form.direction === 'in'"
           @click="only('in')"
         >
@@ -181,7 +181,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
         <button
           type="button"
           class="pressable border-line hover:border-line-strong rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
-          :class="form.direction === 'out' ? 'border-accent text-content font-medium' : ''"
+          :class="form.direction === 'out' ? 'border-brand text-content font-medium' : ''"
           :aria-pressed="form.direction === 'out'"
           @click="only('out')"
         >
@@ -204,7 +204,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.client" label="Client" />
         <AppSelect v-model="form.kind" label="Kind" :options="withBlank(kinds)" />

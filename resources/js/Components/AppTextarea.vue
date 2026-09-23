@@ -21,8 +21,8 @@ const id = useId()
       v-model="model"
       :rows="rows"
       :aria-invalid="error ? true : undefined"
-      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
-      :class="error ? 'border-danger' : 'focus:border-accent'"
+      class="border-line bg-surface-primary text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+      :class="error ? 'border-danger' : 'focus:border-brand'"
     />
 
     <p v-if="hint && !error" class="text-content-muted text-xs">{{ hint }}</p>

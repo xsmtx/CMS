@@ -38,8 +38,8 @@ function readable(label: string): string {
           class="pressable border-line block rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs transition-colors duration-(--duration-fast) ease-(--ease-out)"
           :class="
             link.active
-              ? 'bg-surface-sunken text-content font-medium'
-              : 'text-content-muted hover:bg-surface-sunken hover:text-content'
+              ? 'bg-surface-secondary text-content font-medium'
+              : 'text-content-muted hover:bg-surface-secondary hover:text-content'
           "
         >
           {{ readable(link.label) }}

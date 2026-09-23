@@ -15,7 +15,7 @@ const id = useId()
       v-model="model"
       type="checkbox"
       :disabled="disabled"
-      class="border-line-strong text-accent accent-accent mt-0.5 size-4 shrink-0 rounded-[4px] border disabled:opacity-60"
+      class="border-line-strong text-brand accent-brand mt-0.5 size-4 shrink-0 rounded-[4px] border disabled:opacity-60"
     />
     <label :for="id" class="text-sm leading-tight select-none">
       {{ label }}

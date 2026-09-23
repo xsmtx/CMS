@@ -102,7 +102,7 @@
         {{-- The price panel. Sticky on a wide screen so the number an
              operator set stays next to the description it belongs to. --}}
         <div class="lg:col-span-5">
-            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
+            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
                 <h2 class="text-sm font-semibold">{{ __('catalog.pricing.title') }}</h2>
 
                 <ul class="mt-4 divide-y divide-line">
@@ -135,7 +135,7 @@
                     @else
                         <a
                             href="{{ route('storefront.configure', $product['slug']) }}"
-                            class="pressable inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                            class="pressable inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                         >
                             {{ __('catalog.storefront.order_now') }}
                         </a>

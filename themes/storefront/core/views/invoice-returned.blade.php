@@ -17,7 +17,7 @@
         </h1>
 
         @if ($invoice['isOwed'])
-            <p class="mt-6 rounded-[var(--radius-sm)] border border-line bg-surface-sunken px-3 py-2 text-sm leading-relaxed">
+            <p class="mt-6 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-sm leading-relaxed">
                 {{ __('billing.payments.checking') }}
             </p>
         @else
@@ -26,7 +26,7 @@
             </p>
         @endif
 
-        <dl class="mt-8 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-raised px-5">
+        <dl class="mt-8 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary px-5">
             <div class="flex justify-between gap-4 py-3 text-sm">
                 <dt class="text-content-muted">{{ __('billing.invoices.total') }}</dt>
                 <dd class="tabular-nums">{{ $invoice['total'] }}</dd>
@@ -50,7 +50,7 @@
             </a>
             <a
                 href="{{ url('/client') }}"
-                class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content"
+                class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse"
             >
                 {{ __('storefront.client_area') }}
             </a>

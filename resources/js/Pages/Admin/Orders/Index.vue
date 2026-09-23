@@ -136,7 +136,7 @@ function withBlank(options: { value: string; label: string }[]) {
           class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
           :class="
             active === ''
-              ? 'bg-surface-sunken text-content'
+              ? 'bg-surface-secondary text-content'
               : 'text-content-muted hover:text-content'
           "
           @click="filterBy('')"
@@ -150,7 +150,7 @@ function withBlank(options: { value: string; label: string }[]) {
           class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
           :class="
             active === status.value
-              ? 'bg-surface-sunken text-content'
+              ? 'bg-surface-secondary text-content'
               : 'text-content-muted hover:text-content'
           "
           @click="filterBy(status.value)"
@@ -171,7 +171,7 @@ function withBlank(options: { value: string; label: string }[]) {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.number" label="Order # or ID" />
         <AppInput v-model="form.client" label="Client" />

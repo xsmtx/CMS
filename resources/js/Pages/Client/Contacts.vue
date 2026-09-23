@@ -88,7 +88,7 @@ function remove(contact: ContactRow): void {
             <div>
               <p class="text-sm font-medium">
                 {{ contact.name }}
-                <AppBadge v-if="contact.isPrimary" tone="accent" class="ml-2">
+                <AppBadge v-if="contact.isPrimary" tone="brand" class="ml-2">
                   Account owner
                 </AppBadge>
                 <AppBadge v-if="contact.isMe" class="ml-2">You</AppBadge>

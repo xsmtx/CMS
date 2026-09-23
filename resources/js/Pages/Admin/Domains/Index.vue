@@ -163,7 +163,7 @@ function addonsOf(detail: DomainDetail): string {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.domain" label="Domain" hint="% anchors: kaya% or %.com.tr" />
         <AppSelect v-model="form.status" label="Status" :options="withBlank(statuses)" />
@@ -248,7 +248,7 @@ function addonsOf(detail: DomainDetail): string {
           </td>
         </tr>
 
-        <tr v-if="expanded === domain.id" class="bg-surface-sunken">
+        <tr v-if="expanded === domain.id" class="bg-surface-secondary">
           <td colspan="10" class="px-5 py-4">
             <dl class="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
               <div>

@@ -244,8 +244,8 @@ function formatDate(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           chosenStatuses.includes(status.value)
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         :aria-pressed="chosenStatuses.includes(status.value)"
         @click="toggleStatus(status.value)"
@@ -263,7 +263,7 @@ function formatDate(value: string | null): string {
         Auto refresh
         <select
           v-model="refreshChoice"
-          class="border-line bg-surface-raised text-content rounded-[var(--radius-sm)] border px-2 py-1 text-xs"
+          class="border-line bg-surface-primary text-content rounded-[var(--radius-sm)] border px-2 py-1 text-xs"
         >
           <option v-for="option in REFRESH_OPTIONS" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -276,7 +276,7 @@ function formatDate(value: string | null): string {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-raised grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.client" label="Client" />
         <AppSelect v-model="form.department" label="Department" :options="withBlank(departments)" />
@@ -317,7 +317,7 @@ function formatDate(value: string | null): string {
           </Link>
           <span class="text-content-muted block text-xs">
             {{ ticket.number }} · {{ ticket.priorityLabel }}
-            <span v-for="tag in ticket.tags" :key="tag" class="text-accent">· {{ tag }}</span>
+            <span v-for="tag in ticket.tags" :key="tag" class="text-brand">· {{ tag }}</span>
           </span>
         </td>
         <td class="px-4 py-2.5">{{ ticket.customer ?? '—' }}</td>

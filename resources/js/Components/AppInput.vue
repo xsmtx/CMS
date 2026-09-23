@@ -63,8 +63,8 @@ const describedBy = computed(() => {
       :placeholder="placeholder"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      class="border-line bg-surface-raised text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
-      :class="error ? 'border-danger' : 'focus:border-accent'"
+      class="border-line bg-surface-primary text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+      :class="error ? 'border-danger' : 'focus:border-brand'"
     />
 
     <p v-if="hint && !error" :id="hintId" class="text-content-muted text-xs">{{ hint }}</p>

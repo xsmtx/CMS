@@ -44,12 +44,12 @@ const classes = computed(() => [
   'disabled:pointer-events-none disabled:opacity-55',
   props.size === 'sm' ? 'text-chrome px-2.5 py-1.5' : 'text-body px-3.5 py-2',
   {
-    primary: 'bg-accent text-accent-content hover:bg-accent-hover',
+    primary: 'bg-brand text-content-inverse hover:bg-brand-hover',
     // The line, not the strong line: a secondary button outlined in the
     // heavier border reads as a text field, which is the thing beside it.
-    secondary: 'border-line bg-surface-raised text-content hover:border-line-strong',
-    ghost: 'text-content-muted hover:bg-surface-sunken hover:text-content',
-    danger: 'bg-danger text-accent-content hover:opacity-90',
+    secondary: 'border-line bg-surface-primary text-content hover:border-line-strong',
+    ghost: 'text-content-muted hover:bg-surface-secondary hover:text-content',
+    danger: 'bg-danger text-content-inverse hover:opacity-90',
   }[props.variant],
 ])
 </script>

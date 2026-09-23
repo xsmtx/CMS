@@ -260,7 +260,7 @@ function submit(): void {
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="pressable hover:bg-surface-sunken block w-full px-3 py-2 text-left"
+                  class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
                   @click="choose(candidate)"
                 >
                   <span class="block text-sm font-medium">{{ candidate.name }}</span>
@@ -309,7 +309,7 @@ function submit(): void {
             <li
               v-for="address in form.cc"
               :key="address"
-              class="bg-surface-sunken flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
+              class="bg-surface-secondary flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
             >
               {{ address }}
               <button
@@ -335,14 +335,14 @@ function submit(): void {
                 <tr
                   v-for="row in owned"
                   :key="row.id"
-                  class="hover:bg-surface-sunken cursor-pointer transition-colors duration-(--duration-fast)"
-                  :class="about?.id === row.id ? 'bg-surface-sunken' : ''"
+                  class="hover:bg-surface-secondary cursor-pointer transition-colors duration-(--duration-fast)"
+                  :class="about?.id === row.id ? 'bg-surface-secondary' : ''"
                   @click="link(row)"
                 >
                   <td class="py-2 pr-3">
                     <input
                       type="radio"
-                      class="accent-accent size-3.5"
+                      class="accent-brand size-3.5"
                       :checked="about?.id === row.id"
                       :aria-label="row.label"
                       @change="link(row)"
@@ -417,7 +417,7 @@ function submit(): void {
                 <li
                   v-for="file in form.attachments"
                   :key="file.name"
-                  class="bg-surface-sunken rounded-full px-2.5 py-1 text-xs"
+                  class="bg-surface-secondary rounded-full px-2.5 py-1 text-xs"
                 >
                   {{ file.name }}
                 </li>

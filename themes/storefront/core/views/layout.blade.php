@@ -45,7 +45,7 @@
 <body class="h-full">
     <a
         href="#main"
-        class="sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:bg-surface-raised focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
+        class="sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:bg-surface-primary focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
     >
         {{ __('storefront.skip_to_content') }}
     </a>
@@ -73,7 +73,7 @@
                                 id="currency"
                                 name="currency"
                                 onchange="this.form.submit()"
-                                class="rounded-[var(--radius-sm)] border border-line bg-surface-raised px-2 py-1.5 text-xs font-medium text-content-muted"
+                                class="rounded-[var(--radius-sm)] border border-line bg-surface-primary px-2 py-1.5 text-xs font-medium text-content-muted"
                             >
                                 @foreach ($currencies as $code)
                                     <option value="{{ $code }}" @selected($code === ($currency ?? null))>{{ $code }}</option>

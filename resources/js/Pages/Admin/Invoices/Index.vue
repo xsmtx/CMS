@@ -74,7 +74,7 @@ function formatDate(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
         :class="
           active === null
-            ? 'bg-surface-sunken text-content'
+            ? 'bg-surface-secondary text-content'
             : 'text-content-muted hover:text-content'
         "
         @click="filterBy(null)"
@@ -88,7 +88,7 @@ function formatDate(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
         :class="
           active === status.value
-            ? 'bg-surface-sunken text-content'
+            ? 'bg-surface-secondary text-content'
             : 'text-content-muted hover:text-content'
         "
         @click="filterBy(status.value)"

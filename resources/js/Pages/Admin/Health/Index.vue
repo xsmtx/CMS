@@ -2,7 +2,7 @@
 import { Head, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
+import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -46,11 +46,21 @@ function turnOff(): void {
   form.put('/admin/health/maintenance', { preserveScroll: true })
 }
 
-function tone(state: string): 'success' | 'warning' | 'danger' {
-  if (state === 'ok') return 'success'
+/**
+ * Shape as well as colour (Handoff #3 §7).
+ *
+ * This is the screen somebody opens at three in the morning, often shared
+ * over a call or photographed into a post-mortem. A green dot beside an
+ * amber dot is one bit of information for most readers and none for the
+ * rest, so every state here also carries a mark that survives greyscale.
+ */
+function tone(state: string): StatusTone {
+  if (state === 'ok') return 'healthy'
   if (state === 'degraded') return 'warning'
+  if (state === 'maintenance') return 'maintenance'
+  if (state === 'unknown') return 'unknown'
 
-  return 'danger'
+  return 'critical'
 }
 
 function formatDateTime(value: string): string {
@@ -66,9 +76,11 @@ function formatDateTime(value: string): string {
     description="What is working, what is about to stop working, and what has stopped."
   >
     <div class="mb-6 flex flex-wrap items-center gap-3">
-      <AppBadge :tone="tone(overall)">
-        {{ checks.find((check) => check.state === overall)?.stateLabel ?? overall }}
-      </AppBadge>
+      <AppStatus
+        :tone="tone(overall)"
+        :label="checks.find((check) => check.state === overall)?.stateLabel ?? overall"
+        class="text-title font-semibold"
+      />
       <span class="text-content-muted text-xs">
         Checked {{ formatDateTime(runtime.checkedAt) }}
       </span>
@@ -78,7 +90,7 @@ function formatDateTime(value: string): string {
       <AppCard v-for="check in checks" :key="check.key">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <h2 class="text-sm font-semibold">{{ check.label }}</h2>
-          <AppBadge :tone="tone(check.state)">{{ check.stateLabel }}</AppBadge>
+          <AppStatus :tone="tone(check.state)" :label="check.stateLabel" />
         </div>
 
         <p v-if="check.detail" class="text-content-muted mt-2 text-xs leading-relaxed">

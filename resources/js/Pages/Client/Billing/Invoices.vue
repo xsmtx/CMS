@@ -75,8 +75,8 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           active === null
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="filterBy(null)"
       >
@@ -89,8 +89,8 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           active === status.value
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="filterBy(status.value)"
       >

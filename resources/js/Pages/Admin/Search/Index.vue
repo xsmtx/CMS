@@ -70,7 +70,7 @@ function submit(): void {
           <li v-for="row in group.rows" :key="row.href">
             <Link
               :href="row.href"
-              class="pressable hover:bg-surface-sunken -mx-2 block rounded-[var(--radius-sm)] px-2 py-2.5 transition-colors duration-(--duration-fast)"
+              class="pressable hover:bg-surface-secondary -mx-2 block rounded-[var(--radius-sm)] px-2 py-2.5 transition-colors duration-(--duration-fast)"
             >
               <span class="block text-sm font-medium">{{ row.title }}</span>
               <span v-if="row.subtitle" class="text-content-muted block text-xs">

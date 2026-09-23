@@ -58,8 +58,8 @@ function formatDateTime(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           filters.refused
-            ? 'text-content-muted hover:bg-surface-sunken'
-            : 'bg-surface-sunken text-content font-medium'
+            ? 'text-content-muted hover:bg-surface-secondary'
+            : 'bg-surface-secondary text-content font-medium'
         "
         @click="filterBy(false)"
       >
@@ -70,8 +70,8 @@ function formatDateTime(value: string | null): string {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           filters.refused
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="filterBy(true)"
       >

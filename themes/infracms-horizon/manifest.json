@@ -1,0 +1,14 @@
+{
+  "slug": "infracms-horizon",
+  "name": "InfraCMS Horizon",
+  "version": "0.1.0",
+  "author": "InfraCMS",
+  "personality": "Spacious, premium, friendly, modern SaaS, white-label.",
+  "platform": ">=1.0",
+  "surfaces": ["client", "storefront"],
+  "appearances": ["light", "dark", "system"],
+  "density": "comfortable",
+  "tokens": "tokens.css",
+  "preview": "preview.png",
+  "settings": "settings.schema.json"
+}

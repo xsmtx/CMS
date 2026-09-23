@@ -69,7 +69,7 @@ function formatDate(value: string | null): string {
           <li v-for="invoice in unpaid" :key="invoice.number">
             <Link
               :href="`/client/billing/invoices/${invoice.number}`"
-              class="hover:bg-surface-sunken -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
+              class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
             >
               <span class="min-w-0">
                 <span class="block text-sm font-medium">{{ invoice.number }}</span>
@@ -109,7 +109,7 @@ function formatDate(value: string | null): string {
             <li v-for="order in orders" :key="order.number">
               <Link
                 :href="`/client/orders/${order.number}`"
-                class="hover:bg-surface-sunken -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
+                class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
               >
                 <span class="min-w-0">
                   <span class="block text-sm font-medium">{{ order.number }}</span>

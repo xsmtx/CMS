@@ -35,7 +35,7 @@ const tabs = [
       class="pressable -mb-px rounded-t-[var(--radius-sm)] border-b-2 px-3 py-2 text-sm transition-colors duration-(--duration-fast)"
       :class="
         current === tab.key
-          ? 'border-accent text-content font-medium'
+          ? 'border-brand text-content font-medium'
           : 'text-content-muted hover:text-content border-transparent'
       "
     >

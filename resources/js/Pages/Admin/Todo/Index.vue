@@ -163,7 +163,7 @@ function tone(item: TodoRow): 'neutral' | 'success' | 'warning' | 'danger' {
       <div
         v-for="item in items"
         :key="item.id"
-        class="border-line bg-surface-raised flex flex-wrap items-start justify-between gap-4 rounded-[var(--radius-md)] border px-5 py-4 shadow-(--shadow-raised)"
+        class="border-line bg-surface-primary flex flex-wrap items-start justify-between gap-4 rounded-[var(--radius-md)] border px-5 py-4 shadow-(--shadow-raised)"
       >
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">

@@ -88,8 +88,8 @@ function formatDateTime(value: string): string {
             class="rounded-[var(--radius-lg)] border p-4"
             :class="
               notification.readAt === null
-                ? 'border-accent/40 bg-surface-raised'
-                : 'border-line bg-surface-raised'
+                ? 'border-brand/40 bg-surface-primary'
+                : 'border-line bg-surface-primary'
             "
           >
             <div class="flex flex-wrap items-baseline justify-between gap-2">

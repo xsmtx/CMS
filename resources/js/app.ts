@@ -32,7 +32,7 @@ void createInertiaApp({
   },
 
   progress: {
-    color: 'var(--color-accent)',
+    color: 'var(--brand-primary)',
   },
 })
 

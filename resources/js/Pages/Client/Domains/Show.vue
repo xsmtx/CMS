@@ -144,7 +144,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
           <div v-if="transferCode" class="mt-4">
             <p class="text-content-muted text-xs">{{ t('domains.portal.transfer_code') }}</p>
             <code
-              class="border-line bg-surface-sunken mt-1 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
+              class="border-line bg-surface-secondary mt-1 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
             >
               {{ transferCode }}
             </code>

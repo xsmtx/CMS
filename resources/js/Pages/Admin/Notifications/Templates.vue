@@ -83,8 +83,8 @@ function switchLocale(locale: string): void {
         class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
         :class="
           locale === option.value
-            ? 'bg-surface-sunken text-content font-medium'
-            : 'text-content-muted hover:bg-surface-sunken'
+            ? 'bg-surface-secondary text-content font-medium'
+            : 'text-content-muted hover:bg-surface-secondary'
         "
         @click="switchLocale(option.value)"
       >
@@ -98,7 +98,7 @@ function switchLocale(locale: string): void {
           <div>
             <h2 class="text-sm font-semibold">
               {{ template.label }}
-              <AppBadge v-if="template.isCustomised" class="ml-2" tone="accent">Edited</AppBadge>
+              <AppBadge v-if="template.isCustomised" class="ml-2" tone="brand">Edited</AppBadge>
               <!-- Stated, because an operator editing this should know it
                    goes out whatever the customer has switched off. -->
               <AppBadge v-if="template.transactional" class="ml-2">Always sent</AppBadge>

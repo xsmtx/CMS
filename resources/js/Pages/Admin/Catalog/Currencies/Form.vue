@@ -120,7 +120,7 @@ function formatDate(value: string): string {
         </p>
 
         <ul
-          class="border-line divide-line bg-surface-raised divide-y rounded-[var(--radius-lg)] border"
+          class="border-line divide-line bg-surface-primary divide-y rounded-[var(--radius-lg)] border"
         >
           <li
             v-for="(snapshot, index) in history"

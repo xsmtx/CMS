@@ -314,7 +314,7 @@ function submit(): void {
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="pressable hover:bg-surface-sunken block w-full px-3 py-2 text-left"
+                  class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
                   @click="choose(candidate)"
                 >
                   <span class="block text-sm font-medium">{{ candidate.name }}</span>
@@ -404,7 +404,7 @@ function submit(): void {
                 v-model="form.domain_action"
                 type="radio"
                 value=""
-                class="accent-accent size-3.5"
+                class="accent-brand size-3.5"
               />
               None
             </label>
@@ -417,7 +417,7 @@ function submit(): void {
                 v-model="form.domain_action"
                 type="radio"
                 :value="action.value"
-                class="accent-accent size-3.5"
+                class="accent-brand size-3.5"
               />
               {{ action.label }}
             </label>
@@ -450,9 +450,7 @@ function submit(): void {
                 :key="addon.value"
                 type="button"
                 class="pressable border-line hover:border-line-strong rounded-full border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
-                :class="
-                  form.domain_addons.includes(addon.value) ? 'border-accent text-content' : ''
-                "
+                :class="form.domain_addons.includes(addon.value) ? 'border-brand text-content' : ''"
                 :aria-pressed="form.domain_addons.includes(addon.value)"
                 @click="toggleAddon(addon.value)"
               >

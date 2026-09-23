@@ -9,19 +9,19 @@
     </h1>
 
     @if (session('status'))
-        <p role="status" class="mt-5 rounded-[var(--radius-sm)] border border-line bg-surface-sunken px-3 py-2 text-sm">
+        <p role="status" class="mt-5 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-sm">
             {{ session('status') }}
         </p>
     @endif
 
     @if ($cart === null || $cart['empty'])
-        <div class="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6">
+        <div class="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6">
             <p class="text-sm font-medium">{{ __('ordering.cart.empty') }}</p>
             <p class="mt-1 text-sm text-content-muted">{{ __('ordering.cart.empty_hint') }}</p>
 
             <a
                 href="{{ route('storefront.catalog') }}"
-                class="pressable mt-5 inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-semibold text-accent-content"
+                class="pressable mt-5 inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-4 py-2 text-sm font-semibold text-content-inverse"
             >
                 {{ __('ordering.cart.continue') }}
             </a>
@@ -29,7 +29,7 @@
     @else
         <div class="mt-8 grid gap-10 lg:grid-cols-12 lg:gap-14">
             <div class="lg:col-span-7">
-                <ul class="divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-raised">
+                <ul class="divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary">
                     @foreach ($cart['lines'] as $line)
                         <li class="px-5 py-4">
                             <div class="flex items-start justify-between gap-4">
@@ -84,7 +84,7 @@
                                         value="{{ $line['quantity'] }}"
                                         min="1"
                                         max="100"
-                                        class="w-20 rounded-[var(--radius-sm)] border border-line bg-surface px-2 py-1 text-sm tabular-nums"
+                                        class="w-20 rounded-[var(--radius-sm)] border border-line bg-background px-2 py-1 text-sm tabular-nums"
                                     >
                                     <button type="submit" class="pressable text-xs text-content-muted underline underline-offset-4 hover:text-content">
                                         {{ __('ordering.cart.update_line') }}
@@ -114,7 +114,7 @@
             </div>
 
             <div class="lg:col-span-5">
-                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-raised p-6 shadow-(--shadow-panel)">
+                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel)">
                     <dl class="divide-y divide-line text-sm">
                         <div class="flex justify-between py-2 first:pt-0">
                             <dt class="text-content-muted">{{ __('ordering.cart.subtotal') }}</dt>
@@ -169,7 +169,7 @@
                                 type="text"
                                 value="{{ $cart['promotionCode'] }}"
                                 autocomplete="off"
-                                class="w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3 py-2 font-mono text-sm uppercase"
+                                class="w-full rounded-[var(--radius-sm)] border border-line bg-background px-3 py-2 font-mono text-sm uppercase"
                             >
                             <button
                                 type="submit"
@@ -190,7 +190,7 @@
 
                     <a
                         href="{{ route('storefront.checkout') }}"
-                        class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-accent-content shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-accent-hover"
+                        class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('ordering.cart.checkout') }}
                     </a>

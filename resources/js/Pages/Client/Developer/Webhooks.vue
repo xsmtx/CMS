@@ -86,7 +86,7 @@ function formatDateTime(value: string | null): string {
       <AppAlert v-if="issued" tone="success">
         {{ t('api.webhooks.created') }}
         <code
-          class="border-line bg-surface-sunken mt-2 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
+          class="border-line bg-surface-secondary mt-2 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
         >
           {{ issued }}
         </code>

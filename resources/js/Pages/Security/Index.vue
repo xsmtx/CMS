@@ -190,7 +190,7 @@ function describeDevice(agent: string | null): string {
             <div class="min-w-0">
               <p class="text-sm font-medium">
                 {{ describeDevice(session.userAgent) }}
-                <AppBadge v-if="session.current" tone="accent" class="ml-2">This device</AppBadge>
+                <AppBadge v-if="session.current" tone="brand" class="ml-2">This device</AppBadge>
               </p>
               <p class="text-content-muted mt-0.5 text-xs">
                 {{ session.ipAddress ?? 'Unknown address' }} · last active
