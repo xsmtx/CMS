@@ -32,6 +32,9 @@ return [
         'services' => 'Services',
         'infrastructure' => 'Infrastructure',
         'domains' => 'Domains',
+        'support' => 'Support',
+        'content' => 'Content',
+        'notifications' => 'Notifications',
         'portal' => 'Client portal',
     ],
 ];

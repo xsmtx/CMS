@@ -9,6 +9,7 @@ use App\Domain\Crm\AddressType;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Domains\DomainOperation;
 use App\Domain\Domains\DomainStatus;
+use App\Domain\Domains\Events\DomainRegistered;
 use App\Domain\Domains\RegistrantDetails;
 use App\Domain\Domains\RegistrarResult;
 use App\Domain\Domains\RegistrationRequest;
@@ -91,6 +92,12 @@ final readonly class RunDomainOperation
         ], static fn (mixed $value): bool => $value !== null))->save();
 
         $this->transitions->handle($domain, DomainStatus::Active, $actor);
+
+        event(new DomainRegistered(
+            $domain->id,
+            $domain->organization_id,
+            $this->correlation->id(),
+        ));
 
         return $result;
     }

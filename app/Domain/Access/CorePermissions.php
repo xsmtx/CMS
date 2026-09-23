@@ -34,6 +34,7 @@ final class CorePermissions
             ...self::settings(),
             ...self::provisioning(),
             ...self::domains(),
+            ...self::support(),
             ...self::portal(),
         ];
     }
@@ -214,6 +215,26 @@ final class CorePermissions
     /**
      * @return list<PermissionDefinition>
      */
+    private static function support(): array
+    {
+        return [
+            new PermissionDefinition('support.tickets.view', 'support', RoleScope::Staff),
+            new PermissionDefinition('support.tickets.manage', 'support', RoleScope::Staff),
+            new PermissionDefinition('support.tickets.delete', 'support', RoleScope::Staff, highRisk: true),
+            new PermissionDefinition('support.departments.manage', 'support', RoleScope::Staff),
+
+            new PermissionDefinition('content.announcements.manage', 'content', RoleScope::Staff),
+            new PermissionDefinition('content.kb.manage', 'content', RoleScope::Staff),
+
+            new PermissionDefinition('notifications.view', 'notifications', RoleScope::Staff),
+            // Editing a template changes what every customer is told.
+            new PermissionDefinition('notifications.manage', 'notifications', RoleScope::Staff, highRisk: true),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
     private static function portal(): array
     {
         return [
@@ -233,6 +254,8 @@ final class CorePermissions
             new PermissionDefinition('portal.services.view', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.domains.view', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.domains.manage', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.tickets.view', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.tickets.create', 'portal', RoleScope::Customer),
         ];
     }
 }

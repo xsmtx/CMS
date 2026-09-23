@@ -6,9 +6,11 @@ namespace App\Application\Billing;
 
 use App\Application\Billing\Exceptions\InvoiceNotIssuable;
 use App\Application\Shared\AllocateNumber;
+use App\Domain\Billing\Events\InvoiceIssued;
 use App\Domain\Billing\InvoiceStatus;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Support\Audit\Facades\Audit;
+use App\Support\Correlation\CorrelationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +66,14 @@ final readonly class IssueInvoice
         });
 
         $issued = $this->transitions->handle($invoice, InvoiceStatus::Unpaid, $actor);
+
+        // Announced after the transaction, like every event here: a
+        // listener must never see a row that is not committed yet.
+        event(new InvoiceIssued(
+            $issued->id,
+            $issued->organization_id,
+            app(CorrelationContext::class)->id(),
+        ));
 
         Audit::action('billing.invoice.issued')
             ->by($actor)

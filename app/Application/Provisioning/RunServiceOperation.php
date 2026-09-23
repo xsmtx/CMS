@@ -8,6 +8,9 @@ use App\Application\Provisioning\Exceptions\PlacementFailed;
 use App\Application\Provisioning\Exceptions\ServiceNotOperable;
 use App\Domain\Crm\AddressType;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
+use App\Domain\Provisioning\Events\ServiceProvisioned;
+use App\Domain\Provisioning\Events\ServiceSuspended;
+use App\Domain\Provisioning\Events\ServiceTerminated;
 use App\Domain\Provisioning\OperationOutcome;
 use App\Domain\Provisioning\PackageChange;
 use App\Domain\Provisioning\ProvisioningRequest;
@@ -112,6 +115,13 @@ final readonly class RunServiceOperation
 
         $this->transitions->handle($service, ServiceStatus::Active, $actor);
 
+        // The welcome message Phase 6 ended with and had nothing to send.
+        event(new ServiceProvisioned(
+            $service->id,
+            $service->organization_id,
+            $this->correlation->id(),
+        ));
+
         return $result;
     }
 
@@ -129,6 +139,13 @@ final readonly class RunServiceOperation
 
         if ($result->isSuccessful()) {
             $this->transitions->handle($service, ServiceStatus::Suspended, $actor, $reason);
+
+            event(new ServiceSuspended(
+                $service->id,
+                $service->organization_id,
+                $reason,
+                $this->correlation->id(),
+            ));
         }
 
         return $result;
@@ -188,6 +205,12 @@ final readonly class RunServiceOperation
 
         if ($result->isSuccessful()) {
             $this->transitions->handle($service, ServiceStatus::Terminated, $actor);
+
+            event(new ServiceTerminated(
+                $service->id,
+                $service->organization_id,
+                $this->correlation->id(),
+            ));
         }
 
         return $result;

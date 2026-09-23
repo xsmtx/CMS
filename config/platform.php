@@ -218,6 +218,60 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications
+    |--------------------------------------------------------------------------
+    |
+    | Which channels a message goes out on by default, and the webhook
+    | endpoint an operator's own systems can listen on. A channel that is
+    | not configured is never registered, so nothing tries to post to an
+    | endpoint nobody has set.
+    |
+    */
+
+    'notifications' => [
+        'channels' => array_values(array_filter(
+            explode(',', (string) env('NOTIFICATION_CHANNELS', 'mail,database')),
+        )),
+
+        'webhook' => [
+            'endpoint' => env('NOTIFICATION_WEBHOOK_URL'),
+            // Signed the way this platform verifies incoming webhooks, so a
+            // receiver can check before parsing and reject a replay.
+            'secret' => env('NOTIFICATION_WEBHOOK_SECRET'),
+            'timeout' => (int) env('NOTIFICATION_WEBHOOK_TIMEOUT', 10),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Support
+    |--------------------------------------------------------------------------
+    */
+
+    'support' => [
+        'numbering' => [
+            'prefix' => env('TICKET_NUMBER_PREFIX', 'TKT-'),
+            'padding' => (int) env('TICKET_NUMBER_PADDING', 6),
+        ],
+
+        'attachments' => [
+            // Never the public disk. Files are served by a controller that
+            // checks who is asking.
+            'disk' => env('TICKET_ATTACHMENT_DISK', 'local'),
+            'max_kilobytes' => (int) env('TICKET_ATTACHMENT_MAX_KB', 5120),
+            // Checked on extension *and* MIME. An attachment is the one
+            // place a customer hands this platform bytes that staff open.
+            'allowed_extensions' => ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'txt', 'log', 'csv', 'zip'],
+            'allowed_mime_types' => [
+                'image/png', 'image/jpeg', 'image/gif', 'image/webp',
+                'application/pdf', 'text/plain', 'text/csv',
+                'application/zip', 'application/x-zip-compressed',
+            ],
+        ],
+    ],
+
     'risk' => [
         'enabled' => (bool) env('RISK_ENABLED', true),
 

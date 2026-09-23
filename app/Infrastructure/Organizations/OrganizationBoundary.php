@@ -49,6 +49,43 @@ final class OrganizationBoundary
     }
 
     /**
+     * Constrain a model whose `organization_id` may legitimately be null.
+     *
+     * A few records belong to the platform rather than to a customer: a
+     * notification sent to a staff member, a gateway event that arrived
+     * before anybody knew whose it was. Excluding them — which a plain
+     * `whereIn` does, because SQL `IN` never matches NULL — would hide
+     * exactly the rows an operator opened the screen to read.
+     *
+     * Visibility of those rows is gated by the **permission** that reaches
+     * the screen, not by the boundary, because they have no owner for a
+     * boundary to compare against.
+     *
+     * @param  Builder<covariant Model>  $query
+     */
+    public function applyToNullable(Builder $query, string $column = 'organization_id'): void
+    {
+        if (! $this->context->hasBoundary()) {
+            return;
+        }
+
+        $path = $this->currentPath();
+        $qualified = $query->qualifyColumn($column);
+
+        if ($path === null) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $visible = $this->visibleOrganizationIds($path);
+
+        $query->where(static function (Builder $inner) use ($qualified, $visible): void {
+            $inner->whereIn($qualified, $visible)->orWhereNull($qualified);
+        });
+    }
+
+    /**
      * Constrain the organizations table itself, which is bounded by its own
      * materialised path rather than by an `organization_id` column.
      *

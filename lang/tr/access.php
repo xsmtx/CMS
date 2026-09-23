@@ -32,6 +32,9 @@ return [
         'services' => 'Hizmetler',
         'infrastructure' => 'Altyapı',
         'domains' => 'Alan adları',
+        'support' => 'Destek',
+        'content' => 'İçerik',
+        'notifications' => 'Bildirimler',
         'portal' => 'Müşteri paneli',
     ],
 ];

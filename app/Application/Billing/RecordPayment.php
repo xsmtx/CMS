@@ -6,6 +6,7 @@ namespace App\Application\Billing;
 
 use App\Application\Billing\Exceptions\PaymentRefused;
 use App\Application\Ordering\TransitionOrder;
+use App\Domain\Billing\Events\PaymentReceived;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Billing\PaymentStatus;
 use App\Domain\Billing\TransactionKind;
@@ -14,6 +15,7 @@ use App\Domain\Shared\Money;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\Payment;
 use App\Support\Audit\Facades\Audit;
+use App\Support\Correlation\CorrelationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -132,7 +134,16 @@ final readonly class RecordPayment
             }
         });
 
-        return $this->settle($invoice, $actor);
+        $settled = $this->settle($invoice, $actor);
+
+        event(new PaymentReceived(
+            $payment->id,
+            $invoice->id,
+            $invoice->organization_id,
+            app(CorrelationContext::class)->id(),
+        ));
+
+        return $settled;
     }
 
     /**
