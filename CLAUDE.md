@@ -441,6 +441,46 @@ A brand overrides `--color-accent` and the platform **derives** the hover
 and subtle states from it. Overriding one without the others was half a
 rebrand: a pink button that hovered to platform blue.
 
+A panel that must escape its container is `useAnchoredPanel`, and there is
+one of it. A container with `overflow-y-auto` clips **horizontally** too, so
+a flyout positioned `absolute` inside the sidebar's scrolling nav opened
+inside a 72px bar; the table row menus had the identical bug from the
+identical cause. `fixed`, against the trigger's own rectangle, teleported to
+the body, is the only placement no ancestor's overflow or transform can cut
+off. A new dropdown uses the composable rather than writing `absolute` and
+finding out later.
+
+A `watch` that installs behaviour must be `immediate` when the state it
+watches can start true. `AppDrawer` mounted already open had no Escape
+listener and never took focus, and nothing said so.
+
+A drawer's record is an `Inertia::optional` prop on the route the list
+already uses, not an endpoint of its own: nothing is built on an ordinary
+page load, and asking for the one prop by name builds one record instead of
+re-running the list. `assertInertia` cannot read the answer — it pulls the
+page object out of a rendered view, and a partial reload renders none — so a
+partial is asserted with `assertJsonPath('props.…')`, and the request needs
+`X-Inertia`, the real asset version (or Inertia answers 409) and both
+`X-Inertia-Partial-*` headers.
+
+A bulk endpoint takes ids from a browser, so the policy is asked about
+**every row**, a row the action cannot apply to is skipped rather than
+refused, one row failing never stops the rest, and the answer is three
+numbers rather than the word "done". An id the operator may not touch is
+left out silently: a 403 confirms it exists.
+
+Column visibility is `localStorage` and a saved view is not. Which columns
+fit is a fact about the window somebody is looking at; a named set of
+filters is a question about the data and belongs on the server. A stored
+empty list means "they turned everything on", which is not the same as never
+having been asked.
+
+`array_values($collection->all())`, not `$collection->values()->all()`, when
+a method promises `list<…>`: only the first narrows the type for PHPStan.
+
+`audit_logs` names its subject `target_id` and `target_type`, not
+`subject_id`.
+
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap
 headers and a hover row, badges carry a tint of their own tone mixed from
