@@ -574,6 +574,41 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Security
+    |--------------------------------------------------------------------------
+    |
+    | `outbound_ports` is what an operator-supplied URL may connect to. Kept
+    | short on purpose: a webhook endpoint on port 6379 is somebody asking this
+    | platform to talk to their Redis, and an installation that genuinely needs
+    | another port has to say so — which is the point.
+    |
+    | `csp_report_uri` is additive. Its absence never weakens the policy; the
+    | policy is built first and the report directive appended.
+    |
+    */
+
+    'security' => [
+        'outbound_ports' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('OUTBOUND_PORTS', '80,443,8080,8443')),
+        ))),
+
+        'csp_report_uri' => env('CSP_REPORT_URI'),
+
+        /*
+         * How long a confirmed password counts for, in minutes.
+         *
+         * Fifteen. An operator confirming once per quarter-hour is following a
+         * rule; one confirming per action is working around a rule, and the way
+         * they work around it is a password in a text file — which is worse than
+         * not having the check at all. Clamped to at least a minute, because
+         * zero would mean the second thing.
+         */
+        'reauth_minutes' => env('REAUTH_MINUTES', 15),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Import / migration
     |--------------------------------------------------------------------------
     |

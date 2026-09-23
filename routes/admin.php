@@ -67,16 +67,33 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
 
-    // Staff and role administration. Every action is authorized by a policy
-    // that asks the boundary question before the permission question.
+    /*
+     * Staff and role administration. Every action is authorized by a policy
+     * that asks the boundary question before the permission question.
+     *
+     * Deleting either wants a **recent password** on top (§20). These are the
+     * two things a stolen session would be used for first: an account that can
+     * sign in tomorrow, or a role change that quietly grants one. The boundary,
+     * the permission and the policy all still run first — this answers the
+     * different question of whether the person is still at the keyboard.
+     */
     Route::resource('staff', StaffController::class)
         ->parameters(['staff' => 'staff'])
-        ->except(['show']);
+        ->except(['show', 'destroy']);
+
+    Route::delete('staff/{staff}', [StaffController::class, 'destroy'])
+        ->middleware('auth.recent')
+        ->name('staff.destroy');
 
     Route::delete('staff/{staff}/two-factor', [StaffController::class, 'disableTwoFactor'])
+        ->middleware('auth.recent')
         ->name('staff.two-factor.disable');
 
-    Route::resource('roles', RoleController::class)->except(['show']);
+    Route::resource('roles', RoleController::class)->except(['show', 'destroy']);
+
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])
+        ->middleware('auth.recent')
+        ->name('roles.destroy');
 
     // Customers, and the contacts that belong to them.
     // No `create` or `store`: a client is added through `ClientController`,
@@ -216,7 +233,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
     Route::post('services/{service}/provision', [ServiceController::class, 'provision'])
         ->name('services.provision');
+    /*
+     * Suspend, unsuspend, sync — and terminate, which destroys an account at a
+     * provider and cannot be undone by anything in this platform. The route
+     * carries `auth.recent` for that one, which means the whole endpoint does:
+     * splitting it would mean two routes, two request classes and two chances
+     * for the wrong one to answer.
+     */
     Route::post('services/{service}/actions', [ServiceController::class, 'action'])
+        ->middleware('auth.recent')
         ->name('services.action');
     Route::put('services/{service}/status', [ServiceController::class, 'transition'])
         ->name('services.status');
@@ -236,7 +261,9 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('infrastructure.servers.store');
     Route::put('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
         ->name('infrastructure.servers.update');
+    // A server row holds credentials to somebody else's machine.
     Route::delete('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
+        ->middleware('auth.recent')
         ->name('infrastructure.servers.destroy');
     Route::post('apps/infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
         ->name('infrastructure.servers.test');
@@ -348,13 +375,21 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * Administrator. A reseller who could release the installation's licence
      * would be a reseller able to turn the vendor mark back on for the provider.
      */
-    Route::get('licence', [LicenceController::class, 'index'])->name('licence');
-    Route::post('licence/activate', [LicenceController::class, 'activate'])
-        ->name('licence.activate');
-    Route::post('licence/heartbeat', [LicenceController::class, 'heartbeat'])
-        ->name('licence.heartbeat');
-    Route::post('licence/deactivate', [LicenceController::class, 'deactivate'])
-        ->name('licence.deactivate');
+    Route::middleware('owner')->group(function (): void {
+        Route::get('licence', [LicenceController::class, 'index'])->name('licence');
+        Route::post('licence/activate', [LicenceController::class, 'activate'])
+            ->name('licence.activate');
+        Route::post('licence/heartbeat', [LicenceController::class, 'heartbeat'])
+            ->name('licence.heartbeat');
+
+        // Releasing the installation's licence brings the vendor mark back on
+        // every one of the operator's own customers' invoices. `owner` is on the
+        // group and runs first, so a non-owner is refused rather than asked for
+        // a password they were never going to be allowed to use.
+        Route::post('licence/deactivate', [LicenceController::class, 'deactivate'])
+            ->middleware('auth.recent')
+            ->name('licence.deactivate');
+    });
 
     /*
      * Bringing a previous system across. Owner only: an import writes
@@ -362,9 +397,18 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * design, because it is a copy of history rather than a set of new business
      * events — and it reads a second database over a configured connection.
      */
-    Route::get('import', [ImportController::class, 'index'])->name('import');
-    Route::post('import', [ImportController::class, 'store'])->name('import.store');
-    Route::get('import/{run}', [ImportController::class, 'show'])->name('import.show');
+    Route::middleware('owner')->group(function (): void {
+        Route::get('import', [ImportController::class, 'index'])->name('import');
+
+        // A live import writes customers, invoices and ledger rows straight into
+        // the database. A dry run goes through the same endpoint, and asking for
+        // a password before one is a small price for not having two.
+        Route::post('import', [ImportController::class, 'store'])
+            ->middleware('auth.recent')
+            ->name('import.store');
+
+        Route::get('import/{run}', [ImportController::class, 'show'])->name('import.show');
+    });
 
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');
@@ -412,7 +456,9 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('modules.upgrade');
     Route::put('apps/modules/{module}/config', [ModuleController::class, 'configure'])
         ->name('modules.configure');
+    // Uninstalling runs the package's own migrations down.
     Route::delete('apps/modules/{module}', [ModuleController::class, 'uninstall'])
+        ->middleware('auth.recent')
         ->name('modules.uninstall');
 
     Route::get('settings', [SettingsController::class, 'index'])->name('settings');

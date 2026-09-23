@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
+use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\SecurityController;
@@ -52,6 +53,20 @@ return function (Guard $guard): void {
 
     Route::middleware('auth:'.$guard->value)->group(function (): void {
         Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+
+        /*
+         * "It is still you, isn't it." Signed in, and asked for the password
+         * again before something that cannot be undone.
+         *
+         * Throttled at the route as well as per account in the controller: the
+         * form is a password oracle against a session somebody may already
+         * have stolen, and it leaks the account name for free.
+         */
+        Route::get('confirm-password', [ConfirmPasswordController::class, 'create'])
+            ->name('password.confirm');
+        Route::post('confirm-password', [ConfirmPasswordController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('password.confirm.store');
 
         // Security settings belong to the person signed in, and none of it
         // is available to someone impersonating them.

@@ -6,6 +6,7 @@ use App\Application\Access\SyncPermissions;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\RoleScope;
 use App\Domain\Access\SystemRole;
+use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Access\Models\Role;
 use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\ProviderOrganizationSeeder;
@@ -22,6 +23,15 @@ beforeEach(function (): void {
     $this->admin = StaffUser::factory()->create();
     $this->admin->assignRole(SystemRole::Administrator);
     $this->admin = $this->admin->fresh();
+    /*
+     * These endpoints ask for a recent password (Phase 17, §20): a stolen
+     * session cookie passes the boundary, the permission and the policy, and
+     * fails that. These tests are about what the action *does*, so the
+     * confirmation is granted here once — the guard itself is tested in
+     * `SecurityHardeningTest`, where it is the subject rather than a
+     * precondition.
+     */
+    $this->withSession([RequireRecentAuthentication::SESSION_KEY => time()]);
 });
 
 it('refuses the role list without the permission', function (): void {

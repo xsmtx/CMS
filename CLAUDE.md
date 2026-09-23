@@ -90,12 +90,18 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 16 are complete (`docs/architecture/phase-0-result.md` through
-`phase-16-result.md`). **Phase 17, Production Hardening, is the last one on
-the V2 addendum's roadmap (handoff §22) and is next.**
+**Phases 0 to 17 are complete** (`docs/architecture/phase-0-result.md` through
+`phase-17-result.md`). The V2 addendum's roadmap (handoff §22) is finished.
 
-`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is a second handoff and is
-**not** to be started until Phase 17 is finished.
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is the second handoff and is
+now the next thing, when asked for it.
+
+Two things are deliberately unproven and the owner deferred them: **the provider
+adapters (Stripe, cPanel, Namecheap) have never talked to their real
+providers** — their request shapes, retries and error handling are tested
+against faked HTTP, which proves the code and not the integration — and **no
+screen has been driven in a browser**. `docs/operations/release-checklist.md`
+says the first real deployment must treat each adapter as unproven.
 
 Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
 owner's instruction. None has ever talked to its real provider.
@@ -580,6 +586,42 @@ was issued, so a chart built on it is a chart of intent. Gateway revenue is net
 of refunds. Product revenue comes from the **services**, never from invoice
 lines: a line copies a description (ADR 0021), so grouping by it merges two
 products renamed the same thing and splits one renamed last March.
+
+Security headers are **global** middleware, not on the web group, and a test is
+why: a route-model binding failure throws inside the router's pipeline, so the
+response is rendered outside every route middleware — a 404 went out with no
+CSP, and an error page is exactly where an unescaped value ends up. The CSP is
+enforced rather than report-only, and `script-src 'self'` has no exceptions
+because Inertia's page object is a `data-` attribute and the translations block
+is `application/json`.
+
+`SafeUrl` is checked **immediately before a request**, never at save time: DNS
+can change in between and that is the whole SSRF technique. An unresolvable host
+is **allowed through** — refusing it would mark a webhook delivery permanently
+unsafe, so a customer's DNS blip would silently end their deliveries. No refusal
+ever echoes the URL back.
+
+`auth.recent` asks for a password again before eight irreversible actions, in a
+fifteen-minute window. **`owner` runs before it** — with the check inside the
+controller, a staff member who may not touch the Licence screen was asked to
+confirm a password and then refused, which is rude and a small oracle. Two
+existing tests caught it by expecting 403 and getting 302.
+
+Concurrency is tested **at the guard**, not by racing threads: a flaky test is
+worse than none because it gets retried until it passes. `increment()` is safe —
+it is atomic in SQL — and the lost update is read-modify-write in PHP; a money
+column that caches rows is recomputed from the rows, and a counter uses the
+atomic increment. Both are pinned by tests.
+
+Accessibility is tests over the primitives, not a document — nobody audits forty
+screens twice a year. One of them found that `info` and `healthy` shared `●`,
+which made two states identical in greyscale inside the component that enforces
+"status is never colour alone".
+
+There is no backup button and there will not be one: a PHP process cannot take a
+consistent snapshot, and one that produced an inconsistent snapshot would be
+worse than none because somebody would rely on it. `docs/operations/` holds the
+boundaries, the restore order, the runbooks and the release checklist.
 
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap

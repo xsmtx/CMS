@@ -58,6 +58,14 @@ return [
         'password_reset' => 'Your password has been reset. You can sign in now.',
         'password_updated' => 'Your password has been updated.',
         'signed_out_others' => 'Signed out of :count other session(s).',
+
+        // Re-confirmation before something irreversible. The wording says why
+        // rather than only what: an operator asked for a password out of
+        // nowhere assumes something is broken.
+        'confirm_title' => 'Confirm it is you',
+        'confirm_body' => 'This action cannot be undone, so your password is needed once more. It will not be asked again for :minutes minutes.',
+        'confirm_wrong_password' => 'That password is not correct.',
+        'recent_required' => 'This action needs a password confirmation, which a token cannot give. Use the admin area.',
     ],
 
     'staff' => [

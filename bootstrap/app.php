@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\AssignCorrelationId;
 use App\Http\Middleware\BlockDuringImpersonation;
 use App\Http\Middleware\EnforceMaintenanceMode;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RequireInstallationOwner;
+use App\Http\Middleware\RequireRecentAuthentication;
 use App\Http\Middleware\ResolveOrganizationContext;
 use App\Http\Middleware\TrackAuthenticatedSession;
 use App\Support\Correlation\CorrelationContext;
@@ -46,6 +49,21 @@ return Application::configure(basePath: dirname(__DIR__))
         // no line written while handling the request is orphaned.
         $middleware->prepend(AssignCorrelationId::class);
 
+        /*
+         * Global, not on the web group — and a test is why.
+         *
+         * A route-model binding failure throws inside the router's pipeline, so
+         * the response is rendered by the exception handler *outside* every
+         * route middleware. A 404 or a 500 therefore left the group's middleware
+         * unrun, which meant an error page went out with no content security
+         * policy — and an error page is exactly where an unescaped value is
+         * most likely to end up.
+         *
+         * Global middleware wraps the router, so it sees the rendered exception
+         * on the way back out.
+         */
+        $middleware->prepend(AddSecurityHeaders::class);
+
         // The organization boundary is established from the authenticated
         // actor before any handler runs, so no query can accidentally execute
         // unscoped.
@@ -73,6 +91,23 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'impersonation.blocked' => BlockDuringImpersonation::class,
+
+            /*
+             * The last line of defence, never the only one: the boundary, the
+             * permission and the policy all still apply and all run first. This
+             * answers a different question — not "may this person do it" but "is
+             * this person still at the keyboard". A stolen session cookie passes
+             * every other check in the product and fails this.
+             */
+            'auth.recent' => RequireRecentAuthentication::class,
+
+            /*
+             * Who you have to be. Listed **before** `auth.recent` wherever both
+             * apply, because authorization has to run first: a staff member who
+             * may not touch the Licence screen should be refused, not asked to
+             * confirm their password and then refused.
+             */
+            'owner' => RequireInstallationOwner::class,
         ]);
 
         $middleware->redirectGuestsTo(

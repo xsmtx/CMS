@@ -35,13 +35,25 @@ const props = withDefaults(
   { compact: false },
 )
 
+/**
+ * One glyph per tone, and **no two the same**.
+ *
+ * The four in the handoff are `● Healthy`, `▲ Warning`, `◆ Maintenance` and
+ * `○ Unknown`; `critical` and `info` were added here and need marks of their
+ * own. `info` used to share `●` with `healthy`, which meant the two were
+ * identical in greyscale — exactly the failure "never colour alone" exists to
+ * prevent, and it was an accessibility test that found it rather than an eye.
+ *
+ * `◐` for `info` because it reads as "in progress", which is what this product
+ * marks with it: a running operation, a licence being checked.
+ */
 const SHAPES: Record<StatusTone, string> = {
   healthy: '●',
   warning: '▲',
   critical: '■',
   maintenance: '◆',
   unknown: '○',
-  info: '●',
+  info: '◐',
 }
 
 const COLOURS: Record<StatusTone, string> = {

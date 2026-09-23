@@ -55,7 +55,12 @@ return [
         'reset_link_sent' => 'Bu adrese ait bir hesap varsa, sıfırlama bağlantısı gönderildi.',
         'password_reset' => 'Şifreniz sıfırlandı. Şimdi giriş yapabilirsiniz.',
         'password_updated' => 'Şifreniz güncellendi.',
-        'signed_out_others' => 'Diğer :count oturum kapatıldı.',
+        'signed_out_others' => ':count diğer oturumdan çıkıldı.',
+
+        'confirm_title' => 'Sizin olduğunuzu doğrulayın',
+        'confirm_body' => 'Bu işlem geri alınamaz, bu yüzden şifreniz bir kez daha gerekiyor. :minutes dakika boyunca tekrar sorulmayacak.',
+        'confirm_wrong_password' => 'Bu şifre doğru değil.',
+        'recent_required' => 'Bu işlem şifre doğrulaması gerektirir; bir token bunu veremez. Yönetim alanını kullanın.',
     ],
 
     'staff' => [

@@ -9,6 +9,7 @@ use App\Domain\Import\ImportDomain;
 use App\Domain\Import\ImportMode;
 use App\Domain\Import\ImportOutcome;
 use App\Domain\Import\ImportStatus;
+use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Import\Jobs\RunImportJob;
 use App\Infrastructure\Import\Models\ImportItem;
@@ -42,6 +43,14 @@ beforeEach(function (): void {
     $this->owner = StaffUser::factory()->create();
     $this->owner->assignRole(SystemRole::SuperAdmin);
     $this->owner = $this->owner->fresh();
+
+    /*
+     * Starting an import asks for a recent password (Phase 17, §20): it writes
+     * customers, invoices and ledger rows straight into the database. These
+     * tests are about what the endpoint validates, so the confirmation is
+     * granted here — the guard itself is `SecurityHardeningTest`'s subject.
+     */
+    $this->withSession([RequireRecentAuthentication::SESSION_KEY => time()]);
 
     $this->administrator = StaffUser::factory()->create();
     $this->administrator->assignRole(SystemRole::Administrator);

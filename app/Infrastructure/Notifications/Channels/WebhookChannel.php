@@ -9,6 +9,8 @@ use App\Domain\Notifications\Contracts\DeliveryOutcome;
 use App\Domain\Notifications\NotificationChannel;
 use App\Domain\Notifications\NotificationRecipient;
 use App\Domain\Notifications\RenderedMessage;
+use App\Support\Http\Exceptions\UnsafeUrl;
+use App\Support\Http\SafeUrl;
 use Illuminate\Support\Facades\Http;
 use SensitiveParameter;
 use Throwable;
@@ -48,6 +50,15 @@ final readonly class WebhookChannel implements DeliversNotifications
         ], JSON_THROW_ON_ERROR);
 
         $timestamp = (string) now()->getTimestamp();
+
+        try {
+            // Immediately before the request, on the resolved address: an
+            // endpoint validated when it was typed proves nothing, because DNS
+            // can change in between and that is the whole technique.
+            SafeUrl::check($this->endpoint);
+        } catch (UnsafeUrl $unsafe) {
+            return DeliveryOutcome::failed($unsafe->getMessage());
+        }
 
         try {
             $response = Http::timeout($this->timeout)

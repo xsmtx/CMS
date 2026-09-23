@@ -7,6 +7,8 @@ namespace App\Application\Api;
 use App\Domain\Api\DeliveryState;
 use App\Infrastructure\Api\Models\WebhookDelivery;
 use App\Infrastructure\Api\Models\WebhookEndpoint;
+use App\Support\Http\Exceptions\UnsafeUrl;
+use App\Support\Http\SafeUrl;
 use App\Support\Logging\SecretRedactor;
 use App\Support\Organizations\OrganizationContext;
 use Carbon\CarbonImmutable;
@@ -52,6 +54,23 @@ final readonly class DeliverWebhookNow
         $body = json_encode($delivery->payload, JSON_THROW_ON_ERROR);
         $timestamp = (string) CarbonImmutable::now()->getTimestamp();
         $started = microtime(true);
+
+        try {
+            /*
+             * Checked here, immediately before the request, rather than when the
+             * endpoint was saved. Validating at save time proves nothing: DNS
+             * can change between then and now, and that is the entire SSRF
+             * technique — a hostname that resolves publicly during validation
+             * and to 169.254.169.254 a second later.
+             *
+             * A refusal is a permanent failure, not a retry: re-posting to an
+             * address this platform will not talk to would fail identically
+             * every few minutes forever.
+             */
+            SafeUrl::check($endpoint->url);
+        } catch (UnsafeUrl $unsafe) {
+            return $this->fail($delivery, null, $unsafe->getMessage(), final: true);
+        }
 
         try {
             $response = Http::timeout($this->timeout())

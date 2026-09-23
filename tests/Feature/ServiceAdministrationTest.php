@@ -8,6 +8,7 @@ use App\Domain\Access\SystemRole;
 use App\Domain\Provisioning\ServerStatus;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Provisioning\Jobs\CheckServerHealth;
 use App\Infrastructure\Provisioning\Jobs\ProvisionService;
@@ -48,6 +49,15 @@ beforeEach(function (): void {
     $this->server = Server::factory()->inGroup($this->group)->create(['module' => 'fake']);
 
     $this->service = Service::factory()->on($this->server)->create(['module' => 'fake']);
+    /*
+     * These endpoints ask for a recent password (Phase 17, §20): a stolen
+     * session cookie passes the boundary, the permission and the policy, and
+     * fails that. These tests are about what the action *does*, so the
+     * confirmation is granted here once — the guard itself is tested in
+     * `SecurityHardeningTest`, where it is the subject rather than a
+     * precondition.
+     */
+    $this->withSession([RequireRecentAuthentication::SESSION_KEY => time()]);
 });
 
 it('lists services with the counts an operator opens the screen for', function (): void {
