@@ -377,7 +377,7 @@ return [
     | Branding
     |--------------------------------------------------------------------------
     |
-    | A brand is a row, not configuration (ADR 0035). What is left here is
+    | A brand is a row, not configuration (ADR 0036). What is left here is
     | the default an unbranded installation shows, and the one place that
     | still reads `app.name`.
     |
@@ -386,6 +386,26 @@ return [
     'branding' => [
         'vendor_mark' => env('PLATFORM_VENDOR_MARK', 'Powered by InfraCMS'),
         'vendor_url' => env('PLATFORM_VENDOR_URL', 'https://infracms.test'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modules
+    |--------------------------------------------------------------------------
+    |
+    | Where packages live and whether this installation will load them at
+    | all. `enabled => false` is a real setting: an installation that has
+    | decided no third-party code runs on it says so once, here, rather
+    | than by an operator remembering not to press a button.
+    |
+    | Nothing on disk runs because it is on disk (ADR 0038). This path is
+    | only where discovery looks.
+    |
+    */
+
+    'modules' => [
+        'enabled' => (bool) env('PLATFORM_MODULES_ENABLED', true),
+        'path' => env('PLATFORM_MODULES_PATH', base_path('modules')),
     ],
 
     /*

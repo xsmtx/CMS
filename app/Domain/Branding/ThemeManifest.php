@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Branding;
 
 use App\Domain\Branding\Exceptions\InvalidTheme;
+use App\Domain\Shared\VersionRange;
 
 /**
  * What a theme says about itself.
@@ -88,22 +89,12 @@ final readonly class ThemeManifest
     /**
      * Whether this theme will run on the given platform version.
      *
-     * Deliberately simple: `*`, or a `>=x.y` floor, or an exact match. A
-     * full semver range parser is a dependency and a class of bug, and a
-     * theme ecosystem that needs `^1.2 || ~2.0` does not exist yet.
+     * The grammar lives in `VersionRange`, which modules use too. Two
+     * copies of "which versions does this work with" is one copy too many,
+     * and the second one always drifts.
      */
     public function isCompatibleWith(string $platformVersion): bool
     {
-        $range = trim($this->compatibility);
-
-        if ($range === '' || $range === '*') {
-            return true;
-        }
-
-        if (str_starts_with($range, '>=')) {
-            return version_compare($platformVersion, trim(substr($range, 2)), '>=');
-        }
-
-        return version_compare($platformVersion, $range, '==');
+        return new VersionRange($this->compatibility)->allows($platformVersion);
     }
 }

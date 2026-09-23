@@ -46,7 +46,14 @@ arch('domain objects are final or abstract')
     ->expect('App\Domain')
     ->classes()
     ->toBeFinal()
-    ->ignoring('App\Domain\Access\Exceptions');
+    ->ignoring([
+        'App\Domain\Access\Exceptions',
+        // The one class in the domain that exists to be subclassed, and by
+        // code this repository does not contain: a module author extends
+        // it so that a package providing one thing writes one method.
+        // `final` would make the SDK unusable.
+        'App\Domain\Modules\BaseModule',
+    ]);
 
 arch('enums live where they are declared and are backed')
     ->expect('App\Domain\Access\RoleScope')
