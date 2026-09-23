@@ -13,7 +13,9 @@ import { computed } from 'vue'
  * without a second palette to maintain.
  */
 const props = withDefaults(
-  defineProps<{ tone?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger' }>(),
+  defineProps<{
+    tone?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'automation'
+  }>(),
   { tone: 'neutral' },
 )
 
@@ -29,6 +31,11 @@ const classes = computed(
         'bg-[color-mix(in_oklab,var(--color-warning)_16%,transparent)] text-warning ring-[color-mix(in_oklab,var(--color-warning)_32%,transparent)]',
       danger:
         'bg-[color-mix(in_oklab,var(--color-danger)_14%,transparent)] text-danger ring-[color-mix(in_oklab,var(--color-danger)_30%,transparent)]',
+      // Neither a success nor a warning. "This ran" and "this is fine" are
+      // different sentences, and a grey pill said neither.
+      info: 'bg-[color-mix(in_oklab,var(--color-info)_14%,transparent)] text-info ring-[color-mix(in_oklab,var(--color-info)_30%,transparent)]',
+      automation:
+        'bg-[color-mix(in_oklab,var(--color-automation)_14%,transparent)] text-automation ring-[color-mix(in_oklab,var(--color-automation)_30%,transparent)]',
     })[props.tone],
 )
 </script>

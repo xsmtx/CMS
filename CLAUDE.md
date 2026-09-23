@@ -427,6 +427,20 @@ licence shows the vendor mark again rather than leaving it hidden forever.
 `attributes()` is reserved on `FormRequest`. A request class that overrides
 it for its own purposes breaks validation on that request, quietly.
 
+The palette is navy, and it is a token list rather than a set of classes.
+Four surfaces: `surface` is the page, `chrome` is the header and footer
+(what the palette calls the sidebar), `surface-raised` is a card,
+`surface-sunken` is the other surface — **and that last one inverts**, being
+lighter than a card in dark mode and darker in light, because the dark page
+is already the darkest thing on screen. `accent` is the primary blue and is
+what a brand overrides; `highlight` is the one second hue (cyan) and marks
+where you are rather than what to click. `info` and `automation` exist
+because "this ran" is neither a success nor a warning.
+
+A brand overrides `--color-accent` and the platform **derives** the hover
+and subtle states from it. Overriding one without the others was half a
+rebrand: a pink button that hovered to platform blue.
+
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap
 headers and a hover row, badges carry a tint of their own tone mixed from

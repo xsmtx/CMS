@@ -109,7 +109,7 @@ function isCurrent(href: string): boolean {
       </button>
     </div>
 
-    <header class="border-line bg-surface-raised border-b">
+    <header class="border-line bg-chrome border-b">
       <div class="mx-auto flex h-[4.5rem] w-full max-w-5xl items-center gap-6 px-5 sm:px-8">
         <Link
           href="/client"

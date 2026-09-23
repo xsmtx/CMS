@@ -23,25 +23,39 @@
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo, monospace;
 
   /* Surfaces and text */
-  --color-surface: oklch(97.2% 0.004 250);
-  --color-surface-raised: oklch(100% 0 0);
-  --color-surface-sunken: oklch(94.8% 0.006 250);
-  --color-line: oklch(92.5% 0.005 250);
-  --color-line-strong: oklch(84% 0.008 250);
-  --color-content: oklch(21% 0.014 250);
-  --color-content-muted: oklch(52% 0.014 250);
-  --color-content-subtle: oklch(64% 0.012 250);
+  --color-surface: #f8fafc;
+  --color-chrome: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f1f5f9;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-content: #0f172a;
+  --color-content-muted: #475569;
+  --color-content-subtle: #94a3b8;
 
-  /* One accent, used identically everywhere */
-  --color-accent: oklch(52% 0.15 248);
-  --color-accent-hover: oklch(46% 0.15 248);
-  --color-accent-content: oklch(99% 0.002 250);
-  --color-accent-subtle: oklch(95% 0.03 248);
+  /* One primary, used identically everywhere. A brand overrides
+     `--color-accent` and `--color-accent-content` at runtime (ADR 0036) and
+     nothing else moves. */
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-content: #ffffff;
+  --color-accent-subtle: #dbeafe;
+
+  /* The second hue, and the only one. Reserved for something that has to
+     stand apart from the primary without becoming a status colour —
+     never used as a second way of saying "click here". */
+  --color-highlight: #0891b2;
 
   /* Status */
-  --color-danger: oklch(55% 0.19 25);
-  --color-success: oklch(55% 0.13 155);
-  --color-warning: oklch(70% 0.14 75);
+  --color-danger: #dc2626;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
+
+  /* Automation reads as its own thing: a scheduled sweep is neither a
+     success nor a warning, and colouring it as either taught operators to
+     read a run as a problem. */
+  --color-automation: #7c3aed;
 
   /* One radius system: 8 for inputs, 12 for cards, 16 for panels,
        full only for badges. Nothing else. */
@@ -50,10 +64,8 @@
   --radius-lg: 16px;
 
   /* Shadows are tinted to the surface hue, never pure black */
-  --shadow-raised:
-    0 1px 2px oklch(21% 0.014 250 / 0.05), 0 2px 8px -4px oklch(21% 0.014 250 / 0.08);
-  --shadow-panel:
-    0 1px 2px oklch(21% 0.014 250 / 0.05), 0 8px 24px -12px oklch(21% 0.014 250 / 0.12);
+  --shadow-raised: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 2px 8px -4px oklch(21% 0.03 255 / 0.1);
+  --shadow-panel: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 8px 24px -12px oklch(21% 0.03 255 / 0.14);
 
   /* Motion. The built-in CSS easings are too weak to read as intentional. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -65,50 +77,72 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-surface: oklch(16% 0.012 250);
-    --color-surface-raised: oklch(22.5% 0.014 250);
-    --color-surface-sunken: oklch(13% 0.012 250);
-    --color-line: oklch(29% 0.014 250);
-    --color-line-strong: oklch(37% 0.016 250);
-    --color-content: oklch(96% 0.004 250);
-    --color-content-muted: oklch(72% 0.012 250);
-    --color-content-subtle: oklch(58% 0.012 250);
+    --color-surface: #080d17;
+    --color-chrome: #0c1424;
+    --color-surface-raised: #111c2e;
+    /* Lighter than the card, not darker: the page is already the darkest
+       thing on screen, so an inset panel reads as a lift. The token means
+       "the other surface", which is why it inverts between the themes. */
+    --color-surface-sunken: #17243a;
+    --color-line: #253550;
+    --color-line-strong: #334869;
+    --color-content: #f1f5f9;
+    --color-content-muted: #94a3b8;
+    --color-content-subtle: #64748b;
 
-    --color-accent: oklch(70% 0.14 248);
-    --color-accent-hover: oklch(76% 0.14 248);
-    --color-accent-content: oklch(17.5% 0.012 250);
-    --color-accent-subtle: oklch(28% 0.05 248);
+    --color-accent: #3b82f6;
+    --color-accent-hover: #60a5fa;
+    /* Dark text on the primary, not white: #3b82f6 against white is 3.7:1
+       and fails AA for body text, which a button label is. */
+    --color-accent-content: #080d17;
+    --color-accent-subtle: #1b2e52;
 
-    --color-danger: oklch(68% 0.17 25);
-    --color-success: oklch(70% 0.13 155);
-    --color-warning: oklch(80% 0.13 75);
+    --color-highlight: #22d3ee;
 
-    --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.4);
-    --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.35), 0 8px 24px -12px oklch(0% 0 0 / 0.6);
+    --color-danger: #ef4444;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-info: #38bdf8;
+
+    --color-automation: #8b5cf6;
+
+    --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.5);
+    --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.45), 0 8px 24px -12px oklch(0% 0 0 / 0.7);
   }
 }
 
 :root[data-theme='dark'] {
-  --color-surface: oklch(16% 0.012 250);
-  --color-surface-raised: oklch(22.5% 0.014 250);
-  --color-surface-sunken: oklch(13% 0.012 250);
-  --color-line: oklch(29% 0.014 250);
-  --color-line-strong: oklch(37% 0.016 250);
-  --color-content: oklch(96% 0.004 250);
-  --color-content-muted: oklch(72% 0.012 250);
-  --color-content-subtle: oklch(58% 0.012 250);
+  --color-surface: #080d17;
+  --color-chrome: #0c1424;
+  --color-surface-raised: #111c2e;
+  /* Lighter than the card, not darker: the page is already the darkest
+     thing on screen, so an inset panel reads as a lift. The token means
+     "the other surface", which is why it inverts between the themes. */
+  --color-surface-sunken: #17243a;
+  --color-line: #253550;
+  --color-line-strong: #334869;
+  --color-content: #f1f5f9;
+  --color-content-muted: #94a3b8;
+  --color-content-subtle: #64748b;
 
-  --color-accent: oklch(70% 0.14 248);
-  --color-accent-hover: oklch(76% 0.14 248);
-  --color-accent-content: oklch(17.5% 0.012 250);
-  --color-accent-subtle: oklch(28% 0.05 248);
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+  /* Dark text on the primary, not white: #3b82f6 against white is 3.7:1
+     and fails AA for body text, which a button label is. */
+  --color-accent-content: #080d17;
+  --color-accent-subtle: #1b2e52;
 
-  --color-danger: oklch(68% 0.17 25);
-  --color-success: oklch(70% 0.13 155);
-  --color-warning: oklch(80% 0.13 75);
+  --color-highlight: #22d3ee;
 
-  --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.4);
-  --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.35), 0 8px 24px -12px oklch(0% 0 0 / 0.6);
+  --color-danger: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-info: #38bdf8;
+
+  --color-automation: #8b5cf6;
+
+  --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.5);
+  --shadow-panel: 0 1px 2px oklch(0% 0 0 / 0.45), 0 8px 24px -12px oklch(0% 0 0 / 0.7);
 }
 
 @layer base {

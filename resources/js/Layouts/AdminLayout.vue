@@ -466,7 +466,7 @@ onBeforeUnmount(() => {
       Skip to content
     </a>
 
-    <header class="border-line bg-surface-raised sticky top-0 z-20 border-b">
+    <header class="border-line bg-chrome sticky top-0 z-20 border-b">
       <!-- One row. The map, the search box and the account live on the
            same line, because a second full-width strip costs an inch of
            every screen an operator spends the day scrolling. -->
@@ -540,11 +540,15 @@ onBeforeUnmount(() => {
                 </svg>
               </button>
 
-              <!-- The marker sits on the bar rather than under the label, so
-                 a group and its open panel read as one object. -->
+              <!-- The marker sits on the bar rather than under the label,
+                   so a group and its open panel read as one object.
+
+                   Cyan rather than the primary: "where you are" and "what to
+                   click" are different sentences, and the rest of the panel
+                   says the second one in blue. -->
               <span
                 v-if="isCurrentGroup(group)"
-                class="bg-accent absolute inset-x-3 bottom-0 h-0.5 rounded-full"
+                class="bg-highlight absolute inset-x-3 bottom-0 h-0.5 rounded-full"
                 aria-hidden="true"
               />
 
@@ -830,7 +834,7 @@ onBeforeUnmount(() => {
          hundred rows into a list still needs the link that reports what is
          wrong with the page they are looking at. -->
     <footer
-      class="border-line bg-surface-raised text-content-muted fixed inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-3 text-xs sm:px-8"
+      class="border-line bg-chrome text-content-muted fixed inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-3 text-xs sm:px-8"
     >
       <p>&copy; {{ year }} {{ brand.name }}</p>
 

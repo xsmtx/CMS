@@ -149,7 +149,14 @@ it('puts the brand’s colours on the storefront as custom properties', function
 
     // Overriding the token everything is already built on, rather than
     // regenerating a stylesheet per brand.
-    $this->get('/')->assertOk()->assertSee('--color-accent: #2563eb', false);
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('--color-accent: #2563eb', false)
+        // And the states built on it. A brand that set its own accent and
+        // then hovered to the platform's blue is half a rebrand, and it is
+        // the kind of bug nobody reports and everybody notices.
+        ->assertSee('--color-accent-hover: color-mix(in oklab, #2563eb', false)
+        ->assertSee('--color-accent-subtle: color-mix(in oklab, #2563eb', false);
 });
 
 it('shows the platform mark until a licence says otherwise', function (): void {

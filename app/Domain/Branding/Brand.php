@@ -79,9 +79,26 @@ final readonly class Brand
      */
     public function cssVariables(): array
     {
+        $accent = $this->accentColor;
+
         return array_filter([
-            '--color-accent' => $this->accentColor,
+            '--color-accent' => $accent,
             '--color-accent-content' => $this->accentContrast,
+            // **Derived from the brand's own colour, not left at the
+            // platform's.** A brand that set a pink accent and then hovered
+            // to the platform blue was the shape of bug nobody reports and
+            // everybody notices: the hover is a different token, and
+            // overriding one without the other left half a rebrand.
+            //
+            // Mixed rather than asked for: an operator picking a colour has
+            // not agreed to pick three, and "slightly darker on hover" is
+            // arithmetic rather than a decision.
+            '--color-accent-hover' => $accent === null || $accent === ''
+                ? null
+                : 'color-mix(in oklab, '.$accent.' 86%, var(--color-content))',
+            '--color-accent-subtle' => $accent === null || $accent === ''
+                ? null
+                : 'color-mix(in oklab, '.$accent.' 16%, var(--color-surface-raised))',
             '--font-sans' => $this->fontFamily,
         ], static fn (?string $value): bool => $value !== null && $value !== '');
     }
