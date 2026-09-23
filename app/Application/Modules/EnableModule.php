@@ -87,13 +87,25 @@ final readonly class EnableModule
                 throw InvalidModule::missingConfiguration($record->slug, implode(', ', $missing));
             }
 
-            // Before `boot()`: a module refused for claiming the wrong type
-            // must not have had a chance to do anything first.
-            $registration = $this->inspector->handle($manifest, $module);
+            // Before `boot()`: a module refused for claiming the wrong
+            // type must not have had a chance to do anything first.
+            $this->inspector->handle($manifest, $module);
 
             $this->migrate($directory);
 
             $module->boot($context);
+
+            // And again afterwards, because this is the answer that
+            // matters. A module works out what it provides from its
+            // configuration — the example one registers no health check
+            // until it knows what to watch — so an inspection taken before
+            // boot records a module that provides nothing.
+            //
+            // Asking twice also closes the hole the type check exists to
+            // close: a package that answered honestly before boot and
+            // registered a gateway after it would be exactly the "quietly
+            // becomes something else" this refuses.
+            $registration = $this->inspector->handle($manifest, $module);
         } catch (Throwable $exception) {
             $record->forceFill([
                 'state' => ModuleState::Failed->value,

@@ -68,6 +68,8 @@ npm run test:unit   # vitest
 npm run build       # production assets
 
 php artisan platform:permissions:sync
+php artisan module:list             # what is on disk, and its state
+php artisan module:make <slug>      # scaffold a package that compiles
 php artisan db:seed                # provider org, permissions, system roles
 php artisan identity:create-owner  # the first staff account
 php artisan migrate --env=testing
@@ -88,9 +90,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 11 are complete (`docs/architecture/phase-0-result.md` through
-`phase-11-result.md`). Phase 12, Module SDK, is next and is not started. Do
-not begin a phase without being asked for it.
+Phases 0 to 12 are complete (`docs/architecture/phase-0-result.md` through
+`phase-12-result.md`). The roadmap's phases are done; there is no Phase 13.
+Do not begin new work of that size without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -327,6 +329,51 @@ the keys that were submitted, so a field the form left empty is absent
 rather than null — read it with `??`. And a rule naming a table names the
 **table**: `exists:departments,id` was wrong for a model whose table is
 `support_departments`, and could not fire while the screen answered 403.
+
+A module may execute, and enabling is the moment it does (ADR 0038).
+`ModuleCatalogue` reads JSON and never loads a class; `ModuleLoader` is the
+only place a module's PHP enters the process; installing writes a row and
+runs nothing. A migration is a class the module author wrote, so running one
+is running the package — which is why migrations are in `EnableModule` and
+not in `InstallModule`. What a module registered is written on the row, so
+uninstall can refuse **without loading the package** it is being asked to
+remove. Anything thrown leaves the module `failed` with the reason.
+
+The SDK is `app/Domain`, versioned apart from the product (ADR 0039).
+`Sdk::VERSION` moves when the extension surface moves: adding a method with
+a default in `BaseModule` is a minor bump, changing anything a module
+implements is a major one, and a major bump makes every module refuse until
+its author has looked. `app/Domain` is public API now — a change there is a
+change somebody else's package can see. `BaseModule` is the one class there
+that is not `final`, because it exists to be subclassed by code this
+repository does not contain.
+
+A module's config schema is declared in **both** the manifest and
+`configSchema()`, and that is not duplication. The interface can only be
+asked of a *running* module, and a module with a required setting cannot run
+until it is configured — the manifest closes that deadlock, and a running
+module's own schema wins once it is running. Registration is inspected twice
+for the same reason: before `boot()` to refuse a wrong type early, and after
+it because a module works out what it provides from its configuration.
+
+Composer's autoloader caches misses. Anything that asks for a module's class
+name before the module is enabled leaves it in `missingClasses` and no
+`addPsr4` afterwards rescues it, so `ModuleLoader` registers its own
+autoloader, prepended, bounded to each module's `src`. The symptom was a
+module that loaded alone and vanished when the architecture tests ran first.
+
+`modules/example/status-board` is the worked example and
+`tests/Feature/ExampleModuleTest.php` drives it. Nothing in core references
+it: if the SDK stops working from outside core, that file fails. A worked
+example no test runs is an example that rots.
+
+A permission's wording lives in one array keyed by slug, read by
+`PermissionNames` — never through `__()`. A slug has dots in it, so
+`__('access.permissions.crm.customers.view.label')` asks the translator to
+walk five levels of nesting, returns the key, and reads as "untranslated"
+while looking like it works. A new permission needs a label and a
+description in `lang/en` and `lang/tr`; `AccessControlTest` fails without
+them.
 
 The admin menu is across the top, grouped the way WHMCS groups it —
 Dashboard, Clients, Orders, Billing, Support, Utilities, Setup — because

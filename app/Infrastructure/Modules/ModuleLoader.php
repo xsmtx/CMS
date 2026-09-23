@@ -32,6 +32,11 @@ final class ModuleLoader
     /** @var array<string, true> */
     private array $registered = [];
 
+    /** @var array<string, string> Namespace prefix => the module's `src`. */
+    private array $prefixes = [];
+
+    private bool $autoloading = false;
+
     public function __construct(
         private readonly ClassLoader $autoloader,
         private readonly string $platformVersion,
@@ -104,6 +109,19 @@ final class ModuleLoader
 
     /**
      * Point the autoloader at one module's `src`, once.
+     *
+     * **Modules get their own autoloader, prepended**, rather than relying
+     * on the prefix registered with Composer's. Composer's loader caches
+     * misses: anything that asked for one of these class names before the
+     * module was enabled — a worker that had already seen the row, a
+     * static analyser, a test scanning the tree — leaves it in
+     * `missingClasses`, and no amount of `addPsr4` afterwards rescues it.
+     * A module that could be permanently unloadable because something
+     * looked at it too early is a module that fails on the one box where
+     * it matters.
+     *
+     * The Composer prefix is registered too, because other tooling reads
+     * it, but nothing depends on it resolving.
      */
     private function autoload(ModuleManifest $manifest, string $directory): void
     {
@@ -112,7 +130,45 @@ final class ModuleLoader
         }
 
         $this->registered[$manifest->slug] = true;
+        $this->prefixes[$manifest->namespace] = $directory.'/src';
 
         $this->autoloader->addPsr4($manifest->namespace, $directory.'/src');
+
+        if ($this->autoloading) {
+            return;
+        }
+
+        $this->autoloading = true;
+
+        spl_autoload_register($this->load(...), throw: true, prepend: true);
+    }
+
+    /**
+     * Resolve a class inside a module this loader was told about.
+     *
+     * Bounded to the module's own `src`: the path is composed from the
+     * manifest's namespace, resolved, and refused unless it really sits
+     * inside that directory. A class name that tried to walk out with `..`
+     * reaches nothing.
+     */
+    private function load(string $class): void
+    {
+        foreach ($this->prefixes as $prefix => $source) {
+            if (! str_starts_with($class, $prefix)) {
+                continue;
+            }
+
+            $relative = str_replace('\\', '/', substr($class, strlen($prefix)));
+            $file = realpath($source.'/'.$relative.'.php');
+            $root = realpath($source);
+
+            if ($file === false || $root === false || ! str_starts_with($file, $root)) {
+                return;
+            }
+
+            require_once $file;
+
+            return;
+        }
     }
 }

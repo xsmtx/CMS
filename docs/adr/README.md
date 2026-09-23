@@ -45,3 +45,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0035](0035-an-addon-is-not-a-service.md) | An addon is not a service, and not just an order line | accepted |
 | [0036](0036-a-brand-is-a-row.md) | A brand is a row, not a config value | accepted |
 | [0037](0037-a-theme-is-a-package-and-may-not-execute.md) | A theme is a package, and it may not execute | accepted |
+| [0038](0038-a-module-may-execute.md) | A module may execute, and enabling is the moment it does | accepted |
+| [0039](0039-the-sdk-is-platform-contracts.md) | The SDK is platform contracts, versioned apart from the platform | accepted |

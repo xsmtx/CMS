@@ -1,0 +1,39 @@
+{
+    "slug": "status-board",
+    "name": "Status Board",
+    "type": "admin-widget",
+    "version": "1.0.0",
+    "description": "Watches a URL you already trust and says on the dashboard whether it answered.",
+    "provider": "InfraCMS example",
+    "sdk": ">=1.0",
+    "platform": "*",
+    "namespace": "Example\\StatusBoard",
+    "entrypoint": "StatusBoardModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "url",
+            "label": "URL to watch",
+            "type": "url",
+            "required": true,
+            "hint": "Asked on every health run. Use a page that is cheap to serve."
+        },
+        {
+            "key": "label",
+            "label": "What to call it",
+            "type": "text",
+            "required": false,
+            "default": "Upstream",
+            "hint": "Shown on the dashboard."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "number",
+            "required": false,
+            "default": 5
+        }
+    ]
+}

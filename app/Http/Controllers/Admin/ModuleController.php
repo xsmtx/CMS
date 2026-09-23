@@ -217,17 +217,31 @@ final class ModuleController extends Controller
     }
 
     /**
-     * The schema a module declared, read from the module.
+     * What this module needs to be told.
      *
-     * The one place this screen touches a package, and only for a module
-     * the operator has already enabled: a form cannot be drawn for fields
-     * nobody has declared, and the declaration lives in the code.
+     * A running module answers for itself — it may work options out at
+     * runtime, and the live answer is the true one. A module that is not
+     * running answers through its manifest, which is JSON and runs
+     * nothing.
+     *
+     * Both, rather than one: without the manifest a module with a required
+     * field could never be enabled, because it cannot be configured until
+     * it runs and it cannot run until it is configured. Without the
+     * interface a module could never compute anything.
      *
      * @return list<ConfigField>
      */
     private function schemaFor(ModuleRecord $record): array
     {
-        return $this->modules->find($record->slug)?->configSchema() ?? [];
+        $running = $this->modules->find($record->slug)?->configSchema();
+
+        if ($running !== null && $running !== []) {
+            return $running;
+        }
+
+        $manifest = $this->catalogue->find($record->slug);
+
+        return $manifest instanceof ModuleManifest ? $manifest->config : [];
     }
 
     private function find(string $slug): ModuleRecord

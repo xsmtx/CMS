@@ -20,6 +20,7 @@ use App\Infrastructure\Modules\ModuleCatalogue;
 use App\Infrastructure\Provisioning\Models\Service;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
 
 /**
@@ -493,9 +494,13 @@ it('shows the modules screen to the owner and to nobody else', function (): void
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('Admin/Modules/Index')
             ->has('modules', 0)
-            // On disk, read, and running none of it.
-            ->has('available', 1)
-            ->where('available.0.slug', 'risky'));
+            // On disk, read, and running none of it. Counted by the
+            // fixture rather than by the whole list: the repository also
+            // ships a worked example, and a test that assumed an empty
+            // `modules/` would break the day anybody added one.
+            ->where('available', fn (Collection $available): bool => $available
+                ->pluck('slug')
+                ->contains('risky')));
 });
 
 it('says on the screen what an enabled module reached into', function (): void {
