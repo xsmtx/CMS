@@ -6,6 +6,7 @@ namespace App\Infrastructure\Crm\Models;
 
 use App\Domain\Crm\CustomerStatus;
 use App\Domain\Crm\CustomFieldEntity;
+use App\Infrastructure\Billing\Models\PaymentMethod;
 use App\Infrastructure\Crm\Concerns\HasAddresses;
 use App\Infrastructure\Crm\Concerns\HasCustomFields;
 use App\Infrastructure\Crm\Concerns\HasNotes;
@@ -13,6 +14,7 @@ use App\Infrastructure\Crm\Concerns\HasTags;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use App\Infrastructure\Organizations\Models\Organization;
+use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Audit\Contracts\AuditLabel;
 use Carbon\CarbonImmutable;
 use Database\Factories\CustomerFactory;
@@ -103,6 +105,30 @@ final class Customer extends Model implements AuditLabel
     }
 
     /**
+     * Cards on file.
+     *
+     * Declared here so an operator can search on the last four digits of a
+     * card — which is what a chargeback notice gives them, and often all it
+     * gives them.
+     *
+     * @return HasMany<PaymentMethod, $this>
+     */
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    /**
+     * What this customer is running.
+     *
+     * @return HasMany<Service, $this>
+     */
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    /**
      * The name a human uses for this customer. Falls through company, legal
      * name, then the primary contact, so a sole trader with no company name
      * is never rendered as an empty string.
@@ -152,6 +178,22 @@ final class Customer extends Model implements AuditLabel
     protected function scopeActive(Builder $query): Builder
     {
         return $query->where('status', CustomerStatus::Active->value);
+    }
+
+    /**
+     * Everybody except the ones who are gone.
+     *
+     * A closed account is a record kept for the accounts department, not a
+     * customer somebody is working with. Hiding them by default is what
+     * makes the list usable after a few years — and it is a default rather
+     * than a filter, so one switch brings them back.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function scopeStillTrading(Builder $query): Builder
+    {
+        return $query->whereNot('status', CustomerStatus::Closed->value);
     }
 
     /**

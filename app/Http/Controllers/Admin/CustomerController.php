@@ -8,6 +8,7 @@ use App\Application\Crm\AnonymizeCustomer;
 use App\Application\Crm\CreateCustomer;
 use App\Application\Crm\CustomerAttributes;
 use App\Application\Crm\ExportCustomerData;
+use App\Application\Crm\SearchCustomers;
 use App\Application\Crm\UpdateCustomer;
 use App\Domain\Crm\CustomerStatus;
 use App\Http\Controllers\Controller;
@@ -19,8 +20,8 @@ use App\Infrastructure\Crm\Models\CustomFieldDefinition;
 use App\Infrastructure\Crm\Models\Note;
 use App\Infrastructure\Crm\Models\Tag;
 use App\Infrastructure\Identity\Models\Contact;
+use App\Infrastructure\Shared\Models\CurrencyRecord;
 use App\Support\Identity\CurrentActor;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,33 +39,62 @@ final class CustomerController extends Controller
 {
     public function __construct(private readonly CurrentActor $actor) {}
 
-    public function index(Request $request): Response
+    /**
+     * The client list.
+     *
+     * **Closed accounts are hidden by default.** A closed customer is a
+     * record the accounts department keeps, not somebody an operator is
+     * working with, and after a few years they are most of the table. One
+     * switch brings them back — a default, not a filter, so nothing has to
+     * be un-set to see the normal view.
+     *
+     * The service counts are `withCount`, not a relation an operator's
+     * scroll would load per row: a hundred customers on a page is a hundred
+     * queries the moment somebody reads `$customer->services`.
+     */
+    public function index(Request $request, SearchCustomers $search): Response
     {
         $this->authorize('viewAny', Customer::class);
 
-        $search = $request->string('search')->toString();
-        $status = $request->string('status')->toString();
+        /** @var array<string, mixed> $criteria */
+        $criteria = $request->query();
 
-        $customers = Customer::query()
-            ->with(['primaryContact:id,customer_id,first_name,last_name,email', 'tags:id,name'])
-            ->when($search !== '', fn (Builder $query) => $query->search($search))
-            ->when($status !== '', fn (Builder $query) => $query->where('status', $status))
-            ->orderBy('company_name')
-            ->paginate(25)
-            ->withQueryString()
+        $includeInactive = $request->boolean('inactive');
+
+        $customers = $search
+            ->paginate($criteria, includeClosed: $includeInactive)
             ->through(fn (Customer $customer): array => [
                 'id' => $customer->id,
+                'firstName' => $customer->primaryContact?->first_name,
+                'lastName' => $customer->primaryContact?->last_name,
+                'company' => $customer->company_name,
                 'name' => $customer->displayName(),
+                'email' => $customer->primaryContact?->email,
+                'activeServices' => (int) $customer->getAttribute('active_services_count'),
+                'inactiveServices' => (int) $customer->getAttribute('inactive_services_count'),
                 'status' => $customer->status->value,
-                'primaryContact' => $customer->primaryContact?->email,
+                'statusLabel' => (string) __($customer->status->labelKey()),
                 'tags' => $customer->tags->pluck('name')->all(),
                 'createdAt' => $customer->created_at?->toIso8601String(),
             ]);
 
         return Inertia::render('Admin/Customers/Index', [
             'customers' => $customers,
-            'filters' => ['search' => $search, 'status' => $status],
+            'filters' => $this->filters($request),
             'statuses' => $this->statuses(),
+            'currencies' => $this->currencies(),
+            'countries' => $this->countries(),
+            'tags' => $this->tags(),
+            'permissions' => $this->searchablePermissions(),
+            'schema' => $search->schema(),
+            // Labels come from the server because that is where `__()`
+            // is. The admin Vue has no translation mechanism of its own,
+            // and inventing one for a single screen would leave every
+            // other admin page still in English.
+            'labels' => [
+                ...(array) __('crm.search'),
+                'list' => (array) __('crm.list'),
+            ],
             'can' => ['create' => $request->user('staff')?->can('create', Customer::class) ?? false],
         ]);
     }
@@ -219,6 +249,93 @@ final class CustomerController extends Controller
         );
 
         return to_route('admin.customers.show', $customer)->with('status', __('crm.customer_anonymized'));
+    }
+
+    /**
+     * Everything the form put in the URL, echoed back so the panel reopens
+     * showing what it searched for.
+     *
+     * @return array<string, mixed>
+     */
+    private function filters(Request $request): array
+    {
+        /** @var array<string, mixed> $query */
+        $query = $request->query();
+
+        return [
+            ...$query,
+            'inactive' => $request->boolean('inactive'),
+            'permissions' => is_array($query['permissions'] ?? null) ? $query['permissions'] : [],
+            'custom' => is_array($query['custom'] ?? null) ? $query['custom'] : [],
+        ];
+    }
+
+    /**
+     * The currencies this installation actually sells in.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function currencies(): array
+    {
+        return array_values(CurrencyRecord::query()
+            ->orderBy('code')
+            ->get()
+            ->map(static fn (CurrencyRecord $currency): array => [
+                'value' => $currency->code,
+                'label' => $currency->code,
+            ])
+            ->all());
+    }
+
+    /**
+     * The countries customers are actually in, rather than every ISO code.
+     *
+     * A select of two hundred entries where four are in use is a select
+     * nobody scrolls.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function countries(): array
+    {
+        return array_values(Address::query()
+            ->select('country_code')
+            ->distinct()
+            ->orderBy('country_code')
+            ->pluck('country_code')
+            ->filter(static fn (?string $code): bool => is_string($code) && $code !== '')
+            ->map(static fn (string $code): array => ['value' => $code, 'label' => $code])
+            ->all());
+    }
+
+    /**
+     * What a contact can be allowed to do, as things to search on.
+     *
+     * Permissions rather than a column per capability, because that is how
+     * this platform models it — there is no `can_open_tickets` column and
+     * there should not be one.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function searchablePermissions(): array
+    {
+        $searchable = [
+            'portal.tickets.create',
+            'portal.tickets.view',
+            'portal.orders.view',
+            'portal.payment_methods.manage',
+            'portal.billing.pay',
+        ];
+
+        return array_values(array_map(
+            // Labelled here rather than from the permission registry:
+            // Laravel splits a translation key on dots, so
+            // `portal.tickets.create` cannot be one.
+            static fn (string $slug): array => [
+                'value' => $slug,
+                'label' => (string) __('crm.search.permissions.'.str_replace('.', '_', $slug)),
+            ],
+            $searchable,
+        ));
     }
 
     private function attributes(CustomerRequest $request): CustomerAttributes

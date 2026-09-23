@@ -82,6 +82,11 @@ const groups: NavGroup[] = [
         items: [
           { label: 'Customers', href: '/admin/customers', permission: 'crm.customers.view' },
           {
+            label: 'Manage users',
+            href: '/admin/customer-users',
+            permission: 'crm.customers.view',
+          },
+          {
             label: 'Organizations',
             href: '/admin/organizations',
             permission: 'organizations.view',

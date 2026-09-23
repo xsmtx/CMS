@@ -12,6 +12,7 @@ use App\Domain\Notifications\NotificationRecipient;
 use App\Domain\Notifications\RenderedMessage;
 use App\Infrastructure\Notifications\ChannelRegistry;
 use App\Infrastructure\Notifications\Models\NotificationDelivery;
+use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Logging\SecretRedactor;
 use Carbon\CarbonImmutable;
@@ -43,6 +44,7 @@ final readonly class Notifier
         private RenderTemplate $renderer,
         private CorrelationContext $correlation,
         private SecretRedactor $redactor,
+        private CurrentBrand $brands,
     ) {}
 
     /**
@@ -60,8 +62,19 @@ final readonly class Notifier
     ): void {
         $channels ??= $this->defaultChannels();
 
+        // Resolved once for the whole send rather than per recipient: it
+        // is the sender's brand, and the sender does not change between two
+        // contacts on one account.
+        $brand = $organizationId === null
+            ? null
+            : $this->brands->forDocument($organizationId);
+
         foreach ($recipients as $recipient) {
             $message = $this->renderer->handle($event, $recipient->locale, $data, $actionUrl);
+
+            if ($brand !== null) {
+                $message = $message->under($brand);
+            }
 
             foreach ($channels as $channel) {
                 $this->deliverOne($event, $channel, $recipient, $message, $organizationId);

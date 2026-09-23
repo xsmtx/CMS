@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerUserController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\HealthController;
@@ -230,6 +231,18 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * What this installation calls itself. The navigation has pointed here
      * since Phase 0; this is the phase that answers it.
      */
+    /*
+     * Everyone who can sign into the customer area, across all customers.
+     * A different question from "who works at this company", asked by a
+     * different person while a customer waits on the telephone.
+     */
+    Route::get('customer-users', [CustomerUserController::class, 'index'])
+        ->name('customer-users');
+    Route::post('customer-users/{contact}/reset', [CustomerUserController::class, 'sendReset'])
+        ->name('customer-users.reset');
+    Route::put('customer-users/{contact}/password', [CustomerUserController::class, 'setPassword'])
+        ->name('customer-users.password');
+
     Route::get('settings', [SettingsController::class, 'index'])->name('settings');
     Route::put('settings/brand', [SettingsController::class, 'updateBrand'])
         ->name('settings.brand');

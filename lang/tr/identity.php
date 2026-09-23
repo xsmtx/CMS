@@ -3,6 +3,29 @@
 declare(strict_types=1);
 
 return [
+    'users' => [
+        'title' => 'Kullanıcıları yönet',
+        'description' => 'Müşteri alanına giriş yapabilen herkes. Tek bir hesaptaki kişilerden farklı: bu liste, biri giriş yapamadığında açtığınız listedir.',
+        'search' => 'Kullanıcı adı veya e-posta adresi',
+        'two_factor' => 'İki adımlı doğrulama',
+        'enabled' => 'Açık',
+        'disabled' => 'Kapalı',
+        'last_login' => 'Son giriş',
+        'never' => 'Hiç',
+        'actions' => 'Kullanıcıyı yönet',
+        'send_reset' => 'Parola sıfırlama e-postası gönder',
+        'change_password' => 'Parolayı değiştir',
+        'reset_sent' => 'Parola sıfırlama e-postası gönderildi.',
+        'password_set' => 'Parola değiştirildi ve tüm oturumlar sonlandırıldı.',
+        'new_password' => 'Yeni parola',
+        'confirm_password' => 'Parolayı doğrula',
+        'reason' => 'Gerekçe',
+        'reason_hint' => 'Adınıza kaydedilir. Başkasının parolasını belirlemek, bir destek masasının yapabileceği en kötüye kullanılabilir iştir.',
+        'set' => 'Değiştir',
+        'cancel' => 'Vazgeç',
+        'none' => 'Eşleşen kullanıcı yok',
+        'none_description' => 'Burada yalnızca portal erişimi olan kişiler görünür.',
+    ],
 
     'tokens' => [
         'title' => 'API anahtarları',

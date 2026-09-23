@@ -3,6 +3,29 @@
 declare(strict_types=1);
 
 return [
+    'users' => [
+        'title' => 'Manage users',
+        'description' => 'Everyone who can sign into the customer area. Different from the contacts on one account: this is the list you open when somebody cannot get in.',
+        'search' => 'User name or email address',
+        'two_factor' => 'Two factor',
+        'enabled' => 'Enabled',
+        'disabled' => 'Disabled',
+        'last_login' => 'Last login',
+        'never' => 'Never',
+        'actions' => 'Manage user',
+        'send_reset' => 'Send password reset email',
+        'change_password' => 'Change password',
+        'reset_sent' => 'A password reset email has been sent.',
+        'password_set' => 'The password has been changed and every session ended.',
+        'new_password' => 'New password',
+        'confirm_password' => 'Confirm password',
+        'reason' => 'Why',
+        'reason_hint' => "Recorded against your name. Setting somebody else's password is the most abusable thing a support desk can do.",
+        'set' => 'Change it',
+        'cancel' => 'Cancel',
+        'none' => 'No users match',
+        'none_description' => 'Only contacts with portal access appear here.',
+    ],
 
     'tokens' => [
         'title' => 'API tokens',
