@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Access\SyncPermissions;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Crm\CustomerStatus;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use Database\Seeders\ProviderOrganizationSeeder;
@@ -161,4 +162,26 @@ it('withdraws the role along with portal access', function (): void {
     expect($member->portal_access)->toBeFalse()
         ->and($member->password)->toBeNull()
         ->and($member->roles()->count())->toBe(0);
+});
+
+/**
+ * An account whose details are missing or wrong.
+ *
+ * Support stays open on purpose: a block that also closed the ticket form
+ * would leave them with no way to become un-blocked, and a support queue
+ * full of people telephoning instead.
+ */
+it('holds an account whose information is required, and leaves support open', function (): void {
+    $this->customer->forceFill(['status' => CustomerStatus::InformationRequired->value])->save();
+
+    $this->actingAs($this->owner, 'client')->get('/client')->assertForbidden();
+    $this->actingAs($this->owner, 'client')->get('/client/billing')->assertForbidden();
+    $this->actingAs($this->owner, 'client')->get('/client/services')->assertForbidden();
+
+    $this->actingAs($this->owner, 'client')->get('/client/support')->assertOk();
+    $this->actingAs($this->owner, 'client')->get('/client/profile')->assertOk();
+});
+
+it('lets everybody else through', function (): void {
+    $this->actingAs($this->owner, 'client')->get('/client')->assertOk();
 });

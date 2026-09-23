@@ -42,6 +42,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CustomerStatus $status
  * @property string $currency_code
  * @property bool $marketing_opt_in
+ * @property bool $send_overdue_notices
+ * @property bool $automatic_suspension
+ * @property bool $separate_invoices
  * @property CarbonImmutable|null $tax_id_validated_at
  * @property CarbonImmutable|null $anonymized_at
  * @property CarbonImmutable|null $created_at
@@ -62,6 +65,23 @@ final class Customer extends Model implements AuditLabel
 
     protected $table = 'customers';
 
+    /**
+     * Stated here as well as in the migration.
+     *
+     * A database default fills the row but leaves the model in memory
+     * without the attribute, and a cast reads that absence as null — so a
+     * freshly created customer would answer "no" to every one of these
+     * until it was read back. It bit the money columns in Phase 4 and the
+     * booleans in Phase 7.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'send_overdue_notices' => true,
+        'automatic_suspension' => true,
+        'separate_invoices' => false,
+    ];
+
     protected $fillable = [
         'organization_id',
         'company_name',
@@ -73,6 +93,9 @@ final class Customer extends Model implements AuditLabel
         'locale',
         'timezone',
         'marketing_opt_in',
+        'send_overdue_notices',
+        'automatic_suspension',
+        'separate_invoices',
     ];
 
     public function customFieldEntity(): CustomFieldEntity
@@ -256,6 +279,9 @@ final class Customer extends Model implements AuditLabel
         return [
             'status' => CustomerStatus::class,
             'marketing_opt_in' => 'boolean',
+            'send_overdue_notices' => 'boolean',
+            'automatic_suspension' => 'boolean',
+            'separate_invoices' => 'boolean',
             'tax_id_validated_at' => 'immutable_datetime',
             'anonymized_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',

@@ -276,3 +276,37 @@ it('does not advance anything for a part payment', function (): void {
     expect($service->fresh()?->next_due_on?->toDateString())
         ->toBe(now()->addDays(3)->toDateString());
 });
+
+/**
+ * The other answer, for a customer who passes each line to a different
+ * cost centre and asked to be billed that way.
+ */
+it('raises one invoice per item for a customer who asked for separate invoices', function (): void {
+    $customer = Customer::factory()->create(['separate_invoices' => true]);
+
+    Service::factory()->forCustomer($customer)->create([
+        'status' => ServiceStatus::Active->value,
+        'billing_cycle' => BillingCycle::Monthly->value,
+        'currency_code' => 'EUR',
+        'recurring_minor' => 1500,
+        'next_due_on' => now()->addDays(3)->toDateString(),
+    ]);
+
+    Service::factory()->forCustomer($customer)->create([
+        'status' => ServiceStatus::Active->value,
+        'billing_cycle' => BillingCycle::Monthly->value,
+        'currency_code' => 'EUR',
+        'recurring_minor' => 500,
+        'next_due_on' => now()->addDays(5)->toDateString(),
+    ]);
+
+    $record = $this->runner->handle(AutomationTask::Renewals, app(GenerateRenewalInvoices::class));
+
+    $invoices = Invoice::query()->withoutGlobalScope('organization')
+        ->where('customer_id', $customer->id)
+        ->get();
+
+    expect($invoices)->toHaveCount(2)
+        ->and($invoices->sum(fn (Invoice $invoice): int => $invoice->total->minorUnits))->toBe(2000)
+        ->and($record->changed)->toBe(2);
+});

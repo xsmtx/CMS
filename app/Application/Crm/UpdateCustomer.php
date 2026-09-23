@@ -35,6 +35,9 @@ final readonly class UpdateCustomer
                 'status' => $attributes->status->value,
                 'currency_code' => $attributes->currencyCode,
                 'marketing_opt_in' => $attributes->marketingOptIn,
+                'send_overdue_notices' => $attributes->sendOverdueNotices,
+                'automatic_suspension' => $attributes->automaticSuspension,
+                'separate_invoices' => $attributes->separateInvoices,
             ]);
 
             $customer->syncTags($attributes->tagIds);

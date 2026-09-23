@@ -6,6 +6,7 @@ use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AutomationController;
+use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CurrencyController;
@@ -236,6 +237,11 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * A different question from "who works at this company", asked by a
      * different person while a customer waits on the telephone.
      */
+    // Adding a client the way an operator does it: the company, the
+    // person and the address, once.
+    Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');
     Route::post('customer-users/{contact}/reset', [CustomerUserController::class, 'sendReset'])

@@ -16,6 +16,7 @@ use App\Domain\Provisioning\ServiceStatus;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\InvoiceItem;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Organizations\OrganizationContext;
@@ -51,12 +52,19 @@ use Throwable;
  * what raises `InvoiceIssued` and therefore what tells the customer. An
  * operator who wants to look first turns the task off and runs it by hand.
  */
-final readonly class GenerateRenewalInvoices implements AutomationRun
+final class GenerateRenewalInvoices implements AutomationRun
 {
+    /**
+     * Answers to `separate_invoices`, keyed by customer.
+     *
+     * @var array<string, bool>
+     */
+    private array $separate = [];
+
     public function __construct(
-        private OrganizationContext $organizations,
-        private AllocateNumber $numbers,
-        private IssueInvoice $issuer,
+        private readonly OrganizationContext $organizations,
+        private readonly AllocateNumber $numbers,
+        private readonly IssueInvoice $issuer,
     ) {}
 
     public function handle(): RunSummary
@@ -68,12 +76,12 @@ final readonly class GenerateRenewalInvoices implements AutomationRun
 
         foreach ($this->dueServices($horizon) as $service) {
             $summary = $summary->examining();
-            $groups[$service->customer_id.'|'.$service->currency_code]['services'][] = $service;
+            $groups[$this->groupFor($service->customer_id, $service->currency_code, $service->id)]['services'][] = $service;
         }
 
         foreach ($this->dueDomains($horizon) as $domain) {
             $summary = $summary->examining();
-            $groups[$domain->customer_id.'|'.$domain->currency_code]['domains'][] = $domain;
+            $groups[$this->groupFor($domain->customer_id, $domain->currency_code, $domain->id)]['domains'][] = $domain;
         }
 
         foreach ($groups as $group) {
@@ -84,6 +92,40 @@ final readonly class GenerateRenewalInvoices implements AutomationRun
         }
 
         return $summary;
+    }
+
+    /**
+     * Which invoice a renewal belongs on.
+     *
+     * One per customer and currency by default: a customer with four
+     * services renewing on the same day gets one invoice and pays once.
+     * Never across currencies — money is not converted in this platform.
+     *
+     * A customer who asked for separate invoices gets the item's own id in
+     * the key instead, which is a real request from anybody who passes
+     * each line to a different cost centre.
+     */
+    private function groupFor(string $customerId, string $currency, string $itemId): string
+    {
+        $key = $customerId.'|'.$currency;
+
+        return $this->wantsSeparateInvoices($customerId) ? $key.'|'.$itemId : $key;
+    }
+
+    /**
+     * Asked once per customer per run, not once per line.
+     */
+    private function wantsSeparateInvoices(string $customerId): bool
+    {
+        if (! array_key_exists($customerId, $this->separate)) {
+            $customer = $this->organizations->withoutBoundary(
+                static fn (): ?Customer => Customer::query()->whereKey($customerId)->first(),
+            );
+
+            $this->separate[$customerId] = $customer instanceof Customer && $customer->separate_invoices;
+        }
+
+        return $this->separate[$customerId];
     }
 
     /**

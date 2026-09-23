@@ -87,6 +87,13 @@ final readonly class RunDunningSequence implements AutomationRun
                 continue;
             }
 
+            if (! $this->allowedBy($step, $invoice)) {
+                // Not recorded as run, deliberately. A customer whose
+                // notices are turned back on next week should still get
+                // the step; a row written here would mean they never do.
+                continue;
+            }
+
             try {
                 $this->apply($step, $invoice);
 
@@ -119,6 +126,34 @@ final readonly class RunDunningSequence implements AutomationRun
         }
 
         return $acted ? $summary : $summary->skipping();
+    }
+
+    /**
+     * Whether this customer lets this kind of step happen to them.
+     *
+     * Two preferences, both on the customer record: one for being chased
+     * and one for being suspended. A support contract that says "never
+     * suspend, we will call them" is a real arrangement, and the
+     * alternative to recording it is an operator setting the step to 9999
+     * days for everybody.
+     *
+     * A customer that cannot be read is chased. Silence is not consent to
+     * stop collecting money.
+     */
+    private function allowedBy(DunningStep $step, Invoice $invoice): bool
+    {
+        $invoice->loadMissing('customer');
+
+        $customer = $invoice->customer;
+
+        if (! $customer instanceof Customer) {
+            return true;
+        }
+
+        return match ($step->action) {
+            DunningAction::Notify => $customer->send_overdue_notices,
+            DunningAction::Suspend, DunningAction::Terminate => $customer->automatic_suspension,
+        };
     }
 
     private function apply(DunningStep $step, Invoice $invoice): void

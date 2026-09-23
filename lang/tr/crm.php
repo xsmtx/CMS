@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'errors' => [
-        'information_required' => 'Portalın geri kalanını kullanabilmeniz için hesap bilgilerinizin düzeltilmesi gerekiyor. Bir destek bileti açın, hallededelim.',
+        'information_required' => 'Portalın geri kalanını kullanabilmeniz için hesap bilgilerinizin düzeltilmesi gerekiyor. Bir destek bileti açın, halledelim.',
     ],
 
     'search' => [

@@ -388,6 +388,22 @@ return [
         'vendor_url' => env('PLATFORM_VENDOR_URL', 'https://infracms.test'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | CRM defaults
+    |--------------------------------------------------------------------------
+    |
+    | What an operator in one country would otherwise retype all day. Only
+    | defaults: nothing here restricts what can be entered.
+    |
+    */
+
+    'crm' => [
+        'default_country' => env('CRM_DEFAULT_COUNTRY', 'TR'),
+        'default_currency' => env('CRM_DEFAULT_CURRENCY', 'TRY'),
+        'phone_placeholder' => env('CRM_PHONE_PLACEHOLDER', '+90 501 234 56 78'),
+    ],
+
     'api' => [
         'rate_limit' => [
             'per_minute' => (int) env('API_RATE_LIMIT', 120),

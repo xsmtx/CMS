@@ -22,6 +22,9 @@ const props = defineProps<{
     status: string
     currencyCode: string
     marketingOptIn: boolean
+    sendOverdueNotices: boolean
+    automaticSuspension: boolean
+    separateInvoices: boolean
     tagIds: string[]
   } | null
   statuses: { value: string; label: string }[]
@@ -39,6 +42,9 @@ interface CustomerForm {
   status: string
   currency_code: string
   marketing_opt_in: boolean
+  send_overdue_notices: boolean
+  automatic_suspension: boolean
+  separate_invoices: boolean
   tag_ids: string[]
   custom_fields: Record<string, string>
 }
@@ -51,6 +57,9 @@ const form = useForm<CustomerForm>({
   status: props.customer?.status ?? 'pending',
   currency_code: props.customer?.currencyCode ?? 'EUR',
   marketing_opt_in: props.customer?.marketingOptIn ?? false,
+  send_overdue_notices: props.customer?.sendOverdueNotices ?? true,
+  automatic_suspension: props.customer?.automaticSuspension ?? true,
+  separate_invoices: props.customer?.separateInvoices ?? false,
   tag_ids: props.customer?.tagIds ?? [],
   custom_fields: Object.fromEntries(
     props.customFields.map((field) => [field.key, String(field.value ?? '')]),
@@ -123,6 +132,26 @@ function submit(): void {
             v-model="form.marketing_opt_in"
             label="Opted in to marketing email"
             description="Transactional mail about services they pay for is always sent."
+          />
+        </div>
+      </AppCard>
+
+      <AppCard title="Billing preferences">
+        <div class="grid max-w-xl gap-4">
+          <AppCheckbox
+            v-model="form.send_overdue_notices"
+            label="Send overdue notices"
+            description="Turn this off for an account somebody chases by telephone. The dunning sequence still runs; it just says nothing."
+          />
+          <AppCheckbox
+            v-model="form.automatic_suspension"
+            label="Allow automatic suspension"
+            description="Whether dunning may suspend or terminate this customer's services when an invoice goes unpaid."
+          />
+          <AppCheckbox
+            v-model="form.separate_invoices"
+            label="Invoice each item separately"
+            description="Off means one invoice per currency for everything renewing together, which is what most customers want."
           />
         </div>
       </AppCard>

@@ -313,3 +313,61 @@ it('suspends the services a renewal invoice is for, which has no order', functio
 
     expect($service->fresh()?->status)->toBe(ServiceStatus::Suspended);
 });
+
+/**
+ * Three answers a customer is allowed to give about their own billing, and
+ * each one is read by code that exists.
+ */
+it('says nothing to a customer whose overdue notices are turned off', function (): void {
+    $this->customer->forceFill(['send_overdue_notices' => false])->save();
+
+    overdueInvoice($this->customer, 3);
+
+    DunningStep::factory()->notify(1, NotificationEvent::PaymentFailed)->create();
+
+    $record = $this->runner->handle(AutomationTask::Dunning, app(RunDunningSequence::class));
+
+    expect($record->changed)->toBe(0)
+        ->and(NotificationDelivery::query()->withoutGlobalScope('organization')->count())->toBe(0)
+        // Not recorded as run: turning notices back on next week must not
+        // mean this customer silently skipped the step forever.
+        ->and(InvoiceDunningStep::query()->withoutGlobalScope('organization')->count())->toBe(0);
+});
+
+it('does not suspend a customer who is chased by telephone', function (): void {
+    $this->customer->forceFill(['automatic_suspension' => false])->save();
+
+    $order = Order::factory()->create([
+        'customer_id' => $this->customer->id,
+        'organization_id' => $this->customer->organization_id,
+    ]);
+
+    $service = Service::factory()->create([
+        'customer_id' => $this->customer->id,
+        'organization_id' => $this->customer->organization_id,
+        'order_id' => $order->id,
+        'status' => ServiceStatus::Active->value,
+    ]);
+
+    overdueInvoice($this->customer, 10, $order);
+
+    DunningStep::factory()->suspend(7)->create();
+
+    $this->runner->handle(AutomationTask::Dunning, app(RunDunningSequence::class));
+
+    expect($service->fresh()?->status)->toBe(ServiceStatus::Active);
+});
+
+it('still chases a customer who said nothing either way', function (): void {
+    // The defaults are what the platform did before these columns existed.
+    expect($this->customer->send_overdue_notices)->toBeTrue()
+        ->and($this->customer->automatic_suspension)->toBeTrue();
+
+    overdueInvoice($this->customer, 3);
+
+    DunningStep::factory()->notify(1, NotificationEvent::PaymentFailed)->create();
+
+    $record = $this->runner->handle(AutomationTask::Dunning, app(RunDunningSequence::class));
+
+    expect($record->changed)->toBe(1);
+});

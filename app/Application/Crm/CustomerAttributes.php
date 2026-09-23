@@ -22,5 +22,12 @@ final readonly class CustomerAttributes
         public bool $marketingOptIn = false,
         public array $tagIds = [],
         public array $customFields = [],
+        // The three billing preferences this platform can honour. The
+        // defaults keep an existing caller behaving as it did: everybody
+        // is chased, everybody can be suspended, nobody is invoiced line
+        // by line.
+        public bool $sendOverdueNotices = true,
+        public bool $automaticSuspension = true,
+        public bool $separateInvoices = false,
     ) {}
 }

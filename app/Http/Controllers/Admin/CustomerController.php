@@ -202,6 +202,9 @@ final class CustomerController extends Controller
                 'status' => $customer->status->value,
                 'currencyCode' => $customer->currency_code,
                 'marketingOptIn' => $customer->marketing_opt_in,
+                'sendOverdueNotices' => $customer->send_overdue_notices,
+                'automaticSuspension' => $customer->automatic_suspension,
+                'separateInvoices' => $customer->separate_invoices,
                 'tagIds' => $customer->tags->pluck('id')->all(),
             ],
             'statuses' => $this->statuses(),
@@ -356,6 +359,13 @@ final class CustomerController extends Controller
             marketingOptIn: $request->boolean('marketing_opt_in'),
             tagIds: $tagIds,
             customFields: $customFields,
+            // Defaulted to what the platform does when nobody has said
+            // otherwise, so a caller that never heard of these — the API,
+            // an import — does not quietly turn a customer's arrangement
+            // off by omitting a checkbox.
+            sendOverdueNotices: $request->boolean('send_overdue_notices', true),
+            automaticSuspension: $request->boolean('automatic_suspension', true),
+            separateInvoices: $request->boolean('separate_invoices'),
         );
     }
 

@@ -87,6 +87,11 @@ const groups: NavGroup[] = [
             permission: 'crm.customers.view',
           },
           {
+            label: 'Add new client',
+            href: '/admin/clients/create',
+            permission: 'crm.customers.manage',
+          },
+          {
             label: 'Organizations',
             href: '/admin/organizations',
             permission: 'organizations.view',
