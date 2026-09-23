@@ -205,6 +205,7 @@ storefront.
 | --- | --- | --- |
 | Resource list | yes | Customers, Services, Domains, Orders, Invoices, Transactions, Tickets |
 | Resource detail | yes | Customer, Service, Domain, Order, Invoice, Ticket |
+| Dashboard | yes | `Admin/Dashboard` — Attention Required, the four-figure strip, infrastructure, revenue trend, recent activity (§3) |
 | Customer 360 | partial | `Admin/Customers/Show` — profile, services, billing, tickets; **no unified timeline** |
 | Incident | no | Phase 13+ / Handoff #2 |
 | Network device | no | Handoff #2 |
