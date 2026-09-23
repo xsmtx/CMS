@@ -2,6 +2,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import { useBranding } from '../composables/useBranding'
 import { useTranslations } from '../composables/useTranslations'
 
 /**
@@ -16,7 +17,9 @@ defineProps<{ heading: string; description?: string }>()
 
 const page = usePage()
 
-const brand = computed(() => page.props.brand?.name ?? 'InfraCMS')
+// The brand a customer buys from — their reseller's, not the provider's
+// behind it — with its colours written onto the document.
+const { brand } = useBranding()
 const user = computed(() => page.props.auth.user)
 const impersonation = computed(() => page.props.impersonation)
 
@@ -110,9 +113,15 @@ function isCurrent(href: string): boolean {
       <div class="mx-auto flex h-16 w-full max-w-5xl items-center gap-6 px-5 sm:px-6">
         <Link
           href="/client"
-          class="pressable rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
+          class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
         >
-          {{ brand }}
+          <img
+            v-if="brand.logoUrl"
+            :src="brand.logoUrl"
+            :alt="brand.name"
+            class="h-7 w-auto max-w-[10rem] object-contain"
+          />
+          <span v-else>{{ brand.portalName }}</span>
         </Link>
 
         <nav aria-label="Client area" class="min-w-0 flex-1">

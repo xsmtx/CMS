@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Domain\Branding\Surface;
 use App\Domain\Organizations\OrganizationType;
 use App\Infrastructure\Organizations\Models\Organization;
+use App\Support\Branding\ActiveTheme;
 use App\Support\Organizations\OrganizationContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -19,16 +21,24 @@ use Symfony\Component\HttpFoundation\Response;
  * authenticated actor to take a boundary from, so it is taken from the
  * installation instead: the provider organization at the root.
  *
- * Resolving a reseller's own storefront from its hostname is Phase 11's
- * white-labelling work. Until then every public page serves the provider's
+ * Once the organization is known, the active theme's view paths are
+ * registered — which is why this happens in middleware rather than at boot:
+ * the theme depends on whose storefront this is, and that is not knowable
+ * until the boundary exists.
+ *
+ * Resolving a reseller's own storefront from its hostname is Phase 13's
+ * reseller work. Until then every public page serves the provider's
  * catalog, which is what a single-brand installation wants.
  *
  * Nothing here reads the request. A boundary that could be chosen by a query
- * parameter would not be a boundary.
+ * parameter would not be a boundary — and neither would a theme.
  */
 final readonly class ResolveStorefrontOrganization
 {
-    public function __construct(private OrganizationContext $context) {}
+    public function __construct(
+        private OrganizationContext $context,
+        private ActiveTheme $theme,
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -44,6 +54,8 @@ final readonly class ResolveStorefrontOrganization
                 $this->context->set($providerId);
             }
         }
+
+        $this->theme->register(Surface::Storefront);
 
         return $next($request);
     }

@@ -19,8 +19,29 @@
     <title>@yield('title', $brand)</title>
     <meta name="description" content="@yield('description', __('storefront.meta_description'))">
 
+    @if ($branding->faviconUrl)
+        <link rel="icon" href="{{ $branding->faviconUrl }}">
+    @endif
+
     @vite(['resources/css/app.css'])
-</head>
+
+    {{--
+        The brand's colours as custom properties on the document.
+
+        The design system is already built on these tokens, so a brand
+        overrides three of them and every button, focus ring, badge and link
+        follows — with no stylesheet regenerated and no build step between
+        an operator picking a colour and seeing it.
+    --}}
+    @if ($branding->cssVariables() !== [])
+        <style>
+            :root {
+                @foreach ($branding->cssVariables() as $property => $value)
+                    {{ $property }}: {{ $value }};
+                @endforeach
+            }
+        </style>
+    @endif</head>
 <body class="h-full">
     <a
         href="#main"
@@ -32,8 +53,12 @@
     <div class="flex min-h-full flex-col">
         <header class="border-b border-line">
             <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-5">
-                <a href="{{ url('/') }}" class="pressable rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight">
-                    {{ $brand }}
+                <a href="{{ url('/') }}" class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight">
+                    @if ($branding->logoUrl)
+                        <img src="{{ $branding->logoUrl }}" alt="{{ $brand }}" class="h-8 w-auto max-w-[12rem] object-contain">
+                    @else
+                        {{ $brand }}
+                    @endif
                 </a>
 
                 <div class="flex items-center gap-1">
@@ -89,9 +114,32 @@
         </main>
 
         <footer class="border-t border-line">
-            <div class="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-xs text-content-subtle sm:flex-row sm:items-center sm:justify-between">
-                <span>&copy; {{ date('Y') }} {{ $brand }}</span>
-                <span>{{ __('storefront.footer_note') }}</span>
+            <div class="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-6 text-xs text-content-subtle sm:flex-row sm:items-center sm:justify-between">
+                <span>&copy; {{ date('Y') }} {{ $branding->documentName() }}</span>
+
+                @if ($branding->legalLinks !== [])
+                    <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="{{ __('branding.legal') }}">
+                        @foreach ($branding->legalLinks as $link)
+                            <a href="{{ $link['url'] }}" class="underline-offset-4 hover:underline">{{ $link['label'] }}</a>
+                        @endforeach
+                    </nav>
+                @endif
+
+                <span class="flex flex-wrap items-center gap-x-3">
+                    @if ($branding->supportEmail)
+                        <a href="mailto:{{ $branding->supportEmail }}" class="underline-offset-4 hover:underline">{{ $branding->supportEmail }}</a>
+                    @endif
+
+                    {{--
+                        The vendor's mark, removable only where the licence
+                        allows it. Rendered from a resolved value rather than
+                        from a licence check in the template, so that a theme
+                        cannot decide the answer for itself.
+                    --}}
+                    @if ($vendorMark)
+                        <a href="{{ $vendorUrl }}" rel="noopener" class="underline-offset-4 hover:underline">{{ $vendorMark }}</a>
+                    @endif
+                </span>
             </div>
         </footer>
     </div>

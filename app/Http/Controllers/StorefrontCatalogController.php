@@ -42,7 +42,6 @@ final class StorefrontCatalogController extends Controller
 
         if ($currency === null) {
             return $this->renderer->render('catalog', [
-                'brand' => config('app.name'),
                 'groups' => [],
                 'currency' => null,
                 'currencies' => [],
@@ -61,7 +60,6 @@ final class StorefrontCatalogController extends Controller
             ->all();
 
         return $this->renderer->render('catalog', [
-            'brand' => config('app.name'),
             'groups' => $groups,
             'currency' => $currency,
             'currencies' => $this->currency->available(),
@@ -78,7 +76,6 @@ final class StorefrontCatalogController extends Controller
         }
 
         return $this->renderer->render('product', [
-            'brand' => config('app.name'),
             'currency' => $currency,
             'currencies' => $this->currency->available(),
             'product' => [
@@ -138,7 +135,6 @@ final class StorefrontCatalogController extends Controller
         }
 
         return $this->renderer->render('configure', [
-            'brand' => config('app.name'),
             'currency' => $currency,
             'currencies' => $this->currency->available(),
             'product' => [

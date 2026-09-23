@@ -27,7 +27,23 @@ vi.mock('@inertiajs/vue3', () => ({
   },
   usePage: () => ({
     props: {
-      brand: { name: 'InfraCMS' },
+      // The full brand shape, because the shell writes its colours onto
+      // the document on mount. A trimmed fixture would pass here and fail
+      // in a browser.
+      brand: {
+        name: 'InfraCMS',
+        legalName: null,
+        portalName: 'InfraCMS',
+        supportEmail: null,
+        supportPhone: null,
+        websiteUrl: null,
+        logoUrl: null,
+        logoDarkUrl: null,
+        faviconUrl: null,
+        legalLinks: [],
+        hideVendorMark: false,
+        css: {},
+      },
       flash: {},
       auth: { user: { email: 'operator@example.test' } },
     },

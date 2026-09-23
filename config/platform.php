@@ -355,6 +355,39 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Version
+    |--------------------------------------------------------------------------
+    |
+    | What this installation calls itself to a theme. A theme declares the
+    | range it was built for and is refused outside it — a theme written
+    | against last year's template variables renders a broken page, and the
+    | operator who upgraded yesterday will blame the upgrade.
+    |
+    | Never shown on a public page: an unauthenticated visitor learning the
+    | version is reconnaissance.
+    |
+    */
+
+    'version' => '1.0.0',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Branding
+    |--------------------------------------------------------------------------
+    |
+    | A brand is a row, not configuration (ADR 0035). What is left here is
+    | the default an unbranded installation shows, and the one place that
+    | still reads `app.name`.
+    |
+    */
+
+    'branding' => [
+        'vendor_mark' => env('PLATFORM_VENDOR_MARK', 'Powered by InfraCMS'),
+        'vendor_url' => env('PLATFORM_VENDOR_URL', 'https://infracms.test'),
+    ],
+
     'api' => [
         'rate_limit' => [
             'per_minute' => (int) env('API_RATE_LIMIT', 120),

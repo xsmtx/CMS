@@ -42,7 +42,6 @@ final class StorefrontContentController extends Controller
         $articles = $this->content->articles($this->isSignedIn(), $query);
 
         return $this->renderer->render('knowledge-base', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'query' => $query,
@@ -80,7 +79,6 @@ final class StorefrontContentController extends Controller
         $article->increment('view_count');
 
         return $this->renderer->render('knowledge-base-article', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'article' => [
@@ -112,7 +110,6 @@ final class StorefrontContentController extends Controller
     public function announcements(): Renderable
     {
         return $this->renderer->render('announcements', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'announcements' => $this->content->announcements($this->isSignedIn())

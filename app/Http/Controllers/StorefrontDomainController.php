@@ -62,7 +62,6 @@ final class StorefrontDomainController extends Controller
         }
 
         return $this->renderer->render('domain-search', [
-            'brand' => config('app.name'),
             'currency' => $currency,
             'currencies' => $this->currency->available(),
             'query' => $query,

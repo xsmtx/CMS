@@ -1,0 +1,13 @@
+{
+  "slug": "core",
+  "name": "Core",
+  "version": "1.0.0",
+  "author": "InfraCMS",
+  "compatibility": "*",
+  "surfaces": ["storefront"],
+  "settings": {
+    "show_currency_switcher": true,
+    "show_domain_search": true,
+    "footer_note": null
+  }
+}

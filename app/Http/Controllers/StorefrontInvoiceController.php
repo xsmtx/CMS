@@ -46,7 +46,6 @@ final class StorefrontInvoiceController extends Controller
         $invoice->load('items');
 
         return $this->renderer->render('invoice', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'invoice' => $this->present($invoice),
@@ -85,7 +84,6 @@ final class StorefrontInvoiceController extends Controller
         $invoice->load('items');
 
         return $this->renderer->render('invoice-returned', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'invoice' => $this->present($invoice),

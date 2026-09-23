@@ -44,7 +44,6 @@ final class StorefrontCartController extends Controller
         $cart = $this->carts->current();
 
         return $this->renderer->render('cart', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'cart' => $cart instanceof Cart ? $this->present($this->pricer->handle($cart)) : null,

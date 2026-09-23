@@ -61,7 +61,6 @@ final class StorefrontCheckoutController extends Controller
         $contact = $this->signedInContact();
 
         return $this->renderer->render('checkout', [
-            'brand' => config('app.name'),
             'currency' => $this->currency->current(),
             'currencies' => $this->currency->available(),
             'cart' => $this->present($this->pricer->handle($cart, $this->supplyFor($contact, $cart))),
@@ -174,7 +173,6 @@ final class StorefrontCheckoutController extends Controller
             ->first();
 
         return $this->renderer->render('order-confirmation', [
-            'brand' => config('app.name'),
             'currency' => $order->currency_code,
             'currencies' => $this->currency->available(),
             'order' => [

@@ -14,6 +14,7 @@ use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use App\Infrastructure\Identity\Models\AuthenticatedSession;
 use App\Infrastructure\Identity\Models\LoginHistory;
 use App\Support\Audit\Facades\Audit;
+use App\Support\Branding\CurrentBrand;
 use App\Support\Identity\CurrentActor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,7 @@ final class SecurityController extends Controller
         private readonly TwoFactorAuthenticator $twoFactor,
         private readonly SessionRegistry $sessions,
         private readonly CurrentActor $actor,
+        private readonly CurrentBrand $brands,
     ) {}
 
     public function show(Request $request): Response
@@ -118,7 +120,10 @@ final class SecurityController extends Controller
 
         abort_unless($subject->hasPendingTwoFactorSetup() || $subject->hasTwoFactorEnabled(), 404);
 
-        $uri = $this->twoFactor->provisioningUri($subject, (string) config('app.name'));
+        // The brand, not the installation: somebody enrolling on a
+        // reseller's panel should see the reseller's name in their
+        // authenticator, beside the six other codes they already have.
+        $uri = $this->twoFactor->provisioningUri($subject, $this->brands->current()->name);
 
         return Inertia::render('Security/TwoFactorSetup', [
             'guard' => $this->guard($request)->value,

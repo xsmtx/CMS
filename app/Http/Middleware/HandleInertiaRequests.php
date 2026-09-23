@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Identity\Impersonator;
+use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\Request;
@@ -50,9 +51,10 @@ final class HandleInertiaRequests extends Middleware
                     : [],
             ],
             'impersonation' => fn (): ?array => $this->impersonation($request),
-            'brand' => [
-                'name' => config('app.name'),
-            ],
+            // A brand is a row, not a config value (ADR 0035). Resolved
+            // per request from whoever is looking: reseller staff see their
+            // own name, and so do their customers.
+            'brand' => fn (): array => app(CurrentBrand::class)->current()->toArray(),
             'locale' => app()->getLocale(),
             'flash' => [
                 'success' => fn (): ?string => $request->session()->get('success'),

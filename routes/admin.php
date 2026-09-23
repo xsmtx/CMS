@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
@@ -224,6 +225,16 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('operations.retry');
     Route::post('operations/{operation}/resolve', [OperationController::class, 'resolve'])
         ->name('operations.resolve');
+
+    /*
+     * What this installation calls itself. The navigation has pointed here
+     * since Phase 0; this is the phase that answers it.
+     */
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings');
+    Route::put('settings/brand', [SettingsController::class, 'updateBrand'])
+        ->name('settings.brand');
+    Route::put('settings/theme', [SettingsController::class, 'updateTheme'])
+        ->name('settings.theme');
 
     Route::get('api/activity', [ApiActivityController::class, 'index'])->name('api.activity');
 

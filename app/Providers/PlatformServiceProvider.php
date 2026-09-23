@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Licensing\Contracts\Entitlements;
 use App\Http\Middleware\AssignCorrelationId;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Licensing\UnrestrictedEntitlements;
 use App\Support\Audit\Contracts\AuditRecorder;
+use App\Support\Branding\StorefrontComposer;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Errors\ApiExceptionRenderer;
 use App\Support\Logging\SecretRedactor;
@@ -15,6 +18,7 @@ use App\Support\View\StorefrontRenderer;
 use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Psr\Http\Message\RequestInterface;
 
@@ -59,11 +63,23 @@ final class PlatformServiceProvider extends ServiceProvider
         $this->app->singleton(AuditRecorder::class, DatabaseAuditRecorder::class);
 
         $this->app->bind(StorefrontRenderer::class, BladeStorefrontRenderer::class);
+
+        // A self-hosted installation with no licence server must not be
+        // crippled by a check it cannot answer. A commercial
+        // distribution binds something else.
+        $this->app->bind(Entitlements::class, UnrestrictedEntitlements::class);
     }
 
     public function boot(): void
     {
-        $this->loadViewsFrom(resource_path('views/storefront'), 'storefront');
+        // The core theme is the fallback of last resort. The active
+        // theme's own chain replaces this namespace per request, once the
+        // organization — and therefore whose storefront this is — is known.
+        $this->loadViewsFrom(base_path('themes/storefront/core/views'), 'storefront');
+
+        // Every storefront template gets the brand, whoever rendered it. A
+        // controller that had to remember would eventually not.
+        View::composer('storefront::*', StorefrontComposer::class);
 
         $this->propagateCorrelationIdToOutboundRequests();
         $this->assignCorrelationIdToScheduledTasks();

@@ -9,8 +9,33 @@ export interface AuthProps {
   permissions: string[]
 }
 
+export interface BrandLink {
+  label: string
+  url: string
+}
+
+/**
+ * Whose name is on this page. Resolved per request from the organization
+ * the viewer belongs to, never from a build-time constant — a reseller and
+ * the provider behind it share one deployment.
+ *
+ * `css` is the design tokens a brand overrides. Applied to the document
+ * root, so everything already built on those tokens follows without a
+ * stylesheet being regenerated.
+ */
 export interface BrandProps {
   name: string
+  legalName: string | null
+  portalName: string
+  supportEmail: string | null
+  supportPhone: string | null
+  websiteUrl: string | null
+  logoUrl: string | null
+  logoDarkUrl: string | null
+  faviconUrl: string | null
+  legalLinks: BrandLink[]
+  hideVendorMark: boolean
+  css: Record<string, string>
 }
 
 export interface ImpersonationProps {

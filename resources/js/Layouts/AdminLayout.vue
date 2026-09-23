@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
+import { useBranding } from '../composables/useBranding'
 import { usePermissions } from '../composables/usePermissions'
 
 /**
@@ -34,7 +35,9 @@ defineProps<{ heading: string; description?: string }>()
 const page = usePage()
 const { can } = usePermissions()
 
-const brand = computed(() => page.props.brand?.name ?? 'InfraCMS')
+// The brand, and its colours written onto the document. Reseller staff see
+// their own name and their own accent, on the same deployment.
+const { brand } = useBranding()
 
 // Confirmation belongs to the shell rather than to each page: an action that
 // redirects has no page left to report on.
@@ -357,9 +360,15 @@ onBeforeUnmount(() => {
       <div class="border-line flex h-12 items-center gap-3 border-b px-4 sm:px-6">
         <Link
           href="/admin"
-          class="pressable rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
+          class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
         >
-          {{ brand }}
+          <img
+            v-if="brand.logoUrl"
+            :src="brand.logoUrl"
+            :alt="brand.name"
+            class="h-6 w-auto max-w-[9rem] object-contain"
+          />
+          <span v-else>{{ brand.name }}</span>
         </Link>
         <span class="text-content-subtle text-xs">Admin</span>
 

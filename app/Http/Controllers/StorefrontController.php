@@ -25,7 +25,6 @@ final class StorefrontController extends Controller
         $code = $currency->current();
 
         return $renderer->render('home', [
-            'brand' => config('app.name'),
             'currency' => $code,
             'currencies' => $currency->available(),
             'hasCatalog' => $code !== null && $this->hasSomethingToSell($code),
