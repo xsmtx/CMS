@@ -65,6 +65,12 @@ final class InvoiceController extends Controller
             'statuses' => self::statuses(),
             'bulkActions' => self::bulkActions(),
             'owed' => $this->owedSummary(),
+
+            // The context drawer's record (§8). `optional` so it costs
+            // nothing on a normal page load: it is evaluated only when the
+            // browser asks for this one prop by name, which is what makes a
+            // drawer cheaper than the navigation it replaces.
+            'peek' => Inertia::optional(fn (): ?array => $this->peek($request)),
         ]);
     }
 
@@ -279,6 +285,67 @@ final class InvoiceController extends Controller
             ],
             InvoiceStatus::cases(),
         );
+    }
+
+    /**
+     * One invoice, enough of it for a glance.
+     *
+     * The drawer is for inspection, so this is the identity, the money and
+     * the lines — and nothing that could be edited. Everything else is a
+     * reason to open the record properly, which the drawer always offers.
+     *
+     * A row the operator cannot see comes back as `null` rather than as a
+     * 403. The id is in a query string somebody can type, and a 403 there is
+     * confirmation that the invoice exists.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function peek(Request $request): ?array
+    {
+        $id = $request->string('peek')->toString();
+
+        if ($id === '') {
+            return null;
+        }
+
+        $invoice = Invoice::query()
+            ->with([...Customer::displayNameWith('customer'), 'items', 'payments'])
+            // `where`, never `find`: `find` on a scoped builder that misses
+            // forwards to a fresh unscoped query and hands back somebody
+            // else's record.
+            ->where('id', $id)
+            ->first();
+
+        if ($invoice === null || ! $this->actor->can('view', $invoice)) {
+            return null;
+        }
+
+        $locale = app()->getLocale();
+
+        return [
+            ...$this->row($invoice),
+            'subtotal' => $invoice->subtotal->format($locale),
+            'tax' => $invoice->tax->isZero() ? null : $invoice->tax->format($locale),
+            'items' => $invoice->items
+                ->map(fn (InvoiceItem $item): array => [
+                    'id' => $item->id,
+                    'description' => $item->description,
+                    'quantity' => $item->quantity,
+                    'lineAmount' => $item->line_amount->format($locale),
+                ])
+                ->values()
+                ->all(),
+            // The last payment, not every payment: "has anything arrived"
+            // is the question a glance is asking.
+            'lastPayment' => $invoice->payments
+                ->sortByDesc('received_at')
+                ->map(fn (Payment $payment): array => [
+                    'amount' => $payment->amount->format($locale),
+                    'gateway' => (string) __('billing.gateways.'.$payment->gateway),
+                    'receivedAt' => $payment->received_at?->toIso8601String(),
+                ])
+                ->first(),
+        ];
     }
 
     /**

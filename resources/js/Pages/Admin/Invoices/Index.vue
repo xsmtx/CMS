@@ -15,6 +15,9 @@
  *   of buttons and the eye stops reading the data.
  * - **A skeleton, not a spinner.** Filtering re-fetches, and a table that
  *   collapsed to a spinner and back would move the page twice per keystroke.
+ * - **A context drawer.** Checking one invoice out of two hundred should not
+ *   cost the scroll position, the filter and the selection — which is what a
+ *   navigation and a Back press costs.
  */
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
@@ -23,6 +26,7 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCopy from '../../../Components/AppCopy.vue'
+import AppDrawer from '../../../Components/AppDrawer.vue'
 import AppSelectionBar from '../../../Components/AppSelectionBar.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
@@ -51,6 +55,14 @@ interface InvoiceRow {
   paymentMethod: string | null
 }
 
+/** The drawer's record: identity, money, lines. Nothing editable. */
+interface Peek extends InvoiceRow {
+  subtotal: string
+  tax: string | null
+  items: { id: string; description: string; quantity: number; lineAmount: string }[]
+  lastPayment?: { amount: string; gateway: string; receivedAt: string | null }
+}
+
 interface BulkAction {
   value: string
   label: string
@@ -63,6 +75,12 @@ const props = defineProps<{
   statuses: { value: string; label: string }[]
   bulkActions: BulkAction[]
   owed: { currency: string; amount: string; count: number }[]
+  /**
+   * Absent on a normal page load: the server only builds it when the browser
+   * asks for this one prop by name, which is what makes the drawer cheaper
+   * than the navigation it replaces.
+   */
+  peek?: Peek | null
 }>()
 
 const { t } = useTranslations()
@@ -97,6 +115,32 @@ const rowIds = computed(() => props.invoices.data.map((invoice) => invoice.id))
 
 /** The list is being fetched again — a filter was pressed, or a page. */
 const loading = ref(false)
+
+// --- the context drawer -----------------------------------------------------
+
+const peeking = ref(false)
+const peekLoading = ref(false)
+
+/**
+ * Open the drawer first, fill it second.
+ *
+ * The other order — wait for the record, then open — is a row that does
+ * nothing for 200ms and then something. The panel appears immediately with
+ * its skeleton, and `only: ['peek']` means the server builds one invoice
+ * rather than re-running the list.
+ */
+function inspect(invoice: InvoiceRow): void {
+  peeking.value = true
+  peekLoading.value = true
+
+  router.reload({
+    only: ['peek'],
+    data: { peek: invoice.id },
+    onFinish: () => {
+      peekLoading.value = false
+    },
+  })
+}
 
 function filterBy(status: string | null): void {
   loading.value = true
@@ -240,9 +284,25 @@ function formatDate(value: string | null): string {
         :label="`invoice ${invoice.number}`"
       >
         <td data-col="number" class="px-4 py-2.5">
-          <!-- §7: an id is easy to copy. An operator on the phone to a
-               customer reads this number out or pastes it into a ticket. -->
-          <AppCopy :value="invoice.number" noun="invoice number" />
+          <!--
+            The number opens the drawer, and it is a button rather than the
+            whole row: a row-wide click target fights the checkbox in front
+            of it and the customer link beside it, and an operator who meant
+            to select ends up inspecting.
+
+            §7 also asks for an id to be easy to copy — an operator on the
+            telephone reads this out or pastes it into a ticket.
+          -->
+          <span class="inline-flex items-center gap-1">
+            <button
+              type="button"
+              class="pressable font-mono text-xs underline-offset-4 hover:underline"
+              @click="inspect(invoice)"
+            >
+              {{ invoice.number }}
+            </button>
+            <AppCopy :value="invoice.number" label="" noun="invoice number" />
+          </span>
         </td>
         <td data-col="client" class="px-4 py-2.5">
           <Link
@@ -308,6 +368,84 @@ function formatDate(value: string | null): string {
     <p v-if="invoices.lastPage > 1" class="text-content-muted mt-4 text-xs">
       Page {{ invoices.currentPage }} of {{ invoices.lastPage }} — {{ invoices.total }} invoices
     </p>
+
+    <!--
+      The context drawer (§8). Inspection only — every decision it could offer
+      is on the record's own page, and the drawer always offers the way there.
+    -->
+    <AppDrawer
+      v-model:open="peeking"
+      :title="peek?.number ?? 'Invoice'"
+      :subtitle="peek?.customer ?? undefined"
+      :href="peek ? `/admin/invoices/${peek.id}` : undefined"
+      :loading="peekLoading"
+    >
+      <div v-if="peek" class="flex flex-col gap-5">
+        <div class="flex flex-wrap items-center gap-2">
+          <AppBadge>{{ peek.statusLabel }}</AppBadge>
+          <span v-if="peek.isPastDue" class="text-danger text-chrome">
+            Past due {{ formatDate(peek.dueOn) }}
+          </span>
+        </div>
+
+        <dl class="text-body flex flex-col gap-2">
+          <div class="flex items-baseline justify-between gap-4">
+            <dt class="text-content-muted">Invoice date</dt>
+            <dd>{{ formatDate(peek.issuedOn) }}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-4">
+            <dt class="text-content-muted">Due</dt>
+            <dd>{{ formatDate(peek.dueOn) }}</dd>
+          </div>
+          <div class="border-line flex items-baseline justify-between gap-4 border-t pt-2">
+            <dt class="text-content-muted">Total</dt>
+            <dd class="font-semibold tabular-nums">{{ peek.total }}</dd>
+          </div>
+          <div v-if="peek.balanceMinor > 0" class="flex items-baseline justify-between gap-4">
+            <dt class="text-content-muted">Owed</dt>
+            <dd class="text-danger tabular-nums">{{ peek.balance }}</dd>
+          </div>
+        </dl>
+
+        <div v-if="peek.items.length > 0">
+          <p class="text-content-subtle text-label mb-1.5 uppercase">Lines</p>
+          <ul class="divide-line divide-y">
+            <li
+              v-for="item in peek.items"
+              :key="item.id"
+              class="flex items-baseline justify-between gap-3 py-1.5"
+            >
+              <span class="text-body min-w-0 flex-1">
+                {{ item.description }}
+                <span v-if="item.quantity > 1" class="text-content-subtle">
+                  × {{ item.quantity }}
+                </span>
+              </span>
+              <span class="text-body shrink-0 tabular-nums">{{ item.lineAmount }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="peek.lastPayment">
+          <p class="text-content-subtle text-label mb-1.5 uppercase">Last payment</p>
+          <p class="text-body">
+            {{ peek.lastPayment.amount }} · {{ peek.lastPayment.gateway }}
+            <span v-if="peek.lastPayment.receivedAt" class="text-content-muted">
+              · {{ formatDateTime(peek.lastPayment.receivedAt) }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Not an error: an id in a query string is something somebody can
+           type, and a record that is not theirs is a record that does not
+           exist as far as this screen is concerned. -->
+      <EmptyState
+        v-else-if="!peekLoading"
+        title="Nothing to show"
+        description="This invoice is no longer here, or it was never yours to see."
+      />
+    </AppDrawer>
 
     <!--
       One dialog for both actions. Which level it is comes from the action:

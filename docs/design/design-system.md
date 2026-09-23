@@ -178,6 +178,7 @@ storefront.
 | `AppTableSkeleton` | admin | The table's own shape while it loads, so the page does not jump when rows land. |
 | `AppSelectionBar` | admin | The count, Clear, and the screen's own bulk actions. Above the table, never floating over it. |
 | `AppConfirm` | admin | §8's ladder: consequential, high-risk (reason), destructive (reason + typed name). |
+| `AppDrawer` | admin | Right-side context drawer. Inspection only, and always offers the way to the record. |
 | `AppCopy` | admin, client | An id, IP or correlation id, one press away. |
 | `AppBadge` | all | A label. **Not** the way operational status is shown. |
 | `AppStatus` | all | Shape + text + colour. The way operational status is shown. |
@@ -224,9 +225,31 @@ data rather than about the window, so it belongs on the server — a table, a
 policy and an owner per row — and that is a slice of its own rather than a
 component. Column visibility deliberately does *not* pretend to be it.
 
+### The context drawer (§8)
+
+`AppDrawer`, teleported and `fixed`, full width below `sm`. It exists because
+checking one row out of two hundred should not cost the scroll position, the
+filter and the selection — which is exactly what a navigation and a Back press
+costs.
+
+**Inspection, not management.** The drawer always offers the way to the whole
+record, and anything that takes a decision lives there. A drawer that grew
+into a second detail page would be two screens to keep in step.
+
+The record arrives as an **`Inertia::optional` prop on the list route**, not
+from an endpoint of its own: the server builds nothing on an ordinary page
+load, and when the browser asks for the one prop by name it builds one record
+rather than re-running the list. The invoices list is the worked example. An id
+the operator cannot see comes back as `null`, never a 403 — the id is in a
+query string anybody can type, and a 403 there is confirmation that the record
+exists.
+
+Focus moves into the panel on open and back to whatever opened it on close,
+and the watcher is `immediate` so a drawer that mounts already open — a deep
+link — still listens for Escape. Without that it silently did neither.
+
 ### Still to build (handoff §8, §9)
 
-- **Context drawer** — right-side inspection without losing the list.
 - **Background operations drawer** — running / retrying / failed, with the
   correlation ID.
 - **Danger zone** — separated at the bottom of a resource's settings.
