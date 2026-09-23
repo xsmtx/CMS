@@ -7,6 +7,8 @@ export interface AuthUser {
 export interface AuthProps {
   user: AuthUser | null
   permissions: string[]
+  /** Who somebody is, not what they may do. See `usePermissions`. */
+  isSuperAdmin?: boolean
 }
 
 export interface BrandLink {

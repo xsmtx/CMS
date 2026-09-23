@@ -20,5 +20,14 @@ export function usePermissions() {
     return candidates.some(can)
   }
 
-  return { permissions, can, canAny }
+  /**
+   * Who somebody is, not what they may do.
+   *
+   * Apps and Integrations is the only area gated this way: an Administrator
+   * holds every staff permission by design, so no permission could describe
+   * "super administrator only".
+   */
+  const isSuperAdmin = computed<boolean>(() => page.props.auth?.isSuperAdmin === true)
+
+  return { permissions, can, canAny, isSuperAdmin }
 }

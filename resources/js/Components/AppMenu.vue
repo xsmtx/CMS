@@ -26,8 +26,14 @@ const props = withDefaults(
     /** Which edge of the trigger the panel lines up with. */
     align?: 'start' | 'end'
     width?: string
+    /**
+     * Draw the label as a round placeholder face instead of a word. Used
+     * by the account menu, where an email read across the top of every
+     * page is somebody's identifier on a screen other people walk past.
+     */
+    avatar?: boolean
   }>(),
-  { align: 'end', width: '15rem' },
+  { align: 'end', width: '15rem', avatar: false },
 )
 
 const open = ref(false)
@@ -128,6 +134,20 @@ defineExpose({ close })
 
 <template>
   <button
+    v-if="avatar"
+    ref="trigger"
+    type="button"
+    class="pressable bg-surface-sunken text-content-muted hover:text-content border-line hover:border-line-strong inline-flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-(--duration-fast)"
+    :aria-expanded="open"
+    aria-haspopup="menu"
+    aria-label="Account"
+    @click="toggle"
+  >
+    {{ label }}
+  </button>
+
+  <button
+    v-else
     ref="trigger"
     type="button"
     class="pressable text-content-muted hover:text-content inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-sm"

@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
+import AppMenu from '../Components/AppMenu.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useBranding } from '../composables/useBranding'
 import { usePermissions } from '../composables/usePermissions'
@@ -33,7 +34,7 @@ import { usePermissions } from '../composables/usePermissions'
 defineProps<{ heading: string; description?: string }>()
 
 const page = usePage()
-const { can } = usePermissions()
+const { can, isSuperAdmin } = usePermissions()
 
 // The brand, and its colours written onto the document. Reseller staff see
 // their own name and their own accent, on the same deployment.
@@ -44,10 +45,34 @@ const { brand } = useBranding()
 const flash = computed(() => page.props.flash)
 const user = computed(() => page.props.auth.user)
 
+/**
+ * The placeholder face: whatever letters the account already has.
+ *
+ * No uploaded avatar exists yet and inventing a gravatar request would
+ * send every operator's email address to a third party on every page load.
+ */
+const initials = computed(() => {
+  const source = user.value?.name?.trim() || user.value?.email?.trim() || ''
+  const words = source.split(/[\s@._-]+/).filter(Boolean)
+
+  return (
+    words
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join('') || '?'
+  ).toUpperCase()
+})
+
 interface NavItem {
   label: string
   href: string
   permission?: string
+  /**
+   * Apps and Integrations only. An Administrator holds every staff
+   * permission by design, so no permission could mean "owner of this
+   * installation".
+   */
+  superAdmin?: boolean
 }
 
 interface NavSection {
@@ -162,11 +187,6 @@ const groups: NavGroup[] = [
             href: '/admin/services/addons',
             permission: 'services.view',
           },
-          {
-            label: 'Infrastructure',
-            href: '/admin/infrastructure',
-            permission: 'infrastructure.view',
-          },
         ],
       },
     ],
@@ -261,6 +281,14 @@ const groups: NavGroup[] = [
         ],
       },
       {
+        label: 'Apps and integrations',
+        items: [
+          { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
+          { label: 'Modules', href: '/admin/apps/modules', superAdmin: true },
+          { label: 'Servers', href: '/admin/apps/infrastructure', superAdmin: true },
+        ],
+      },
+      {
         label: 'Platform',
         items: [
           { label: 'General settings', href: '/admin/settings', permission: 'settings.view' },
@@ -282,7 +310,11 @@ const visibleGroups = computed(() =>
       sections: (group.sections ?? [])
         .map((section) => ({
           ...section,
-          items: section.items.filter((item) => !item.permission || can(item.permission)),
+          items: section.items.filter(
+            (item) =>
+              (!item.superAdmin || isSuperAdmin.value) &&
+              (!item.permission || can(item.permission)),
+          ),
         }))
         .filter((section) => section.items.length > 0),
     }))
@@ -406,23 +438,33 @@ onBeforeUnmount(() => {
 
         <div class="ml-auto flex items-center gap-1 sm:gap-2">
           <ThemeSwitch />
-          <span v-if="user" class="text-content-muted hidden text-sm sm:inline">
-            {{ user.email }}
-          </span>
-          <Link
-            href="/admin/security"
-            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-sm transition-colors duration-(--duration-fast)"
-          >
-            Security
-          </Link>
-          <Link
-            href="/admin/logout"
-            method="post"
-            as="button"
-            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-sm transition-colors duration-(--duration-fast)"
-          >
-            Sign out
-          </Link>
+
+          <!-- A face rather than an address. An email read across the top of
+               every page is somebody's identifier on a screen other people
+               walk past, and it told an operator nothing they did not
+               already know. -->
+          <AppMenu v-if="user" :label="initials" align="end" width="14rem" avatar>
+            <p class="border-line mb-1 border-b px-2 pb-2">
+              <span class="block truncate text-sm font-medium">{{ user.name }}</span>
+              <span class="text-content-muted block truncate text-xs">{{ user.email }}</span>
+            </p>
+            <Link
+              href="/admin/security"
+              class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              role="menuitem"
+            >
+              Security
+            </Link>
+            <Link
+              href="/admin/logout"
+              method="post"
+              as="button"
+              class="pressable hover:bg-surface-sunken block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              role="menuitem"
+            >
+              Sign out
+            </Link>
+          </AppMenu>
         </div>
       </div>
 

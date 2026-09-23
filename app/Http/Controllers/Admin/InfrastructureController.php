@@ -258,8 +258,21 @@ final class InfrastructureController extends Controller
         ];
     }
 
+    /**
+     * Apps and Integrations is shut to everybody but a super administrator,
+     * and every controller behind that door repeats it. A gate stated in
+     * three places is harder to remove by accident than one line in a route
+     * file.
+     */
+    private function assertSuperAdmin(): void
+    {
+        AppsController::assertSuperAdminFor($this->actor);
+    }
+
     private function authorizeView(): void
     {
+        $this->assertSuperAdmin();
+
         if (! $this->actor->can('infrastructure.view')) {
             throw new ForbiddenException(__('provisioning.services.not_permitted'));
         }
@@ -267,6 +280,8 @@ final class InfrastructureController extends Controller
 
     private function authorizeManage(): void
     {
+        $this->assertSuperAdmin();
+
         if (! $this->actor->can('infrastructure.manage')) {
             throw new ForbiddenException(__('provisioning.services.not_permitted'));
         }

@@ -20,6 +20,7 @@ use App\Infrastructure\Modules\ModuleCatalogue;
 use App\Infrastructure\Provisioning\Models\Service;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * Modules are directories on disk with code in them, so these tests write
@@ -137,7 +138,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    foreach (['risky', 'gatewayish', 'liar', 'ancient', 'broken', 'dependent', 'permissive'] as $slug) {
+    foreach (['risky', 'gatewayish', 'liar', 'ancient', 'broken', 'dependent', 'permissive', 'secretive'] as $slug) {
         removeModule($slug);
     }
 
@@ -468,4 +469,121 @@ it('registers nothing at all when the installation does not load modules', funct
     app()->forgetInstance(ActiveModules::class);
 
     expect(app(ActiveModules::class)->all())->toBe([]);
+});
+
+it('shows the modules screen to the owner and to nobody else', function (): void {
+    $owner = StaffUser::factory()->create();
+    $owner->assignRole(SystemRole::SuperAdmin);
+
+    writeModule('risky', [], [
+        'src/Entrypoint.php' => riskModuleSource('Testing\Risky'),
+    ]);
+
+    app(ModuleCatalogue::class)->forget();
+
+    // An administrator runs the business. Enabling a package runs code this
+    // platform did not ship, which is the owner's decision.
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/apps/modules')
+        ->assertForbidden();
+
+    $this->actingAs($owner->fresh(), 'staff')
+        ->get('/admin/apps/modules')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Admin/Modules/Index')
+            ->has('modules', 0)
+            // On disk, read, and running none of it.
+            ->has('available', 1)
+            ->where('available.0.slug', 'risky'));
+});
+
+it('says on the screen what an enabled module reached into', function (): void {
+    $owner = StaffUser::factory()->create();
+    $owner->assignRole(SystemRole::SuperAdmin);
+    $owner = $owner->fresh();
+
+    writeModule('risky', [], [
+        'src/Entrypoint.php' => riskModuleSource('Testing\Risky'),
+    ]);
+
+    app(ModuleCatalogue::class)->forget();
+
+    app(EnableModule::class)->handle(
+        app(InstallModule::class)->handle('risky', $owner),
+        $owner,
+    );
+
+    $this->actingAs($owner, 'staff')
+        ->get('/admin/apps/modules')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('modules', 1)
+            ->where('modules.0.state', 'enabled')
+            // The sentence the whole screen exists for.
+            ->where('modules.0.registers.0.point', 'risk_evaluator'));
+});
+
+it('never sends a module secret to the browser', function (): void {
+    $owner = StaffUser::factory()->create();
+    $owner->assignRole(SystemRole::SuperAdmin);
+    $owner = $owner->fresh();
+
+    writeModule('secretive', ['type' => 'addon'], [
+        'src/Entrypoint.php' => <<<'PHP'
+        <?php
+
+        namespace Testing\Secretive;
+
+        use App\Domain\Modules\BaseModule;
+        use App\Domain\Modules\ConfigField;
+        use App\Domain\Modules\ConfigFieldType;
+
+        final class Entrypoint extends BaseModule
+        {
+            public function configSchema(): array
+            {
+                return [
+                    new ConfigField('api_key', 'API key', ConfigFieldType::Secret),
+                    new ConfigField('endpoint', 'Endpoint'),
+                ];
+            }
+        }
+        PHP,
+    ]);
+
+    app(ModuleCatalogue::class)->forget();
+
+    $record = app(EnableModule::class)->handle(
+        app(InstallModule::class)->handle('secretive', $owner),
+        $owner,
+    );
+
+    $this->actingAs($owner, 'staff')
+        ->put('/admin/apps/modules/secretive/config', [
+            'config' => ['api_key' => 'sk_live_do_not_leak', 'endpoint' => 'https://acme.test'],
+        ])
+        ->assertRedirect();
+
+    expect($record->fresh()?->config['api_key'] ?? null)->toBe('sk_live_do_not_leak');
+
+    $this->actingAs($owner, 'staff')
+        ->get('/admin/apps/modules')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            // The fact that one is set travels; the value never does.
+            ->where('modules.0.config.0.secret', true)
+            ->where('modules.0.config.0.isSet', true)
+            ->where('modules.0.config.0.value', null))
+        ->assertDontSee('sk_live_do_not_leak');
+
+    // And an operator editing the endpoint does not clear the key.
+    $this->actingAs($owner, 'staff')
+        ->put('/admin/apps/modules/secretive/config', [
+            'config' => ['api_key' => '', 'endpoint' => 'https://acme.test/v2'],
+        ])
+        ->assertRedirect();
+
+    expect($record->fresh()?->config['api_key'] ?? null)->toBe('sk_live_do_not_leak')
+        ->and($record->fresh()?->config['endpoint'] ?? null)->toBe('https://acme.test/v2');
 });

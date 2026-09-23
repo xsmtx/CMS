@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ApiActivityController;
+use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
+use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
 use App\Http\Controllers\Admin\OptionGroupController;
@@ -178,20 +180,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::post('services/{service}/credentials', [ServiceController::class, 'credentials'])
         ->name('services.credentials');
 
-    Route::get('infrastructure', [InfrastructureController::class, 'index'])->name('infrastructure');
-    Route::post('infrastructure/groups', [InfrastructureController::class, 'storeGroup'])
+    Route::get('apps/infrastructure', [InfrastructureController::class, 'index'])->name('infrastructure');
+    Route::post('apps/infrastructure/groups', [InfrastructureController::class, 'storeGroup'])
         ->name('infrastructure.groups.store');
-    Route::put('infrastructure/groups/{group}', [InfrastructureController::class, 'updateGroup'])
+    Route::put('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'updateGroup'])
         ->name('infrastructure.groups.update');
-    Route::delete('infrastructure/groups/{group}', [InfrastructureController::class, 'destroyGroup'])
+    Route::delete('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'destroyGroup'])
         ->name('infrastructure.groups.destroy');
-    Route::post('infrastructure/servers', [InfrastructureController::class, 'storeServer'])
+    Route::post('apps/infrastructure/servers', [InfrastructureController::class, 'storeServer'])
         ->name('infrastructure.servers.store');
-    Route::put('infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
+    Route::put('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
         ->name('infrastructure.servers.update');
-    Route::delete('infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
+    Route::delete('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
         ->name('infrastructure.servers.destroy');
-    Route::post('infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
+    Route::post('apps/infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
         ->name('infrastructure.servers.test');
 
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
@@ -255,6 +257,26 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('customer-users.reset');
     Route::put('customer-users/{contact}/password', [CustomerUserController::class, 'setPassword'])
         ->name('customer-users.password');
+
+    // Extensions. Nothing here loads a module's code except the settings
+    // form, which reads the schema from the package it belongs to.
+    // Apps and Integrations: one door, and it is shut to everybody but a
+    // super administrator. See `AppsController` for why that is not a
+    // permission.
+    Route::get('apps', [AppsController::class, 'index'])->name('apps.index');
+
+    Route::get('apps/modules', [ModuleController::class, 'index'])->name('modules.index');
+    Route::post('apps/modules', [ModuleController::class, 'install'])->name('modules.install');
+    Route::post('apps/modules/{module}/enable', [ModuleController::class, 'enable'])
+        ->name('modules.enable');
+    Route::post('apps/modules/{module}/disable', [ModuleController::class, 'disable'])
+        ->name('modules.disable');
+    Route::post('apps/modules/{module}/upgrade', [ModuleController::class, 'upgrade'])
+        ->name('modules.upgrade');
+    Route::put('apps/modules/{module}/config', [ModuleController::class, 'configure'])
+        ->name('modules.configure');
+    Route::delete('apps/modules/{module}', [ModuleController::class, 'uninstall'])
+        ->name('modules.uninstall');
 
     Route::get('settings', [SettingsController::class, 'index'])->name('settings');
     Route::put('settings/brand', [SettingsController::class, 'updateBrand'])

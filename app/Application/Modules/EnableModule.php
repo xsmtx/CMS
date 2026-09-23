@@ -7,6 +7,7 @@ namespace App\Application\Modules;
 use App\Domain\Modules\Exceptions\InvalidModule;
 use App\Domain\Modules\ModuleContext;
 use App\Domain\Modules\ModuleState;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Modules\ChannelModuleLogger;
 use App\Infrastructure\Modules\Models\ModuleRecord;
 use App\Infrastructure\Modules\ModuleCatalogue;
@@ -46,6 +47,7 @@ final readonly class EnableModule
         private ModuleCatalogue $catalogue,
         private ModuleLoader $loader,
         private InspectModule $inspector,
+        private ActiveModules $runtime,
     ) {}
 
     public function handle(ModuleRecord $record, ?Model $actor = null): ModuleRecord
@@ -116,6 +118,13 @@ final readonly class EnableModule
             'enabled_at' => CarbonImmutable::now(),
             'disabled_at' => null,
         ])->save();
+
+        // The runtime may already have been resolved in this request — the
+        // permission registry asks it what modules add — so it is told to
+        // forget. Without this the screen that just changed a module goes
+        // on describing the one it replaced, which is the commonest way a
+        // cache like this is wrong and the one moment somebody is watching.
+        $this->runtime->forget();
 
         Audit::action('modules.enabled')
             ->by($actor)

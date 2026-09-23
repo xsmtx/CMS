@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Modules;
 
 use App\Domain\Modules\ModuleState;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Modules\Models\ModuleRecord;
 use App\Support\Audit\Facades\Audit;
 use Carbon\CarbonImmutable;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class DisableModule
 {
+    public function __construct(private ActiveModules $runtime) {}
+
     public function handle(ModuleRecord $record, ?Model $actor = null, ?string $reason = null): ModuleRecord
     {
         if ($record->state === ModuleState::Disabled) {
@@ -39,6 +42,8 @@ final readonly class DisableModule
             // say otherwise on the screen.
             'failure_reason' => null,
         ])->save();
+
+        $this->runtime->forget();
 
         Audit::action('modules.disabled')
             ->by($actor)

@@ -13,6 +13,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 const navigateHandlers: Array<() => void> = []
 
+/**
+ * Apps and Integrations is the one area gated by who somebody is rather
+ * than by what they may do, so the mock has to be able to say both.
+ */
+const permissionState = { superAdmin: true }
+
 vi.mock('@inertiajs/vue3', () => ({
   Link: {
     props: ['href', 'method', 'as'],
@@ -54,7 +60,10 @@ vi.mock('@inertiajs/vue3', () => ({
 vi.mock('../composables/usePermissions', () => ({
   // Everything visible, so the tests are about the map rather than about
   // one role's slice of it.
-  usePermissions: () => ({ can: () => true }),
+  usePermissions: () => ({
+    can: () => true,
+    isSuperAdmin: { value: permissionState.superAdmin },
+  }),
 }))
 
 const { default: AdminLayout } = await import('./AdminLayout.vue')
@@ -69,6 +78,7 @@ function render() {
 describe('AdminLayout navigation', () => {
   beforeEach(() => {
     navigateHandlers.length = 0
+    permissionState.superAdmin = true
   })
 
   it('puts the WHMCS groups across the top, in WHMCS order', () => {
@@ -137,6 +147,45 @@ describe('AdminLayout navigation', () => {
 
     const headings = setup?.findAll('p').map((heading) => heading.text())
 
-    expect(headings).toEqual(['Products and services', 'Staff', 'Platform'])
+    expect(headings).toEqual([
+      'Products and services',
+      'Staff',
+      'Apps and integrations',
+      'Platform',
+    ])
+  })
+
+  /**
+   * The one gate in the map that is not a permission. An administrator
+   * holds every staff permission by design, so hiding these rows cannot be
+   * expressed as one.
+   */
+  it('hides Apps and Integrations from anybody but the owner', async () => {
+    permissionState.superAdmin = false
+
+    const wrapper = render()
+    const setup = wrapper.findAll('nav[data-admin-nav] > ul > li').at(-1)
+
+    await setup?.find('button').trigger('click')
+
+    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps"]').exists()).toBe(false)
+    expect(setup?.findAll('p').map((heading) => heading.text())).toEqual([
+      'Products and services',
+      'Staff',
+      'Platform',
+    ])
+  })
+
+  it('shows the owner the door, and what is behind it', async () => {
+    const wrapper = render()
+    const setup = wrapper.findAll('nav[data-admin-nav] > ul > li').at(-1)
+
+    await setup?.find('button').trigger('click')
+
+    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps"]').exists()).toBe(true)
+    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps/modules"]').exists()).toBe(true)
+    expect(wrapper.find('nav[data-admin-nav] a[href="/admin/apps/infrastructure"]').exists()).toBe(
+      true,
+    )
   })
 })

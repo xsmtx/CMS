@@ -9,6 +9,7 @@ use App\Domain\Access\PermissionRegistry;
 use App\Domain\Modules\Exceptions\InvalidModule;
 use App\Domain\Modules\ExtensionPoint;
 use App\Domain\Modules\Registration;
+use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Modules\Models\ModuleRecord;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Organizations\OrganizationContext;
@@ -44,6 +45,7 @@ final readonly class UninstallModule
         private PermissionRegistry $permissions,
         private SyncPermissions $permissionSync,
         private OrganizationContext $organizations,
+        private ActiveModules $runtime,
     ) {}
 
     public function handle(ModuleRecord $record, ?Model $actor = null): void
@@ -68,6 +70,8 @@ final readonly class UninstallModule
 
             $record->delete();
         });
+
+        $this->runtime->forget();
 
         Audit::action('modules.uninstalled')
             ->by($actor)

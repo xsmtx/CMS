@@ -49,9 +49,14 @@ final class HandleInertiaRequests extends Middleware
                 'permissions' => $subject !== null && method_exists($subject, 'effectivePermissions')
                     ? $subject->effectivePermissions()
                     : [],
+                // Not a permission, and it cannot be one: an Administrator
+                // holds every staff permission by design, so a new one
+                // would reach both roles. Apps and Integrations is about
+                // who somebody is rather than what they may do.
+                'isSuperAdmin' => $actor->isSuperAdmin(),
             ],
             'impersonation' => fn (): ?array => $this->impersonation($request),
-            // A brand is a row, not a config value (ADR 0035). Resolved
+            // A brand is a row, not a config value (ADR 0036). Resolved
             // per request from whoever is looking: reseller staff see their
             // own name, and so do their customers.
             'brand' => fn (): array => app(CurrentBrand::class)->current()->toArray(),

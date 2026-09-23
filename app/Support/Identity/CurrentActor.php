@@ -101,6 +101,27 @@ final class CurrentActor
         return $subject !== null && Gate::forUser($subject)->allows($ability, $arguments);
     }
 
+    /**
+     * Whether this actor bypasses permission checks entirely.
+     *
+     * Asked directly rather than through a permission, because there is no
+     * permission only a super administrator holds: the seeder gives an
+     * Administrator every staff-scoped permission there is, deliberately,
+     * so a new one would land on both roles the moment it was declared.
+     *
+     * Used by the one area that is not about what somebody may do but about
+     * who they are — Apps and Integrations, where enabling a package runs
+     * code this repository does not contain.
+     */
+    public function isSuperAdmin(): bool
+    {
+        $model = $this->model();
+
+        return $model !== null
+            && method_exists($model, 'isSuperAdmin')
+            && (bool) $model->isSuperAdmin();
+    }
+
     public function isStaff(): bool
     {
         return $this->guard() === Guard::Staff;

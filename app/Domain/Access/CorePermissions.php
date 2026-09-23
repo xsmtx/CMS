@@ -59,6 +59,12 @@ final class CorePermissions
 
             // Turning the storefront off is not a settings change.
             new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
+
+            new PermissionDefinition('platform.modules.view', 'platform', RoleScope::Staff),
+            // The highest-risk permission in the product: enabling a module
+            // runs code this repository does not contain, on this server,
+            // as this user. Nothing else here grants that.
+            new PermissionDefinition('platform.modules.manage', 'platform', RoleScope::Staff, highRisk: true),
         ];
     }
 

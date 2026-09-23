@@ -37,6 +37,13 @@ beforeEach(function (): void {
     $this->operator->assignRole(SystemRole::Administrator);
     $this->operator = $this->operator->fresh();
 
+    // Servers live behind Apps and Integrations now, which is open to the
+    // owner of the installation only: adding one hands out credentials to
+    // somebody else's machine.
+    $this->owner = StaffUser::factory()->create();
+    $this->owner->assignRole(SystemRole::SuperAdmin);
+    $this->owner = $this->owner->fresh();
+
     $this->group = ServerGroup::factory()->create();
     $this->server = Server::factory()->inGroup($this->group)->create(['module' => 'fake']);
 
@@ -146,8 +153,8 @@ it('refuses a service screen to staff without the permission', function (): void
 it('lists the fleet without ever sending a token to the browser', function (): void {
     $this->server->forceFill(['secret' => 'whm-token-value'])->save();
 
-    $this->actingAs($this->operator, 'staff')
-        ->get('/admin/infrastructure')
+    $this->actingAs($this->owner, 'staff')
+        ->get('/admin/apps/infrastructure')
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('Admin/Infrastructure/Index')
@@ -161,8 +168,8 @@ it('lists the fleet without ever sending a token to the browser', function (): v
 it('keeps the stored token when an operator saves the form without one', function (): void {
     $this->server->forceFill(['secret' => 'original-token'])->save();
 
-    $this->actingAs($this->operator, 'staff')
-        ->put("/admin/infrastructure/servers/{$this->server->id}", [
+    $this->actingAs($this->owner, 'staff')
+        ->put("/admin/apps/infrastructure/servers/{$this->server->id}", [
             'name' => 'Renamed node',
             'module' => 'fake',
             'hostname' => 'node.test',
@@ -180,8 +187,8 @@ it('keeps the stored token when an operator saves the form without one', functio
 });
 
 it('refuses to delete a server that still holds services', function (): void {
-    $this->actingAs($this->operator, 'staff')
-        ->delete("/admin/infrastructure/servers/{$this->server->id}")
+    $this->actingAs($this->owner, 'staff')
+        ->delete("/admin/apps/infrastructure/servers/{$this->server->id}")
         ->assertRedirect();
 
     // Deleting it would orphan running accounts nobody could find again.
@@ -191,8 +198,8 @@ it('refuses to delete a server that still holds services', function (): void {
 it('queues a health check rather than blocking on a control panel', function (): void {
     Queue::fake();
 
-    $this->actingAs($this->operator, 'staff')
-        ->post("/admin/infrastructure/servers/{$this->server->id}/test")
+    $this->actingAs($this->owner, 'staff')
+        ->post("/admin/apps/infrastructure/servers/{$this->server->id}/test")
         ->assertRedirect();
 
     Queue::assertPushed(CheckServerHealth::class);
@@ -203,4 +210,23 @@ it('records what a health check found', function (): void {
 
     expect($this->server->fresh()?->health)->toBe('healthy')
         ->and($this->server->fresh()?->health_checked_at)->not->toBeNull();
+});
+
+/**
+ * The behaviour change this move makes, pinned so nobody restores it by
+ * accident: an administrator runs the business, and the owner of the
+ * installation decides which machines it talks to.
+ */
+it('keeps the fleet behind the Apps door', function (): void {
+    $this->actingAs($this->operator, 'staff')
+        ->get('/admin/apps/infrastructure')
+        ->assertForbidden();
+
+    $this->actingAs($this->operator, 'staff')
+        ->get('/admin/apps')
+        ->assertForbidden();
+
+    $this->actingAs($this->owner, 'staff')
+        ->get('/admin/apps')
+        ->assertOk();
 });

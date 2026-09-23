@@ -46,6 +46,9 @@ final class ActiveModules
     /** @var list<Module>|null */
     private ?array $modules = null;
 
+    /** @var array<string, Module> */
+    private array $bySlug = [];
+
     public function __construct(
         private readonly ModuleCatalogue $catalogue,
         private readonly ModuleLoader $loader,
@@ -57,6 +60,21 @@ final class ActiveModules
     public function all(): array
     {
         return $this->modules ??= $this->resolve();
+    }
+
+    /**
+     * One running module, by slug.
+     *
+     * The screen needs this to draw a module's settings form: the schema
+     * belongs to the package, and the only honest place to read it is the
+     * package itself. A module that is not running has no form, which is
+     * correct — there is nothing to configure that anything would read.
+     */
+    public function find(string $slug): ?Module
+    {
+        $this->all();
+
+        return $this->bySlug[$slug] ?? null;
     }
 
     /**
@@ -160,6 +178,7 @@ final class ActiveModules
     public function forget(): void
     {
         $this->modules = null;
+        $this->bySlug = [];
         $this->catalogue->forget();
     }
 
@@ -210,6 +229,7 @@ final class ActiveModules
 
             if ($module instanceof Module) {
                 $modules[] = $module;
+                $this->bySlug[$record->slug] = $module;
             }
         }
 
