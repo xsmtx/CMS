@@ -27,8 +27,15 @@ enum ResellerLedgerKind: string
     /** What the reseller owes for something one of their customers bought. */
     case Charge = 'charge';
 
-    /** The provider corrected the balance, with a reason. */
-    case Adjustment = 'adjustment';
+    /**
+     * Money paid back out to the reseller.
+     *
+     * Not "adjustment". An adjustment can go either way, and a kind that
+     * decides direction cannot be a word that does not: `Credit` is the
+     * increase somebody grants with a reason, this is the decrease, and
+     * neither needs a sign at the call site to be read correctly.
+     */
+    case Withdrawal = 'withdrawal';
 
     public function labelKey(): string
     {
@@ -46,7 +53,7 @@ enum ResellerLedgerKind: string
     {
         return match ($this) {
             self::Payment, self::Credit => true,
-            self::Charge, self::Adjustment => false,
+            self::Charge, self::Withdrawal => false,
         };
     }
 }

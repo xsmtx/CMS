@@ -206,6 +206,16 @@ const groups: NavGroup[] = [
       { label: 'Domain Registrations', href: '/admin/domains', permission: 'domains.view' },
       { label: 'Cancellation Requests', href: '/admin/cancellations', permission: 'services.view' },
       { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
+      /*
+       * Resellers is gated on `organizations.manage` here, which is a
+       * deliberate approximation: the row is presentation, and the screen
+       * itself asks `resellers.administer` — a gate rather than a
+       * permission, because a reseller's own Administrator holds every staff
+       * permission there is. A reseller's staff see the row and get a 403,
+       * which is the one case where hiding and authorizing disagree, and it
+       * is the safe direction.
+       */
+      { label: 'Resellers', href: '/admin/resellers', permission: 'organizations.manage' },
     ],
   },
   {

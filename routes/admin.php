@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\ResellerController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\ServiceAddonController;
@@ -298,6 +299,26 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // organization is created by whatever needs one.
     Route::get('organizations', [OrganizationController::class, 'index'])
         ->name('organizations.index');
+
+    /*
+     * The reseller programme. Gated on `resellers.administer`, which is not a
+     * permission — a reseller's own Administrator holds every staff
+     * permission by design, so a permission here would let them set their own
+     * margins and write their own balance.
+     *
+     * `create` before `{reseller}`: otherwise the literal would be read as an
+     * organization id and the 404 would be blamed on the record.
+     */
+    Route::get('resellers', [ResellerController::class, 'index'])->name('resellers.index');
+    Route::get('resellers/create', [ResellerController::class, 'create'])->name('resellers.create');
+    Route::post('resellers', [ResellerController::class, 'store'])->name('resellers.store');
+    Route::get('resellers/{reseller}', [ResellerController::class, 'show'])->name('resellers.show');
+    Route::post('resellers/{reseller}/availability', [ResellerController::class, 'availability'])
+        ->name('resellers.availability');
+    Route::post('resellers/{reseller}/prices', [ResellerController::class, 'price'])
+        ->name('resellers.prices');
+    Route::post('resellers/{reseller}/ledger', [ResellerController::class, 'ledger'])
+        ->name('resellers.ledger');
 
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');
