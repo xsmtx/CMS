@@ -188,7 +188,7 @@ it('charges the marked-up price in the cart, not the catalogue price', function 
         $cart = Cart::query()->create([
             'organization_id' => $this->customer->organization_id,
             'customer_id' => $this->customer->id,
-            'token' => (string) Str::ulid().Str::lower(Str::random(14)),
+            'token' => Str::ulid().Str::lower(Str::random(14)),
             'currency_code' => 'EUR',
             'expires_at' => CarbonImmutable::now()->addHour(),
         ]);

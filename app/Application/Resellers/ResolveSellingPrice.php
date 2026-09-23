@@ -87,19 +87,19 @@ final readonly class ResolveSellingPrice
         $seller = $this->sellerFor($buyerOrganizationId);
 
         if ($seller === null) {
-            return new SellingPrice($providerRecurring, $providerSetup, null);
+            return new SellingPrice($providerRecurring, $providerSetup);
         }
 
         $exact = $this->exactPrice($seller, $product->id, $cycle, $currency);
 
         if ($exact instanceof ResellerPrice) {
-            return new SellingPrice($exact->recurring, $exact->setup, null);
+            return new SellingPrice($exact->recurring, $exact->setup);
         }
 
         $margin = $this->marginOf($seller, $product->id);
 
         if ($margin === null) {
-            return new SellingPrice($providerRecurring, $providerSetup, null);
+            return new SellingPrice($providerRecurring, $providerSetup);
         }
 
         return new SellingPrice(

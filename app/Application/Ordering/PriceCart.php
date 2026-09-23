@@ -47,10 +47,10 @@ final class PriceCart
     private array $margins = [];
 
     public function __construct(
-        private PromotionEngine $promotions,
-        private TaxCalculator $tax,
-        private ResolveSellingPrice $sellingPrices,
-        private OrganizationContext $organizations,
+        private readonly PromotionEngine $promotions,
+        private readonly TaxCalculator $tax,
+        private readonly ResolveSellingPrice $sellingPrices,
+        private readonly OrganizationContext $organizations,
     ) {}
 
     public function handle(Cart $cart, ?TaxableSupply $supply = null): CartTotals
