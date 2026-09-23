@@ -26,19 +26,25 @@ documentation and §22's runbooks and release candidate.
 
 ## 2. What ships
 
-1. **Security headers, including a CSP.** One middleware on the web group.
+1. **Security headers, including a CSP.** One middleware — **global**, not on
+   the web group, which a test settled during the phase: a route-model binding
+   failure renders outside every route middleware, so a 404 was going out with
+   no policy.
 2. **SSRF protection for configurable URLs.** A guard the webhook channel and
    every other operator-supplied URL passes through.
 3. **Recent authentication for destructive actions.** This closes the gap
    `AppConfirm` has been documenting since Phase 11: level 4 in §8's
    confirmation ladder is "step-up auth as policy requires", and until now the
    component said so rather than pretending.
-4. **Upload rules and an antivirus hook.** With the honest observation that this
-   installation has no upload endpoints yet, so what ships is the **rule set and
-   the seam**, ready for the first one.
-5. **Concurrency tests.** The three places where two requests racing would
-   corrupt money: settling one invoice twice, an idempotency key used twice, and
-   a reseller ledger written twice.
+4. ~~**Upload rules and an antivirus hook.**~~ **Dropped during the phase.** This
+   installation has no upload endpoint at all, so the rules would have been a
+   seam with nothing behind it — and a seam nobody has used is a seam that is
+   wrong in a way only the first caller discovers. Named in the release
+   checklist for the phase that adds one instead. See the result document.
+5. **Concurrency tests.** The places where two requests racing would corrupt
+   money: a gateway event recorded twice, an import mapping written twice, an
+   idempotency key used twice, and a reseller ledger balance built on a stale
+   read.
 6. **An accessibility audit** over the primitives, as tests rather than as a
    document: every icon-only control has an accessible name, every field has a
    label, status is never colour alone.

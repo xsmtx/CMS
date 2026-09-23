@@ -112,11 +112,26 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | **complete** - see `phase-10-result.md` |
 | 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | **complete** - see `phase-11-result.md` |
 | 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | **complete** - see `phase-12-result.md` |
-| 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | next |
-| 14 | Licensing Control Plane: separate API/admin/database, signed entitlements, activations, heartbeat, grace, update entitlement | |
-| 15 | Import / Migration: importer framework, first WHMCS-compatible adapter | |
-| 16 | Reporting / Operations: MRR/ARR, churn, aging, revenue by product and gateway, renewals, support metrics | |
-| 17 | Production Hardening: security review, concurrency and load tests, backup/restore drills, upgrade tests, accessibility, disaster runbooks, release candidate | |
+| 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | **complete** — see `phase-13-result.md` |
+| 14 | Licensing Control Plane: the installation side — signed entitlements, activation, heartbeat, grace. The vendor's API is a separate deployment (ADR 0013); `docs/licensing/api.md` is its contract | **complete** — see `phase-14-result.md` |
+| 15 | Import / Migration: importer framework, first WHMCS-compatible adapter | **complete** — see `phase-15-result.md` |
+| 16 | Reporting / Operations: MRR/ARR, churn, aging, revenue by product and gateway, renewals, support metrics | **complete** — see `phase-16-result.md` |
+| 17 | Production Hardening: CSP and security headers, SSRF guard, recent-auth for irreversible actions, concurrency guards, accessibility tests, backup/restore and runbooks, release checklist | **complete** — see `phase-17-result.md` |
+
+**The V2 addendum's roadmap is finished.** What is deliberately unproven, and
+was deferred by the owner rather than overlooked:
+
+- **The provider adapters have never talked to their real providers.** Stripe,
+  PayPal, cPanel and Namecheap are tested against faked HTTP, which proves the
+  code and not the integration. `docs/operations/release-checklist.md` says the
+  first real deployment must treat each as unproven.
+- **No screen has been driven in a browser.** Visual changes are verified against
+  the built stylesheet and by the Vitest suite; contrast and 200% zoom stay in
+  `docs/design/design-system.md` as things for a person to check.
+- **Load testing and a penetration test** need a target environment and an
+  engagement respectively, neither of which lives in a repository.
+
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is the next handoff.
 
 ## 5. Sequencing constraints
 
