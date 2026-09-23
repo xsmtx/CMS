@@ -32,13 +32,16 @@ const component = computed(() => (props.href ? Link : 'button'))
 
 const classes = computed(() => [
   'pressable inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)]',
-  'font-semibold whitespace-nowrap',
+  // A transparent border on every variant, so a button is exactly as tall
+  // as the input beside it. Without it the bordered variants are two
+  // pixels taller than the rest and nothing in a row ever lines up.
+  'border border-transparent font-semibold whitespace-nowrap',
   'transition-[color,background-color,border-color,opacity] duration-(--duration-fast) ease-(--ease-out)',
   'disabled:pointer-events-none disabled:opacity-55',
   props.size === 'sm' ? 'px-3.5 py-2 text-[13px]' : 'px-4.5 py-2.5 text-sm',
   {
     primary: 'bg-accent text-accent-content shadow-(--shadow-raised) hover:bg-accent-hover',
-    secondary: 'border border-line-strong text-content hover:bg-surface-sunken',
+    secondary: 'border-line-strong text-content hover:bg-surface-sunken',
     ghost: 'text-content-muted hover:bg-surface-sunken hover:text-content',
     danger: 'bg-danger text-accent-content hover:opacity-90',
   }[props.variant],

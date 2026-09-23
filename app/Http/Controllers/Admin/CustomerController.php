@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Crm\AnonymizeCustomer;
-use App\Application\Crm\CreateCustomer;
 use App\Application\Crm\CustomerAttributes;
 use App\Application\Crm\ExportCustomerData;
 use App\Application\Crm\SearchCustomers;
@@ -95,35 +94,7 @@ final class CustomerController extends Controller
                 ...(array) __('crm.search'),
                 'list' => (array) __('crm.list'),
             ],
-            'can' => ['create' => $request->user('staff')?->can('create', Customer::class) ?? false],
         ]);
-    }
-
-    public function create(): Response
-    {
-        $this->authorize('create', Customer::class);
-
-        return Inertia::render('Admin/Customers/Form', [
-            'customer' => null,
-            'statuses' => $this->statuses(),
-            'tags' => $this->tags(),
-            'customFields' => $this->customFieldSchema(null),
-        ]);
-    }
-
-    public function store(CustomerRequest $request, CreateCustomer $createCustomer): RedirectResponse
-    {
-        $this->authorize('create', Customer::class);
-
-        // The new customer organization hangs off the creator's own, which
-        // is what makes a reseller's customers theirs.
-        $customer = $createCustomer->handle(
-            (string) $request->user('staff')?->organization_id,
-            $this->attributes($request),
-            $this->actor->model(),
-        );
-
-        return to_route('admin.customers.show', $customer)->with('status', __('crm.customer_created'));
     }
 
     public function show(Customer $customer): Response

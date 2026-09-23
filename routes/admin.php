@@ -64,7 +64,11 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::resource('roles', RoleController::class)->except(['show']);
 
     // Customers, and the contacts that belong to them.
-    Route::resource('customers', CustomerController::class)->except(['destroy']);
+    // No `create` or `store`: a client is added through `ClientController`,
+    // which makes the company, the first person and the address together.
+    // Two ways to create the same record is one way to create half of it.
+    Route::resource('customers', CustomerController::class)
+        ->except(['create', 'store', 'destroy']);
 
     Route::get('customers/{customer}/export', [CustomerController::class, 'export'])
         ->name('customers.export');

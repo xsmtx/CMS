@@ -40,9 +40,17 @@ it('refuses the customer list without the permission', function (): void {
         ->assertForbidden();
 });
 
+/**
+ * There is one way to create a client, and it is `/admin/clients` — the
+ * screen that makes the company, the first person and the address
+ * together. `/admin/customers` edits a record that exists.
+ */
 it('creates a customer together with its organization', function (): void {
     $this->actingAs($this->admin, 'staff')
-        ->post('/admin/customers', [
+        ->post('/admin/clients', [
+            'first_name' => 'Ines',
+            'last_name' => 'Caetano',
+            'email' => 'ines@meridian.test',
             'company_name' => 'Meridian Freight',
             'status' => CustomerStatus::Active->value,
             'currency_code' => 'EUR',
@@ -59,16 +67,18 @@ it('creates a customer together with its organization', function (): void {
         ->and($organization->parent_id)->toBe($this->provider->id);
 });
 
-it('requires a company or a legal name, so sole traders are possible', function (): void {
+it('requires a company or a legal name when editing, so sole traders are possible', function (): void {
+    $customer = Customer::factory()->create(['company_name' => 'Meridian Freight']);
+
     $this->actingAs($this->admin, 'staff')
-        ->post('/admin/customers', [
+        ->put('/admin/customers/'.$customer->id, [
             'status' => CustomerStatus::Active->value,
             'currency_code' => 'EUR',
         ])
         ->assertSessionHasErrors('company_name');
 
     $this->actingAs($this->admin, 'staff')
-        ->post('/admin/customers', [
+        ->put('/admin/customers/'.$customer->id, [
             'legal_name' => 'Ines Caetano',
             'status' => CustomerStatus::Active->value,
             'currency_code' => 'EUR',

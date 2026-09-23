@@ -266,7 +266,7 @@ it('holds nothing that could be a secret', function (): void {
     // author can print in full.
     $public = array_map(
         static fn (ReflectionProperty $property): string => $property->getName(),
-        (new ReflectionClass(Brand::class))->getProperties(ReflectionProperty::IS_PUBLIC),
+        new ReflectionClass(Brand::class)->getProperties(ReflectionProperty::IS_PUBLIC),
     );
 
     $leaks = array_values(array_filter(

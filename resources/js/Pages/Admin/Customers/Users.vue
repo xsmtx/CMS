@@ -75,14 +75,14 @@ function formatDateTime(value: string | null): string {
     <form class="mb-5 max-w-lg" @submit.prevent="submitSearch">
       <div class="flex items-end gap-2">
         <div class="flex-1">
-          <AppInput
-            v-model="search"
-            label="User name or email address"
-            hint="A full name works. % anchors: Zeyn% or %nep."
-          />
+          <AppInput v-model="search" label="User name or email address" />
         </div>
         <AppButton type="submit" variant="primary">Search</AppButton>
       </div>
+      <!-- Under the row rather than under the field: a hint inside the
+           input's own column makes it taller than the button beside it,
+           and `items-end` then aligns the button to the hint. -->
+      <p class="text-content-muted mt-2 text-xs">A full name works. % anchors: Zeyn% or %nep.</p>
     </form>
 
     <!-- Changing somebody else's password is the most abusable thing a

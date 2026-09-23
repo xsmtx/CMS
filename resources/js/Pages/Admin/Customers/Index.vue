@@ -51,7 +51,6 @@ const props = defineProps<{
     list: Record<string, string>
     permissions: Record<string, string>
   }
-  can: { create: boolean }
 }>()
 
 function initial(key: string): string {
@@ -392,10 +391,6 @@ function formatDate(value: string | null): string {
         :label="labels.show_inactive ?? 'Include closed accounts'"
         @update:model-value="toggleInactive"
       />
-
-      <AppButton v-if="can.create" href="/admin/customers/create" variant="primary" size="sm">
-        New client
-      </AppButton>
     </div>
 
     <AppTable v-if="customers.data.length > 0" :headers="headers">
