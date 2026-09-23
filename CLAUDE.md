@@ -90,12 +90,15 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 12 are complete (`docs/architecture/phase-0-result.md` through
-`phase-12-result.md`). **Phase 13, Reseller, is next and is not started.**
-The roadmap is the V2 addendum's (handoff §22) and runs to Phase 17:
-13 Reseller, 14 Licensing Control Plane, 15 Import / Migration,
+Phases 0 to 13 are complete (`docs/architecture/phase-0-result.md` through
+`phase-13-result.md`). **Phase 14, Licensing Control Plane, is next and is
+not started.** The roadmap is the V2 addendum's (handoff §22) and runs to
+Phase 17: 14 Licensing Control Plane, 15 Import / Migration,
 16 Reporting / Operations, 17 Production Hardening. Do not begin a phase
 without being asked for it.
+
+Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
+owner's instruction. None has ever talked to its real provider.
 
 `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is a second handoff, and
 it is **not** to be started until the first one is finished — that means
@@ -480,6 +483,33 @@ a method promises `list<…>`: only the first narrows the type for PHPStan.
 
 `audit_logs` names its subject `target_id` and `target_type`, not
 `subject_id`.
+
+A reseller is an organization and the reseller area is the admin area,
+narrowed. `resellers.administer` is a **gate, not a permission**, and it
+cannot be one: a reseller's own Administrator holds every staff permission
+by design, so a permission for it would let a reseller set their own margins
+and write their own balance. The gate asks which organization somebody
+belongs to — only one whose `permittedChildTypes()` includes `Reseller` — and
+still wants `organizations.manage` on top.
+
+A reseller's balance with the provider is a ledger, positive means they
+**hold** and negative means they **owe**, and the running balance is written
+onto each row under a lock so two payments recorded at once cannot both build
+on the same previous one. `ResellerLedgerKind::Withdrawal` is the decrease
+that `Credit` is the increase of; there is no `Adjustment`, because a kind
+that decides direction cannot be a word that does not.
+
+Attribution in the reseller reports is a join on `organizations.parent_id`,
+and it works **because there is one level of resale**: the organization that
+owns an order is a customer, so its parent is the seller. Sub-resellers would
+make it a recursive walk of `path`.
+
+`tests/Feature/ResellerScreenAuditTest.php` walks the router and drives every
+parameterless admin `GET` as a reseller's Administrator: 200, 403 or 404 and
+nothing else, then greps every 200 body for three records the provider owns.
+A screen added in a later phase joins it the day it is routed. Two guards
+keep it honest — one asserts the filter still matches screens, the other that
+the leak check examined bodies — because an audit that checks nothing passes.
 
 The admin shell's density was reset in Phase 11: the page and its cards are
 far enough apart in lightness to read as two surfaces, tables use small-cap

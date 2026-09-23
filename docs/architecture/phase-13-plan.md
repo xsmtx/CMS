@@ -1,6 +1,6 @@
 # Phase 13 — Reseller Plan
 
-Status: in progress
+Status: complete — see `phase-13-result.md`
 Date: 2026-09-23
 Previous: `phase-12-result.md`
 Handoff: §2 (Reseller-Ready Ownership Model), §4 (Reseller Area), §22 Phase 13
