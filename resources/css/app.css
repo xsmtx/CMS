@@ -90,7 +90,8 @@
 
   /* Shadows are tinted to the surface hue, never pure black */
   --shadow-raised: 0 1px 1px oklch(21% 0.03 255 / 0.04);
-  --shadow-panel: 0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
+  --shadow-panel:
+    0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
 
   /* Motion. The built-in CSS easings are too weak to read as intentional. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
