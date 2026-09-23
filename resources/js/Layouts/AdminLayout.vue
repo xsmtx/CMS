@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AppAlert from '../Components/AppAlert.vue'
+import AppIcon from '../Components/AppIcon.vue'
+import CommandPalette, { type Destination } from '../Components/CommandPalette.vue'
+import { type IconName } from '../icons'
 import AppMenu from '../Components/AppMenu.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useBranding } from '../composables/useBranding'
@@ -80,23 +83,6 @@ const footerLinks = computed(() =>
 
 const year = new Date().getFullYear()
 
-const searching = ref(false)
-const term = ref('')
-const searchField = ref<HTMLInputElement | null>(null)
-
-async function openSearch(): Promise<void> {
-  searching.value = true
-  await nextTick()
-  searchField.value?.focus()
-}
-
-function submitSearch(): void {
-  if (term.value.trim() === '') return
-
-  router.get('/admin/search', { q: term.value })
-  searching.value = false
-}
-
 /**
  * The placeholder face: whatever letters the account already has.
  *
@@ -136,9 +122,17 @@ interface NavItem {
 
 interface NavGroup {
   label: string
-  /** A group with an href is a link rather than a dropdown. Dashboard. */
+  /** A group with an href is a link rather than a dropdown. */
   href?: string
   permission?: string
+  /**
+   * The glyph in front of the label.
+   *
+   * On a group rather than on every row: an icon per link would be forty
+   * shapes competing in a dropdown, and the thing an operator navigates by
+   * is the group. Inside a panel the words are the affordance.
+   */
+  icon: IconName
   items?: NavItem[]
 }
 
@@ -160,6 +154,7 @@ interface NavGroup {
 const groups: NavGroup[] = [
   {
     label: 'Clients',
+    icon: 'clients',
     items: [
       { label: 'View/Search Clients', href: '/admin/customers', permission: 'crm.customers.view' },
       { label: 'Manage Users', href: '/admin/customer-users', permission: 'crm.customers.view' },
@@ -193,6 +188,7 @@ const groups: NavGroup[] = [
   },
   {
     label: 'Orders',
+    icon: 'orders',
     items: [
       {
         label: 'List All Orders',
@@ -212,6 +208,7 @@ const groups: NavGroup[] = [
   },
   {
     label: 'Billing',
+    icon: 'billing',
     items: [
       {
         label: 'Transactions List',
@@ -262,6 +259,7 @@ const groups: NavGroup[] = [
   },
   {
     label: 'Support',
+    icon: 'support',
     items: [
       {
         label: 'Support Overview',
@@ -303,6 +301,7 @@ const groups: NavGroup[] = [
   },
   {
     label: 'Utilities',
+    icon: 'utilities',
     items: [
       // The passwordless way into a server's panel. Owner only, like
       // everything that reaches somebody else's machine.
@@ -323,6 +322,7 @@ const groups: NavGroup[] = [
   },
   {
     label: 'Setup',
+    icon: 'setup',
     items: [
       { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
       { label: 'Product Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
@@ -352,7 +352,11 @@ const groups: NavGroup[] = [
  * the platform's own.
  */
 const withAddons = computed<NavGroup[]>(() =>
-  addons.value.length === 0 ? groups : [...groups, { label: 'Addons', items: addons.value }],
+  addons.value.length === 0
+    ? groups
+    : // A module's rows get the extension glyph, not one of their own. A
+      // module choosing its own icon could choose Billing's.
+      [...groups, { label: 'Addons', icon: 'modules' as const, items: addons.value }],
 )
 
 function isVisible(item: NavItem): boolean {
@@ -366,6 +370,28 @@ const visibleGroups = computed(() =>
       (group) =>
         (group.href !== undefined && isVisible(group as NavItem)) || group.items.length > 0,
     ),
+)
+
+/**
+ * Every screen the palette can take you to, flattened from the menu.
+ *
+ * Built from the same map rather than listed again: a palette with its own
+ * list of destinations is a second menu, and the two drift the first time
+ * somebody adds a screen to one of them. Permissions come free for the same
+ * reason — a row that opens a 403 is worse than a row that is not there.
+ */
+const destinations = computed<Destination[]>(() =>
+  visibleGroups.value.flatMap((group) =>
+    group.items.flatMap((item) => [
+      { label: item.label, href: item.href, group: group.label, icon: group.icon },
+      ...(item.children ?? []).map((child) => ({
+        label: child.label,
+        href: child.href,
+        group: item.label,
+        icon: group.icon,
+      })),
+    ]),
+  ),
 )
 
 // Which row inside an open group has its own submenu showing. One at a
@@ -507,10 +533,11 @@ onBeforeUnmount(() => {
         <nav data-admin-nav aria-label="Admin" class="min-w-0 flex-1">
           <button
             type="button"
-            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1.5 text-sm lg:hidden"
+            class="pressable text-content-muted hover:text-content text-body inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 lg:hidden"
             :aria-expanded="mobileOpen"
             @click="mobileOpen = !mobileOpen"
           >
+            <AppIcon name="more" :size="16" />
             Menu
           </button>
 
@@ -520,20 +547,21 @@ onBeforeUnmount(() => {
                 v-if="group.href"
                 :href="group.href"
                 :aria-current="isCurrentGroup(group) ? 'page' : undefined"
-                class="pressable text-body inline-flex items-center rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group)
                     ? 'bg-surface-sunken text-content'
                     : 'text-content-muted hover:text-content'
                 "
               >
+                <AppIcon :name="group.icon" :size="15" />
                 {{ group.label }}
               </Link>
 
               <button
                 v-else
                 type="button"
-                class="pressable text-body inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrentGroup(group) || openGroup === group.label
                     ? 'bg-surface-sunken text-content'
@@ -542,22 +570,14 @@ onBeforeUnmount(() => {
                 :aria-expanded="openGroup === group.label"
                 @click="toggle(group.label)"
               >
+                <AppIcon :name="group.icon" :size="15" />
                 {{ group.label }}
-                <svg
-                  class="size-3 transition-transform duration-(--duration-fast) ease-(--ease-out)"
+                <span
+                  class="text-content-subtle transition-transform duration-(--duration-fast) ease-(--ease-out)"
                   :class="openGroup === group.label ? 'rotate-180' : ''"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  aria-hidden="true"
                 >
-                  <path
-                    d="M3 4.5 6 7.5 9 4.5"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                  <AppIcon name="chevronDown" :size="12" />
+                </span>
               </button>
 
               <!-- Grows out of its own trigger: a panel anchored to the thing
@@ -599,15 +619,7 @@ onBeforeUnmount(() => {
                         :aria-label="`${item.label} submenu`"
                         @click.stop="openItem = openItem === item.label ? null : item.label"
                       >
-                        <svg class="size-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                          <path
-                            d="M4.5 3 7.5 6 4.5 9"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
+                        <AppIcon name="chevronRight" :size="12" />
                       </button>
                     </div>
 
@@ -643,42 +655,17 @@ onBeforeUnmount(() => {
         </nav>
 
         <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-          <!-- One box, every kind of record: a support call carries one
-               fact and no idea which screen it belongs to. -->
-          <form v-if="searching" class="flex items-center gap-1.5" @submit.prevent="submitSearch">
-            <input
-              ref="searchField"
-              v-model="term"
-              type="search"
-              placeholder="Client, domain, hostname, invoice…"
-              aria-label="Search everything"
-              class="border-line bg-surface text-content placeholder:text-content-subtle text-body focus:border-accent w-56 rounded-[var(--radius-sm)] border px-2.5 py-1.5 transition-colors duration-(--duration-fast) sm:w-72"
-              @keydown.escape="searching = false"
-            />
-          </form>
-          <button
-            v-else
-            type="button"
-            class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
-            aria-label="Search"
-            @click="openSearch"
-          >
-            <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
-              <path
-                d="m10.5 10.5 3 3"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
+          <!-- One box, every kind of record — a support call carries one
+               fact and no idea which screen it belongs to — and every
+               screen as well, because after a week an operator stops using
+               the menu for anything they can name. -->
+          <CommandPalette :destinations="destinations" />
 
           <ThemeSwitch />
 
           <!-- The spanner: what an installation is wired to, and what it
                wrote down. Shut to everybody but the owner. -->
-          <AppMenu v-if="isSuperAdmin" label="Tools" align="end" width="15rem" icon="wrench">
+          <AppMenu v-if="isSuperAdmin" label="Tools" align="end" width="15rem" icon="utilities">
             <Link
               href="/admin/apps"
               class="pressable hover:bg-surface-sunken block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
@@ -705,7 +692,7 @@ onBeforeUnmount(() => {
           <!-- Where to get help. Every link is configurable, because a
                white-label installation sends its operators to its own
                documentation, not to ours. -->
-          <AppMenu label="Help" align="end" width="15rem" icon="question">
+          <AppMenu label="Help" align="end" width="15rem" icon="help">
             <a
               v-for="(url, key) in help"
               :key="key"

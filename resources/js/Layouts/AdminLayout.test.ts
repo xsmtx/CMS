@@ -222,10 +222,12 @@ describe('AdminLayout navigation', () => {
     expect(render().find('button[aria-label="Tools"]').exists()).toBe(true)
   })
 
-  it('offers the search box and the help menu to everybody', () => {
+  it('offers the palette and the help menu to everybody', () => {
     const wrapper = render()
 
-    expect(wrapper.find('button[aria-label="Search"]').exists()).toBe(true)
+    // The trigger shows its own shortcut, which is the only way anybody
+    // learns a shortcut exists.
+    expect(wrapper.find('kbd').text()).toContain('K')
     expect(wrapper.find('button[aria-label="Help"]').exists()).toBe(true)
   })
 
@@ -234,12 +236,12 @@ describe('AdminLayout navigation', () => {
    * a second full-width strip costs an inch of every screen an operator
    * spends the day scrolling.
    */
-  it('keeps the menu on the same row as the search box', () => {
+  it('keeps the menu on the same row as the palette', () => {
     const wrapper = render()
     const nav = wrapper.find('nav[data-admin-nav]')
     const row = nav.element.parentElement
 
-    expect(row?.querySelector('input[type="search"], [aria-label="Search"]')).not.toBeNull()
+    expect(row?.querySelector('kbd')).not.toBeNull()
   })
 
   /**

@@ -20,6 +20,9 @@
  */
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
+import AppIcon from './AppIcon.vue'
+import { type IconName } from '../icons'
+
 const props = withDefaults(
   defineProps<{
     label: string
@@ -37,7 +40,7 @@ const props = withDefaults(
      * accessible name — an icon with no name is a button screen readers
      * announce as "button".
      */
-    icon?: 'wrench' | 'question' | null
+    icon?: IconName | null
   }>(),
   { align: 'end', width: '15rem', avatar: false, icon: null },
 )
@@ -149,24 +152,7 @@ defineExpose({ close })
     :aria-label="label"
     @click="toggle"
   >
-    <svg v-if="icon === 'wrench'" class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M10.7 2.3a3.5 3.5 0 0 0-4.5 4.3L2.4 10.4a1.4 1.4 0 0 0 2 2l3.8-3.8a3.5 3.5 0 0 0 4.3-4.5l-1.9 1.9-1.8-.4-.4-1.8 1.9-1.9Z"
-        stroke="currentColor"
-        stroke-width="1.3"
-        stroke-linejoin="round"
-      />
-    </svg>
-    <svg v-else class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3" />
-      <path
-        d="M6.3 6.1a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1v.3"
-        stroke="currentColor"
-        stroke-width="1.3"
-        stroke-linecap="round"
-      />
-      <circle cx="8" cy="11.4" r="0.75" fill="currentColor" />
-    </svg>
+    <AppIcon :name="icon ?? 'more'" :size="17" />
   </button>
 
   <button
@@ -192,21 +178,12 @@ defineExpose({ close })
     @click="toggle"
   >
     {{ label }}
-    <svg
-      class="size-3 transition-transform duration-150"
+    <span
+      class="text-content-subtle transition-transform duration-150"
       :class="open ? 'rotate-180' : ''"
-      viewBox="0 0 12 12"
-      fill="none"
-      aria-hidden="true"
     >
-      <path
-        d="M3 4.5 6 7.5 9 4.5"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
+      <AppIcon name="chevronDown" :size="12" />
+    </span>
   </button>
 
   <Teleport to="body">
