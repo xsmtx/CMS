@@ -80,6 +80,10 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: 'Domains',
+    items: [{ label: 'Domains', href: '/admin/domains', permission: 'domains.view' }],
+  },
+  {
     // Invoices, payments and transactions land here in Phase 4. Currencies
     // sit with them rather than with the catalog, the way an operator
     // thinks of them.
@@ -99,6 +103,7 @@ const groups: NavGroup[] = [
       { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
       { label: 'Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
       { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
+      { label: 'TLD pricing', href: '/admin/catalog/tlds', permission: 'catalog.tlds.view' },
     ],
   },
   {

@@ -51,6 +51,10 @@ final class FrontEndTranslations
         'crm.fields',
         'crm.save',
 
+        'domains.domains',
+        'domains.portal',
+        'domains.statuses',
+
         'identity.tokens',
 
         'ordering.cart',

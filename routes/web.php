@@ -6,6 +6,7 @@ use App\Http\Controllers\StorefrontCartController;
 use App\Http\Controllers\StorefrontCatalogController;
 use App\Http\Controllers\StorefrontCheckoutController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StorefrontDomainController;
 use App\Http\Controllers\StorefrontInvoiceController;
 use App\Http\Middleware\ResolveStorefrontOrganization;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,12 @@ Route::middleware(ResolveStorefrontOrganization::class)->group(function (): void
         ->name('storefront.cart.code.remove');
 
     Route::get('/checkout', [StorefrontCheckoutController::class, 'show'])->name('storefront.checkout');
+    // Domain search. A GET, so a result can be linked and shared.
+    Route::get('/domains', [StorefrontDomainController::class, 'index'])
+        ->name('storefront.domains');
+    Route::post('/domains', [StorefrontDomainController::class, 'store'])
+        ->name('storefront.domains.add');
+
     Route::post('/checkout', [StorefrontCheckoutController::class, 'store'])
         ->name('storefront.checkout.store');
     Route::get('/orders/{number}', [StorefrontCheckoutController::class, 'confirmation'])

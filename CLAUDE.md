@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 6 are complete (`docs/architecture/phase-0-result.md` through
-`phase-6-result.md`). Phase 7, Domains, is next and is not started. Do not
-begin a phase without being asked for it.
+Phases 0 to 7 are complete (`docs/architecture/phase-0-result.md` through
+`phase-7-result.md`). Phase 8, Support + Content + Notifications, is next
+and is not started. Do not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -137,9 +137,10 @@ whether the money came from a webhook or an operator. A redirect back from a
 gateway proves nothing; only a verified webhook or a server-to-server answer
 moves money.
 
-A model whose money columns have database defaults declares them in
-`$attributes` too: a default fills the row but leaves the model in memory
-without the attribute, and the money cast reads that absence as null.
+A model whose columns have database defaults declares them in `$attributes`
+too: a default fills the row but leaves the model in memory without the
+attribute, and a cast reads that absence as null. It bit the money columns
+in Phase 4 and the booleans in Phase 7.
 
 A document number belongs to the seller, not the buyer (ADR 0025). A
 customer is an organization of its own, so `AllocateNumber` resolves the
@@ -175,3 +176,14 @@ from inside a transaction.
 Queued jobs go on named queues. A new queue has to be added to the Horizon
 supervisor in `config/horizon.php`, or its jobs sit in Redis and the failure
 is silent.
+
+A domain is not a service (ADR 0028), and availability is three-valued. A
+registry that did not answer has **not** said a name is free; `unknown` is
+preserved from the adapter all the way to the page. The registrant is never
+stored here — the registry holds it — and an EPP transfer code is fetched,
+shown once and never written down. `DomainName::parse()` splits at the first
+dot and is for hostnames; `parseWithin()` splits against the TLDs on sale
+and is the only correct one when the extension is being priced.
+
+Before writing a file under `app/Domain/<Context>/`, check whether it
+already exists. Phase 7 overwrote two Phase 3 classes this way.

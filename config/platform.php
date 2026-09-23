@@ -175,6 +175,49 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Domains
+    |--------------------------------------------------------------------------
+    |
+    | A registrar without credentials is never registered, so an operator
+    | picking one on a TLD form is picking from the set that works.
+    | `manual` is always available.
+    |
+    */
+
+    'domains' => [
+        // Seconds. A registry that hangs must not hold a worker.
+        'timeout' => (int) env('DOMAINS_TIMEOUT', 30),
+
+        // How many times a registration is attempted before the domain is
+        // left in `failed` for a human.
+        'job_tries' => (int) env('DOMAINS_JOB_TRIES', 3),
+
+        // Seconds an availability answer is worth. Short: a search box asks
+        // the same question five times in a minute, and a name that was
+        // free an hour ago is not evidence of anything.
+        'availability_ttl' => (int) env('DOMAINS_AVAILABILITY_TTL', 60),
+
+        // What a new registration points at until the customer changes it.
+        'default_nameservers' => array_values(array_filter(
+            explode(',', (string) env('DOMAINS_DEFAULT_NAMESERVERS', '')),
+        )),
+
+        'registrars' => [
+            'namecheap' => [
+                'username' => env('NAMECHEAP_USERNAME'),
+                'api_key' => env('NAMECHEAP_API_KEY'),
+                // Namecheap allow-lists the calling address and rejects a
+                // request without it in a way that reads like bad
+                // credentials.
+                'client_ip' => env('NAMECHEAP_CLIENT_IP'),
+                'sandbox' => (bool) env('NAMECHEAP_SANDBOX', false),
+                'api_base' => env('NAMECHEAP_API_BASE'),
+            ],
+        ],
+    ],
+
     'risk' => [
         'enabled' => (bool) env('RISK_ENABLED', true),
 

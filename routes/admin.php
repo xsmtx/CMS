@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TldController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -96,6 +98,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     // Billing. Every action that moves money is its own route, because
     // each answers to its own permission.
+    Route::get('domains', [DomainController::class, 'index'])->name('domains.index');
+    Route::get('domains/{domain}', [DomainController::class, 'show'])->name('domains.show');
+    Route::post('domains/{domain}/register', [DomainController::class, 'register'])
+        ->name('domains.register');
+    Route::post('domains/{domain}/actions', [DomainController::class, 'action'])
+        ->name('domains.action');
+    Route::put('domains/{domain}/status', [DomainController::class, 'transition'])
+        ->name('domains.status');
+
+    Route::get('catalog/tlds', [TldController::class, 'index'])->name('tlds.index');
+    Route::post('catalog/tlds', [TldController::class, 'store'])->name('tlds.store');
+    Route::put('catalog/tlds/{tld}', [TldController::class, 'update'])->name('tlds.update');
+    Route::delete('catalog/tlds/{tld}', [TldController::class, 'destroy'])->name('tlds.destroy');
+
     Route::get('services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
     Route::post('services/{service}/provision', [ServiceController::class, 'provision'])

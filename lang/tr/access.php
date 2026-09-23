@@ -31,6 +31,7 @@ return [
         'settings' => 'Ayarlar',
         'services' => 'Hizmetler',
         'infrastructure' => 'Altyapı',
+        'domains' => 'Alan adları',
         'portal' => 'Müşteri paneli',
     ],
 ];

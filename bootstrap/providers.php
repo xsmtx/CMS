@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Providers\AccessServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\BillingServiceProvider;
+use App\Providers\DomainServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\OrderingServiceProvider;
 use App\Providers\OrganizationServiceProvider;
@@ -17,6 +18,7 @@ return [
     OrderingServiceProvider::class,
     BillingServiceProvider::class,
     ProvisioningServiceProvider::class,
+    DomainServiceProvider::class,
     PlatformServiceProvider::class,
     AccessServiceProvider::class,
     HorizonServiceProvider::class,

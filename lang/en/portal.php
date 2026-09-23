@@ -6,6 +6,7 @@ return [
     'nav' => [
         'overview' => 'Overview',
         'services' => 'Services',
+        'domains' => 'Domains',
         'orders' => 'Orders',
         'billing' => 'Billing',
         'contacts' => 'Contacts',

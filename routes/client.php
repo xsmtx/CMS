@@ -8,6 +8,7 @@ use App\Http\Controllers\Client\ApiTokenController;
 use App\Http\Controllers\Client\BillingDetailsController;
 use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\Client\DomainController;
 use App\Http\Controllers\Client\InvoiceController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\ProfileController;
@@ -59,6 +60,16 @@ Route::middleware(['auth:client'])->prefix('client')->group(function (): void {
 
     Route::get('services', [ServiceController::class, 'index'])->name('services');
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('service');
+
+    Route::get('domains', [DomainController::class, 'index'])->name('domains');
+    Route::get('domains/{domain}', [DomainController::class, 'show'])->name('domain');
+    Route::put('domains/{domain}/nameservers', [DomainController::class, 'nameservers'])
+        ->name('domains.nameservers');
+    Route::put('domains/{domain}/auto-renew', [DomainController::class, 'autoRenew'])
+        ->name('domains.auto-renew');
+    // Fetched, shown once, never stored.
+    Route::post('domains/{domain}/transfer-code', [DomainController::class, 'transferCode'])
+        ->name('domains.transfer-code');
 
     Route::get('orders', [OrderController::class, 'index'])->name('orders');
     Route::get('orders/{number}', [OrderController::class, 'show'])->name('order');

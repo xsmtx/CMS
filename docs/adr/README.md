@@ -35,3 +35,4 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0025](0025-documents-are-numbered-in-the-sellers-name.md) | Documents are numbered in the seller's name | accepted |
 | [0026](0026-provisioning-is-idempotent-and-failure-is-a-state.md) | Provisioning is idempotent, and failure is a state | accepted |
 | [0027](0027-contexts-meet-through-events.md) | Contexts meet through events, not through calls | accepted |
+| [0028](0028-a-domain-is-not-a-service.md) | A domain is not a service, and silence is not availability | accepted |

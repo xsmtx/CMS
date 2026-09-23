@@ -106,8 +106,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 4 | Billing + Payments: invoices and PDF, payments, transactions, credits/refunds, Stripe, PayPal, manual payment, webhook idempotency, reconciliation | **complete** — see `phase-4-result.md` |
 | 5 | Client Area: dashboard, services, billing, support shell, account/security, developer section | **complete** — see `phase-5-result.md` |
 | 6 | Services + Provisioning: service lifecycle, infrastructure inventory, placement, queues, first hosting/VPS adapters | **complete** — see `phase-6-result.md` |
-| 7 | Domains: registrar SDK, TLD pricing, register/transfer/renew, nameservers, synchronisation | next |
-| 8 | Support + Content + Notifications: tickets, departments, SLA, knowledge base, announcements, email/in-app/webhook notifications | |
+| 7 | Domains: registrar SDK, TLD pricing, register/transfer/renew, nameservers, synchronisation | **complete** — see `phase-7-result.md` |
+| 8 | Support + Content + Notifications: tickets, departments, SLA, knowledge base, announcements, email/in-app/webhook notifications | next |
 | 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | |
 | 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | |
 | 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | |

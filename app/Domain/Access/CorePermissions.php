@@ -33,6 +33,7 @@ final class CorePermissions
             ...self::billing(),
             ...self::settings(),
             ...self::provisioning(),
+            ...self::domains(),
             ...self::portal(),
         ];
     }
@@ -195,6 +196,24 @@ final class CorePermissions
     /**
      * @return list<PermissionDefinition>
      */
+    private static function domains(): array
+    {
+        return [
+            new PermissionDefinition('domains.view', 'domains', RoleScope::Staff),
+            // Nameservers, lock, auto-renew, contacts.
+            new PermissionDefinition('domains.manage', 'domains', RoleScope::Staff),
+            // Spends money at a registrar, and a registration cannot be
+            // taken back.
+            new PermissionDefinition('domains.register', 'domains', RoleScope::Staff, highRisk: true),
+
+            new PermissionDefinition('catalog.tlds.view', 'catalog', RoleScope::Staff),
+            new PermissionDefinition('catalog.tlds.manage', 'catalog', RoleScope::Staff),
+        ];
+    }
+
+    /**
+     * @return list<PermissionDefinition>
+     */
     private static function portal(): array
     {
         return [
@@ -212,6 +231,8 @@ final class CorePermissions
             // do in the portal.
             new PermissionDefinition('portal.tokens.manage', 'portal', RoleScope::Customer, highRisk: true),
             new PermissionDefinition('portal.services.view', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.domains.view', 'portal', RoleScope::Customer),
+            new PermissionDefinition('portal.domains.manage', 'portal', RoleScope::Customer),
         ];
     }
 }

@@ -1,0 +1,66 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3'
+
+import AppBadge from '../../../Components/AppBadge.vue'
+import AppCard from '../../../Components/AppCard.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
+
+interface DomainRow {
+  id: string
+  name: string
+  status: string
+  statusLabel: string
+  isUsable: boolean
+  expiresOn: string | null
+  daysUntilExpiry: number | null
+  renewal: string
+}
+
+defineProps<{ domains: DomainRow[] }>()
+
+const { t } = useTranslations()
+
+function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
+  if (status === 'active') return 'success'
+  if (status === 'failed' || status === 'redemption') return 'danger'
+  if (status === 'expired' || status === 'pending' || status === 'registering') return 'warning'
+  return 'neutral'
+}
+</script>
+
+<template>
+  <Head :title="t('domains.portal.title')" />
+
+  <ClientLayout :heading="t('domains.portal.title')" :description="t('domains.portal.description')">
+    <div v-if="domains.length > 0" class="grid gap-5 sm:grid-cols-2">
+      <AppCard v-for="domain in domains" :key="domain.id">
+        <div class="flex items-start justify-between gap-4">
+          <Link
+            :href="`/client/domains/${domain.id}`"
+            class="min-w-0 text-sm font-semibold break-all underline-offset-4 hover:underline"
+          >
+            {{ domain.name }}
+          </Link>
+          <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
+        </div>
+
+        <dl class="border-line mt-4 border-t pt-3 text-sm">
+          <div v-if="domain.expiresOn" class="flex justify-between gap-4 py-1">
+            <dt class="text-content-muted">
+              {{ t('domains.portal.expires_on', { date: domain.expiresOn }) }}
+            </dt>
+            <dd class="tabular-nums">{{ domain.renewal }}</dd>
+          </div>
+        </dl>
+      </AppCard>
+    </div>
+
+    <EmptyState
+      v-else
+      :title="t('domains.portal.none')"
+      :description="t('domains.portal.none_description')"
+    />
+  </ClientLayout>
+</template>

@@ -31,6 +31,7 @@ return [
         'settings' => 'Settings',
         'services' => 'Services',
         'infrastructure' => 'Infrastructure',
+        'domains' => 'Domains',
         'portal' => 'Client portal',
     ],
 ];

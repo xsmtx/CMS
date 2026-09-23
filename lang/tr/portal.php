@@ -6,6 +6,7 @@ return [
     'nav' => [
         'overview' => 'Genel bakış',
         'services' => 'Hizmetler',
+        'domains' => 'Alan adları',
         'orders' => 'Siparişler',
         'billing' => 'Faturalandırma',
         'contacts' => 'Kişiler',
