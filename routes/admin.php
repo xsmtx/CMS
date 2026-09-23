@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ResellerController;
+use App\Http\Controllers\Admin\ResellerReportController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\ServiceAddonController;
@@ -319,6 +320,11 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('resellers.prices');
     Route::post('resellers/{reseller}/ledger', [ResellerController::class, 'ledger'])
         ->name('resellers.ledger');
+
+    // The roll-up the provider cannot get from the boundary. A reseller's own
+    // numbers are the dashboard they already have.
+    Route::get('reports/resellers', ResellerReportController::class)
+        ->name('reports.resellers');
 
     Route::get('customer-users', [CustomerUserController::class, 'index'])
         ->name('customer-users');

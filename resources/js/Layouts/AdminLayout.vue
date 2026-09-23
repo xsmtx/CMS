@@ -215,7 +215,16 @@ const groups: NavGroup[] = [
        * which is the one case where hiding and authorizing disagree, and it
        * is the safe direction.
        */
-      { label: 'Resellers', href: '/admin/resellers', permission: 'organizations.manage' },
+      {
+        label: 'Resellers',
+        href: '/admin/resellers',
+        permission: 'organizations.manage',
+        children: [
+          { label: 'All resellers', href: '/admin/resellers' },
+          { label: 'Add reseller', href: '/admin/resellers/create' },
+          { label: 'Performance', href: '/admin/reports/resellers' },
+        ],
+      },
     ],
   },
   {
