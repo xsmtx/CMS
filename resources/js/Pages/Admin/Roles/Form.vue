@@ -14,6 +14,8 @@ import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface PermissionOption {
   slug: string
+  label: string
+  description: string | null
   scope: string
   highRisk: boolean
   module: string | null
@@ -119,14 +121,23 @@ function submit(): void {
             <h3 class="text-content-muted mb-3 text-xs font-medium">{{ group.label }}</h3>
             <div class="grid gap-3 sm:grid-cols-2">
               <div v-for="permission in group.permissions" :key="permission.slug">
+                <!-- The name, then what it lets somebody do. The slug is
+                     what the code checks and is kept where somebody
+                     debugging can find it, not where somebody deciding
+                     has to read it. -->
                 <AppCheckbox
                   :model-value="form.permission_slugs.includes(permission.slug)"
-                  :label="permission.slug"
+                  :label="permission.label"
+                  :description="permission.description ?? undefined"
                   @update:model-value="(checked: boolean) => toggle(permission.slug, checked)"
                 />
-                <AppBadge v-if="permission.highRisk" tone="warning" class="mt-1 ml-7">
-                  High risk
-                </AppBadge>
+                <div class="mt-1 ml-7 flex flex-wrap items-center gap-2">
+                  <AppBadge v-if="permission.highRisk" tone="warning">High risk</AppBadge>
+                  <AppBadge v-if="permission.module" tone="neutral">
+                    {{ permission.module }}
+                  </AppBadge>
+                  <code class="text-content-subtle text-[11px]">{{ permission.slug }}</code>
+                </div>
               </div>
             </div>
           </section>

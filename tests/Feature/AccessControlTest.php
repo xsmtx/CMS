@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Access\PermissionNames;
 use App\Application\Access\SyncPermissions;
 use App\Domain\Access\CorePermissions;
 use App\Domain\Access\PermissionDefinition;
@@ -156,6 +157,45 @@ it('defines a gate for every declared permission', function (): void {
     foreach (app(PermissionRegistry::class)->slugs() as $slug) {
         expect(Gate::has($slug))->toBeTrue();
     }
+});
+
+/**
+ * A permission with no name reaches the roles screen as a dotted
+ * identifier, and a screen of dotted identifiers is a screen where the
+ * wrong box gets ticked. Both languages, because shipping one of them is
+ * how half a product ends up in English.
+ */
+it('names every declared permission, in every language', function (): void {
+    $names = app(PermissionNames::class);
+
+    foreach (['en', 'tr'] as $locale) {
+        app()->setLocale($locale);
+
+        foreach (app(PermissionRegistry::class)->all() as $definition) {
+            $label = $names->label($definition);
+            $description = $names->description($definition);
+
+            expect($label)
+                ->not->toContain('.', 'No name for '.$definition->slug.' in '.$locale)
+                ->and($description)
+                ->not->toBeNull('No description for '.$definition->slug.' in '.$locale);
+        }
+    }
+
+    app()->setLocale('en');
+});
+
+/**
+ * A module declares permissions core has never heard of, so there is no
+ * translation to find. Words rather than a dotted identifier is the answer,
+ * and the group is dropped because it is already the heading above the row.
+ */
+it('makes words out of a permission nobody translated', function (): void {
+    $label = app(PermissionNames::class)->label(
+        new PermissionDefinition('acme.custom_reports.view', 'acme', RoleScope::Staff, module: 'acme'),
+    );
+
+    expect($label)->toBe('Custom reports view');
 });
 
 it('declares no permission slug twice across core and modules', function (): void {

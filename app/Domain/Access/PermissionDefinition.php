@@ -29,13 +29,18 @@ final readonly class PermissionDefinition
         public ?string $module = null,
     ) {}
 
-    public function labelKey(): string
+    /**
+     * Where the wording lives.
+     *
+     * The slug is the key **inside** that array rather than part of the
+     * dotted path, because a slug has dots of its own: asking the
+     * translator for `access.permissions.crm.customers.view.label` is
+     * asking it to walk five levels of nesting rather than to find one key
+     * called `crm.customers.view`. `PermissionNames` reads the array and
+     * indexes it by slug.
+     */
+    public function wordingKey(): string
     {
-        return 'access.permissions.'.$this->slug.'.label';
-    }
-
-    public function descriptionKey(): string
-    {
-        return 'access.permissions.'.$this->slug.'.description';
+        return 'access.permissions';
     }
 }

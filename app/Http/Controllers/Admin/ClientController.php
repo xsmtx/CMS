@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Access\PermissionNames;
 use App\Application\Crm\ClientAddressAttributes;
 use App\Application\Crm\ClientContactAttributes;
 use App\Application\Crm\CreateClient;
@@ -45,7 +46,10 @@ use Inertia\Response;
  */
 final class ClientController extends Controller
 {
-    public function __construct(private readonly CurrentActor $actor) {}
+    public function __construct(
+        private readonly CurrentActor $actor,
+        private readonly PermissionNames $names,
+    ) {}
 
     public function create(): Response
     {
@@ -61,7 +65,7 @@ final class ClientController extends Controller
             ),
             'currencies' => $this->currencies(),
             'tags' => $this->tags(),
-            'roles' => $this->roles(),
+            'roles' => $this->roles($this->names),
             'locales' => $this->locales(),
             'customFields' => $this->customFields(),
             'defaults' => [
@@ -216,7 +220,7 @@ final class ClientController extends Controller
      *
      * @return list<array<string, mixed>>
      */
-    private function roles(): array
+    private function roles(PermissionNames $names): array
     {
         $roles = Role::query()
             ->whereIn('slug', [SystemRole::AccountOwner->value, SystemRole::PortalMember->value])
@@ -225,20 +229,23 @@ final class ClientController extends Controller
             ->keyBy(static fn (Role $role): string => $role->slug);
 
         return array_values(array_map(
-            static function (SystemRole $role) use ($roles): array {
+            static function (SystemRole $role) use ($roles, $names): array {
                 $record = $roles->get($role->value);
 
                 return [
                     'value' => $role->value,
                     'label' => (string) __('access.roles.'.$role->value),
+                    // Named, not slugged, and named by the same class the
+                    // roles screen uses — two vocabularies for one thing is
+                    // how a product ends up calling one capability two
+                    // names.
                     'can' => $record instanceof Role
-                        // Slugs, as the roles screen shows them. There is
-                        // no per-permission wording in `lang/`, and
-                        // inventing some here would be a second vocabulary
-                        // that drifts from the first.
                         ? array_values($record->permissions
                             ->whereNull('orphaned_at')
-                            ->pluck('slug')
+                            ->map(static fn (object $permission): string => $names->label(
+                                (string) $permission->getAttribute('slug'),
+                            ))
+                            ->sort()
                             ->all())
                         : [],
                 ];

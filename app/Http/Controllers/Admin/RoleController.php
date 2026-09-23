@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Application\Access\CreateRole;
 use App\Application\Access\DeleteRole;
+use App\Application\Access\PermissionNames;
 use App\Application\Access\RoleAttributes;
 use App\Application\Access\UpdateRole;
 use App\Domain\Access\PermissionDefinition;
@@ -30,6 +31,7 @@ final class RoleController extends Controller
 {
     public function __construct(
         private readonly PermissionRegistry $registry,
+        private readonly PermissionNames $names,
         private readonly CurrentActor $actor,
     ) {}
 
@@ -145,6 +147,8 @@ final class RoleController extends Controller
                 'permissions' => array_values(array_map(
                     fn (PermissionDefinition $definition): array => [
                         'slug' => $definition->slug,
+                        'label' => $this->names->label($definition),
+                        'description' => $this->names->description($definition),
                         'scope' => $definition->scope->value,
                         'highRisk' => $definition->highRisk,
                         'module' => $definition->module,
