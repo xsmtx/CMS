@@ -66,7 +66,7 @@ assumed: the row holds a name, an address, colours, URLs. An email
 that send it stay in configuration, where the rest of this platform's
 secrets live.
 
-ADR 0035 records this.
+ADR 0036 records this.
 
 ## 3. The second decision: a theme is a package, and it may not execute
 
@@ -101,7 +101,7 @@ are PHP, and "install this free theme" is a known attack. So:
 - Raw PHP tags in theme templates are refused at install time, with the
   file named.
 
-ADR 0036 records this.
+ADR 0037 records this.
 
 ## 4. Vendor branding and entitlements
 
@@ -170,7 +170,7 @@ question.
 5. Move the core storefront templates into `themes/storefront/core`.
 6. Brand the client and admin shells, notifications and the invoice.
 7. The settings screen.
-8. Permissions, translations, ADRs 0035 and 0036, result document.
+8. Permissions, translations, ADRs 0036 and 0037, result document.
 
 ## 7. Definition of done for this phase
 

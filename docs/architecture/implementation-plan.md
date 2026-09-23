@@ -110,8 +110,8 @@ with the Definition of Done in §6 satisfied for everything it introduced.
 | 8 | Support + Content + Notifications: tickets, departments, SLA, knowledge base, announcements, email/in-app/webhook notifications | **complete** - see `phase-8-result.md` |
 | 9 | Automation + Operations: renewals, reminders, dunning, suspension/termination, retries, Background Operations Center, System Health | **complete** - see `phase-9-result.md` |
 | 10 | Public API + Developer Platform: `/api/v1` resources, scopes, rate limits, idempotency, OpenAPI, API activity, outbound webhooks | **complete** - see `phase-10-result.md` |
-| 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | next |
-| 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | |
+| 11 | Theme / White-Label: storefront/client/reseller manifests, child themes, branding, upgrade-safe overrides | **complete** - see `phase-11-result.md` |
+| 12 | Module SDK: stable contracts, module lifecycle, permissions, UI extension points, compatibility checks | next |
 | 13 | Reseller: isolation, customers, services, pricing/margins, API, branding, credit, reports | |
 | 14 | Licensing Control Plane: separate API/admin/database, signed entitlements, activations, heartbeat, grace, update entitlement | |
 | 15 | Import / Migration: importer framework, first WHMCS-compatible adapter | |

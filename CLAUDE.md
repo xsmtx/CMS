@@ -88,9 +88,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 ## Current state
 
-Phases 0 to 10 are complete (`docs/architecture/phase-0-result.md` through
-`phase-10-result.md`). Phase 11, Theme / White-Label, is next and is not
-started. Do not begin a phase without being asked for it.
+Phases 0 to 11 are complete (`docs/architecture/phase-0-result.md` through
+`phase-11-result.md`). Phase 12, Module SDK, is next and is not started. Do
+not begin a phase without being asked for it.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -334,3 +334,36 @@ but termination, because suspending and resuming the service must not undo
 fulfilment run, not only the one that created the service, and read from
 `OrderItem` directly — `$order->items` excludes children on purpose, and an
 addon line is exactly a child.
+
+A brand is a row, not a config value (ADR 0036). `CurrentBrand` answers
+whose brand applies per surface, and the client area resolves the
+**seller's** — a customer is an organization here, so asking for "the
+current organization's brand" would show them their own name on their own
+invoices. A brand inherits field by field up the organization path, and a
+null and an empty string both mean "ask my parent", or somebody who clears
+a field can never undo it. Nothing a brand holds may be a secret, and a
+test asserts the shape: a brand is printed by templates a theme author
+wrote.
+
+A theme is a package and may not execute (ADR 0037). Precedence is
+**resolution, not merging** — installation override → child → parent →
+core, registered as view paths in order, so no controller changes.
+**Settings merge; templates do not.** Raw PHP in a theme template is
+refused at install, by file. A theme that needs behaviour is a module, not
+a theme. `themes/storefront/core` is itself a theme, which is what keeps
+the chain honest.
+
+An entitlement is a seam, not a policy. `Entitlements` allows everything by
+default, because a gate whose default is deny turns an unreachable licence
+API into an outage. It is asked at **render** as well as on save: a lapsed
+licence shows the vendor mark again rather than leaving it hidden forever.
+
+`attributes()` is reserved on `FormRequest`. A request class that overrides
+it for its own purposes breaks validation on that request, quietly.
+
+The admin shell's density was reset in Phase 11: the page and its cards are
+far enough apart in lightness to read as two surfaces, tables use small-cap
+headers and a hover row, badges carry a tint of their own tone mixed from
+the semantic token, and counts an operator opens a screen for are `AppStat`
+cards that filter when pressed. Check a visual change against the built
+stylesheet in both themes rather than inferring it from class names.

@@ -43,3 +43,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0033](0033-the-api-is-a-surface.md) | The API is a surface, not a system | accepted |
 | [0034](0034-a-write-is-replayable.md) | A write is replayable, and so is a delivery | accepted |
 | [0035](0035-an-addon-is-not-a-service.md) | An addon is not a service, and not just an order line | accepted |
+| [0036](0036-a-brand-is-a-row.md) | A brand is a row, not a config value | accepted |
+| [0037](0037-a-theme-is-a-package-and-may-not-execute.md) | A theme is a package, and it may not execute | accepted |
