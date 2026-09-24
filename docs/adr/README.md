@@ -47,3 +47,8 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0037](0037-a-theme-is-a-package-and-may-not-execute.md) | A theme is a package, and it may not execute | accepted |
 | [0038](0038-a-module-may-execute.md) | A module may execute, and enabling is the moment it does | accepted |
 | [0039](0039-the-sdk-is-platform-contracts.md) | The SDK is platform contracts, versioned apart from the platform | accepted |
+| [0040](0040-the-ui-is-primitives.md) | The UI is primitives, not pages | accepted |
+| [0041](0041-a-lapsed-licence-is-not-an-outage.md) | A lapsed licence is not an outage | accepted |
+| [0042](0042-an-import-writes-rows-and-dispatches-nothing.md) | An import writes rows and dispatches nothing | accepted |
+| [0043](0043-the-resource-graph-is-edges-not-facts.md) | The Resource Graph is edges, not facts | accepted |
+| [0044](0044-mobile-is-react-native-and-a-separate-artefact.md) | Mobile is React Native, and a separate artefact | accepted |
