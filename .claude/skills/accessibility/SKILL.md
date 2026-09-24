@@ -1,6 +1,6 @@
 ---
 name: accessibility
-description: Accessibility requirements for InfraCMS (WCAG 2.2 AA, Handoff #3 §14) and how this codebase meets them — contrast, keyboard navigation, focus, semantic HTML and ARIA, form labels and errors, dialogs and focus traps, tables, menus, tabs, tooltips, charts, status without colour, reduced motion. Load whenever you build or change an interactive component, form, dialog, table, menu, chart or colour token, and as part of every visual review. Accessibility is a requirement, not polish.
+description: Accessibility requirements for InfraCMS (WCAG 2.2 AA, Handoff 3 §14) and how this codebase meets them — contrast, keyboard navigation, focus, semantic HTML and ARIA, form labels and errors, dialogs and focus traps, tables, menus, tabs, tooltips, charts, status without colour, reduced motion. Load whenever you build or change an interactive component, form, dialog, table, menu, chart or colour token, and as part of every visual review. Accessibility is a requirement, not polish.
 ---
 
 # Accessibility
