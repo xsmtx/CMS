@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Client;
 
+use App\Http\Requests\Concerns\AsksForATaxId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -16,20 +17,30 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class BillingDetailsRequest extends FormRequest
 {
+    use AsksForATaxId;
+
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return $this->taxIdMessages();
+    }
+
+    /**
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             'company_name' => ['nullable', 'string', 'max:191'],
             'legal_name' => ['nullable', 'string', 'max:191'],
-            'tax_id' => ['nullable', 'string', 'max:64'],
+            'tax_id' => $this->taxIdRules(),
 
             'line_one' => ['required', 'string', 'max:191'],
             'line_two' => ['nullable', 'string', 'max:191'],

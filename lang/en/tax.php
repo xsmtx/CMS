@@ -114,6 +114,17 @@ return [
         'per_invoice' => 'Once on the total',
     ],
 
+    /*
+     * The words for a tax id, used by every form that asks for one.
+     *
+     * `default_label` is deliberately not "VAT number": a default that is wrong
+     * for most of the world reads as configured when it is only unset.
+     */
+    'identity' => [
+        'default_label' => 'Tax ID',
+        'required' => ':label is required for a business.',
+    ],
+
     'errors' => [
         'not_permitted' => 'Only the owner of this installation can change tax.',
     ],

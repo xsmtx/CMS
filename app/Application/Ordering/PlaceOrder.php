@@ -176,7 +176,9 @@ final readonly class PlaceOrder
             stateCode: $address?->region,
             postalCode: $address?->postal_code,
             taxId: $customer->tax_id,
-            isBusiness: $customer->tax_id !== null && $customer->tax_id !== '',
+            // A company name, not a tax id: the second is circular and made
+            // `TaxCustomerKind::Business` mean "typed a tax id".
+            isBusiness: $customer->isBusiness(),
             supplierCountryCode: config('platform.tax.flat.country'),
         );
     }

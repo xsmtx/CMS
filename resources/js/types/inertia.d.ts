@@ -107,10 +107,22 @@ export interface OperationQueueRow {
  * Keep this in step with that middleware: it is the contract between the
  * server and the first-party front end.
  */
+/**
+ * What this seller calls a tax id, and whether a business must state one.
+ *
+ * "VAT number" is wrong in most of the world, so the label is a seller setting
+ * rather than a translated string.
+ */
+export interface TaxIdentityProps {
+  label: string
+  requiredForBusiness: boolean
+}
+
 declare module '@inertiajs/core' {
   interface PageProps {
     auth: AuthProps
     brand: BrandProps
+    taxIdentity?: TaxIdentityProps
     moduleNavigation?: ModuleNavItem[]
     help?: Record<string, string>
     impersonation: ImpersonationProps | null

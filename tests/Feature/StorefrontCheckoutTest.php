@@ -22,6 +22,7 @@ use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Promotions\Models\Promotion;
 use App\Infrastructure\Shared\Models\CurrencyRecord;
+use App\Infrastructure\Tax\Models\TaxSetting;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -193,6 +194,53 @@ it('places an order for a new visitor and creates their account', function (): v
         ->and($contact->portal_access)->toBeTrue()
         ->and($contact->password)->not->toBeNull()
         ->and(Hash::check('', (string) $contact->password))->toBeFalse();
+});
+
+/**
+ * A guest buying as a business has to be able to say so.
+ *
+ * The form carried a company name and no tax id at all, which meant a seller who
+ * turned on "ask a business for a tax id" would have refused every business
+ * checkout with an error against a field that was not on the page — and reverse
+ * charge could never be claimed at checkout either, because there was nowhere to
+ * put the number it needs.
+ */
+it('asks a guest for a tax id, in the seller\'s own words', function (): void {
+    addToCart();
+
+    TaxSetting::factory()
+        ->forOrganization($this->provider->id)
+        ->create(['tax_id_label' => 'Vergi Numarası', 'require_tax_id_for_business' => true]);
+
+    $this->get('/checkout')
+        ->assertOk()
+        ->assertSee('name="tax_id"', false)
+        ->assertSee('Vergi Numarası');
+
+    // A business without one is refused, and told which field.
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'company' => 'Acme A.Ş.',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ])->assertSessionHasErrors('tax_id');
+
+    expect(Order::query()->withoutGlobalScope('organization')->count())->toBe(0);
+
+    // An individual is asked for nothing.
+    $this->post('/checkout', [
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+        'email' => 'ayse@example.com',
+        'country_code' => 'TR',
+        'terms' => '1',
+        'expected_total' => 1499,
+    ])->assertSessionHasNoErrors();
+
+    expect(Order::query()->withoutGlobalScope('organization')->count())->toBe(1);
 });
 
 /**

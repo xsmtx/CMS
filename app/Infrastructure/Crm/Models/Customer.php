@@ -203,6 +203,24 @@ final class Customer extends Model implements AuditLabel
      * name, then the primary contact, so a sole trader with no company name
      * is never rendered as an empty string.
      */
+    /**
+     * Whether this customer is a company rather than a person.
+     *
+     * **A company name, not a tax id.** Inferring it from the tax id was how it
+     * worked until the tax rules needed the answer, and it is circular: it makes
+     * an individual who typed a tax id a business, a company that has not given
+     * one an individual, and a rule saying "a business must state a tax id"
+     * impossible to ever fire — a customer without one would not be a business.
+     *
+     * "Has a tax id" is a different question and is still asked separately,
+     * because reverse charge needs both: a business *and* an id to charge it to.
+     */
+    public function isBusiness(): bool
+    {
+        return trim((string) $this->company_name) !== ''
+            || trim((string) $this->legal_name) !== '';
+    }
+
     public function displayName(): string
     {
         if ($this->company_name !== null && $this->company_name !== '') {

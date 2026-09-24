@@ -120,14 +120,25 @@ final class PriceCart
             $zero,
         );
 
+        /*
+         * Nothing is added when the price already includes the tax. An inclusive
+         * catalog price is the price the customer was shown, so the total is the
+         * amount itself and the tax is a figure *inside* it.
+         *
+         * The subtotal then carries the net, which is what keeps the document's
+         * own arithmetic true — subtotal + setup - discount + tax = total holds
+         * either way, and every consumer of `CartTotals` (the cart screen, the
+         * order rows, the invoice copied from them) needs no knowledge of which
+         * kind of catalog this is.
+         */
         return new CartTotals(
             currencyCode: $currency,
             lines: $lines,
-            subtotal: $subtotal,
+            subtotal: $tax->included ? $subtotal->minus($tax->total) : $subtotal,
             setup: $setup,
             discount: $discountResult->discount,
             tax: $tax,
-            total: $taxable->plus($tax->total),
+            total: $tax->included ? $taxable : $taxable->plus($tax->total),
             recurringTotal: $recurring,
             promotionCode: $cart->promotion_code,
             promotionId: $discountResult->promotionId,

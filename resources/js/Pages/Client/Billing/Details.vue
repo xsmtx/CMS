@@ -7,6 +7,7 @@ import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import { useTaxIdentity } from '../../../composables/useTaxIdentity'
 import { useTranslations } from '../../../composables/useTranslations'
 import BillingTabs from './BillingTabs.vue'
 
@@ -37,6 +38,10 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslations()
+
+// The seller's own word for it, not "VAT number": that is wrong in most
+// of the world, and this customer is reading their own invoice's vocabulary.
+const { label: taxIdLabel } = useTaxIdentity()
 
 const form = useForm({
   company_name: props.details.companyName ?? '',
@@ -94,11 +99,7 @@ function remove(id: string): void {
             :label="t('crm.fields.legal_name')"
             :error="form.errors.legal_name"
           />
-          <AppInput
-            v-model="form.tax_id"
-            :label="t('crm.fields.tax_id')"
-            :error="form.errors.tax_id"
-          />
+          <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
         </div>
 
         <h3 class="mt-6 mb-3 text-sm font-semibold">{{ t('billing.portal.address') }}</h3>

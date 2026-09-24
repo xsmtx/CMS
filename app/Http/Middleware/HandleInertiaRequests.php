@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Application\Identity\Impersonator;
 use App\Application\Operations\OperationFeed;
+use App\Application\Tax\TaxIdentity;
 use App\Domain\Modules\NavigationItem;
 use App\Infrastructure\Modules\ActiveModules;
 use App\Support\Branding\CurrentBrand;
@@ -70,6 +71,18 @@ final class HandleInertiaRequests extends Middleware
             // per request from whoever is looking: reseller staff see their
             // own name, and so do their customers.
             'brand' => fn (): array => app(CurrentBrand::class)->current()->toArray(),
+            /*
+             * What this seller calls a tax id, and whether a business has to
+             * give one. Shared rather than passed per screen because five forms
+             * ask for it — checkout, the client's billing details, their
+             * profile, and both admin customer forms — and a label that is
+             * right on four of them is a label somebody will trust on the
+             * fifth.
+             *
+             * A closure: neither value is needed to render a redirect, and the
+             * lookup is a query against the seller's row.
+             */
+            'taxIdentity' => fn (): array => app(TaxIdentity::class)->current(),
             'locale' => app()->getLocale(),
             'flash' => [
                 'success' => fn (): ?string => $request->session()->get('success'),

@@ -24,4 +24,17 @@ final readonly class TaxComponent
         public Money $amount,
         public ?string $jurisdiction = null,
     ) {}
+
+    /**
+     * The same tax, for a different amount.
+     *
+     * Used where a total has to be reconciled against a figure that is already
+     * fixed — an inclusive price is the number the customer was shown, so the
+     * components are adjusted to add up to it rather than the price being
+     * adjusted to match the components.
+     */
+    public function withAmount(Money $amount): self
+    {
+        return new self($this->name, $this->rate, $amount, $this->jurisdiction);
+    }
 }

@@ -11,6 +11,7 @@ use App\Application\Ordering\PlaceOrderRequest;
 use App\Application\Ordering\PriceCart;
 use App\Application\Ordering\RegisterCheckoutAccount;
 use App\Application\Ordering\ResolveCart;
+use App\Application\Tax\TaxIdentity;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Crm\AddressType;
 use App\Domain\Shared\Money;
@@ -43,6 +44,7 @@ final class StorefrontCheckoutController extends Controller
     use PresentsCartTotals;
 
     public function __construct(
+        private readonly TaxIdentity $taxIdentity,
         private readonly ResolveCart $carts,
         private readonly PriceCart $pricer,
         private readonly StorefrontCurrency $currency,
@@ -70,6 +72,13 @@ final class StorefrontCheckoutController extends Controller
                 'company' => $contact->customer?->company_name,
             ],
             'termsVersion' => (string) config('platform.ordering.terms_version', '1'),
+            /*
+             * What this seller calls a tax id, and whether a business has to
+             * give one. Passed to the template rather than looked up in it: a
+             * theme may not execute (ADR 0037), so everything a template needs
+             * arrives as data.
+             */
+            'taxIdentity' => $this->taxIdentity->current(),
         ]);
     }
 
@@ -216,7 +225,8 @@ final class StorefrontCheckoutController extends Controller
             stateCode: $address?->region,
             postalCode: $address?->postal_code,
             taxId: $taxId,
-            isBusiness: $taxId !== null && $taxId !== '',
+            // A company name, not a tax id. See `Customer::isBusiness()`.
+            isBusiness: $customer !== null && $customer->isBusiness(),
             supplierCountryCode: config('platform.tax.flat.country'),
         );
     }

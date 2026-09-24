@@ -5,12 +5,23 @@ declare(strict_types=1);
 namespace App\Http\Requests\Crm;
 
 use App\Domain\Crm\CustomerStatus;
+use App\Http\Requests\Concerns\AsksForATaxId;
 use App\Infrastructure\Crm\Models\CustomFieldDefinition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 final class CustomerRequest extends FormRequest
 {
+    use AsksForATaxId;
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return $this->taxIdMessages();
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -26,7 +37,7 @@ final class CustomerRequest extends FormRequest
             // sole traders impossible to enter.
             'company_name' => ['nullable', 'string', 'max:191', 'required_without:legal_name'],
             'legal_name' => ['nullable', 'string', 'max:191'],
-            'tax_id' => ['nullable', 'string', 'max:64'],
+            'tax_id' => $this->taxIdRules('company_name'),
             'tax_id_type' => ['nullable', 'string', 'max:32'],
             'status' => ['required', Rule::enum(CustomerStatus::class)],
             'currency_code' => ['required', 'string', 'size:3', 'uppercase'],

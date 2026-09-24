@@ -11,6 +11,7 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import CustomFieldInput from '../../../Components/CustomFieldInput.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTaxIdentity } from '../../../composables/useTaxIdentity'
 
 const props = defineProps<{
   customer: {
@@ -31,6 +32,10 @@ const props = defineProps<{
   tags: { id: string; name: string }[]
   customFields: CustomFieldDefinition[]
 }>()
+
+// The seller's own word for a tax id. "VAT number" is wrong in most of the
+// world, and an operator entering a Turkish customer should read Vergi No.
+const { label: taxIdLabel } = useTaxIdentity()
 
 const isEditing = computed(() => props.customer !== null)
 
@@ -106,7 +111,7 @@ function submit(): void {
           />
           <AppInput v-model="form.legal_name" label="Legal name" :error="form.errors.legal_name" />
           <div class="grid gap-5 sm:grid-cols-2">
-            <AppInput v-model="form.tax_id" label="Tax id" :error="form.errors.tax_id" />
+            <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
             <AppInput
               v-model="form.tax_id_type"
               label="Tax id type"

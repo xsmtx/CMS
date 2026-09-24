@@ -807,3 +807,41 @@ cached default, and it read as a settings page that did not save. A single index
 lookup per call is the cheaper mistake. The test that caught it asserted that a
 banner disappears after saving, which is why a sentence shown to an operator is
 worth a test of its own.
+
+A setting that is stored and read by nothing is worse than a setting that is
+absent. The tax screen shipped with three of them and each was a different size
+of lie: `prices_include_tax` silently added VAT on top of prices that already
+contained it, `tax_id_label` left every form saying the wrong word, and
+`require_tax_id_for_business` did nothing at all. After adding a column to a
+settings screen, grep for a reader before calling it done.
+
+Tax may be **inside** a price. `TaxResult::$included` says so, and it lives on the
+answer rather than on `TaxableSupply` because only the calculator knows — whether
+a catalog is gross is the seller's setting, and a module's calculator returns
+false and behaves exactly as it always did. The net is reached by **integer
+division** (`gross x 1e6 / (1e6 + effective_ppm)`), a compounding level
+contributes `r2 x (1 + r1)`, and because that division loses a fraction of a part
+per million the components are then **reconciled against the gross** with
+`Money::allocate()` — the price the customer was shown is the fixed point, and
+`allocate` loses no cent. `PriceCart` subtracts instead of adding and its subtotal
+carries the net, which keeps `subtotal + setup - discount + tax = total` true
+either way; that is why `PlaceOrder`, `CreateInvoiceFromOrder` and every presenter
+needed no change.
+
+**A business is a company name, not a tax id.** `Customer::isBusiness()`. It was
+`tax_id !== ''` in both places that built a supply, which is circular: it made an
+individual who typed a tax id a business, a company that had not given one an
+individual, `TaxCustomerKind::Business` mean "typed a tax id", and "a business
+must state a tax id" impossible to ever fire. Reverse charge is unaffected — it
+asks for both, a business *and* an id to charge it to.
+
+`TaxIdentity` is the one place that answers what a tax id is called and whether a
+business must give one; `AsksForATaxId` is the one validation rule, used by four
+request classes. The default label is never "VAT number": it is Vergi Numarası in
+Turkey, an ABN in Australia, a GSTIN in India, and a default that is wrong for
+most of the world reads as configured when it is only unset.
+
+`assertSessionHasNoErrors()` alone proves nothing — it passes against a 403 and
+against a 404. A test that means "this write succeeded" asserts the redirect too.
+One written here was driving a 403 the whole time, because its contact had no
+portal role.

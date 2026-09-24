@@ -107,6 +107,11 @@ return [
         'per_invoice' => 'Toplamda bir kez',
     ],
 
+    'identity' => [
+        'default_label' => 'Vergi numarası',
+        'required' => 'Şirket müşteri için :label zorunludur.',
+    ],
+
     'errors' => [
         'not_permitted' => 'Vergiyi yalnızca kurulum sahibi değiştirebilir.',
     ],

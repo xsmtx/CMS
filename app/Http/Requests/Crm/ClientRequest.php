@@ -6,6 +6,7 @@ namespace App\Http\Requests\Crm;
 
 use App\Domain\Access\SystemRole;
 use App\Domain\Crm\CustomerStatus;
+use App\Http\Requests\Concerns\AsksForATaxId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -27,6 +28,16 @@ use Illuminate\Validation\Rules\Password;
  */
 final class ClientRequest extends FormRequest
 {
+    use AsksForATaxId;
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return $this->taxIdMessages();
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -49,7 +60,7 @@ final class ClientRequest extends FormRequest
             // The company.
             'company_name' => ['nullable', 'string', 'max:191'],
             'legal_name' => ['nullable', 'string', 'max:191'],
-            'tax_id' => ['nullable', 'string', 'max:64'],
+            'tax_id' => $this->taxIdRules('company_name'),
             'tax_id_type' => ['nullable', 'string', 'max:24'],
             'status' => ['required', Rule::enum(CustomerStatus::class)],
             'currency_code' => ['required', 'string', 'size:3'],

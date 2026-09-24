@@ -48,6 +48,11 @@
                         ['email', __('ordering.checkout.email'), 'email', true],
                         ['phone', __('ordering.checkout.phone'), 'tel', false],
                         ['company', __('ordering.checkout.company'), 'organization', false],
+                        {{-- Called what this seller calls it: "VAT number" is
+                             wrong in most of the world. Never marked required
+                             here, because only a business needs one and the
+                             server decides which customers those are. --}}
+                        ['tax_id', $taxIdentity['label'], 'off', false],
                         ['country_code', __('ordering.checkout.country'), 'country', false],
                     ] as [$field, $label, $autocomplete, $required])
                         <div class="flex flex-col gap-2">

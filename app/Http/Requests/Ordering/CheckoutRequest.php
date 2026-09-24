@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Ordering;
 
+use App\Http\Requests\Concerns\AsksForATaxId;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,6 +17,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class CheckoutRequest extends FormRequest
 {
+    use AsksForATaxId;
+
     public function authorize(): bool
     {
         return true;
@@ -44,7 +47,9 @@ final class CheckoutRequest extends FormRequest
             ],
             'company' => ['nullable', 'string', 'max:191'],
             'phone' => ['nullable', 'string', 'max:32'],
-            'tax_id' => ['nullable', 'string', 'max:64'],
+            // A business buying at checkout is one that gave a company
+            // name, and the seller decides whether that obliges a tax id.
+            'tax_id' => $this->taxIdRules('company'),
             'address_line' => ['nullable', 'string', 'max:191'],
             'city' => ['nullable', 'string', 'max:100'],
             'postal_code' => ['nullable', 'string', 'max:32'],
@@ -61,6 +66,7 @@ final class CheckoutRequest extends FormRequest
         return [
             'terms.accepted' => __('ordering.errors.terms_required'),
             'email.unique' => __('ordering.errors.email_taken'),
+            ...$this->taxIdMessages(),
         ];
     }
 }
