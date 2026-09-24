@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Access\SyncPermissions;
 use App\Application\Ordering\AddToCart;
 use App\Application\Ordering\AddToCartRequest;
+use App\Application\Ordering\CartTotals;
 use App\Application\Ordering\PriceCart;
 use App\Application\Tax\TaxIdentity;
 use App\Domain\Access\PermissionRegistry;
@@ -15,6 +16,10 @@ use App\Domain\Organizations\OrganizationType;
 use App\Domain\Shared\Money;
 use App\Domain\Tax\Contracts\TaxCalculator;
 use App\Domain\Tax\TaxableSupply;
+use App\Domain\Tax\TaxAppliesTo;
+use App\Domain\Tax\TaxRounding;
+use App\Infrastructure\Catalog\Models\Addon;
+use App\Infrastructure\Catalog\Models\AddonPrice;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Catalog\Models\ProductPrice;
 use App\Infrastructure\Crm\Models\Customer;
@@ -115,6 +120,60 @@ function cartWithOneProduct(int $minor): Cart
     ));
 
     return $cart->fresh() ?? $cart;
+}
+
+/**
+ * A cart holding one product and one or more addons.
+ *
+ * Two kinds of line so they can be taxed differently, and `$addon` takes a list
+ * so a caller can also put two lines of one kind in — which is what shows the
+ * rounding setting doing anything.
+ */
+function priceMixedCart(int $product, int|array $addon): CartTotals
+{
+    $model = Product::factory()
+        ->ofType(ProductType::Vps)
+        ->create(['organization_id' => test()->provider->id, 'name' => 'Starter']);
+
+    ProductPrice::factory()
+        ->forProduct($model)
+        ->cycle(BillingCycle::Monthly)
+        ->currency('TRY')
+        ->amounts($product, 0)
+        ->create();
+
+    $addonIds = [];
+
+    // `$addons` is a list, so a caller can put two lines of the *same* kind in
+    // the cart. That is what the rounding setting is about: a product and an
+    // addon are two tax treatments and are rounded separately either way.
+    foreach (array_values((array) $addon) as $index => $minor) {
+        $extra = Addon::factory()->forProduct($model)->create(['name' => 'Extra '.$index]);
+
+        AddonPrice::factory()->create([
+            'addon_id' => $extra->id,
+            'organization_id' => $extra->organization_id,
+            'billing_cycle' => BillingCycle::Monthly->value,
+            'currency_code' => 'TRY',
+            'recurring_minor' => $minor,
+            'setup_minor' => 0,
+        ]);
+
+        $addonIds[] = $extra->id;
+    }
+
+    $cart = Cart::factory()->forOrganization(test()->provider)->currency('TRY')->create();
+
+    app(AddToCart::class)->handle($cart, new AddToCartRequest(
+        productId: $model->id,
+        cycle: BillingCycle::Monthly,
+        addonIds: $addonIds,
+    ));
+
+    return app(PriceCart::class)->handle(
+        $cart->fresh() ?? $cart,
+        new TaxableSupply(Money::zero('TRY'), countryCode: 'TR'),
+    );
 }
 
 /**
@@ -348,4 +407,65 @@ it('refuses a business with no tax id, and only when the seller asked', function
         ->assertSessionHasNoErrors();
 
     expect($customer->fresh()?->tax_id)->toBe('1234567890');
+});
+
+// ---------------------------------------------------------------------------
+// A rule scoped to one kind of line, and where the cent goes
+// ---------------------------------------------------------------------------
+
+it('charges an addon a different rate from the product it hangs off', function (): void {
+    // The reason tax is worked out per line at all. Until it was, the only
+    // supply ever handed to the calculator said "all", so a rule scoped to
+    // anything else could never match \u2014 a whole column on the rules screen that
+    // quietly did nothing. Several countries genuinely do tax a domain
+    // registration and a hosting account at different rates.
+    ruleFor('KDV', '20', ['applies_to' => TaxAppliesTo::Products->value]);
+    ruleFor('KDV (ek)', '1', ['applies_to' => TaxAppliesTo::Addons->value]);
+
+    $totals = priceMixedCart(product: 10_000, addon: 5_000);
+
+    // 20% of 100.00 plus 1% of 50.00.
+    expect($totals->tax->total->minorUnits)->toBe(2_050)
+        ->and($totals->total->minorUnits)->toBe(17_050);
+
+    $byName = [];
+
+    foreach ($totals->tax->components as $component) {
+        $byName[$component->name] = $component->amount->minorUnits;
+    }
+
+    // Two named components, because an invoice has to be able to say which is
+    // which rather than printing one merged figure.
+    expect($byName)->toBe(['KDV' => 2_000, 'KDV (ek)' => 50]);
+});
+
+it('leaves a line alone when no rule covers its kind', function (): void {
+    ruleFor('KDV', '20', ['applies_to' => TaxAppliesTo::Products->value]);
+
+    $totals = priceMixedCart(product: 10_000, addon: 5_000);
+
+    // The addon is not taxed at all, rather than picking up the product rate
+    // because both were summed into one amount before anybody asked.
+    expect($totals->tax->total->minorUnits)->toBe(2_000)
+        ->and($totals->total->minorUnits)->toBe(17_000);
+});
+
+it('rounds per line or once, and the two differ', function (): void {
+    // 19.75% of 33.33 is 6.582 -> 6.58, twice is 13.16. 19.75% of 66.66 is
+    // 13.165 -> 13.17. One cent, and which answer a jurisdiction requires is a
+    // real difference rather than a preference.
+    ruleFor('VAT', '19.75');
+
+    // Two addons, so both lines share one tax treatment. Per line is the
+    // shipped default, which is what most panels do: 19.75% of 33.33 is 6.582
+    // and rounds to 6.58, twice.
+    expect(priceMixedCart(product: 0, addon: [3_333, 3_333])->tax->total->minorUnits)
+        ->toBe(1_316);
+
+    inclusiveSettings(false, ['rounding' => TaxRounding::PerInvoice->value]);
+
+    // Once on the total: 19.75% of 66.66 is 13.165 and rounds to 13.17. One
+    // cent, and which answer a jurisdiction requires is a real difference.
+    expect(priceMixedCart(product: 0, addon: [3_333, 3_333])->tax->total->minorUnits)
+        ->toBe(1_317);
 });

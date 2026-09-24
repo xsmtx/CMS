@@ -845,3 +845,19 @@ most of the world reads as configured when it is only unset.
 against a 404. A test that means "this write succeeded" asserts the redirect too.
 One written here was driving a 403 the whole time, because its contact had no
 portal role.
+
+Tax is worked out **per line**, not once on the total, and two configurable
+things were dead until it was. A rule scoped to products, domains or addons could
+never match anything, because the only supply ever built said `TaxAppliesTo::All`
+— a column that saved and displayed correctly and did nothing. And `TaxRounding`
+had nothing to decide, because there was only ever one calculation to round.
+`PriceCart::taxFor()` is where it happens: per line when the seller rounds per
+line, and otherwise one calculation **per tax treatment**, so a cart of hosting
+is a single calculation exactly as before. A line's taxable amount is its
+`lineTotal`, so the parts add up to the taxable total by construction.
+`TaxCategory::of()` maps `LineKind` to `TaxAppliesTo` and is a `match` with no
+default on purpose: a fifth kind of line must fail to compile rather than land in
+whichever rate came first. `CurrentTaxSettings` is the one place that resolves
+whose tax settings apply.
+
+The shipped rounding default is **per line**, which is what most panels do.

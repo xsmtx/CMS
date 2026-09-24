@@ -7,11 +7,14 @@ namespace App\Application\Ordering;
 use App\Application\Ordering\Exceptions\PriceUnavailable;
 use App\Application\Promotions\PromotionEngine;
 use App\Application\Resellers\ResolveSellingPrice;
+use App\Application\Tax\CurrentTaxSettings;
 use App\Domain\Catalog\BillingCycle;
 use App\Domain\Ordering\LineKind;
 use App\Domain\Shared\Money;
 use App\Domain\Tax\Contracts\TaxCalculator;
 use App\Domain\Tax\TaxableSupply;
+use App\Domain\Tax\TaxAppliesTo;
+use App\Domain\Tax\TaxCategory;
 use App\Domain\Tax\TaxResult;
 use App\Infrastructure\Catalog\Models\Option;
 use App\Infrastructure\Ordering\Models\Cart;
@@ -51,6 +54,7 @@ final class PriceCart
         private readonly TaxCalculator $tax,
         private readonly ResolveSellingPrice $sellingPrices,
         private readonly OrganizationContext $organizations,
+        private readonly CurrentTaxSettings $taxSettings,
     ) {}
 
     public function handle(Cart $cart, ?TaxableSupply $supply = null): CartTotals
@@ -102,15 +106,7 @@ final class PriceCart
         $taxable = $subtotal->plus($setup)->minus($discountResult->discount);
         $tax = $supply === null
             ? TaxResult::none($zero)
-            : $this->tax->calculate(new TaxableSupply(
-                amount: $taxable,
-                countryCode: $supply->countryCode,
-                stateCode: $supply->stateCode,
-                postalCode: $supply->postalCode,
-                taxId: $supply->taxId,
-                isBusiness: $supply->isBusiness,
-                supplierCountryCode: $supply->supplierCountryCode,
-            ));
+            : $this->taxFor($lines, $supply, $zero);
 
         $recurring = $this->sum(
             array_map(
@@ -144,6 +140,99 @@ final class PriceCart
             promotionId: $discountResult->promotionId,
             promotionRefusal: $discountResult->refusal,
         );
+    }
+
+    /**
+     * The tax on these lines.
+     *
+     * **Per line, not on one total**, and that is what makes two configurable
+     * things real rather than decorative. A rule may be scoped to products, to
+     * domains or to addons, because several countries tax a domain registration
+     * and a hosting account differently \u2014 and until this, the only supply ever
+     * handed to the calculator said "all", so a rule scoped to anything else
+     * could never match. And `TaxRounding` had nothing to decide, because there
+     * was only ever one calculation to round.
+     *
+     * Rounding per line means one calculation per line. Rounding once on the
+     * invoice means one per **tax treatment**: a cart whose lines are all
+     * products is a single calculation, exactly as before, and a cart that mixes
+     * a domain with hosting is two because two different rates cannot share one
+     * rounding.
+     *
+     * A line\'s own amount is `lineTotal` \u2014 what it renews for, plus its setup
+     * fee, less its share of the discount \u2014 so the parts add up to the taxable
+     * total by construction rather than by a second calculation that could
+     * disagree with it.
+     *
+     * @param  list<PricedLine>  $lines
+     */
+    private function taxFor(array $lines, TaxableSupply $supply, Money $zero): TaxResult
+    {
+        $parts = $this->taxSettings->roundsPerLine()
+            ? array_map(
+                static fn (PricedLine $line): array => [TaxCategory::of($line->kind), $line->lineTotal],
+                $lines,
+            )
+            : $this->byTreatment($lines, $zero);
+
+        $total = $zero;
+        $components = [];
+        $exemption = null;
+        $included = false;
+
+        foreach ($parts as [$appliesTo, $amount]) {
+            if ($amount->isZero() || $amount->isNegative()) {
+                continue;
+            }
+
+            $result = $this->tax->calculate(new TaxableSupply(
+                amount: $amount,
+                countryCode: $supply->countryCode,
+                stateCode: $supply->stateCode,
+                postalCode: $supply->postalCode,
+                taxId: $supply->taxId,
+                isBusiness: $supply->isBusiness,
+                supplierCountryCode: $supply->supplierCountryCode,
+                appliesTo: $appliesTo,
+            ));
+
+            $total = $total->plus($result->total);
+            $included = $included || $result->included;
+            $exemption ??= $result->exemptionReason;
+
+            foreach ($result->components as $component) {
+                $key = $component->name.'|'.$component->rate.'|'.($component->jurisdiction ?? '');
+
+                $components[$key] = array_key_exists($key, $components)
+                    ? $components[$key]->withAmount($components[$key]->amount->plus($component->amount))
+                    : $component;
+            }
+        }
+
+        return new TaxResult($total, array_values($components), $exemption, $included);
+    }
+
+    /**
+     * The lines summed by how they are taxed.
+     *
+     * One entry per kind that is actually in the cart, so a cart of hosting is
+     * one calculation and nothing about an ordinary order changes.
+     *
+     * @param  list<PricedLine>  $lines
+     * @return list<array{0: TaxAppliesTo, 1: Money}>
+     */
+    private function byTreatment(array $lines, Money $zero): array
+    {
+        $totals = [];
+
+        foreach ($lines as $line) {
+            $category = TaxCategory::of($line->kind);
+            $key = $category->value;
+
+            $totals[$key] = [$category, ($totals[$key][1] ?? $zero)->plus($line->lineTotal)];
+        }
+
+        return array_values($totals);
     }
 
     private function priceLine(CartItem $item, string $currency): PricedLine

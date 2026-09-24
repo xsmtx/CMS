@@ -4,14 +4,18 @@ Status: complete
 Date: 2026-09-24
 Follows: `tax-configuration-result.md` and `billing-terms-result.md`.
 
-The tax screen shipped with three answers that are not a rate — whether catalog
-prices already include tax, what a tax id is called, and whether a business must
-give one — and **all three were stored and read by nothing**. Three switches an
-operator could turn on with no effect, which is worse than three switches that
-are absent: the most expensive of them silently adds VAT on top of prices that
-already contain it, on every order, until a customer notices.
+The tax screen shipped with four answers that are not a rate — whether catalog
+prices already include tax, what a tax id is called, whether a business must
+give one, and where the cent goes — and **none of them was read by anything**.
+Four switches an operator could turn on with no effect, which is worse than four
+switches that are absent: the most expensive of them silently adds VAT on top of
+prices that already contain it, on every order, until a customer notices.
 
-This closes them, and one of them turned out to be sitting on a bug.
+Closing the last one turned out to need tax calculated per line, which brought a
+fifth dead thing with it — a rule scoped to domains or addons could never match
+anything at all.
+
+This closes them, and three of them were sitting on bugs.
 
 ---
 
@@ -30,8 +34,11 @@ This closes them, and one of them turned out to be sitting on a bug.
 - **`require_tax_id_for_business` works.** A business customer is asked for one,
   on all four of those forms, from one rule.
 - **`Customer::isBusiness()`** — a company name, not a tax id.
-- **`TaxIdentity`** (the two label answers, shared with every page) and
-  **`AsksForATaxId`** (the validation rule, stated once).
+- **`TaxIdentity`** (the two label answers, shared with every page),
+  **`AsksForATaxId`** (the validation rule, stated once) and
+  **`CurrentTaxSettings`** (the one place that resolves whose settings apply).
+- **Tax is calculated per line**, which makes `rounding` mean something and makes
+  a rule scoped to products, domains or addons able to match at all.
 
 ## 2. The decisions worth keeping
 
@@ -74,6 +81,33 @@ in Australia, a GSTIN in India, a CNPJ in Brazil. A default that is wrong for mo
 of the world reads as configured when it is only unset, so the fallback is a
 neutral "Tax ID" and a seller states their own.
 
+**A rule scoped to anything but "all" could never match, and that was silent.**
+The only supply ever handed to the calculator was built from the cart's *total*
+and said `TaxAppliesTo::All`, so `covers()` was false for every rule an operator
+had scoped to domains or addons. A whole column on the rules screen that saved
+correctly, displayed correctly and did nothing. Several countries genuinely tax a
+domain registration and a hosting account at different rates, which is why the
+column exists.
+
+**`TaxRounding` had nothing to decide, because there was only ever one
+calculation to round.** Both are fixed by the same change: `PriceCart` works the
+tax out per line rather than once on the total. Rounding per line is one
+calculation per line; rounding once on the invoice is one per **tax treatment**,
+so a cart whose lines are all products is a single calculation exactly as before
+— and a cart mixing a domain with hosting is two, because two different rates
+cannot share one rounding.
+
+A line's own taxable amount is `lineTotal` — what it renews for, plus its setup
+fee, less its share of the discount — so the parts add up to the taxable total by
+construction rather than by a second calculation that could disagree. No existing
+expectation moved.
+
+**`TaxCategory` is a `match` with no default.** It is the one place ordering's
+word for what a line *is* meets tax's word for what a rule is charged *on*. A
+fifth kind of line fails to compile there rather than silently landing in
+whichever category came first — which on a tax screen means whichever rate came
+first.
+
 **The requirement is one rule in one trait.** Four forms ask for the field and the
 seller's answer has to be the same on all of them; copied into four request
 classes it would be one rule in four places, and the one somebody forgot to
@@ -83,7 +117,7 @@ and is asked for nothing.
 
 ## 3. What the tests cover
 
-`tests/Feature/InclusivePricingTest.php` — 11 cases, and one more in
+`tests/Feature/InclusivePricingTest.php` — 14 cases, and one more in
 `StorefrontCheckoutTest`: the tax taken out of an
 inclusive price rather than added; exclusive behaving identically whether stated
 or defaulted; seven awkward grosses that must not lose a cent; an inclusive price
@@ -96,7 +130,11 @@ when exclusive; and the billing-details form refusing a business with no tax id 
 only once the seller asked, never for an individual, and accepting one that is
 given. The checkout case drives the storefront: the field is rendered with the
 seller's own word on it, a guest business without one is refused and no order is
-written, and an individual is asked for nothing.
+written, and an individual is asked for nothing. Three more cover the per-line
+work: an addon charged a different rate from the product it hangs off with both
+named separately on the result, a line left untaxed when no rule covers its kind
+rather than picking up the neighbouring rate, and the same two lines rounding to
+13.16 per line and 13.17 once on the invoice.
 
 ## 4. A weak test caught in the writing
 
@@ -110,7 +148,7 @@ direction.
 
 ## 5. Gates
 
-Pint, Rector, PHPStan level 8, Pest (1605 passed), ESLint, Prettier, vue-tsc,
+Pint, Rector, PHPStan level 8, Pest (1608 passed), ESLint, Prettier, vue-tsc,
 Vitest (85 passed), Vite build, `platform:openapi --check`. All green.
 
 ## 6. Not done, deliberately
@@ -118,8 +156,13 @@ Vitest (85 passed), Vite build, `platform:openapi --check`. All green.
 - **Line amounts stay gross on an inclusive catalog.** The document's subtotal
   carries the net and the lines carry the price the customer saw, which is what
   an inclusive invoice looks like in the markets that require inclusive pricing.
-  Net lines would need tax calculated per line, which is the same open question as
-  `TaxRounding::PerInvoice` and belongs with it.
+  Writing a net amount onto each line is now possible — the tax per line is known
+  — but it changes what an order line *records*, which is ADR 0021's territory and
+  deserves its own decision rather than being a side effect of this one.
+- **`TaxAppliesTo::Manual` is still unreachable.** It exists for a line an
+  operator types onto an invoice by hand, and nothing in the cart path can
+  produce one. It becomes live when invoice lines are composed the same way,
+  which is the same piece of work as the bullet above.
 - **Nothing here validates a tax id against a country's format.** Checking an EU
   number means calling VIES, which is a remote call to one union's service — an
   adapter, and therefore a module. The platform stores the id and the exemption

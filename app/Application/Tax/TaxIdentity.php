@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Tax;
 
-use App\Application\Shared\ResolveSeller;
-use App\Support\Organizations\OrganizationContext;
-
 /**
  * What this seller calls a tax id, and whether a business must give one.
  *
@@ -25,24 +22,14 @@ use App\Support\Organizations\OrganizationContext;
  */
 final readonly class TaxIdentity
 {
-    public function __construct(
-        private TaxRules $rules,
-        private ResolveSeller $sellers,
-        private OrganizationContext $organizations,
-    ) {}
+    public function __construct(private CurrentTaxSettings $settings) {}
 
     /**
      * @return array{label: string, requiredForBusiness: bool}
      */
     public function current(): array
     {
-        $organizationId = $this->organizations->id();
-
-        if ($organizationId === null) {
-            return $this->fallback();
-        }
-
-        $settings = $this->rules->settings($this->sellers->forOrganization($organizationId));
+        $settings = $this->settings->get();
 
         $label = $settings->tax_id_label;
 
@@ -67,14 +54,6 @@ final readonly class TaxIdentity
     public function label(): string
     {
         return $this->current()['label'];
-    }
-
-    /**
-     * @return array{label: string, requiredForBusiness: bool}
-     */
-    private function fallback(): array
-    {
-        return ['label' => $this->defaultLabel(), 'requiredForBusiness' => false];
     }
 
     /**
