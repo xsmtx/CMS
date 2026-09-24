@@ -178,6 +178,11 @@ const gatewayColumns: TableColumn[] = [
 function formatMinor(minor: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(minor / 100)
 }
+
+/** The aging date arrives as `Y-m-d`; every other date on the page is local. */
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString()
+}
 </script>
 
 <template>
@@ -239,7 +244,7 @@ function formatMinor(minor: number, currency: string): string {
 
         <DetailSection
           :title="t('ui.reports.owed')"
-          :description="t('ui.reports.owed_intro', { date: aging.asOf })"
+          :description="t('ui.reports.owed_intro', { date: formatDate(aging.asOf) })"
         >
           <ul class="flex flex-col gap-2">
             <li

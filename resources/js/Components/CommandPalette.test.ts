@@ -157,6 +157,9 @@ describe('CommandPalette', () => {
     await wrapper.vm.$nextTick()
 
     expect(rows()).toHaveLength(0)
-    expect(dialog()?.textContent).toContain('Nothing matches')
+    // The term itself is the part that has to be there: the sentence around
+    // it is translated, and what an operator needs to see is what they typed.
+    expect(dialog()?.textContent).toContain('zzzzzz')
+    expect(dialog()?.textContent).toContain('does not match anything yet.')
   })
 })

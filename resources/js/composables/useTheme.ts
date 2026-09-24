@@ -1,5 +1,7 @@
 import { computed, onMounted, ref } from 'vue'
 
+import { useTranslations } from './useTranslations'
+
 /**
  * Light, dark, or whatever the operating system says.
  *
@@ -61,10 +63,12 @@ export function useTheme() {
     }
   }
 
+  const { t } = useTranslations()
+
   const options = computed<{ value: ThemeChoice; label: string }[]>(() => [
-    { value: 'system', label: 'System' },
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
+    { value: 'system', label: t('ui.theme.system', {}, 'System') },
+    { value: 'light', label: t('ui.theme.light', {}, 'Light') },
+    { value: 'dark', label: t('ui.theme.dark', {}, 'Dark') },
   ])
 
   return { choice, set, options }

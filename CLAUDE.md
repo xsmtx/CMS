@@ -941,14 +941,20 @@ here is a *list* and the component only took a value. It takes a slot named
 after each metric's key now, which is the shape `DescriptionList` already uses.
 Reach for the prop or the slot before the `div`.
 
-**The admin nav map is 94 hard-coded English labels, and the breadcrumb
-compares the page's heading against one of them.** The last crumb is dropped
-only when they match exactly, so translating a page heading brings the crumb
-back and the trail reads "Support > Open New Ticket > Open new ticket". In
-Turkish that will happen on every screen the map names, whatever the heading
-says. The page headings converted so far are spelled to match their nav label
-for that reason; the real fix is to translate the map, which also feeds the
-command palette and is asserted by `AdminLayout.test.ts`. Not done.
+**The admin nav map is translated, and it keeps its English beside each key.**
+`nav('clients', 'Clients')` reads `ui.nav.clients` and falls back to the word
+itself. The fallback is not laziness: this map is what the breadcrumb compares
+a page heading against, so a label that rendered as `ui.nav.clients` would
+break the trail as well as look like a bug — and `AdminLayout.test.ts` mounts
+the shell with no translations at all and asserts the English. The section
+headings (Business, Operations, …) were the discriminator of a TypeScript
+union doing double duty as words on screen; `railSections` carries a `label`
+now and the union stays English.
+
+The palette and the theme switch went with it, because a Turkish rail above an
+English "Go to a screen, or find a client…" is worse than either. What is still
+English is the last crumb when a *page heading* has no translation — the fix
+there is the page, not the map.
 
 **A date-only column rendered raw is the one ISO string among localised
 ones.** `2026-10-13` beside `24.09.2026 18:28` on the same panel. It has now

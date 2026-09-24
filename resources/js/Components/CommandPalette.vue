@@ -29,6 +29,7 @@ import { router } from '@inertiajs/vue3'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import AppIcon from './AppIcon.vue'
+import { useTranslations } from '../composables/useTranslations'
 import { type IconName } from '../icons'
 
 export interface Destination {
@@ -52,6 +53,8 @@ interface RemoteGroup {
 }
 
 const props = defineProps<{ destinations: Destination[] }>()
+
+const { t } = useTranslations()
 
 const open = ref(false)
 const term = ref('')
@@ -259,7 +262,7 @@ defineExpose({ show })
     @click="show"
   >
     <AppIcon name="search" :size="15" />
-    <span class="flex-1 text-left">Search</span>
+    <span class="flex-1 text-left">{{ t('ui.palette.search', {}, 'Search') }}</span>
     <kbd
       class="border-line bg-surface-secondary text-content-subtle text-label rounded-[4px] border px-1.5 py-0.5 font-sans"
     >
@@ -272,7 +275,7 @@ defineExpose({ show })
     class="pressable text-content-muted hover:text-content rounded-sm p-1.5 transition-colors duration-(--duration-fast) sm:hidden"
     @click="show"
   >
-    <AppIcon name="search" :size="16" label="Search" />
+    <AppIcon name="search" :size="16" :label="t('ui.palette.search', {}, 'Search')" />
   </button>
 
   <Teleport to="body">
@@ -281,7 +284,7 @@ defineExpose({ show })
       class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]"
       role="dialog"
       aria-modal="true"
-      aria-label="Search and go"
+      :aria-label="t('ui.palette.dialog', {}, 'Search and go')"
     >
       <!-- A scrim, not a blur: a blurred page behind a palette is a frame
            the browser repaints on every keystroke. -->
@@ -296,7 +299,13 @@ defineExpose({ show })
             ref="field"
             v-model="term"
             type="text"
-            placeholder="Go to a screen, or find a client, invoice or domain…"
+            :placeholder="
+              t(
+                'ui.palette.placeholder',
+                {},
+                'Go to a screen, or find a client, invoice or domain…',
+              )
+            "
             class="text-content placeholder:text-content-subtle text-body w-full bg-transparent outline-none"
             @keydown.down.prevent="move(1)"
             @keydown.up.prevent="move(-1)"
@@ -337,16 +346,21 @@ defineExpose({ show })
         </ul>
 
         <p v-else class="text-content-muted text-body px-3.5 py-6 text-center">
-          Nothing matches <span class="text-content">{{ term }}</span> yet.
+          <!-- The term first, so neither language needs an empty half-key to
+               put its words on the other side of it. -->
+          <span class="text-content">{{ term }}</span>
+          {{ t('ui.palette.nothing', {}, 'does not match anything yet.') }}
         </p>
 
         <div
           class="border-line bg-surface-secondary text-content-subtle text-label flex items-center gap-4 border-t px-3.5 py-2"
         >
-          <span><kbd class="font-sans">↑↓</kbd> move</span>
-          <span><kbd class="font-sans">↵</kbd> open</span>
-          <span><kbd class="font-sans">esc</kbd> close</span>
-          <span class="ml-auto"><kbd class="font-sans">/</kbd> anywhere</span>
+          <span><kbd class="font-sans">↑↓</kbd> {{ t('ui.palette.move', {}, 'move') }}</span>
+          <span><kbd class="font-sans">↵</kbd> {{ t('ui.palette.open', {}, 'open') }}</span>
+          <span><kbd class="font-sans">esc</kbd> {{ t('ui.palette.close', {}, 'close') }}</span>
+          <span class="ml-auto">
+            <kbd class="font-sans">/</kbd> {{ t('ui.palette.anywhere', {}, 'anywhere') }}
+          </span>
         </div>
       </div>
     </div>

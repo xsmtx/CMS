@@ -13,6 +13,7 @@ import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { useBranding } from '../composables/useBranding'
 import { usePermissions } from '../composables/usePermissions'
+import { useTranslations } from '../composables/useTranslations'
 
 /**
  * Admin shell — a rail and a topbar (Handoff #3 §3).
@@ -182,40 +183,85 @@ interface NavGroup {
  * operator has used works that way, and a menu whose first entry
  * duplicates the logo spends a slot saying nothing.
  */
-const groups: NavGroup[] = [
+const { t } = useTranslations()
+
+/**
+ * A nav label, in the operator's language.
+ *
+ * The English string stays here as the fallback rather than only in
+ * `lang/en`: this map is also what the breadcrumb compares a page heading
+ * against, and a label that rendered as `ui.nav.clients` would break the
+ * trail as well as reading as a bug. Primitives take a fallback for the same
+ * reason (`useTranslations`), and this map is chrome, not a page.
+ */
+function nav(key: string, fallback: string): string {
+  return t(`ui.nav.${key}`, {}, fallback)
+}
+
+const groups = computed<NavGroup[]>(() => [
   {
-    label: 'Clients',
+    label: nav('clients', 'Clients'),
     section: 'Business',
     icon: 'clients',
     items: [
-      { label: 'View/Search Clients', href: '/admin/customers', permission: 'crm.customers.view' },
-      { label: 'Manage Users', href: '/admin/customer-users', permission: 'crm.customers.view' },
       {
-        label: 'Add New Client',
+        label: nav('view_search_clients', 'View/Search Clients'),
+        href: '/admin/customers',
+        permission: 'crm.customers.view',
+      },
+      {
+        label: nav('manage_users', 'Manage Users'),
+        href: '/admin/customer-users',
+        permission: 'crm.customers.view',
+      },
+      {
+        label: nav('add_new_client', 'Add New Client'),
         href: '/admin/clients/create',
         permission: 'crm.customers.manage',
       },
       {
-        label: 'Products/Services',
+        label: nav('products_services', 'Products/Services'),
         href: '/admin/services',
         permission: 'services.view',
         // The product types this platform sells, as filters on the one
         // list. A screen of its own per type would drift from the list
         // that already answers the question.
         children: [
-          { label: 'All products/services', href: '/admin/services' },
-          { label: 'Shared Hosting', href: '/admin/services?product_type=shared_hosting' },
-          { label: 'Reseller Hosting', href: '/admin/services?product_type=reseller' },
-          { label: 'VPS', href: '/admin/services?product_type=vps' },
-          { label: 'Dedicated', href: '/admin/services?product_type=dedicated' },
-          { label: 'SSL', href: '/admin/services?product_type=ssl' },
-          { label: 'Email', href: '/admin/services?product_type=email' },
+          { label: nav('all_products_services', 'All products/services'), href: '/admin/services' },
+          {
+            label: nav('shared_hosting', 'Shared Hosting'),
+            href: '/admin/services?product_type=shared_hosting',
+          },
+          {
+            label: nav('reseller_hosting', 'Reseller Hosting'),
+            href: '/admin/services?product_type=reseller',
+          },
+          { label: nav('vps', 'VPS'), href: '/admin/services?product_type=vps' },
+          { label: nav('dedicated', 'Dedicated'), href: '/admin/services?product_type=dedicated' },
+          { label: nav('ssl', 'SSL'), href: '/admin/services?product_type=ssl' },
+          { label: nav('email', 'Email'), href: '/admin/services?product_type=email' },
         ],
       },
-      { label: 'Service Addons', href: '/admin/services/addons', permission: 'services.view' },
-      { label: 'Domain Registrations', href: '/admin/domains', permission: 'domains.view' },
-      { label: 'Cancellation Requests', href: '/admin/cancellations', permission: 'services.view' },
-      { label: 'Organizations', href: '/admin/organizations', permission: 'organizations.view' },
+      {
+        label: nav('service_addons', 'Service Addons'),
+        href: '/admin/services/addons',
+        permission: 'services.view',
+      },
+      {
+        label: nav('domain_registrations', 'Domain Registrations'),
+        href: '/admin/domains',
+        permission: 'domains.view',
+      },
+      {
+        label: nav('cancellation_requests', 'Cancellation Requests'),
+        href: '/admin/cancellations',
+        permission: 'services.view',
+      },
+      {
+        label: nav('organizations', 'Organizations'),
+        href: '/admin/organizations',
+        permission: 'organizations.view',
+      },
       /*
        * Resellers is gated on `organizations.manage` here, which is a
        * deliberate approximation: the row is presentation, and the screen
@@ -226,85 +272,99 @@ const groups: NavGroup[] = [
        * is the safe direction.
        */
       {
-        label: 'Resellers',
+        label: nav('resellers', 'Resellers'),
         href: '/admin/resellers',
         permission: 'organizations.manage',
         children: [
-          { label: 'All resellers', href: '/admin/resellers' },
-          { label: 'Add reseller', href: '/admin/resellers/create' },
-          { label: 'Performance', href: '/admin/reports/resellers' },
+          { label: nav('all_resellers', 'All resellers'), href: '/admin/resellers' },
+          { label: nav('add_reseller', 'Add reseller'), href: '/admin/resellers/create' },
+          { label: nav('performance', 'Performance'), href: '/admin/reports/resellers' },
         ],
       },
     ],
   },
   {
-    label: 'Orders',
+    label: nav('orders', 'Orders'),
     section: 'Business',
     icon: 'orders',
     items: [
       {
-        label: 'List All Orders',
+        label: nav('list_all_orders', 'List All Orders'),
         href: '/admin/orders',
         permission: 'orders.view',
         children: [
-          { label: 'All orders', href: '/admin/orders' },
-          { label: 'Pending Orders', href: '/admin/orders?status=pending' },
-          { label: 'Active Orders', href: '/admin/orders?status=active' },
-          { label: 'Fraud Orders', href: '/admin/orders?status=fraud_review' },
-          { label: 'Cancelled Orders', href: '/admin/orders?status=cancelled' },
+          { label: nav('all_orders', 'All orders'), href: '/admin/orders' },
+          { label: nav('pending_orders', 'Pending Orders'), href: '/admin/orders?status=pending' },
+          { label: nav('active_orders', 'Active Orders'), href: '/admin/orders?status=active' },
+          { label: nav('fraud_orders', 'Fraud Orders'), href: '/admin/orders?status=fraud_review' },
+          {
+            label: nav('cancelled_orders', 'Cancelled Orders'),
+            href: '/admin/orders?status=cancelled',
+          },
         ],
       },
-      { label: 'Add New Order', href: '/admin/orders/add', permission: 'orders.manage' },
-      { label: 'Review Queue', href: '/admin/orders/review', permission: 'orders.view' },
+      {
+        label: nav('add_new_order', 'Add New Order'),
+        href: '/admin/orders/add',
+        permission: 'orders.manage',
+      },
+      {
+        label: nav('review_queue', 'Review Queue'),
+        href: '/admin/orders/review',
+        permission: 'orders.view',
+      },
     ],
   },
   {
-    label: 'Billing',
+    label: nav('billing', 'Billing'),
     section: 'Business',
     icon: 'billing',
     items: [
       {
-        label: 'Transactions List',
+        label: nav('transactions_list', 'Transactions List'),
         href: '/admin/transactions',
         permission: 'billing.invoices.view',
         children: [
-          { label: 'All transactions', href: '/admin/transactions' },
-          { label: 'Amount in', href: '/admin/transactions?direction=in' },
-          { label: 'Amount out', href: '/admin/transactions?direction=out' },
+          { label: nav('all_transactions', 'All transactions'), href: '/admin/transactions' },
+          { label: nav('amount_in', 'Amount in'), href: '/admin/transactions?direction=in' },
+          { label: nav('amount_out', 'Amount out'), href: '/admin/transactions?direction=out' },
         ],
       },
       {
-        label: 'Add Transaction',
+        label: nav('add_transaction', 'Add Transaction'),
         href: '/admin/transactions/add',
         permission: 'billing.payments.record',
       },
       {
-        label: 'Invoices',
+        label: nav('invoices', 'Invoices'),
         href: '/admin/invoices',
         permission: 'billing.invoices.view',
         children: [
-          { label: 'All invoices', href: '/admin/invoices' },
-          { label: 'Paid', href: '/admin/invoices?status=paid' },
-          { label: 'Draft', href: '/admin/invoices?status=draft' },
-          { label: 'Unpaid', href: '/admin/invoices?status=unpaid' },
-          { label: 'Overdue', href: '/admin/invoices?status=overdue' },
-          { label: 'Partially paid', href: '/admin/invoices?status=partially_paid' },
-          { label: 'Cancelled', href: '/admin/invoices?status=cancelled' },
-          { label: 'Refunded', href: '/admin/invoices?status=refunded' },
+          { label: nav('all_invoices', 'All invoices'), href: '/admin/invoices' },
+          { label: nav('paid', 'Paid'), href: '/admin/invoices?status=paid' },
+          { label: nav('draft', 'Draft'), href: '/admin/invoices?status=draft' },
+          { label: nav('unpaid', 'Unpaid'), href: '/admin/invoices?status=unpaid' },
+          { label: nav('overdue', 'Overdue'), href: '/admin/invoices?status=overdue' },
+          {
+            label: nav('partially_paid', 'Partially paid'),
+            href: '/admin/invoices?status=partially_paid',
+          },
+          { label: nav('cancelled', 'Cancelled'), href: '/admin/invoices?status=cancelled' },
+          { label: nav('refunded', 'Refunded'), href: '/admin/invoices?status=refunded' },
         ],
       },
       {
-        label: 'Gateway Log',
+        label: nav('gateway_log', 'Gateway Log'),
         href: '/admin/billing/gateway-log',
         permission: 'billing.payments.manage',
       },
       {
-        label: 'Unpaid invoice sequence',
+        label: nav('unpaid_invoice_sequence', 'Unpaid invoice sequence'),
         href: '/admin/automation/dunning',
         permission: 'automation.view',
       },
       {
-        label: 'Currencies',
+        label: nav('currencies', 'Currencies'),
         href: '/admin/catalog/currencies',
         permission: 'catalog.products.view',
       },
@@ -312,57 +372,70 @@ const groups: NavGroup[] = [
       // reseller roll-up hangs off the Resellers group instead, where the
       // question is about a reseller rather than about the business.
       {
-        label: 'Reports',
+        label: nav('reports', 'Reports'),
         href: '/admin/reports',
         permission: 'billing.invoices.view',
         children: [
-          { label: 'Monthly review', href: '/admin/reports' },
-          { label: 'Reseller performance', href: '/admin/reports/resellers' },
+          { label: nav('monthly_review', 'Monthly review'), href: '/admin/reports' },
+          {
+            label: nav('reseller_performance', 'Reseller performance'),
+            href: '/admin/reports/resellers',
+          },
         ],
       },
     ],
   },
   {
-    label: 'Support',
+    label: nav('support', 'Support'),
     section: 'Support',
     icon: 'support',
     items: [
       {
-        label: 'Support Overview',
+        label: nav('support_overview', 'Support Overview'),
         href: '/admin/support/overview',
         permission: 'support.tickets.view',
       },
       {
-        label: 'Support Tickets',
+        label: nav('support_tickets', 'Support Tickets'),
         href: '/admin/support',
         permission: 'support.tickets.view',
         // Only the statuses this platform has. A row against an enum with
         // no such member returns an empty list and blames the operator.
         children: [
-          { label: 'All Active Tickets', href: '/admin/support?status=open' },
-          { label: 'Open', href: '/admin/support?status=open' },
-          { label: 'Customer-Reply', href: '/admin/support?status=customer_reply' },
-          { label: 'Answered', href: '/admin/support?status=answered' },
-          { label: 'On Hold', href: '/admin/support?status=on_hold' },
-          { label: 'Closed', href: '/admin/support?status=closed' },
+          {
+            label: nav('all_active_tickets', 'All Active Tickets'),
+            href: '/admin/support?status=open',
+          },
+          { label: nav('open', 'Open'), href: '/admin/support?status=open' },
+          {
+            label: nav('customer_reply', 'Customer-Reply'),
+            href: '/admin/support?status=customer_reply',
+          },
+          { label: nav('answered', 'Answered'), href: '/admin/support?status=answered' },
+          { label: nav('on_hold', 'On Hold'), href: '/admin/support?status=on_hold' },
+          { label: nav('closed', 'Closed'), href: '/admin/support?status=closed' },
         ],
       },
       {
-        label: 'Open New Ticket',
+        label: nav('open_new_ticket', 'Open New Ticket'),
         href: '/admin/support/create',
         permission: 'support.tickets.manage',
       },
       {
-        label: 'Predefined Replies',
+        label: nav('predefined_replies', 'Predefined Replies'),
         href: '/admin/support/replies',
         permission: 'support.tickets.manage',
       },
       {
-        label: 'Announcements',
+        label: nav('announcements', 'Announcements'),
         href: '/admin/content/announcements',
         permission: 'content.manage',
       },
-      { label: 'Knowledge Base', href: '/admin/content/articles', permission: 'content.manage' },
+      {
+        label: nav('knowledge_base', 'Knowledge Base'),
+        href: '/admin/content/articles',
+        permission: 'content.manage',
+      },
     ],
   },
   {
@@ -374,29 +447,29 @@ const groups: NavGroup[] = [
      * Only what exists is listed, like every other group: the Infrastructure
      * Center, topology and DCIM screens arrive with the phases that build them.
      */
-    label: 'Infrastructure',
+    label: nav('infrastructure', 'Infrastructure'),
     section: 'Operations',
     icon: 'servers',
     items: [
       {
-        label: 'Explorer',
+        label: nav('explorer', 'Explorer'),
         href: '/admin/resources',
         permission: 'infrastructure.resources.view',
       },
       {
-        label: 'Telemetry',
+        label: nav('telemetry', 'Telemetry'),
         href: '/admin/resources/telemetry',
         permission: 'infrastructure.telemetry.view',
       },
       {
-        label: 'Adapters',
+        label: nav('adapters', 'Adapters'),
         href: '/admin/resources/adapters',
         permission: 'infrastructure.adapters.view',
       },
     ],
   },
   {
-    label: 'Utilities',
+    label: nav('utilities', 'Utilities'),
     section: 'System',
     icon: 'utilities',
     items: [
@@ -413,19 +486,43 @@ const groups: NavGroup[] = [
        * Licence and Import are not here: those two really are about who
        * somebody is, and they live in Setup's owner-only section.
        */
-      { label: 'Connect', href: '/admin/apps/connect', permission: 'infrastructure.connect' },
+      {
+        label: nav('connect', 'Connect'),
+        href: '/admin/apps/connect',
+        permission: 'infrastructure.connect',
+      },
       // WHMCS calls this the Module Queue. It is the same thing: every
       // background operation, what it was for, and what went wrong.
-      { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
-      { label: 'Todo List', href: '/admin/todo', permission: 'platform.health.view' },
-      { label: 'Automation', href: '/admin/automation', permission: 'automation.view' },
-      { label: 'System Health', href: '/admin/health', permission: 'platform.health.view' },
       {
-        label: 'Notification Log',
+        label: nav('module_queue', 'Module Queue'),
+        href: '/admin/operations',
+        permission: 'operations.view',
+      },
+      {
+        label: nav('todo_list', 'Todo List'),
+        href: '/admin/todo',
+        permission: 'platform.health.view',
+      },
+      {
+        label: nav('automation', 'Automation'),
+        href: '/admin/automation',
+        permission: 'automation.view',
+      },
+      {
+        label: nav('system_health', 'System Health'),
+        href: '/admin/health',
+        permission: 'platform.health.view',
+      },
+      {
+        label: nav('notification_log', 'Notification Log'),
         href: '/admin/notifications/log',
         permission: 'notifications.view',
       },
-      { label: 'API Activity', href: '/admin/api/activity', permission: 'platform.audit.view' },
+      {
+        label: nav('api_activity', 'API Activity'),
+        href: '/admin/api/activity',
+        permission: 'platform.audit.view',
+      },
     ],
   },
   {
@@ -446,37 +543,69 @@ const groups: NavGroup[] = [
      * should be able to press Cmd-K and type it rather than learning where it
      * moved. `hidden` is what keeps them out of the rail and in the palette.
      */
-    label: 'Setup',
+    label: nav('setup', 'Setup'),
     href: '/admin/apps',
     section: 'System',
     icon: 'setup',
     hidden: true,
     items: [
-      { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
-      { label: 'Product Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
-      { label: 'Promotions', href: '/admin/promotions', permission: 'promotions.view' },
       {
-        label: 'Domain Extensions',
+        label: nav('products', 'Products'),
+        href: '/admin/catalog/products',
+        permission: 'catalog.products.view',
+      },
+      {
+        label: nav('product_groups', 'Product Groups'),
+        href: '/admin/catalog/groups',
+        permission: 'catalog.groups.view',
+      },
+      {
+        label: nav('promotions', 'Promotions'),
+        href: '/admin/promotions',
+        permission: 'promotions.view',
+      },
+      {
+        label: nav('domain_extensions', 'Domain Extensions'),
         href: '/admin/catalog/tlds',
         permission: 'domains.tlds.manage',
       },
-      { label: 'Staff Members', href: '/admin/staff', permission: 'identity.staff.view' },
-      { label: 'Roles', href: '/admin/roles', permission: 'access.roles.view' },
-      { label: 'General Settings', href: '/admin/settings', permission: 'settings.view' },
       {
-        label: 'Notification Templates',
+        label: nav('staff_members', 'Staff Members'),
+        href: '/admin/staff',
+        permission: 'identity.staff.view',
+      },
+      { label: nav('roles', 'Roles'), href: '/admin/roles', permission: 'access.roles.view' },
+      {
+        label: nav('general_settings', 'General Settings'),
+        href: '/admin/settings',
+        permission: 'settings.view',
+      },
+      {
+        label: nav('notification_templates', 'Notification Templates'),
         href: '/admin/notifications/templates',
         permission: 'notifications.view',
       },
-      { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
-      { label: 'Marketplace', href: '/admin/apps/marketplace', superAdmin: true },
-      { label: 'Tax', href: '/admin/tax', superAdmin: true },
-      { label: 'Billing Terms', href: '/admin/billing/settings', superAdmin: true },
-      { label: 'Licence', href: '/admin/licence', superAdmin: true },
-      { label: 'Import', href: '/admin/import', superAdmin: true },
+      {
+        label: nav('apps_integrations', 'Apps & Integrations'),
+        href: '/admin/apps',
+        superAdmin: true,
+      },
+      {
+        label: nav('marketplace', 'Marketplace'),
+        href: '/admin/apps/marketplace',
+        superAdmin: true,
+      },
+      { label: nav('tax', 'Tax'), href: '/admin/tax', superAdmin: true },
+      {
+        label: nav('billing_terms', 'Billing Terms'),
+        href: '/admin/billing/settings',
+        superAdmin: true,
+      },
+      { label: nav('licence', 'Licence'), href: '/admin/licence', superAdmin: true },
+      { label: nav('import', 'Import'), href: '/admin/import', superAdmin: true },
     ],
   },
-]
+])
 
 /**
  * The map, plus whatever the enabled modules added.
@@ -487,13 +616,13 @@ const groups: NavGroup[] = [
  */
 const withAddons = computed<NavGroup[]>(() =>
   addons.value.length === 0
-    ? groups
+    ? groups.value
     : // A module's rows get the extension glyph, not one of their own. A
       // module choosing its own icon could choose Billing's.
       [
-        ...groups,
+        ...groups.value,
         {
-          label: 'Addons',
+          label: nav('addons', 'Addons'),
           section: 'Extensions' as const,
           icon: 'modules' as const,
           items: addons.value,
@@ -564,7 +693,7 @@ function hrefsOf(group: NavGroup): string[] {
  * they are.
  */
 const currentHref = computed(() => {
-  const candidates = groups
+  const candidates = groups.value
     .flatMap(hrefsOf)
     .filter(
       (href) =>
@@ -597,6 +726,9 @@ const SECTIONS: NavSection[] = ['Business', 'Operations', 'Support', 'System', '
 const railSections = computed(() =>
   SECTIONS.map((section) => ({
     section,
+    // The heading an operator reads, rather than the discriminator the type
+    // uses. They were the same string until this map had a second language.
+    label: nav(`sections.${section.toLowerCase()}`, section),
     groups: visibleGroups.value.filter(
       (group) => group.section === section && group.hidden !== true,
     ),
@@ -889,7 +1021,7 @@ onBeforeUnmount(() => {
           <!-- The heading only exists when the rail has room for it. Collapsed,
                a hairline is what separates one category from the next. -->
           <p v-if="railOpen" class="text-content-subtle text-label px-2 pt-2 pb-1 uppercase">
-            {{ entry.section }}
+            {{ entry.label }}
           </p>
           <div v-else class="bg-line mx-2 mt-2 mb-1 h-px" aria-hidden="true" />
 
