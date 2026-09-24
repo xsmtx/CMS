@@ -14,6 +14,7 @@ return [
     ],
 
     'checks' => [
+        'licence' => 'Lisans',
         'database' => 'Veritabanı',
         'cache' => 'Önbellek',
         'queue' => 'Kuyruk',

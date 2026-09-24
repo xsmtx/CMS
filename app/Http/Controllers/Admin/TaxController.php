@@ -168,7 +168,14 @@ final class TaxController extends Controller
             countryCode: $this->upper($request, 'country_code'),
             stateCode: $this->upper($request, 'region_code'),
             postalCode: $request->input('postcode'),
-            taxId: $request->input('tax_id'),
+            // **Never the tax id itself.** The preview is a GET, so everything it
+            // sends lands in the address bar, in browser history and in the
+            // server's access log — and a customer's tax id has no business in
+            // any of them. The calculator only ever asks whether there *is*
+            // one: it does not validate an id and could not, since that means
+            // calling a country's own service. So the form sends the answer to
+            // that question and nothing more.
+            taxId: $request->boolean('has_tax_id') ? 'provided' : null,
             isBusiness: $request->boolean('is_business'),
             appliesTo: TaxAppliesTo::tryFrom($request->string('applies_to')->toString()) ?? TaxAppliesTo::All,
         );

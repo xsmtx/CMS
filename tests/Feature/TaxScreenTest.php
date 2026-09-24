@@ -258,6 +258,48 @@ it('shows what the rules do to an amount, through the real calculator', function
     askTaxPreview(['amount' => 0, 'currency' => 'CAD'])
         ->assertOk()
         ->assertJsonPath('props.preview', null);
+
+    // An exemption is previewable without the id ever reaching the URL. The
+    // panel is a GET, so everything it asks lands in the address bar, in browser
+    // history and in the access log; the rules only ever check that a tax id
+    // exists, so that is the only thing the form sends.
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/tax/rules', taxRuleForm([
+            'name' => 'VAT',
+            'rate' => '19',
+            // No country on the rule, so it is the seller's own rate charged
+            // everywhere — which is the shape a reverse charge exempts from. A
+            // rule naming the *customer's* country would be that country's own
+            // tax, and a business there pays it.
+            'country_code' => '',
+            'exempts_validated_business' => true,
+            'exemption_note' => 'Reverse charge',
+        ]))
+        ->assertRedirect();
+
+    $this->actingAs($this->owner, 'staff');
+
+    askTaxPreview([
+        'amount' => 10_000,
+        'currency' => 'EUR',
+        'country_code' => 'DE',
+        'is_business' => 1,
+        'has_tax_id' => 1,
+    ])
+        ->assertOk()
+        ->assertJsonPath('props.preview.exemption', 'Reverse charge');
+
+    // Without it, the same customer is charged.
+    askTaxPreview([
+        'amount' => 10_000,
+        'currency' => 'EUR',
+        'country_code' => 'DE',
+        'is_business' => 1,
+        'has_tax_id' => 0,
+    ])
+        ->assertOk()
+        ->assertJsonPath('props.preview.exemption', null);
+
 });
 
 it('does not touch an invoice that was already issued', function (): void {

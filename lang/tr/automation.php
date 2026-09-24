@@ -39,6 +39,14 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'webhooks' => [
+            'label' => 'Webhook gönderimleri',
+            'description' => 'Müşterinin uç noktasının henüz kabul etmediği gönderimleri yeniden dener.',
+        ],
+        'licence' => [
+            'label' => 'Lisans sinyali',
+            'description' => 'Bu kurulumun ayağında olduğunu sağlayıcıya bildirir ve neye izin verildiğini geri okur.',
+        ],
         'cleanup' => [
             'label' => 'Temizlik',
             'description' => 'Süresi dolmuş sepetleri, okunmuş bildirimleri ve eski çalışma ayrıntılarını siler.',

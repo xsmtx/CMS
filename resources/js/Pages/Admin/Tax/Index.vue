@@ -166,7 +166,7 @@ const trial = ref({
   country_code: '',
   region_code: '',
   postcode: '',
-  tax_id: '',
+  has_tax_id: false,
   is_business: false,
   applies_to: 'all',
 })
@@ -183,7 +183,11 @@ function tryIt(): void {
 
   router.reload({
     only: ['preview'],
-    data: { ...trial.value, is_business: trial.value.is_business ? 1 : 0 },
+    data: {
+      ...trial.value,
+      is_business: trial.value.is_business ? 1 : 0,
+      has_tax_id: trial.value.has_tax_id ? 1 : 0,
+    },
     onFinish: () => (working.value = false),
   })
 }
@@ -434,9 +438,11 @@ function labelOf(options: Option[], value: string): string {
               />
             </div>
 
-            <AppButton type="submit" variant="primary" :loading="settingsForm.processing">
-              {{ t('tax.settings.title') }}
-            </AppButton>
+            <div>
+              <AppButton type="submit" variant="primary" :loading="settingsForm.processing">
+                {{ t('tax.settings.save') }}
+              </AppButton>
+            </div>
           </form>
         </AppCard>
       </section>
@@ -468,7 +474,7 @@ function labelOf(options: Option[], value: string): string {
               <AppInput v-model="trial.country_code" :label="t('tax.preview.country')" />
               <AppInput v-model="trial.region_code" :label="t('tax.preview.region')" />
               <AppInput v-model="trial.postcode" :label="t('tax.preview.postcode')" />
-              <AppInput v-model="trial.tax_id" :label="t('tax.preview.tax_id')" />
+
               <AppSelect
                 v-model="trial.applies_to"
                 :label="t('tax.preview.applies_to')"
@@ -476,11 +482,27 @@ function labelOf(options: Option[], value: string): string {
               />
             </div>
 
-            <AppCheckbox v-model="trial.is_business" :label="t('tax.preview.is_business')" />
+            <div class="flex flex-col gap-2">
+              <AppCheckbox v-model="trial.is_business" :label="t('tax.preview.is_business')" />
+              <!--
+                Whether there is a tax id, never the id itself. This panel is a
+                GET, so anything it sends is in the address bar, the history and
+                the access log; and the calculator only ever asks whether one was
+                given, because validating an id means calling a country's own
+                service and core makes no such call.
+              -->
+              <AppCheckbox
+                v-model="trial.has_tax_id"
+                :label="t('tax.preview.has_tax_id')"
+                :description="t('tax.preview.has_tax_id_hint')"
+              />
+            </div>
 
-            <AppButton type="submit" variant="secondary" :loading="working">
-              {{ t('tax.preview.run') }}
-            </AppButton>
+            <div>
+              <AppButton type="submit" variant="secondary" :loading="working">
+                {{ t('tax.preview.run') }}
+              </AppButton>
+            </div>
 
             <div
               v-if="preview"

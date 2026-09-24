@@ -39,6 +39,14 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'webhooks' => [
+            'label' => 'Webhook deliveries',
+            'description' => 'Retries the deliveries an endpoint has not accepted yet.',
+        ],
+        'licence' => [
+            'label' => 'Licence heartbeat',
+            'description' => 'Tells the vendor this installation is alive, and reads back what it may do.',
+        ],
         'cleanup' => [
             'label' => 'Cleanup',
             'description' => 'Deletes expired carts, read notifications and old run detail.',

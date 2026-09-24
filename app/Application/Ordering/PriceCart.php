@@ -148,7 +148,7 @@ final class PriceCart
      * **Per line, not on one total**, and that is what makes two configurable
      * things real rather than decorative. A rule may be scoped to products, to
      * domains or to addons, because several countries tax a domain registration
-     * and a hosting account differently \u2014 and until this, the only supply ever
+     * and a hosting account differently — and until this, the only supply ever
      * handed to the calculator said "all", so a rule scoped to anything else
      * could never match. And `TaxRounding` had nothing to decide, because there
      * was only ever one calculation to round.
@@ -159,8 +159,8 @@ final class PriceCart
      * a domain with hosting is two because two different rates cannot share one
      * rounding.
      *
-     * A line\'s own amount is `lineTotal` \u2014 what it renews for, plus its setup
-     * fee, less its share of the discount \u2014 so the parts add up to the taxable
+     * A line's own amount is `lineTotal` — what it renews for, plus its setup
+     * fee, less its share of the discount — so the parts add up to the taxable
      * total by construction rather than by a second calculation that could
      * disagree with it.
      *

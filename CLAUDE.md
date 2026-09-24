@@ -861,3 +861,44 @@ whichever rate came first. `CurrentTaxSettings` is the one place that resolves
 whose tax settings apply.
 
 The shipped rounding default is **per line**, which is what most panels do.
+
+**The admin area and the storefront have now been driven in a browser**
+(`docs/architecture/browser-pass-result.md`). Seven bugs, none of which 1608
+tests could see, because a test asserts behaviour and every one of them was about
+what a human reads. The provider adapters remain the other standing gap: a
+browser proves a screen, and only a real provider proves an adapter.
+
+A GET puts everything it asks into the address bar, the browser history and the
+server's access log. The tax preview is an `Inertia::optional` prop and therefore
+a GET, and it was sending a customer's **tax id** there. It now sends
+`has_tax_id`, because the rules only ever check that one exists — core never
+validates a tax id and could not, since that means calling a country's own
+service. Before putting a field on a panel that reloads partially, ask what it
+would look like in a log line.
+
+A button is labelled with what it does, not with the heading above it. Two save
+buttons said "How tax behaves" and "Billing terms". And an `AppButton` that is a
+direct child of a `flex flex-col` stretches to the full width of the panel — wrap
+it in a plain `<div>`.
+
+`__()` returning its own key is the designed symptom of missing wording, and it
+only works if somebody looks. Three screens were printing keys at an operator:
+`automation.tasks.webhooks.label`, `automation.tasks.licence.label`,
+`health.checks.licence`, and Connect was printing `branding.remove_vendor_mark`
+because the controller sent `$feature->value` instead of `__($feature->labelKey())`
+— the permission-slug trap through a different door. `tests/Feature/VocabularyTest.php`
+is the guard now: every automation task, every **registered** health check and
+every licensing feature, in both locales. It asks the registry rather than a
+hand-written list, because a check added to the container and nowhere else is
+exactly the one that goes unnamed.
+
+A customer organization is literally named `Customer` when an individual signs up
+with no company — `CreateCustomer` has no personal name to use at that point. So
+anything caching an organization's name for a customer caches nothing useful;
+`ProjectCoreResources` caches `Customer::displayName()` instead, eager-loaded
+with `displayNameWith()`.
+
+When patching files through a script, check the output in the product, not only
+the gates. A Python escaping slip wrote `\u00fc` **literally** into two language
+files, so a screen went from showing a translation key to showing
+`M\u00fc\u015fterinin`, and every gate stayed green — a string is a string.

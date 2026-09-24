@@ -16,6 +16,7 @@ use App\Domain\Infrastructure\ResourceKind;
 use App\Domain\Organizations\OrganizationType;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Infrastructure\Crm\Models\Customer;
+use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\Models\Service;
@@ -76,6 +77,38 @@ function project(): object
         app(ProjectCoreResources::class),
     );
 }
+
+it('labels a customer node with the customer name, not "Customer"', function (): void {
+    // A node carries a cached label (ADR 0043), and the organization's own name
+    // is the wrong thing to cache for a customer: `CreateCustomer` has no
+    // personal name to use when an individual signs up with no company, so the
+    // row is literally called "Customer". Four of those in an impact view tell
+    // an operator nothing at all, which is what a browser showed.
+    $customer = Customer::factory()->create([
+        'organization_id' => Organization::factory()->create([
+            'parent_id' => $this->provider->id,
+            'type' => OrganizationType::Customer->value,
+            'name' => 'Customer',
+        ])->id,
+        'company_name' => null,
+        'legal_name' => null,
+    ]);
+
+    Contact::factory()->forCustomer($customer)->primary()->create([
+        'first_name' => 'Ayse',
+        'last_name' => 'Yilmaz',
+    ]);
+
+    project();
+
+    $node = ResourceNode::query()
+        ->where('kind', ResourceKind::Organization)
+        ->where('node_key', $customer->organization_id)
+        ->sole();
+
+    expect($node->label)->toBe($customer->fresh()?->displayName())
+        ->and($node->label)->not->toBe('Customer');
+});
 
 it('projects organizations, servers and services, and links them', function (): void {
     estate($this->provider);

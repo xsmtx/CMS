@@ -416,7 +416,7 @@ it('refuses a business with no tax id, and only when the seller asked', function
 it('charges an addon a different rate from the product it hangs off', function (): void {
     // The reason tax is worked out per line at all. Until it was, the only
     // supply ever handed to the calculator said "all", so a rule scoped to
-    // anything else could never match \u2014 a whole column on the rules screen that
+    // anything else could never match — a whole column on the rules screen that
     // quietly did nothing. Several countries genuinely do tax a domain
     // registration and a hosting account at different rates.
     ruleFor('KDV', '20', ['applies_to' => TaxAppliesTo::Products->value]);

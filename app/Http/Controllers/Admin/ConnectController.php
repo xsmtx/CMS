@@ -68,6 +68,11 @@ final class ConnectController extends Controller
                 'entitlements' => array_values(array_map(
                     static fn (Feature $feature): array => [
                         'key' => $feature->value,
+                        // The wording, not the slug. A feature's value has dots
+                        // in it, so it is not a path a translator can walk —
+                        // `labelKey()` is the one place that knows to underscore
+                        // it, and the screen printed the raw slug without it.
+                        'label' => (string) __($feature->labelKey()),
                         'allowed' => $entitlements->allows($feature->value),
                     ],
                     Feature::cases(),

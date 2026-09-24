@@ -159,7 +159,7 @@ function saveSequence(key: string): void {
 
         <div>
           <AppButton type="submit" variant="primary" :loading="terms.processing">
-            {{ t('billing.settings.title') }}
+            {{ t('billing.settings.save') }}
           </AppButton>
         </div>
       </form>

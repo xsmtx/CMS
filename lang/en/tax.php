@@ -63,6 +63,7 @@ return [
 
     'settings' => [
         'title' => 'How tax behaves',
+        'save' => 'Save how tax behaves',
         'intro' => 'The handful of answers that are not a rate.',
         'saved' => 'Saved.',
         'prices_include_tax' => 'Catalog prices already include tax',
@@ -84,8 +85,9 @@ return [
         'country' => 'Country',
         'region' => 'Region',
         'postcode' => 'Postcode',
-        'tax_id' => 'Tax id',
         'is_business' => 'A business',
+        'has_tax_id' => 'Gave a tax id',
+        'has_tax_id_hint' => 'Whether one was given, never which one: this panel puts what it asks into the address bar, and the rules only ever check that there is one.',
         'applies_to' => 'Selling',
         'run' => 'Work it out',
         'net' => 'Before tax',

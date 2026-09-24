@@ -11,7 +11,9 @@ use App\Domain\Automation\RunItem;
 use App\Domain\Automation\RunSummary;
 use App\Domain\Infrastructure\Relation;
 use App\Domain\Infrastructure\ResourceKind;
+use App\Domain\Organizations\OrganizationType;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\Models\Service;
@@ -76,7 +78,7 @@ final readonly class ProjectCoreResources implements AutomationRun
                     organizationId: $organization->id,
                     kind: ResourceKind::Organization,
                     nodeKey: $organization->id,
-                    label: $organization->name,
+                    label: $this->labelFor($organization),
                     subject: $organization,
                 );
 
@@ -258,6 +260,35 @@ final readonly class ProjectCoreResources implements AutomationRun
             ->where('kind', ResourceKind::Server)
             ->where('node_key', $serverId)
             ->first();
+    }
+
+    /**
+     * What to call an organization in the graph.
+     *
+     * A node carries a **cached label** (ADR 0043), and for a customer the
+     * organization's own name is the wrong thing to cache: `CreateCustomer` has
+     * no personal name to use when an individual signs up with no company, so
+     * the row is literally called "Customer". Four of those in an impact view
+     * tell an operator nothing at all.
+     *
+     * `Customer::displayName()` is the name a human uses for this customer and
+     * falls through company, legal name, then the primary contact — so it is
+     * eager-loaded with `displayNameWith()`, never `with('customer')` alone,
+     * because a column the caller did not anticipate is a lazy-load exception by
+     * another route.
+     */
+    private function labelFor(Organization $organization): string
+    {
+        if ($organization->type !== OrganizationType::Customer) {
+            return $organization->name;
+        }
+
+        $customer = Customer::query()
+            ->with(Customer::displayNameWith())
+            ->where('organization_id', $organization->id)
+            ->first();
+
+        return $customer instanceof Customer ? $customer->displayName() : $organization->name;
     }
 
     private function item(string $id, string $label, string $kind): RunItem

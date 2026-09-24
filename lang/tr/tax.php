@@ -56,6 +56,7 @@ return [
 
     'settings' => [
         'title' => 'Vergi nasıl işlesin',
+        'save' => 'Vergi davranışını kaydet',
         'intro' => 'Oran olmayan birkaç yanıt.',
         'saved' => 'Kaydedildi.',
         'prices_include_tax' => 'Katalog fiyatları vergi dahil',
@@ -77,8 +78,9 @@ return [
         'country' => 'Ülke',
         'region' => 'Bölge',
         'postcode' => 'Posta kodu',
-        'tax_id' => 'Vergi numarası',
         'is_business' => 'Şirket',
+        'has_tax_id' => 'Vergi numarası verdi',
+        'has_tax_id_hint' => 'Verilip verilmediği, hangisi olduğu değil: bu panel sorduğunu adres çubuğuna yazıyor ve kurallar yalnızca bir tane olup olmadığına bakıyor.',
         'applies_to' => 'Satılan',
         'run' => 'Hesapla',
         'net' => 'Vergisiz',

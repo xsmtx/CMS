@@ -34,7 +34,7 @@ interface ServerRow {
 
 defineProps<{
   brand: string
-  platform: { version: string; entitlements: { key: string; allowed: boolean }[] }
+  platform: { version: string; entitlements: { key: string; label: string; allowed: boolean }[] }
   servers: ServerRow[]
 }>()
 
@@ -61,7 +61,7 @@ function openSession(server: ServerRow): void {
           <dd class="mt-0.5 font-mono">{{ platform.version }}</dd>
         </div>
         <div v-for="entitlement in platform.entitlements" :key="entitlement.key">
-          <dt class="text-content-muted text-xs">{{ entitlement.key }}</dt>
+          <dt class="text-content-muted text-xs">{{ entitlement.label }}</dt>
           <dd class="mt-0.5">
             <AppBadge :tone="entitlement.allowed ? 'success' : 'neutral'">
               {{ entitlement.allowed ? 'Allowed' : 'Not allowed' }}

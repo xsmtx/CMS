@@ -194,6 +194,7 @@ return [
     'settings' => [
         'title' => 'Billing terms',
         'intro' => 'When an invoice falls due, what being late costs, and what every document has to say. These are yours to state; this platform ships defaults, not rules.',
+        'save' => 'Save these terms',
         'saved' => 'Saved.',
         'default_note' => 'Nobody has stated these yet, so the values below are what this installation ships with. Saving makes them yours.',
 

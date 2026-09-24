@@ -187,6 +187,7 @@ return [
     'settings' => [
         'title' => 'Fatura koşulları',
         'intro' => 'Faturanın ne zaman vadesinin geldiği, gecikmenin ne kadara mal olduğu ve her belgede ne yazması gerektiği. Bunları siz belirlersiniz; bu platform kural değil varsayılan gönderir.',
+        'save' => 'Koşulları kaydet',
         'saved' => 'Kaydedildi.',
         'default_note' => 'Bunları henüz kimse belirlemedi; aşağıdaki değerler kurulumun kendi varsayılanları. Kaydettiğinizde sizin olurlar.',
 

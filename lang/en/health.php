@@ -14,6 +14,7 @@ return [
     ],
 
     'checks' => [
+        'licence' => 'Licence',
         'database' => 'Database',
         'cache' => 'Cache',
         'queue' => 'Queue',
