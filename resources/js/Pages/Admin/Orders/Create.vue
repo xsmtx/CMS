@@ -12,7 +12,7 @@
  * Only products that have a price in this client's currency are offered.
  * An operator should not be able to pick something the cart will refuse.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
@@ -21,6 +21,9 @@ import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface Cycle {
@@ -65,6 +68,8 @@ const props = defineProps<{
   taxRatePercent: string
   taxName: string
 }>()
+
+const { t } = useTranslations()
 
 function blankLine(): Line {
   return { product_id: '', billing_cycle: '', quantity: 1, domain: '', price_override: '' }
@@ -245,11 +250,11 @@ const taxMinor = computed(() =>
 
 const totalMinor = computed(() => subtotalMinor.value + taxMinor.value)
 
-const DOMAIN_ADDONS = [
-  { value: 'dns_management', label: 'DNS Management' },
-  { value: 'email_forwarding', label: 'Email Forwarding' },
-  { value: 'id_protection', label: 'ID Protection' },
-]
+const DOMAIN_ADDONS = computed(() => [
+  { value: 'dns_management', label: t('ui.order_new.addons.dns_management') },
+  { value: 'email_forwarding', label: t('ui.order_new.addons.email_forwarding') },
+  { value: 'id_protection', label: t('ui.order_new.addons.id_protection') },
+])
 
 function toggleAddon(value: string): void {
   form.domain_addons = form.domain_addons.includes(value)
@@ -275,23 +280,30 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Add new order" />
+  <Head :title="t('ui.order_new.title')" />
 
-  <AdminLayout
-    heading="Add New Order"
-    description="An order taken over the phone. It goes through the same pricing the storefront uses, so nothing about it is a special case afterwards."
-  >
-    <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]" @submit.prevent="submit">
-      <div class="flex flex-col gap-6">
-        <AppCard title="Client">
-          <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="text-body font-medium">{{ chosen.name }}</p>
-              <p class="text-content-muted text-chrome">
-                <span v-if="chosen.email">{{ chosen.email }} · </span>{{ chosen.currency }}
-              </p>
-            </div>
-            <AppButton type="button" variant="ghost" size="sm" @click="forget">Change</AppButton>
+  <AdminLayout :heading="t('ui.order_new.title')">
+    <template #header>
+      <PageHeader :title="t('ui.order_new.title')" :description="t('ui.order_new.intro')" />
+    </template>
+
+    <form
+      class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)]"
+      @submit.prevent="submit"
+    >
+      <div class="flex min-w-0 flex-col gap-8">
+        <DetailSection :title="t('ui.order_new.client')">
+          <template v-if="chosen" #actions>
+            <AppButton type="button" variant="ghost" size="sm" @click="forget">
+              {{ t('ui.order_new.change') }}
+            </AppButton>
+          </template>
+
+          <div v-if="chosen">
+            <p class="text-body font-medium">{{ chosen.name }}</p>
+            <p class="text-content-muted text-chrome">
+              <span v-if="chosen.email">{{ chosen.email }} · </span>{{ chosen.currency }}
+            </p>
           </div>
 
           <div v-else class="flex flex-col gap-3">
@@ -299,22 +311,22 @@ function submit(): void {
               <div class="flex-1">
                 <AppInput
                   v-model="term"
-                  label="Find a client"
+                  :label="t('ui.order_new.find_client')"
                   :error="form.errors.customer_id"
                   @keyup.enter="search"
                 />
               </div>
-              <AppButton type="button" @click="search">Search</AppButton>
+              <AppButton type="button" @click="search">{{ t('ui.order_new.search') }}</AppButton>
             </div>
 
             <ul
               v-if="candidates.length > 0"
-              class="border-line divide-line divide-y rounded-md border"
+              class="border-line divide-line-subtle divide-y rounded-lg border"
             >
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
+                  class="pressable hover:bg-surface-hover block w-full px-3 py-2 text-left transition-colors duration-(--duration-fast)"
                   @click="choose(candidate)"
                 >
                   <span class="text-body block font-medium">{{ candidate.name }}</span>
@@ -325,29 +337,39 @@ function submit(): void {
               </li>
             </ul>
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Products"
-          :description="`Priced in ${currency}. Only what is actually sold in that currency is offered.`"
+        <DetailSection
+          :title="t('ui.order_new.products')"
+          :description="t('ui.order_new.products_intro', { currency })"
         >
+          <template v-if="products.length > 0" #actions>
+            <AppButton type="button" variant="ghost" size="sm" icon="add" @click="addLine">
+              {{ t('ui.order_new.add_product') }}
+            </AppButton>
+          </template>
+
           <p v-if="products.length === 0" class="text-content-muted text-body">
-            Nothing in the catalogue has a price in {{ currency }}. Add one before taking an order
-            in it.
+            {{ t('ui.order_new.no_products', { currency }) }}
           </p>
 
           <div v-else class="flex flex-col gap-4">
+            <!--
+              A frame per line, not a divider: five fields in a grid run into
+              the five below them, and an operator editing the third line has
+              to be able to see where it starts.
+            -->
             <div
               v-for="(line, index) in form.lines"
               :key="index"
-              class="border-line rounded-md border p-4"
+              class="border-line rounded-lg border p-4"
             >
               <div class="grid gap-4 sm:grid-cols-2">
                 <AppSelect
                   v-model="line.product_id"
-                  label="Product"
+                  :label="t('ui.order_new.product')"
                   :options="[
-                    { value: '', label: 'Choose…' },
+                    { value: '', label: t('ui.order_new.choose') },
                     ...products.map((one) => ({
                       value: one.id,
                       label: one.group ? `${one.group} — ${one.name}` : one.name,
@@ -357,21 +379,25 @@ function submit(): void {
                 />
                 <AppSelect
                   v-model="line.billing_cycle"
-                  label="Billing cycle"
+                  :label="t('ui.order_new.cycle')"
                   :options="cyclesFor(line)"
                   :disabled="line.product_id === ''"
                 />
                 <AppInput
                   v-if="productFor(line)?.requiresDomain"
                   v-model="line.domain"
-                  label="Domain"
-                  hint="This product cannot be set up without a hostname."
+                  :label="t('ui.order_new.domain')"
+                  :hint="t('ui.order_new.domain_hint')"
                 />
-                <AppInput v-model.number="line.quantity" label="Quantity" type="number" />
+                <AppInput
+                  v-model.number="line.quantity"
+                  :label="t('ui.order_new.quantity')"
+                  type="number"
+                />
                 <AppInput
                   v-model="line.price_override"
-                  label="Price override"
-                  :hint="`Leave empty for the catalogue price. In ${currency}.`"
+                  :label="t('ui.order_new.price_override')"
+                  :hint="t('ui.order_new.price_override_hint', { currency })"
                 />
               </div>
 
@@ -383,20 +409,16 @@ function submit(): void {
                   :disabled="form.lines.length === 1 && line.product_id === ''"
                   @click="removeLine(index)"
                 >
-                  Remove
+                  {{ t('ui.order_new.remove') }}
                 </AppButton>
               </div>
             </div>
-
-            <div>
-              <AppButton type="button" @click="addLine">Add Another Product</AppButton>
-            </div>
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Domain registration"
-          description="A domain is not a service. It is bought for a term and renewed on its own schedule."
+        <DetailSection
+          :title="t('ui.order_new.domain_registration')"
+          :description="t('ui.order_new.domain_registration_intro')"
         >
           <div class="flex flex-wrap gap-4">
             <label class="text-body flex items-center gap-2">
@@ -406,7 +428,7 @@ function submit(): void {
                 value=""
                 class="accent-brand size-3.5"
               />
-              None
+              {{ t('ui.order_new.none') }}
             </label>
             <label
               v-for="action in domainActions"
@@ -426,30 +448,32 @@ function submit(): void {
           <div v-if="form.domain_action !== ''" class="mt-4 grid gap-4 sm:grid-cols-2">
             <AppInput
               v-model="form.domain_name"
-              label="Domain"
+              :label="t('ui.order_new.domain')"
               :error="form.errors.domain_name"
               placeholder="example.com"
             />
             <AppInput
               v-model.number="form.domain_years"
-              label="Registration period (years)"
+              :label="t('ui.order_new.years')"
               type="number"
             />
             <AppInput
               v-model="form.domain_registration_price"
-              label="Registration price override"
-              :hint="`Leave empty for the price on the board. In ${currency}.`"
+              :label="t('ui.order_new.registration_override')"
+              :hint="t('ui.order_new.registration_override_hint', { currency })"
             />
           </div>
 
           <div v-if="form.domain_action !== ''" class="mt-4">
-            <p class="text-content-muted text-chrome mb-2 font-medium">Addons</p>
+            <p class="text-content-subtle text-label mb-2 uppercase">
+              {{ t('ui.order_new.addons_label') }}
+            </p>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="addon in DOMAIN_ADDONS"
                 :key="addon.value"
                 type="button"
-                class="pressable border-line hover:border-line-strong text-chrome rounded-full border px-3 py-1.5 transition-colors duration-(--duration-fast)"
+                class="pressable border-line hover:border-line-strong text-chrome rounded-sm border px-2.5 py-1.5 transition-colors duration-(--duration-fast)"
                 :class="form.domain_addons.includes(addon.value) ? 'border-brand text-content' : ''"
                 :aria-pressed="form.domain_addons.includes(addon.value)"
                 @click="toggleAddon(addon.value)"
@@ -461,72 +485,82 @@ function submit(): void {
 
           <p
             v-if="form.domain_action === 'transfer'"
-            class="border-line text-content-muted text-chrome mt-4 border-t pt-3"
+            class="border-line-subtle text-content-muted text-chrome mt-4 border-t pt-3 leading-relaxed"
           >
-            The transfer code is asked for when the transfer is submitted, not here. A transfer code
-            is fetched, shown once and never written down — storing it on an order would leave it
-            sitting in the database for as long as the order does.
+            {{ t('ui.order_new.transfer_note') }}
           </p>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard title="Notes" description="Why this order exists. Visible to staff only.">
-          <AppTextarea v-model="form.notes" label="Notes" :rows="3" />
-        </AppCard>
+        <DetailSection
+          :title="t('ui.order_new.placing')"
+          :description="t('ui.order_new.placing_intro')"
+        >
+          <div class="flex flex-col gap-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <AppSelect
+                v-model="form.gateway"
+                :label="t('ui.order_new.method')"
+                :options="gateways"
+                :error="form.errors.gateway"
+              />
+              <AppInput
+                v-model="form.promotion_code"
+                :label="t('ui.order_new.promotion')"
+                :hint="t('ui.order_new.promotion_hint')"
+              />
+            </div>
+
+            <AppCheckbox
+              v-model="form.confirm"
+              :label="t('ui.order_new.confirm')"
+              :description="t('ui.order_new.confirm_hint')"
+            />
+            <AppCheckbox
+              v-model="form.generate_invoice"
+              :label="t('ui.order_new.generate_invoice')"
+              :description="t('ui.order_new.generate_invoice_hint')"
+            />
+            <AppCheckbox
+              v-model="form.send_email"
+              :label="t('ui.order_new.send_email')"
+              :description="t('ui.order_new.send_email_hint')"
+            />
+          </div>
+        </DetailSection>
+
+        <DetailSection
+          :title="t('ui.order_new.notes')"
+          :description="t('ui.order_new.notes_intro')"
+        >
+          <AppTextarea v-model="form.notes" :label="t('ui.order_new.notes')" :rows="3" />
+        </DetailSection>
       </div>
 
-      <aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
-        <AppCard title="Order Summary">
+      <!--
+        The one framed surface on the page: the figures an operator checks
+        before pressing Submit, and the press itself, sticky beside a form
+        that is longer than the screen.
+      -->
+      <aside class="flex min-w-0 flex-col gap-8 lg:sticky lg:top-20 lg:self-start">
+        <AppCard :title="t('ui.order_new.summary')">
           <dl class="text-body flex flex-col gap-2">
             <div class="flex justify-between gap-4">
-              <dt class="text-content-muted">Sub Total</dt>
+              <dt class="text-content-muted">{{ t('ui.order_new.subtotal') }}</dt>
               <dd class="tabular-nums">{{ format(subtotalMinor) }}</dd>
             </div>
             <div v-if="Number(taxRatePercent) > 0" class="flex justify-between gap-4">
               <dt class="text-content-muted">{{ taxName }} @ {{ taxRatePercent }}%</dt>
               <dd class="tabular-nums">{{ format(taxMinor) }}</dd>
             </div>
-            <div class="border-line flex justify-between gap-4 border-t pt-2 font-semibold">
-              <dt>Total</dt>
+            <div class="border-line flex justify-between gap-4 border-t pt-2 font-medium">
+              <dt>{{ t('ui.order_new.total') }}</dt>
               <dd class="tabular-nums">{{ format(totalMinor) }}</dd>
             </div>
           </dl>
 
-          <p class="text-content-subtle text-chrome mt-3">
-            A preview. The charge is worked out server side when the order is placed, by the same
-            pricing the storefront uses.
+          <p class="text-content-subtle text-chrome mt-3 leading-relaxed">
+            {{ t('ui.order_new.preview_note') }}
           </p>
-        </AppCard>
-
-        <AppCard title="How to place it">
-          <div class="flex flex-col gap-4">
-            <AppSelect
-              v-model="form.gateway"
-              label="Payment method"
-              :options="gateways"
-              :error="form.errors.gateway"
-            />
-            <AppInput
-              v-model="form.promotion_code"
-              label="Promotion code"
-              hint="A code that will not apply is reported rather than silently dropped."
-            />
-
-            <AppCheckbox
-              v-model="form.confirm"
-              label="Order Confirmation"
-              description="Email the customer that the order exists. The status itself is worked out from the risk check, not from this."
-            />
-            <AppCheckbox
-              v-model="form.generate_invoice"
-              label="Generate Invoice"
-              description="Raise and issue the invoice straight away."
-            />
-            <AppCheckbox
-              v-model="form.send_email"
-              label="Send Email"
-              description="The master switch. Off means the customer hears nothing — not the confirmation, not the invoice."
-            />
-          </div>
 
           <div class="mt-5 flex gap-2">
             <AppButton
@@ -535,11 +569,11 @@ function submit(): void {
               :loading="form.processing"
               :disabled="!ready"
             >
-              Submit Order
+              {{ t('ui.order_new.submit') }}
             </AppButton>
-            <Link href="/admin/orders">
-              <AppButton type="button" variant="ghost">Cancel</AppButton>
-            </Link>
+            <AppButton type="button" variant="ghost" href="/admin/orders">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
           </div>
         </AppCard>
       </aside>

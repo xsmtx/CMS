@@ -19,14 +19,16 @@ import { computed } from 'vue'
 import type { CustomFieldDefinition } from '../../../Components/CustomFieldInput.vue'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import CustomFieldInput from '../../../Components/CustomFieldInput.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTaxIdentity } from '../../../composables/useTaxIdentity'
+import { useTranslations } from '../../../composables/useTranslations'
 
 interface Option {
   value: string
@@ -55,6 +57,8 @@ const props = defineProps<{
 // The seller's own word for a tax id. "VAT number" is wrong in most of the
 // world, and an operator entering a Turkish customer should read Vergi No.
 const { label: taxIdLabel } = useTaxIdentity()
+
+const { t } = useTranslations()
 
 interface ClientForm {
   first_name: string
@@ -160,109 +164,129 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Add new client" />
+  <Head :title="t('ui.client_new.title')" />
 
-  <AdminLayout
-    heading="Add new client"
-    description="The company, the first person and where to invoice them, in one go."
-  >
-    <form class="flex flex-col gap-5" @submit.prevent="submit">
-      <AppCard title="The person">
+  <AdminLayout :heading="t('ui.client_new.title')">
+    <template #header>
+      <PageHeader :title="t('ui.client_new.title')" :description="t('ui.client_new.intro')" />
+    </template>
+
+    <!--
+      Capped rather than run to the window edge. Two columns across 1200px
+      gives a first-name field 580px wide, which reads as a mistake; a form is
+      prose with boxes in it and takes a prose measure.
+    -->
+    <form class="flex max-w-4xl flex-col gap-8" @submit.prevent="submit">
+      <DetailSection :title="t('ui.client_new.person')">
         <div class="grid gap-5 sm:grid-cols-2">
           <AppInput
             v-model="form.first_name"
-            label="First name"
+            :label="t('ui.client_new.first_name')"
             :error="form.errors.first_name"
             required
           />
           <AppInput
             v-model="form.last_name"
-            label="Last name"
+            :label="t('ui.client_new.last_name')"
             :error="form.errors.last_name"
             required
           />
           <AppInput
             v-model="form.email"
             type="email"
-            label="Email address"
+            :label="t('ui.client_new.email')"
             :error="form.errors.email"
             required
           />
           <AppInput
             v-model="form.phone"
-            label="Phone number"
+            :label="t('ui.client_new.phone')"
             :placeholder="defaults.phonePlaceholder"
             :error="form.errors.phone"
           />
           <AppSelect
             v-model="form.locale"
-            label="Language"
+            :label="t('ui.client_new.language')"
             :options="locales"
             :error="form.errors.locale"
           />
-          <AppSelect v-model="form.role" label="Role" :options="roles" :error="form.errors.role" />
+          <AppSelect
+            v-model="form.role"
+            :label="t('ui.client_new.role')"
+            :options="roles"
+            :error="form.errors.role"
+          />
         </div>
 
         <p v-if="chosenRole" class="text-content-muted text-chrome mt-4 leading-relaxed">
-          <span class="text-content font-medium">{{ chosenRole.label }}</span> can:
-          <span v-if="chosenRole.can.length > 0" class="font-mono">
+          <span class="text-content font-medium">{{ chosenRole.label }}</span>
+          {{ t('ui.client_new.role_can') }}
+          <!-- Not mono: these are sentences a person wrote, not identifiers.
+               The monospace face is for an IP, a ULID or a hostname. -->
+          <span v-if="chosenRole.can.length > 0" class="text-content">
             {{ chosenRole.can.join(', ') }}
           </span>
-          <span v-else>nothing yet — this role holds no permissions.</span>
+          <span v-else>{{ t('ui.client_new.role_none') }}</span>
         </p>
 
-        <div class="border-line mt-5 grid gap-5 border-t pt-5 sm:grid-cols-2">
+        <div class="border-line-subtle mt-5 grid gap-5 border-t pt-5 sm:grid-cols-2">
           <AppInput
             v-model="form.password"
             type="password"
-            label="Password"
+            :label="t('ui.client_new.password')"
             autocomplete="new-password"
-            hint="Leave blank and they set their own from the welcome email."
+            :hint="t('ui.client_new.password_hint')"
             :error="form.errors.password"
           />
           <AppInput
             v-if="settingPassword"
             v-model="form.password_confirmation"
             type="password"
-            label="Confirm password"
+            :label="t('ui.client_new.password_confirm')"
             autocomplete="new-password"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard title="The company">
+      <DetailSection :title="t('ui.client_new.company')">
         <div class="grid gap-5 sm:grid-cols-2">
           <AppInput
             v-model="form.company_name"
-            label="Company name"
-            hint="Leave blank for an individual."
+            :label="t('ui.client_new.company_name')"
+            :hint="t('ui.client_new.company_name_hint')"
             :error="form.errors.company_name"
           />
-          <AppInput v-model="form.legal_name" label="Legal name" :error="form.errors.legal_name" />
+          <AppInput
+            v-model="form.legal_name"
+            :label="t('ui.client_new.legal_name')"
+            :error="form.errors.legal_name"
+          />
           <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
           <AppInput
             v-model="form.tax_id_type"
-            label="Tax id type"
-            hint="For example VAT or VKN."
+            :label="t('ui.client_new.tax_id_type')"
+            :hint="t('ui.client_new.tax_id_type_hint')"
             :error="form.errors.tax_id_type"
           />
           <AppSelect
             v-model="form.status"
-            label="Status"
+            :label="t('ui.client_new.status')"
             :options="statuses"
             :error="form.errors.status"
           />
           <AppSelect
             v-model="form.currency_code"
-            label="Currency"
+            :label="t('ui.client_new.currency')"
             :options="currencies"
-            hint="Fixed for the life of the account: nothing is converted at display time."
+            :hint="t('ui.client_new.currency_hint')"
             :error="form.errors.currency_code"
           />
         </div>
 
-        <div v-if="tags.length > 0" class="border-line mt-5 border-t pt-5">
-          <p class="text-body mb-3 font-medium">Client group</p>
+        <div v-if="tags.length > 0" class="border-line-subtle mt-5 border-t pt-5">
+          <p class="text-content-subtle text-label mb-3 uppercase">
+            {{ t('ui.client_new.group') }}
+          </p>
           <div class="grid gap-3 sm:grid-cols-3">
             <AppCheckbox
               v-for="tag in tags"
@@ -273,79 +297,88 @@ function submit(): void {
             />
           </div>
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
-        title="Where to invoice them"
-        description="Optional here, but an invoice cannot be issued without it."
+      <DetailSection
+        :title="t('ui.client_new.address')"
+        :description="t('ui.client_new.address_intro')"
       >
         <div class="grid gap-5 sm:grid-cols-2">
           <AppInput
             v-model="form.address_line_one"
-            label="Address 1"
+            :label="t('ui.client_new.address_one')"
             :error="form.errors.address_line_one"
           />
           <AppInput
             v-model="form.address_line_two"
-            label="Address 2"
+            :label="t('ui.client_new.address_two')"
             :error="form.errors.address_line_two"
           />
-          <AppInput v-model="form.city" label="City" :error="form.errors.city" />
-          <AppInput v-model="form.region" label="State or region" :error="form.errors.region" />
-          <AppInput v-model="form.postal_code" label="Postcode" :error="form.errors.postal_code" />
+          <AppInput
+            v-model="form.city"
+            :label="t('ui.client_new.city')"
+            :error="form.errors.city"
+          />
+          <AppInput
+            v-model="form.region"
+            :label="t('ui.client_new.region')"
+            :error="form.errors.region"
+          />
+          <AppInput
+            v-model="form.postal_code"
+            :label="t('ui.client_new.postcode')"
+            :error="form.errors.postal_code"
+          />
           <AppInput
             v-model="form.country_code"
-            label="Country"
-            hint="Two-letter ISO code, for example TR."
+            :label="t('ui.client_new.country')"
+            :hint="t('ui.client_new.country_hint')"
             :error="form.errors.country_code"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
-        title="What we send them"
-        description="Transactional mail about something they pay for is always sent; these are the rest."
-      >
+      <DetailSection :title="t('ui.client_new.mail')" :description="t('ui.client_new.mail_intro')">
         <div class="grid gap-4 sm:grid-cols-2">
-          <AppCheckbox v-model="form.notify_invoices" label="Invoice emails" />
-          <AppCheckbox v-model="form.notify_support" label="Support emails" />
-          <AppCheckbox v-model="form.notify_product" label="Product and domain emails" />
-          <AppCheckbox v-model="form.notify_marketing" label="Marketing emails" />
+          <AppCheckbox v-model="form.notify_invoices" :label="t('ui.client_new.mail_invoices')" />
+          <AppCheckbox v-model="form.notify_support" :label="t('ui.client_new.mail_support')" />
+          <AppCheckbox v-model="form.notify_product" :label="t('ui.client_new.mail_product')" />
+          <AppCheckbox v-model="form.notify_marketing" :label="t('ui.client_new.mail_marketing')" />
         </div>
 
-        <div class="border-line mt-5 border-t pt-5">
+        <div class="border-line-subtle mt-5 border-t pt-5">
           <AppCheckbox
             v-model="form.marketing_opt_in"
-            label="Opted in to marketing on the account"
-            description="The company's own answer, recorded next to the person's. Consent is asked once and honoured everywhere."
+            :label="t('ui.client_new.opt_in')"
+            :description="t('ui.client_new.opt_in_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard title="Billing preferences">
+      <DetailSection :title="t('ui.client_new.billing')">
         <div class="grid gap-4">
           <AppCheckbox
             v-model="form.send_overdue_notices"
-            label="Send overdue notices"
-            description="Turn this off for an account somebody chases by telephone. The dunning sequence still runs; it just says nothing."
+            :label="t('ui.client_new.overdue')"
+            :description="t('ui.client_new.overdue_hint')"
           />
           <AppCheckbox
             v-model="form.automatic_suspension"
-            label="Allow automatic suspension"
-            description="Whether dunning may suspend or terminate this customer's services when an invoice goes unpaid."
+            :label="t('ui.client_new.suspension')"
+            :description="t('ui.client_new.suspension_hint')"
           />
           <AppCheckbox
             v-model="form.separate_invoices"
-            label="Invoice each item separately"
-            description="Off means one invoice per currency for everything renewing together, which is what most customers want."
+            :label="t('ui.client_new.separate')"
+            :description="t('ui.client_new.separate_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
+      <DetailSection
         v-if="customFields.length > 0"
-        title="Additional fields"
-        description="Defined by this installation."
+        :title="t('ui.client_new.additional')"
+        :description="t('ui.client_new.additional_intro')"
       >
         <div class="grid max-w-xl gap-5">
           <CustomFieldInput
@@ -356,28 +389,32 @@ function submit(): void {
             :error="customFieldError(field.key)"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard title="Finish">
+      <DetailSection :title="t('ui.client_new.finish')">
         <div class="grid gap-5">
           <AppTextarea
             v-model="form.notes"
-            label="Admin notes"
+            :label="t('ui.client_new.notes')"
             :rows="4"
-            hint="Internal. Never shown to the customer."
+            :hint="t('ui.client_new.notes_hint')"
             :error="form.errors.notes"
           />
           <AppCheckbox
             v-model="form.send_welcome"
-            label="Send a new account information message"
-            description="Goes out through the delivery log like every other message, and respects what they chose above."
+            :label="t('ui.client_new.welcome')"
+            :description="t('ui.client_new.welcome_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex gap-2">
-        <AppButton type="submit" variant="primary" :loading="form.processing">Add client</AppButton>
-        <AppButton href="/admin/customers" variant="ghost">Cancel</AppButton>
+        <AppButton type="submit" variant="primary" :loading="form.processing">
+          {{ t('ui.client_new.submit') }}
+        </AppButton>
+        <AppButton href="/admin/customers" variant="ghost">
+          {{ t('ui.confirm.cancel') }}
+        </AppButton>
       </div>
     </form>
   </AdminLayout>

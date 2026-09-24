@@ -35,8 +35,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Reports/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Create.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Settings/Index.vue` | form |  |  |  |  | yes |
-| [ ] | `Admin/Orders/Create.vue` | form | 6 |  |  |  |  |
-| [ ] | `Admin/Customers/Create.vue` | form | 7 |  |  |  |  |
+| [x] | `Admin/Orders/Create.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Customers/Create.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Domains/Show.vue` | detail |  |  |  |  | yes |
 | [x] | `Admin/Billing/AddTransaction.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Resellers/Show.vue` | detail | 5 | 16 |  |  |  |
