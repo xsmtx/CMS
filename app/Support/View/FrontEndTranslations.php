@@ -34,6 +34,17 @@ final class FrontEndTranslations
     private const array PATHS = [
         'portal',
 
+        /*
+         * The Setup page's own words: its heading and its two section
+         * headings. The tiles themselves carry their label and sentence in the
+         * props, because which tiles exist is a permission question the server
+         * answers — publishing the whole `areas` array would tell every browser
+         * the names of screens its reader cannot open.
+         */
+        'apps.heading',
+        'apps.description',
+        'apps.sections',
+
         'billing.credit_notes',
         'billing.details_saved',
         'billing.gateways',
@@ -60,6 +71,22 @@ final class FrontEndTranslations
         'api.scopes',
         'api.webhooks',
         'api.deliveries',
+
+        /*
+         * The Resource Graph screens (Phase A). Operator vocabulary only: the
+         * kinds, the relations and the three screens' own words. `capabilities`
+         * is deliberately absent — the server labels those through
+         * `CapabilityNames`, because a key with dots in it is not a path a
+         * translator can walk.
+         */
+        'infrastructure.kinds',
+        'infrastructure.relations',
+        'infrastructure.areas',
+        'infrastructure.units',
+        'infrastructure.metrics',
+        'infrastructure.explorer',
+        'infrastructure.adapters',
+        'infrastructure.telemetry',
 
         'ordering.cart',
         'ordering.orders',

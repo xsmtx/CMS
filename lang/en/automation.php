@@ -31,6 +31,14 @@ return [
             'label' => 'Provider sync',
             'description' => 'Asks control panels and registrars what they think is true.',
         ],
+        'resources' => [
+            'label' => 'Resource graph',
+            'description' => 'Keeps the graph in step with organizations, servers and services.',
+        ],
+        'telemetry' => [
+            'label' => 'Telemetry',
+            'description' => 'Asks every enabled monitoring adapter what it currently knows.',
+        ],
         'cleanup' => [
             'label' => 'Cleanup',
             'description' => 'Deletes expired carts, read notifications and old run detail.',

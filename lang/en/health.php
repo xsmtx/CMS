@@ -10,6 +10,7 @@ return [
         'ok' => 'Healthy',
         'degraded' => 'Worth a look',
         'failing' => 'Failing',
+        'unknown' => 'Nothing reported',
     ],
 
     'checks' => [

@@ -1,6 +1,6 @@
 # Advanced Operations — plan of record
 
-Status: plan. Phase A in progress; Phases B to J not started.
+Status: plan. Phase A complete; Phases B to J not started.
 Date: 2026-09-24
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` (all sections)
 Required by: handoff #2 §30
@@ -222,8 +222,13 @@ answers a revenue question it reads `services.recurring_minor` and returns
 
 ### 4.4 Read models
 
-Four, and they are the reason the graph exists. Each is one query with a bounded
-depth, using MariaDB's `WITH RECURSIVE`.
+Four, and they are the reason the graph exists. Each walks **one query per
+level**, to a bounded depth. MariaDB has had `WITH RECURSIVE` for years and would
+do it in one round trip — but hand-written SQL carries no global scope, so the
+organization filter would have to be written into the statement by hand, forever.
+An unscoped lookup is the one class of bug this platform will not trade anything
+for, and the price is a handful of extra queries on a screen somebody opened
+deliberately.
 
 - **`ResourceTree`** — the downward closure of a node. What is in this rack.
 - **`ImpactSummary`** — the answer to "if this fails, who notices": counts of
@@ -329,13 +334,13 @@ for six columns and is wrong for twenty-three adapter families.
 So a `SecretStore` contract in core — put, get, rotate, destroy, with an
 `EncryptedDatabaseSecrets` default and a `vault-hashicorp` module later — is real
 work, and it is **Phase B, not Phase A**. The reason is the lesson Phase 17
-learned about file uploads: nothing in Phase A makes an outbound call. The graph
-is inventory over rows core already has, the registry describes adapters, the
-normalizer takes samples handed to it. A vault built before its first caller is a
-seam with nothing behind it, and a seam nobody has used is a seam that is wrong in
-a way only the first caller discovers.
+learned about file uploads: **nothing in Phase A needs a credential.** The graph
+is inventory over rows core already has, the registry describes adapters, and the
+worked example adapter reads a file path an operator typed. A vault built before
+its first caller is a seam with nothing behind it, and a seam nobody has used is a
+seam that is wrong in a way only the first caller discovers.
 
-Phase B's first adapter is the first caller. The vault lands with it, in the same
+Phase B's first adapter is the first caller: a Prometheus adapter needs a token. The vault lands with it, in the same
 phase, and JIT access (§17) follows in Phase C where the thing being accessed
 exists.
 

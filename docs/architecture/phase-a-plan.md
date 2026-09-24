@@ -1,6 +1,6 @@
 # Phase A — Foundation Plan
 
-Status: in progress
+Status: complete — see `phase-a-result.md`
 Date: 2026-09-24
 Previous: `phase-17-result.md` (handoff #1 complete)
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` §2, §14, §27, §28 Phase A, §29
@@ -21,7 +21,8 @@ does this sit on, who is affected if it fails, and who had this before.
 
 **A projection of what core already knows.** `ProjectCoreResources`, an
 automation task under `RecordedRun`, keeps nodes and edges in step with
-organizations, servers, services and customers. This is what makes the graph real
+organizations, servers and services. (Not customers: CRM already answers "what
+does this customer have", and a second answer would eventually disagree.) This is what makes the graph real
 on day one with no module installed and no adapter configured: an operator opens
 Explorer and sees their own servers with the services on them and the revenue
 underneath.
@@ -43,26 +44,28 @@ Explorer, Adapters, Telemetry.
 `BaseModule` — a minor bump by `Sdk`'s own rule, and the first time that rule has
 been used.
 
-**A worked example outside core.** `modules/example/telemetry-probe` registers a
-`MonitoringProvider` that reports the platform's own numbers as node metrics. It
-needs no credentials and no external system, and it is the only proof that the
-registry works from where a third party stands — the same job
-`modules/example/status-board` does for the rest of the SDK.
+**A worked example outside core.** `modules/example/file-probe` registers a
+`MonitoringProvider` that reads measurements from a JSON file something else
+writes. It needs a path rather than a credential, and it is the only proof that
+the registry works from where a third party stands — the same job
+`modules/example/status-board` does for the rest of the SDK. (Planned as a probe
+of the platform's own numbers; a module has no read access to core's database,
+which is the SDK working as intended, so it reads a file instead.)
 
 ## 2. The decisions
 
 **The seam is core; the capability is a module.** §0 says every advanced
 capability is an optional module, and the graph cannot be one: it is what the
 modules write into. So the tables, the traversal, the registry and the normalizer
-are core, and every node kind beyond the four core owns is a string a module
-registers. A small provider installs nothing and still gets the three screens,
-because the nodes are servers and services they already have.
+are core, and every node kind beyond the three core projects is a string a
+module registers. A small provider installs nothing and still gets the three
+screens, because the nodes are servers and services they already have.
 
-**`ResourceKind` is not a closed enum.** Core knows `organization`, `server`,
-`service` and `customer` because it owns those rows. A `rack` is a module's word.
-An enum in core naming hardware core does not model is how a modular platform
-stops being one — so the kind is a validated string with the four core constants
-on a class, and a module declares its own.
+**`ResourceKind` is not a closed enum.** Core projects `organization`, `server`
+and `service` because it owns those rows. A `rack` is a module's word. An enum in
+core naming hardware core does not model is how a modular platform stops being one
+— so the kind is a validated string with core's own constants on a class, and a
+module declares its own.
 
 **The projection is an automation task, not a listener.** A run asks a question
 about rows — "which servers have no node, which nodes have no server" — which
@@ -72,10 +75,11 @@ obvious choice and the wrong one: there is no `ServerCreated` event, adding six
 of them to make inventory work would be six new obligations on unrelated code, and
 a missed event is a node that never appears with nothing to notice it.
 
-**Nothing in Phase A makes an outbound call**, and the credential vault is
-therefore Phase B. Phase 17 already learned this with file upload rules: a seam
-with nothing behind it is a seam that is wrong in a way only the first caller
-discovers. The example module reads the platform's own database.
+**Nothing in Phase A needs a credential**, and the credential vault is therefore
+Phase B. Phase 17 already learned this with file upload rules: a seam with nothing
+behind it is a seam that is wrong in a way only the first caller discovers. The
+example adapter reads a file at a path an operator typed; Phase B's first real
+adapter needs a token, and that is when the vault lands.
 
 **Write capability is a row, not a class.** An adapter declares what it *can* do;
 `resource_adapters.writes_enabled` decides whether it may. Default false, turning
@@ -90,9 +94,12 @@ name onto a canonical one — `node_cpu_seconds_total` and Zabbix's
 it. A table that accepts any metric name is a time-series database nobody sized,
 and §14 is explicit that the time series stays outside.
 
-**Depth is bounded at twelve.** Discovered infrastructure contains cycles; an
-unbounded recursive CTE over rows an adapter wrote is a denial of service with
-extra steps.
+**Depth is bounded at twelve, and the walk is one query per level.** Discovered
+infrastructure contains cycles, and an unbounded walk over rows an adapter wrote is
+a denial of service with extra steps. A recursive CTE would be one round trip
+instead of a handful and would carry no global scope — the organization filter
+would have to be hand-written in SQL and kept right forever, which is not a trade
+this platform makes.
 
 ## 3. Schema
 

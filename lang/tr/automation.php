@@ -31,6 +31,14 @@ return [
             'label' => 'Sağlayıcı eşitlemesi',
             'description' => 'Kontrol panellerine ve kayıt kuruluşlarına neyin doğru olduğunu sorar.',
         ],
+        'resources' => [
+            'label' => 'Kaynak grafiği',
+            'description' => 'Grafiği kuruluşlar, sunucular ve hizmetlerle aynı çizgide tutar.',
+        ],
+        'telemetry' => [
+            'label' => 'Telemetri',
+            'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
+        ],
         'cleanup' => [
             'label' => 'Temizlik',
             'description' => 'Süresi dolmuş sepetleri, okunmuş bildirimleri ve eski çalışma ayrıntılarını siler.',

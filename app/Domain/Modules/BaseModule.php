@@ -8,6 +8,7 @@ use App\Domain\Access\PermissionDefinition;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
+use App\Domain\Infrastructure\Contracts\InfrastructureAdapter;
 use App\Domain\Modules\Contracts\Module;
 use App\Domain\Notifications\Contracts\DeliversNotifications;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
@@ -73,6 +74,14 @@ abstract class BaseModule implements Module
      * @return list<HealthCheck>
      */
     public function healthChecks(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return list<InfrastructureAdapter>
+     */
+    public function adapters(): array
     {
         return [];
     }

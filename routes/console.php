@@ -77,6 +77,34 @@ Schedule::command('platform:run webhooks')
     ->onOneServer()
     ->runInBackground();
 
+/*
+ * The Resource Graph projection.
+ *
+ * Hourly, `onOneServer` like the rest: two containers projecting the same
+ * installation would each try to create the node the other had just created, and
+ * one of them would lose the unique key and record a failure for a row that is
+ * perfectly fine.
+ */
+Schedule::command('platform:run resources')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
+/*
+ * Telemetry collection.
+ *
+ * Every five minutes, and `withoutOverlapping` matters more here than anywhere
+ * else on this page: a run that is still waiting on an unresponsive device must
+ * not be joined by the next one, or an installation with one slow adapter ends up
+ * with fifty processes queued against it.
+ */
+Schedule::command('platform:run telemetry')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run cleanup')
     ->dailyAt('03:00')
     ->withoutOverlapping()

@@ -80,6 +80,10 @@ final class SystemRoleSeeder extends Seeder
                 'notifications.view',
                 'operations.view',
                 'automation.view',
+                // What does this service sit on, and what else is on that
+                // server: the two questions a support agent asks in the middle
+                // of a ticket. Reading the graph, and nothing that touches it.
+                'infrastructure.resources.view',
             ],
             SystemRole::AccountOwner => array_keys($registry->forScope(RoleScope::Customer)),
             // A technical contact or an employee: enough to see what was

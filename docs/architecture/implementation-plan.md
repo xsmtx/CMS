@@ -131,7 +131,31 @@ was deferred by the owner rather than overlooked:
 - **Load testing and a penetration test** need a target environment and an
   engagement respectively, neither of which lives in a repository.
 
-`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is the next handoff.
+## 5a. Handoff #2 — Advanced Operations
+
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md`, planned in
+`advanced-operations-plan.md`, which maps every one of its families onto the
+domains above. Its phases are lettered, so its result documents are
+`phase-a-result.md` onwards.
+
+| Phase | Scope | Status |
+| --- | --- | --- |
+| A | Foundation: Resource Graph / Digital Twin, capability registry, telemetry normalization, operations UI shell | **complete** — see `phase-a-result.md` |
+| B | Core ops: secret store, monitoring adapters, smart placement, capacity, global record search | not started |
+| C | Network: IPAM, device adapters, topology, guarded configuration, JIT access | not started |
+| D | Reliability: alerts, incidents, status page, SLA credits, maintenance, postmortems, push | not started |
+| E | Security: abuse, evidence, mail reputation, DNS/SSL fleet, WAF/CDN context | not started |
+| F | Data platform: backup, storage, database/cache/load balancer, hypervisor and BMC, metering | not started |
+| G | Datacenter: DCIM, rack elevation, hardware inventory, PDU/UPS/environment, Remote Hands | not started |
+| H | Intelligence: reconciliation, orphans, revenue leakage, cost, automation builder, AI assistant | not started |
+| I | Mobile: the staff API surface first, then the customer and staff apps (ADR 0044) | not started |
+| J | Advanced: vendors, contracts, procurement, IaC, Kubernetes | not started |
+
+Two rules from that plan decide most of it: **the seam is core and the capability
+is a module**, and **nothing is asked of a provider before `SecretStore` exists**,
+which is why B gates C and F.
+
+`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is in progress: Phase A is done.
 
 ## 5. Sequencing constraints
 

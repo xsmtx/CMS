@@ -8,6 +8,7 @@ use App\Domain\Access\PermissionDefinition;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
+use App\Domain\Infrastructure\Contracts\InfrastructureAdapter;
 use App\Domain\Modules\ConfigField;
 use App\Domain\Modules\ModuleContext;
 use App\Domain\Modules\NavigationItem;
@@ -74,6 +75,22 @@ interface Module
      * @return list<HealthCheck>
      */
     public function healthChecks(): array;
+
+    /**
+     * Adapters this module provides: monitoring sources, devices,
+     * hypervisors, backup systems.
+     *
+     * A list rather than one, because a vendor SDK that speaks to firewalls,
+     * switches and routers is one package providing three adapters — and an
+     * operator allowing writes is deciding about one of them.
+     *
+     * Each adapter declares its own capabilities, and core narrows them to
+     * read-only until the operator says otherwise. A module cannot grant
+     * itself write access by declaring it.
+     *
+     * @return list<InfrastructureAdapter>
+     */
+    public function adapters(): array;
 
     /**
      * Permissions this module needs, which become real permissions: they

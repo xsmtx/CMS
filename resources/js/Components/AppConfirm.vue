@@ -155,6 +155,17 @@ function confirm(): void {
           </div>
         </div>
 
+        <!--
+          What is being agreed to, when it is a list rather than a sentence.
+          Added for the adapter write confirmation, which has to name each
+          capability individually: "allow changes" is not a thing anybody can
+          consent to, and a description string is the wrong place for four
+          bullet points.
+        -->
+        <div v-if="$slots.default" class="border-line mt-4 rounded-[var(--radius-md)] border p-3">
+          <slot />
+        </div>
+
         <div v-if="needsReason || needsPhrase" class="mt-4 flex flex-col gap-3">
           <AppTextarea
             v-if="needsReason"

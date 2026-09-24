@@ -1,0 +1,32 @@
+{
+    "slug": "file-probe",
+    "name": "File Probe",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads measurements about your resources from a JSON file something else writes.",
+    "provider": "InfraCMS example",
+    "sdk": ">=1.1",
+    "platform": "*",
+    "namespace": "Example\\FileProbe",
+    "entrypoint": "FileProbeModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "path",
+            "label": "Path to the measurements file",
+            "type": "text",
+            "required": true,
+            "hint": "A JSON file this server can read. Something else writes it — a cron, a poller, a shared mount."
+        },
+        {
+            "key": "stale_after",
+            "label": "Stale after (seconds)",
+            "type": "number",
+            "required": false,
+            "default": 600,
+            "hint": "How long a reading from this file stays meaningful. Match whatever writes it."
+        }
+    ]
+}

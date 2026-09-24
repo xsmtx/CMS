@@ -40,12 +40,15 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResellerController;
 use App\Http\Controllers\Admin\ResellerReportController;
+use App\Http\Controllers\Admin\ResourceAdapterController;
+use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\ServiceAddonController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TelemetryController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
 use App\Http\Controllers\Admin\TodoController;
@@ -311,6 +314,40 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('operations.retry');
     Route::post('operations/{operation}/resolve', [OperationController::class, 'resolve'])
         ->name('operations.resolve');
+
+    /*
+     * The Resource Graph and its adapters — handoff #2, Phase A.
+     *
+     * Named `resources.*` rather than `infrastructure.*` because that prefix is
+     * already the Apps → Infrastructure server list from Phase 6, and two route
+     * groups with one name is a link that goes somewhere surprising.
+     *
+     * No route here takes an id: the Explorer's detail is an `Inertia::optional`
+     * prop on the list, so a drawer costs one partial reload rather than an
+     * endpoint of its own (the Phase 11 rule).
+     */
+    Route::get('resources', [ResourceController::class, 'index'])->name('resources');
+    Route::get('resources/telemetry', [TelemetryController::class, 'index'])
+        ->name('resources.telemetry');
+    Route::get('resources/adapters', [ResourceAdapterController::class, 'index'])
+        ->name('resources.adapters');
+
+    /*
+     * Two endpoints rather than one, and the split is the whole point.
+     *
+     * Allowing an adapter to write is where this installation stops being a
+     * window onto the estate and starts being a control plane over it, so it
+     * carries the password challenge from Phase 17. Switching an adapter off is
+     * what an operator does when something is going wrong, and a guard in front
+     * of that would be a guard that made an outage longer.
+     */
+    Route::put('resources/adapters/{adapter}/writes', [ResourceAdapterController::class, 'writes'])
+        ->middleware('auth.recent')
+        ->name('resources.adapters.writes');
+    Route::put('resources/adapters/{adapter}', [ResourceAdapterController::class, 'update'])
+        ->name('resources.adapters.update');
+    Route::post('resources/adapters/{adapter}/check', [ResourceAdapterController::class, 'check'])
+        ->name('resources.adapters.check');
 
     /*
      * What this installation calls itself. The navigation has pointed here

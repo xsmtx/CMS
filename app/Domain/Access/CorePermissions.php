@@ -57,6 +57,19 @@ final class CorePermissions
             new PermissionDefinition('operations.view', 'automation', RoleScope::Staff),
             new PermissionDefinition('operations.manage', 'automation', RoleScope::Staff),
 
+            // The Resource Graph. Reading it is ordinary — a support agent
+            // mid-ticket wants to know what a service sits on.
+            new PermissionDefinition('infrastructure.resources.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('infrastructure.telemetry.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('infrastructure.adapters.view', 'infrastructure', RoleScope::Staff),
+            /*
+             * Allowing an adapter to write is the moment this installation stops
+             * being a window onto the estate and starts being a control plane
+             * over it. High risk, so Phase 17's recent-password challenge
+             * applies without anything new being written.
+             */
+            new PermissionDefinition('infrastructure.adapters.manage', 'infrastructure', RoleScope::Staff, highRisk: true),
+
             // Turning the storefront off is not a settings change.
             new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
 

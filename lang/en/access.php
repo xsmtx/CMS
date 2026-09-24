@@ -64,6 +64,22 @@ return [
             'label' => 'Retry or resolve an operation',
             'description' => 'Run a failed operation again, or mark it settled by hand.',
         ],
+        'infrastructure.resources.view' => [
+            'label' => 'See the resource graph',
+            'description' => 'Browse servers, services and what they depend on, and who an outage would affect.',
+        ],
+        'infrastructure.telemetry.view' => [
+            'label' => 'See telemetry',
+            'description' => 'Read the latest measurements, where they came from and which have stopped arriving.',
+        ],
+        'infrastructure.adapters.view' => [
+            'label' => 'See infrastructure adapters',
+            'description' => 'List the adapters this installation has and what each one can do.',
+        ],
+        'infrastructure.adapters.manage' => [
+            'label' => 'Allow an adapter to make changes',
+            'description' => 'Let an adapter change firewalls, power or storage rather than only read them.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Turn maintenance mode on and off',
             'description' => 'Close the storefront and client area. The admin area stays open.',

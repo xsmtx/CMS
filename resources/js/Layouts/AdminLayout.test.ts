@@ -137,10 +137,16 @@ describe('AdminLayout navigation', () => {
       'Clients',
       'Orders',
       'Billing',
+      // Operations comes before Support in §3's order, so Infrastructure sits
+      // between Billing and the helpdesk rather than beside Utilities.
+      'Infrastructure',
       'Support',
       'Utilities',
-      'Setup',
     ])
+
+    // Setup is the one group that is a destination rather than a dropdown:
+    // everything that was in it lives on one page now, so it has no trigger.
+    expect(groupsOf(wrapper).map((row) => row.text().trim())).toContain('Setup')
 
     // The handoff's categories are the headings those groups sit under, which
     // is how WHMCS's words and §3's structure can both be true.
@@ -150,7 +156,7 @@ describe('AdminLayout navigation', () => {
       .findAll('[data-admin-nav] nav p')
       .map((heading) => heading.text().trim())
 
-    expect(sections).toEqual(['Business', 'Support', 'System'])
+    expect(sections).toEqual(['Business', 'Operations', 'Support', 'System'])
   })
 
   /**
@@ -260,6 +266,42 @@ describe('AdminLayout navigation', () => {
     await wrapper.vm.$nextTick()
 
     expect(flyout()).toBeNull()
+  })
+
+  /**
+   * Setup used to be eight links in a dropdown. They are tiles on one page
+   * now, so the rail row goes straight there — and pressing it must not open
+   * a panel, because there is nothing left in it to open.
+   */
+  it('sends Setup straight to its page instead of opening a menu', async () => {
+    const wrapper = render()
+
+    const setup = wrapper.find('[data-admin-nav] nav a[href="/admin/apps"]')
+
+    expect(setup.exists()).toBe(true)
+
+    await setup.trigger('click')
+
+    expect(flyout()).toBeNull()
+  })
+
+  /**
+   * The rows stayed in the map even though the dropdown went, because the
+   * palette is built from it. Somebody who knows they want Roles should be
+   * able to press ⌘K and type it rather than learning where it moved.
+   */
+  it('still finds a moved screen in the command palette', () => {
+    const wrapper = render()
+
+    const destinations = wrapper
+      .findComponent({ name: 'CommandPalette' })
+      .props('destinations') as { label: string; href: string }[]
+
+    const labels = destinations.map((destination) => destination.label)
+
+    expect(labels).toContain('Roles')
+    expect(labels).toContain('Licence')
+    expect(labels).toContain('Apps & Integrations')
   })
 
   it('marks the group the current page belongs to', () => {

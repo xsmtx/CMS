@@ -1,70 +1,82 @@
 <script setup lang="ts">
 /**
- * Apps and Integrations: one door, and what is behind it.
+ * Setup: one page instead of a dropdown.
  *
- * A hub rather than a menu because the two things here are the two ways an
- * administrator account becomes control of the estate — enabling a package
- * runs code this platform did not ship, and adding a server hands out
- * credentials to a machine. Putting them together, behind one gate, is
- * easier to reason about than finding them scattered through Setup.
+ * A menu of eight links tells an operator the names of eight screens. A page can
+ * tell them what each one is for and how much is in it, which is the difference
+ * between "Roles" and "Roles — 6 defined, who may do what". WHMCS operators will
+ * recognise the shape; it is what its System Settings page does, and it is the
+ * one place in that product where the thing you were looking for is visible
+ * rather than remembered.
+ *
+ * **The second section is the dangerous one and looks it.** Modules, Servers,
+ * Connect, Licence and Import are owner-only, and they are owner-only for the same
+ * reason: each of them is a way an administrator account becomes control of the
+ * estate. Keeping them together, under their own heading, is how an operator
+ * learns that they are the same kind of thing.
+ *
+ * Labels come from the server rather than from a map in here, because the page
+ * lists permission-gated screens and the wording is operator vocabulary that
+ * already lives in `lang/`.
  */
 import { Head, Link } from '@inertiajs/vue3'
 
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
+
+interface Area {
+  key: string
+  href: string
+  label: string
+  description: string
+  unit: string
+  count: number | null
+}
 
 defineProps<{
-  areas: { key: string; href: string; count: number; total: number }[]
+  sections: { key: string; areas: Area[] }[]
 }>()
 
-const COPY: Record<string, { label: string; description: string; unit: string }> = {
-  modules: {
-    label: 'Modules',
-    description:
-      'Packages that add payment gateways, provisioning, registrars and more. Nothing runs until you enable it.',
-    unit: 'enabled',
-  },
-  servers: {
-    label: 'Servers',
-    description: 'The machines accounts are created on, and the credentials that reach them.',
-    unit: 'configured',
-  },
-}
-
-function copy(key: string) {
-  return COPY[key] ?? { label: key, description: '', unit: '' }
-}
+const { t } = useTranslations()
 </script>
 
 <template>
-  <Head title="Apps & Integrations" />
+  <Head title="Setup" />
 
-  <AdminLayout
-    heading="Apps & Integrations"
-    description="Everything that connects this platform to something else. Open to the owner of this installation only."
-  >
-    <div class="grid gap-5 sm:grid-cols-2">
-      <Link
-        v-for="area in areas"
-        :key="area.key"
-        :href="area.href"
-        class="pressable border-line bg-surface-primary hover:border-line-strong block rounded-[var(--radius-lg)] border p-6 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
-      >
-        <div class="flex items-start justify-between gap-4">
-          <h2 class="text-title font-semibold tracking-tight">{{ copy(area.key).label }}</h2>
-          <span class="text-content-muted text-xs tabular-nums">
-            {{ area.count }} {{ copy(area.key).unit }}
-          </span>
+  <AdminLayout :heading="t('apps.heading')" :description="t('apps.description')">
+    <div class="flex flex-col gap-8">
+      <section v-for="section in sections" :key="section.key" class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-title font-semibold tracking-tight">
+            {{ t(`apps.sections.${section.key}.title`) }}
+          </h2>
+          <p class="text-content-muted max-w-[70ch] text-sm leading-relaxed">
+            {{ t(`apps.sections.${section.key}.description`) }}
+          </p>
         </div>
-        <p class="text-content-muted mt-2 max-w-[52ch] text-sm leading-relaxed">
-          {{ copy(area.key).description }}
-        </p>
-      </Link>
-    </div>
 
-    <p class="text-content-muted mt-8 max-w-[70ch] text-xs leading-relaxed">
-      This area is open to super administrators only. It is not a permission: an administrator holds
-      every staff permission by design, so no permission could mean “the owner of this
-      installation”.
-    </p>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <Link
+            v-for="area in section.areas"
+            :key="area.key"
+            :href="area.href"
+            class="pressable border-line bg-surface-primary hover:border-line-strong block rounded-[var(--radius-lg)] border p-5 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="text-body font-semibold">{{ area.label }}</h3>
+              <span
+                v-if="area.count !== null"
+                class="text-content-muted shrink-0 text-xs tabular-nums"
+              >
+                {{ area.count }} {{ area.unit }}
+              </span>
+            </div>
+            <p class="text-content-muted mt-1.5 text-sm leading-relaxed">
+              {{ area.description }}
+            </p>
+          </Link>
+        </div>
+      </section>
+    </div>
   </AdminLayout>
 </template>

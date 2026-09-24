@@ -34,7 +34,7 @@ from this port to a customer" better than SQL ever will. It also means a second
 datastore to back up, to secure, to keep consistent with MariaDB, and to install
 before a hosting provider can see their own servers on a screen. The traversals
 this product actually needs are bounded — twelve levels, tens of thousands of
-nodes — and MariaDB has had `WITH RECURSIVE` since 10.2.
+nodes — and SQL walks them in a handful of queries.
 
 ## Decision
 
@@ -53,8 +53,8 @@ Three tables, and no more:
 - `resource_metrics` — one row per `(node, metric)`: the latest sample, its
   canonical unit, when it was taken and how long it stays fresh.
 
-And four read models over them, each one query with a bounded depth:
-`ResourceTree`, `ImpactSummary`, `DependencyPath`, `OwnershipHistory`.
+And four read models over them, each walking one query per level to a bounded
+depth: `ResourceTree`, `ImpactSummary`, `DependencyPath`, `OwnershipHistory`.
 
 ## Consequences
 
@@ -79,14 +79,22 @@ them, and learns nothing about the machine they share. The provider, being an
 ancestor, sees both ends and can answer the impact question. So direction is not
 only modelling: **containment points downward so that the boundary hides the
 container from the contained.** Reversing an edge for convenience would be a
-disclosure, which is why `LinkNodes` takes container and contained as separate,
-named arguments rather than two nodes and a relation.
+disclosure, which is why `ResourceGraph::attach()` takes `container` and
+`contained` as separate, named arguments rather than two nodes and a relation —
+and why it refuses outright when the contained node is not inside the container's
+subtree.
 
 **Depth is bounded and explicit, because discovered data contains cycles.** Two
 switches each reporting the other as upstream is an ordinary Tuesday, and an
-unbounded recursive CTE over operator-supplied rows is a denial of service with
-extra steps. The default is twelve, which covers the longest spine in §2 with
-room to spare.
+unbounded walk over rows an adapter wrote is a denial of service with extra steps.
+The default is twelve, which covers the longest spine in §2 with room to spare.
+
+**The traversal is one query per level rather than one recursive CTE, and the
+reason is the boundary.** A hand-written `WITH RECURSIVE` carries no global scope,
+so the organization filter would have to be written into the statement by hand and
+kept right forever; going level by level through Eloquent means the scope applies
+to every hop for free. Twelve queries on a screen somebody opened deliberately is
+a price worth paying to make an unscoped lookup impossible rather than unlikely.
 
 **Retired, never deleted.** A node whose subject is gone gets `retired_at`. A
 terminated service is exactly what an incident review needs to see, and deleting
@@ -105,9 +113,10 @@ monetary value, and the rule stays enforceable because it stays absolute
 everywhere it applies.
 
 **Every node kind beyond core's is a module's.** `ResourceKind` is not a closed
-enum for that reason — core knows `server`, `service`, `customer` and
-`organization` because it owns those rows, and a `rack` or a `switch_port` is a
-string a module registers. The alternative would be an enum in core naming
+enum for that reason — core projects `organization`, `server` and `service`
+because it owns those rows, and a `rack` or a `switch_port` is a string a module
+registers. A customer is deliberately *not* a node: CRM already answers "what does
+this customer have", and a second answer would eventually disagree with the first. The alternative would be an enum in core naming
 hardware core does not model, which is how a modular platform stops being one.
 
 ## Alternatives rejected
@@ -118,6 +127,8 @@ hardware core does not model, which is how a modular platform stops being one.
   bounded traversals faster than they need to be. Revisit if a real installation
   exceeds a hundred thousand nodes; the read models are four classes and the
   storage behind them can be replaced without touching a screen.
+- **A recursive CTE.** One round trip instead of a handful, in exchange for
+  writing the tenancy boundary out by hand in SQL. See above.
 - **Per-kind tables with foreign keys and joins.** Honest, and it cannot express
   a relationship between two kinds neither of which core knows about — which is
   every relationship a network module will discover.

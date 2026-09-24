@@ -10,6 +10,7 @@ return [
         'ok' => 'Sağlıklı',
         'degraded' => 'Bakmakta fayda var',
         'failing' => 'Çalışmıyor',
+        'unknown' => 'Bildirim yok',
     ],
 
     'checks' => [

@@ -144,6 +144,14 @@ interface NavGroup {
   label: string
   /** A group with an href is a link rather than a dropdown. */
   href?: string
+  /**
+   * Keep the rows out of the rail, but leave them in the palette.
+   *
+   * One group uses this: Setup, whose screens all live on one page now. The
+   * rows are still destinations somebody can search for by name — a menu that
+   * moved should not make ⌘K forget where things are.
+   */
+  hidden?: boolean
   permission?: string
   section: NavSection
   /**
@@ -356,19 +364,46 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    /*
+     * Handoff #2, Phase A. A group of its own rather than three rows under
+     * Utilities, because an operator running racks and firewalls lives here all
+     * day and a utility is something you visit.
+     *
+     * Only what exists is listed, like every other group: the Infrastructure
+     * Center, topology and DCIM screens arrive with the phases that build them.
+     */
+    label: 'Infrastructure',
+    section: 'Operations',
+    icon: 'servers',
+    items: [
+      {
+        label: 'Explorer',
+        href: '/admin/resources',
+        permission: 'infrastructure.resources.view',
+      },
+      {
+        label: 'Telemetry',
+        href: '/admin/resources/telemetry',
+        permission: 'infrastructure.telemetry.view',
+      },
+      {
+        label: 'Adapters',
+        href: '/admin/resources/adapters',
+        permission: 'infrastructure.adapters.view',
+      },
+    ],
+  },
+  {
     label: 'Utilities',
     section: 'System',
     icon: 'utilities',
     items: [
-      // The passwordless way into a server's panel. Owner only, like
-      // everything that reaches somebody else's machine.
-      { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
-      // Owner only, like Connect: it is about who somebody is rather than what
-      // they may do, and a reseller's Administrator is an Administrator.
-      { label: 'Licence', href: '/admin/licence', superAdmin: true },
-      // Owner only for the same reason: an import bypasses every use case and
-      // reads a second database.
-      { label: 'Import', href: '/admin/import', superAdmin: true },
+      /*
+       * Connect, Licence and Import used to be here. They are on the Setup
+       * page now, under its owner-only section: all three are about who
+       * somebody *is* rather than what they may do, and a day-to-day
+       * administrator met them here by accident.
+       */
       // WHMCS calls this the Module Queue. It is the same thing: every
       // background operation, what it was for, and what went wrong.
       { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
@@ -384,9 +419,26 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    /*
+     * Setup is a page, not a dropdown.
+     *
+     * A menu of eight undifferentiated links tells an operator the names of
+     * eight screens; the page tells them what each is for and how much is in
+     * it. Everything that was in this dropdown is a tile there, plus the
+     * owner-only screens — Modules, Servers, Connect, Licence, Import — which
+     * were scattered between here and Utilities.
+     *
+     * The rows stay in this map even though the dropdown is gone, because the
+     * command palette is built from it: somebody who knows they want Roles
+     * should be able to press ⌘K and type it rather than learning where it
+     * moved. `href` on the group is what makes it a link rather than a
+     * dropdown, and `hidden` keeps the rows out of the rail.
+     */
     label: 'Setup',
+    href: '/admin/apps',
     section: 'System',
     icon: 'setup',
+    hidden: true,
     items: [
       { label: 'Products', href: '/admin/catalog/products', permission: 'catalog.products.view' },
       { label: 'Product Groups', href: '/admin/catalog/groups', permission: 'catalog.groups.view' },
@@ -404,6 +456,10 @@ const groups: NavGroup[] = [
         href: '/admin/notifications/templates',
         permission: 'notifications.view',
       },
+      { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
+      { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
+      { label: 'Licence', href: '/admin/licence', superAdmin: true },
+      { label: 'Import', href: '/admin/import', superAdmin: true },
     ],
   },
 ]
@@ -473,12 +529,17 @@ const openItem = ref<string | null>(null)
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
 
 function hrefsOf(group: NavGroup): string[] {
-  return group.href === undefined
-    ? (group.items ?? []).flatMap((item) => [
-        item.href,
-        ...(item.children ?? []).map((c) => c.href),
-      ])
-    : [group.href]
+  const items = (group.items ?? []).flatMap((item) => [
+    item.href,
+    ...(item.children ?? []).map((c) => c.href),
+  ])
+
+  if (group.href === undefined) return items
+
+  // A group that is both a link and a set of screens — Setup — lights up on
+  // any of them. Without the items here, an operator editing a role would see
+  // nothing selected in the rail and have to work out where they were.
+  return [group.href, ...items]
 }
 
 /**
@@ -784,7 +845,32 @@ onBeforeUnmount(() => {
 
           <ul class="space-y-0.5">
             <li v-for="group in entry.groups" :key="group.label" class="relative">
+              <!--
+                Setup is one destination rather than a dropdown: its screens
+                all live on that page now. It still carries its rows, for the
+                command palette, which is why the list below is skipped rather
+                than empty.
+              -->
+              <Link
+                v-if="group.hidden && group.href"
+                :href="group.href"
+                :aria-current="isCurrentGroup(group) ? 'page' : undefined"
+                class="pressable text-body flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                :class="[
+                  isCurrentGroup(group)
+                    ? 'bg-surface-selected text-content'
+                    : 'text-content-muted hover:bg-surface-hover hover:text-content',
+                  railOpen ? '' : 'justify-center',
+                ]"
+                :title="railOpen ? undefined : group.label"
+              >
+                <AppIcon :name="group.icon" :size="17" />
+                <span v-if="railOpen" class="flex-1 truncate text-left">{{ group.label }}</span>
+                <span v-else class="sr-only">{{ group.label }}</span>
+              </Link>
+
               <button
+                v-else
                 type="button"
                 class="pressable text-body flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="[
@@ -813,7 +899,7 @@ onBeforeUnmount(() => {
               <!-- Expanded: in place. The rows sit under their group, indented
                    past the glyph so the column of labels is one column. -->
               <ul
-                v-if="railOpen && openGroup === group.label"
+                v-if="railOpen && !group.hidden && openGroup === group.label"
                 class="border-line-subtle mt-0.5 mb-1 ml-4 space-y-0.5 border-l pl-2"
               >
                 <li v-for="item in group.items" :key="item.label">

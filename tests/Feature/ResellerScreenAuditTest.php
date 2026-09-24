@@ -16,8 +16,10 @@ use App\Infrastructure\Provisioning\Models\Service;
 use App\Support\Organizations\OrganizationContext;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * Every admin screen, driven by a reseller.
@@ -306,10 +308,22 @@ it('opens a reseller own record by id', function (): void {
 });
 
 it('keeps the fleet away from a reseller entirely', function (): void {
-    // Servers live behind Apps and Integrations, which is open to the owner of
-    // the installation only: adding one hands out credentials to somebody
-    // else's machine, and a reseller is somebody else.
+    // Servers live behind the owner-only section of Setup: adding one hands out
+    // credentials to somebody else's machine, and a reseller is somebody else.
+    // The page itself opens — it carries their own products and roles — and the
+    // section is simply not there for them.
     $this->actingAs($this->operator, 'staff')
         ->get('/admin/apps')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where(
+                'sections',
+                fn (Collection $sections): bool => $sections
+                    ->pluck('key')
+                    ->doesntContain('integrations'),
+            ));
+
+    $this->actingAs($this->operator, 'staff')
+        ->get('/admin/apps/infrastructure')
         ->assertForbidden();
 });

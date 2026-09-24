@@ -63,6 +63,22 @@ return [
             'label' => 'İşlemi yeniden dene veya kapat',
             'description' => 'Başarısız bir işlemi yeniden çalıştırır ya da elle çözümlendi işaretler.',
         ],
+        'infrastructure.resources.view' => [
+            'label' => 'Kaynak grafiğini gör',
+            'description' => 'Sunucuları, hizmetleri ve bağımlılıklarını, bir kesintinin kimi etkileyeceğini görür.',
+        ],
+        'infrastructure.telemetry.view' => [
+            'label' => 'Telemetriyi gör',
+            'description' => 'En son ölçümleri, nereden geldiklerini ve akmayı bırakanları okur.',
+        ],
+        'infrastructure.adapters.view' => [
+            'label' => 'Altyapı bağdaştırıcılarını gör',
+            'description' => 'Bu kurulumdaki bağdaştırıcıları ve her birinin ne yapabildiğini listeler.',
+        ],
+        'infrastructure.adapters.manage' => [
+            'label' => 'Bir bağdaştırıcıya değişiklik izni ver',
+            'description' => 'Bağdaştırıcının güvenlik duvarını, gücü veya depolamayı yalnızca okumak yerine değiştirmesine izin verir.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Bakım modunu aç ve kapat',
             'description' => 'Mağazayı ve müşteri alanını kapatır. Yönetim alanı açık kalır.',

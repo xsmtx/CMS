@@ -29,6 +29,18 @@ enum ExtensionPoint: string
     case Navigation = 'navigation';
     case Widget = 'widget';
 
+    /**
+     * Something that reads, or guardedly changes, infrastructure.
+     *
+     * One member for all twenty-three capability areas rather than one per
+     * area, because this enum answers "which part of the platform does this
+     * package reach into" — and the answer for a FortiGate adapter and a
+     * Veeam adapter is the same part. *What* an adapter can do is
+     * `CapabilitySet`, which is a finer question asked of a running adapter
+     * and shown on its own screen.
+     */
+    case InfrastructureAdapter = 'infrastructure_adapter';
+
     public function labelKey(): string
     {
         return 'modules.extension_points.'.$this->value;

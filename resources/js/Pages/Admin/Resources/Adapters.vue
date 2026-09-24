@@ -1,0 +1,321 @@
+<script setup lang="ts">
+/**
+ * What this installation can read from, and what it may change.
+ *
+ * The screen exists for one decision, and everything on it serves that decision:
+ * allowing an adapter to write is the moment this platform stops being a window
+ * onto somebody's estate and starts being a control plane over it.
+ *
+ * So the confirmation **names the capabilities one by one** rather than saying
+ * "allow changes", and it is the destructive level of the ladder — a typed phrase
+ * — because "reboot a machine" and "push a firewall policy" are not things to
+ * agree to by pressing a switch. The route behind it asks for a password again
+ * (Phase 17), which an operator will meet about once.
+ *
+ * An adapter with nothing to write says so and offers no switch at all. A toggle
+ * that did nothing would teach somebody that the toggle means nothing.
+ */
+import { Head, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+
+import AppBadge from '../../../Components/AppBadge.vue'
+import AppButton from '../../../Components/AppButton.vue'
+import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
+
+interface CapabilityRow {
+  value: string
+  label: string
+  description: string | null
+  area: string
+  highRisk: boolean
+}
+
+interface AdapterRow {
+  id: string
+  key: string
+  name: string
+  vendor: string
+  module: string | null
+  areas: { value: string; label: string }[]
+  reads: CapabilityRow[]
+  writes: CapabilityRow[]
+  permitted: string[]
+  enabled: boolean
+  writesEnabled: boolean
+  health: string
+  healthLabel: string
+  healthMessage: string | null
+  remoteVersion: string | null
+  supported: boolean
+  checkedAt: string | null
+  limits: { perMinute: number; concurrency: number; batchSize: number }
+}
+
+defineProps<{
+  adapters: AdapterRow[]
+  orphaned: {
+    id: string
+    key: string
+    name: string
+    vendor: string
+    module: string | null
+    writesEnabled: boolean
+  }[]
+  can: { manage: boolean }
+}>()
+
+const { t } = useTranslations()
+
+const confirming = ref<AdapterRow | null>(null)
+const confirmOpen = ref(false)
+const busy = ref(false)
+
+function askToAllow(adapter: AdapterRow): void {
+  confirming.value = adapter
+  confirmOpen.value = true
+}
+
+function allow(reason: string | null): void {
+  const adapter = confirming.value
+
+  if (adapter === null) return
+
+  busy.value = true
+
+  router.put(
+    `/admin/resources/adapters/${adapter.id}/writes`,
+    { writes_enabled: true, reason },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        busy.value = false
+        confirmOpen.value = false
+        confirming.value = null
+      },
+    },
+  )
+}
+
+/** Revoking is not confirmed. Taking permission away is never the risky direction. */
+function revoke(adapter: AdapterRow): void {
+  router.put(
+    `/admin/resources/adapters/${adapter.id}/writes`,
+    { writes_enabled: false },
+    { preserveScroll: true },
+  )
+}
+
+function setEnabled(adapter: AdapterRow, enabled: boolean): void {
+  router.put(`/admin/resources/adapters/${adapter.id}`, { enabled }, { preserveScroll: true })
+}
+
+function check(adapter: AdapterRow): void {
+  router.post(`/admin/resources/adapters/${adapter.id}/check`, {}, { preserveScroll: true })
+}
+
+const TONES: Record<string, StatusTone> = {
+  ok: 'healthy',
+  degraded: 'warning',
+  failing: 'critical',
+}
+
+function toneOf(adapter: AdapterRow): StatusTone {
+  // Switched off on purpose is maintenance, not a fault.
+  if (!adapter.enabled) return 'maintenance'
+  if (!adapter.supported) return 'warning'
+
+  return TONES[adapter.health] ?? 'unknown'
+}
+
+function when(value: string | null): string {
+  return value === null
+    ? t('infrastructure.adapters.never_checked')
+    : new Date(value).toLocaleString()
+}
+</script>
+
+<template>
+  <Head title="Adapters" />
+
+  <AdminLayout
+    :heading="t('infrastructure.adapters.title')"
+    :description="t('infrastructure.adapters.intro')"
+  >
+    <div class="flex flex-col gap-4">
+      <EmptyState
+        v-if="adapters.length === 0 && orphaned.length === 0"
+        :title="t('infrastructure.adapters.title')"
+        :description="t('infrastructure.adapters.empty')"
+        icon="connection"
+      />
+
+      <AppCard v-for="adapter in adapters" :key="adapter.id">
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="flex flex-col gap-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-body font-semibold">{{ adapter.name }}</h2>
+                <AppBadge tone="neutral">{{ adapter.vendor }}</AppBadge>
+                <AppBadge v-if="adapter.module" tone="info">{{ adapter.module }}</AppBadge>
+                <AppBadge v-if="adapter.writesEnabled" tone="warning">
+                  {{ t('infrastructure.adapters.writes_allowed') }}
+                </AppBadge>
+                <AppBadge v-else tone="unknown">
+                  {{ t('infrastructure.adapters.read_only') }}
+                </AppBadge>
+              </div>
+              <p class="text-content-subtle font-mono text-xs">{{ adapter.key }}</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <AppStatus :tone="toneOf(adapter)" :label="adapter.healthLabel" />
+                <span class="text-content-muted text-xs">{{ when(adapter.checkedAt) }}</span>
+              </div>
+              <p v-if="adapter.healthMessage" class="text-content-muted text-xs">
+                {{ adapter.healthMessage }}
+              </p>
+              <!-- Said out loud rather than folded into "degraded": an operator
+                   debugging an adapter that returns nothing usually finds that
+                   somebody upgraded the device. -->
+              <p v-if="!adapter.supported && adapter.remoteVersion" class="text-warning text-xs">
+                {{
+                  t('infrastructure.adapters.unsupported').replace(
+                    ':version',
+                    adapter.remoteVersion,
+                  )
+                }}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <AppButton variant="ghost" size="sm" @click="check(adapter)">
+                {{ t('infrastructure.adapters.check') }}
+              </AppButton>
+
+              <template v-if="can.manage">
+                <AppButton
+                  v-if="adapter.writes.length > 0 && !adapter.writesEnabled"
+                  variant="secondary"
+                  size="sm"
+                  @click="askToAllow(adapter)"
+                >
+                  {{ t('infrastructure.adapters.allow_writes') }}
+                </AppButton>
+                <AppButton
+                  v-else-if="adapter.writes.length > 0"
+                  variant="secondary"
+                  size="sm"
+                  @click="revoke(adapter)"
+                >
+                  {{ t('infrastructure.adapters.revoke_writes') }}
+                </AppButton>
+                <span v-else class="text-content-muted text-xs">
+                  {{ t('infrastructure.adapters.writes_none') }}
+                </span>
+
+                <AppButton variant="ghost" size="sm" @click="setEnabled(adapter, !adapter.enabled)">
+                  {{
+                    adapter.enabled
+                      ? t('infrastructure.adapters.disable')
+                      : t('infrastructure.adapters.enable')
+                  }}
+                </AppButton>
+              </template>
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="flex flex-col gap-1.5">
+              <h3 class="text-content-subtle text-label uppercase">
+                {{ t('infrastructure.adapters.columns.areas') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <AppBadge v-for="area in adapter.areas" :key="area.value" tone="neutral">
+                  {{ area.label }}
+                </AppBadge>
+              </div>
+              <ul class="text-content-muted mt-1 flex flex-col gap-0.5 text-xs">
+                <li v-for="capability in adapter.reads" :key="capability.value">
+                  {{ capability.label }}
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="adapter.writes.length > 0" class="flex flex-col gap-1.5">
+              <h3 class="text-content-subtle text-label uppercase">
+                {{ t('infrastructure.adapters.columns.writes') }}
+              </h3>
+              <ul class="flex flex-col gap-1">
+                <li
+                  v-for="capability in adapter.writes"
+                  :key="capability.value"
+                  class="text-body flex items-center gap-2"
+                >
+                  <AppStatus
+                    :tone="adapter.permitted.includes(capability.value) ? 'warning' : 'unknown'"
+                    :label="capability.label"
+                    compact
+                  />
+                  <span>{{ capability.label }}</span>
+                  <!-- A word, not an exclamation mark: a glyph on its own is
+                       nothing at all to a screen reader, and this is the row
+                       that says a capability can cut the power. -->
+                  <AppBadge v-if="capability.highRisk" tone="danger">
+                    {{ t('infrastructure.adapters.high_risk') }}
+                  </AppBadge>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </AppCard>
+
+      <!-- Rows whose module is gone. Shown rather than hidden: one that says an
+           operator once allowed writes is worth seeing before the module comes
+           back. -->
+      <AppCard v-if="orphaned.length > 0">
+        <div class="flex flex-col gap-2">
+          <p class="text-content-muted text-body">{{ t('infrastructure.adapters.orphaned') }}</p>
+          <ul class="flex flex-col gap-1">
+            <li v-for="row in orphaned" :key="row.id" class="text-body flex items-center gap-2">
+              <span class="font-mono text-xs">{{ row.key }}</span>
+              <span>{{ row.name }}</span>
+              <AppBadge v-if="row.writesEnabled" tone="warning">
+                {{ t('infrastructure.adapters.writes_allowed') }}
+              </AppBadge>
+            </li>
+          </ul>
+        </div>
+      </AppCard>
+    </div>
+
+    <AppConfirm
+      v-model:open="confirmOpen"
+      level="destructive"
+      :title="
+        t('infrastructure.adapters.confirm_writes.title').replace(':name', confirming?.name ?? '')
+      "
+      :description="t('infrastructure.adapters.confirm_writes.body')"
+      :phrase="t('infrastructure.adapters.confirm_writes.phrase')"
+      :confirm-label="t('infrastructure.adapters.allow_writes')"
+      :busy="busy"
+      @confirm="allow"
+    >
+      <ul class="flex flex-col gap-1">
+        <li
+          v-for="capability in confirming?.writes ?? []"
+          :key="capability.value"
+          class="text-body"
+        >
+          <span class="font-medium">{{ capability.label }}</span>
+          <span v-if="capability.description" class="text-content-muted block text-xs">
+            {{ capability.description }}
+          </span>
+        </li>
+      </ul>
+    </AppConfirm>
+  </AdminLayout>
+</template>

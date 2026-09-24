@@ -19,6 +19,7 @@ use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\FakeProvisioningModule;
@@ -254,6 +255,11 @@ it('records what a health check found', function (): void {
  * The behaviour change this move makes, pinned so nobody restores it by
  * accident: an administrator runs the business, and the owner of the
  * installation decides which machines it talks to.
+ *
+ * The Setup page itself opens to an administrator now — it carries Products and
+ * Roles as well — so what is asserted is that the owner-only *section* is absent
+ * for them and the doors behind it are still shut. The gate moved to the doors,
+ * where it already was.
  */
 it('keeps the fleet behind the Apps door', function (): void {
     $this->actingAs($this->operator, 'staff')
@@ -262,9 +268,24 @@ it('keeps the fleet behind the Apps door', function (): void {
 
     $this->actingAs($this->operator, 'staff')
         ->get('/admin/apps')
-        ->assertForbidden();
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Admin/Apps/Index')
+            ->where(
+                'sections',
+                fn (Collection $sections): bool => $sections
+                    ->pluck('key')
+                    ->doesntContain('integrations'),
+            ));
 
     $this->actingAs($this->owner, 'staff')
         ->get('/admin/apps')
-        ->assertOk();
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where(
+                'sections',
+                fn (Collection $sections): bool => $sections
+                    ->pluck('key')
+                    ->contains('integrations'),
+            ));
 });

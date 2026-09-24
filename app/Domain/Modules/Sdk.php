@@ -21,5 +21,5 @@ namespace App\Domain\Modules;
  */
 final class Sdk
 {
-    public const string VERSION = '1.0';
+    public const string VERSION = '1.1';
 }

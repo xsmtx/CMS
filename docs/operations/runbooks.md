@@ -162,6 +162,75 @@ failures.
 
 ---
 
+## The resource graph is empty, or a resource is missing from it
+
+**How to tell.** `/admin/resources` shows nothing, or shows fewer resources than
+the installation has.
+
+**What to do.**
+
+1. The graph is filled by an automation task, not by events. Check
+   `/admin/automation` for the **Resource graph** task: it runs hourly, and a run
+   that examined rows and changed none is the normal steady state.
+2. **Run it by hand** — `php artisan platform:run resources` — and read the run
+   record. It writes one item per resource it created or retired, and a failure
+   per resource it could not.
+3. A resource that is **missing** is either terminated (a terminated service is
+   retired on purpose, and the Retired count on the screen will show it) or its
+   row is outside the boundary of whoever is looking.
+4. A resource that is **retired and should not be** comes back on the next run:
+   the projection un-retires anything it sees again. Nothing needs to be deleted.
+
+---
+
+## Telemetry has stopped arriving
+
+**How to tell.** `/admin/resources/telemetry` — the **Stale** count is climbing,
+or **Nothing reporting** is higher than it was. Readings do not disappear when a
+source stops; they go stale where somebody can see them.
+
+**What to do.**
+
+1. Open `/admin/resources/adapters` and press **Check now** on the adapter. Its
+   state and the message beneath it are the adapter's own answer.
+2. `degraded` with a version on it means the remote was upgraded past what the
+   adapter was written for. Some calls still work; that is why it is degraded
+   rather than failing.
+3. Check the **Telemetry** task on `/admin/automation`. It runs every five
+   minutes; `php artisan platform:run telemetry` runs it now and the run record
+   says how many readings were recorded and how many were refused.
+4. **Refused readings are not a transport problem.** A metric this platform has
+   no name for is counted and dropped on purpose. If a source is sending
+   something worth keeping, it needs a `MetricKind`, which is a code change
+   rather than a configuration one.
+5. A resource that nothing reports on is listed at the foot of the Telemetry
+   screen. Usually it is a resource no adapter was ever pointed at.
+
+---
+
+## An adapter is doing something it should not
+
+**How to tell.** Anything from a device configuration changing unexpectedly to a
+vendor rate-limiting the installation.
+
+**What to do.**
+
+1. **Switch it off first**, on `/admin/resources/adapters`. That is deliberately
+   not behind the password challenge — it is the thing to do while an incident is
+   running, and a guard in front of it would make the outage longer. A disabled
+   adapter is asked for nothing at all, including reads.
+2. **Revoke its writes** if switching it off is too blunt. A read-only adapter
+   keeps the screens fed while it can change nothing.
+3. `audit_logs` has the answer to "who allowed this": the action is
+   `infrastructure.adapter.writes_allowed`, and the record names every capability
+   that was allowed along with the reason the operator typed.
+4. If the module itself is the problem, disable the module — Setup → Modules.
+   The adapter's row stays, with its decisions on it, and appears under "no
+   module currently provides this adapter" so that nothing is silently forgotten
+   when it comes back.
+
+---
+
 ## Somebody has lost access to the admin area
 
 **How to tell.** Self-evident. What is not self-evident is which of three things

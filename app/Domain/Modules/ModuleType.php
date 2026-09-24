@@ -30,6 +30,16 @@ enum ModuleType: string
     case ClientWidget = 'client-widget';
     case Addon = 'addon';
 
+    /**
+     * Reads or guardedly changes infrastructure: a monitoring source, a
+     * device, a hypervisor, a backup system.
+     *
+     * A type of its own rather than `addon`, because the type is the one
+     * thing most operators read before installing and "infrastructure" is a
+     * sentence about consequence: this package talks to machines.
+     */
+    case Infrastructure = 'infrastructure';
+
     public function labelKey(): string
     {
         return 'modules.types.'.str_replace('-', '_', $this->value).'.label';
@@ -71,6 +81,7 @@ enum ModuleType: string
             self::NotificationChannel => [ExtensionPoint::Channel, ...$common],
             self::Fraud => [ExtensionPoint::RiskEvaluator, ...$common],
             self::Tax => [ExtensionPoint::TaxCalculator, ...$common],
+            self::Infrastructure => [ExtensionPoint::InfrastructureAdapter, ...$common],
             self::Report, self::AdminWidget, self::ClientWidget => $common,
             self::Addon => ExtensionPoint::cases(),
         };

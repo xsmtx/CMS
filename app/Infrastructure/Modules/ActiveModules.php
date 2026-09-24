@@ -8,6 +8,7 @@ use App\Domain\Access\PermissionDefinition;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
+use App\Domain\Infrastructure\Contracts\InfrastructureAdapter;
 use App\Domain\Modules\Contracts\Module;
 use App\Domain\Modules\ModuleContext;
 use App\Domain\Modules\ModuleState;
@@ -115,6 +116,41 @@ final class ActiveModules
     public function healthChecks(): array
     {
         return $this->collect(static fn (Module $module): array => $module->healthChecks());
+    }
+
+    /**
+     * @return list<InfrastructureAdapter>
+     */
+    public function adapters(): array
+    {
+        return $this->collect(static fn (Module $module): array => $module->adapters());
+    }
+
+    /**
+     * The same adapters, but knowing which package each came from.
+     *
+     * `collect()` flattens and loses the slug, and the adapter registry needs it:
+     * an operator looking at a row that allows firewall writes has to be able to
+     * see which package is behind it, and an adapter has no reason to know its
+     * own module's name.
+     *
+     * @return array<string, list<InfrastructureAdapter>>
+     */
+    public function adaptersBySlug(): array
+    {
+        $this->all();
+
+        $bySlug = [];
+
+        foreach ($this->bySlug as $slug => $module) {
+            $adapters = $module->adapters();
+
+            if ($adapters !== []) {
+                $bySlug[$slug] = $adapters;
+            }
+        }
+
+        return $bySlug;
     }
 
     /**

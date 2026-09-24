@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Application\Automation;
 
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
+use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\GenerateRenewalInvoices;
 use App\Application\Automation\Runs\MarkInvoicesOverdue;
 use App\Application\Automation\Runs\NotifyExpiringDomains;
+use App\Application\Automation\Runs\ProjectCoreResources;
 use App\Application\Automation\Runs\RetryFailedOperations;
 use App\Application\Automation\Runs\RetryWebhookDeliveries;
 use App\Application\Automation\Runs\RunDunningSequence;
@@ -41,6 +43,8 @@ final readonly class TaskRegistry
             AutomationTask::Sync => SyncWithProviders::class,
             AutomationTask::Webhooks => RetryWebhookDeliveries::class,
             AutomationTask::Cleanup => CleanUpExpiredRecords::class,
+            AutomationTask::Resources => ProjectCoreResources::class,
+            AutomationTask::Telemetry => CollectTelemetry::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });
     }

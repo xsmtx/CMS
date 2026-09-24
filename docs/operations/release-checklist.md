@@ -56,6 +56,10 @@ php artisan platform:openapi --check
       `AutomationTask`. The screen lists the enum; the scheduler runs the file; a
       task in one and not the other is invisible or never runs.
 - [ ] `php artisan schedule:list` prints what is expected.
+- [ ] **The resource projection has run at least once** — `php artisan
+      platform:run resources`. Every screen in the Infrastructure group is built
+      on the graph, and an installation whose scheduler has not started yet shows
+      three empty screens that look like a broken deployment.
 
 ## Security
 
@@ -120,3 +124,8 @@ php artisan platform:openapi --check
   shapes, retries and error handling are tested against faked HTTP, which proves
   the code and not the integration — and the first real deployment has to treat
   each one as unproven.
+- **The infrastructure adapters, for the same reason and more so.** No real
+  monitoring system has ever answered this code: `FileProbe` reads a file, and
+  every real source arrives in Phase B. An adapter that has been installed but
+  never checked shows `unknown` on `/admin/resources/adapters`, which is the
+  honest state — press **Check now** before believing a screen built on it.

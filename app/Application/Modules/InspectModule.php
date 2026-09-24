@@ -8,6 +8,7 @@ use App\Domain\Access\PermissionDefinition;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
+use App\Domain\Infrastructure\Contracts\InfrastructureAdapter;
 use App\Domain\Modules\Contracts\Module;
 use App\Domain\Modules\Exceptions\InvalidModule;
 use App\Domain\Modules\ExtensionPoint;
@@ -97,6 +98,10 @@ final readonly class InspectModule
             // was enabled last quietly wins.
             [ExtensionPoint::RiskEvaluator, $risk === null ? [] : [$risk::class]],
             [ExtensionPoint::TaxCalculator, $tax === null ? [] : [$tax::class]],
+            [ExtensionPoint::InfrastructureAdapter, array_map(
+                static fn (InfrastructureAdapter $adapter): string => $adapter->key(),
+                $module->adapters(),
+            )],
             [ExtensionPoint::HealthCheck, array_map(
                 static fn (HealthCheck $check): string => $check->key(),
                 $module->healthChecks(),

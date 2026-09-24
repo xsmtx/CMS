@@ -93,8 +93,11 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 **Phases 0 to 17 are complete** (`docs/architecture/phase-0-result.md` through
 `phase-17-result.md`). The V2 addendum's roadmap (handoff §22) is finished.
 
-`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is the second handoff and is
-now the next thing, when asked for it.
+**Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
+planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
+plan before any of it was built — and its phases are lettered. **Phase A is
+complete** (`phase-a-result.md`); B to J are not started. Do not begin one without
+being asked for it.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -104,11 +107,9 @@ screen has been driven in a browser**. `docs/operations/release-checklist.md`
 says the first real deployment must treat each adapter as unproven.
 
 Provider adapters (Stripe, cPanel, Namecheap) are deliberately last, by the
-owner's instruction. None has ever talked to its real provider.
-
-`CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is a second handoff, and
-it is **not** to be started until the first one is finished — that means
-through Phase 17.
+owner's instruction. None has ever talked to its real provider. The same is now
+true of handoff #2's twenty-three adapter families: `FileProbe` reads a file, and
+no real monitoring system has ever answered this code.
 
 Two guards exist: `staff` (admin, at `/admin`) and `client` (portal, signing
 in at `/login`). Use `CurrentActor` rather than `$request->user()`, which
@@ -629,3 +630,63 @@ headers and a hover row, badges carry a tint of their own tone mixed from
 the semantic token, and counts an operator opens a screen for are `AppStat`
 cards that filter when pressed. Check a visual change against the built
 stylesheet in both themes rather than inferring it from class names.
+
+The Resource Graph stores identity and relationships and never the facts the
+owning table holds (ADR 0043). A node carries a kind, a key, a cached label and a
+pointer at the row it *is*; the price lives on the service. Edges are append-only
+with a closing timestamp, like the ledger, so "who had this IP in March" is a
+`where` rather than a feature. **An edge belongs to its container's
+organization**, which makes direction a privacy decision: containment points
+downward so the boundary hides the container from the contained, and a customer
+cannot walk up from their service to the server. `ResourceGraph::attach()` takes
+`container` and `contained` as named arguments for that reason, and refuses an
+edge whose ends are in different subtrees.
+
+The graph's traversal is **one query per level, not a recursive CTE**. Hand-written
+SQL carries no global scope, and an unscoped lookup is the one bug this platform
+will not trade four round trips for. Depth is bounded at twelve because discovered
+data contains cycles.
+
+`ResourceKind` is an open vocabulary and `Relation` is a closed one. Core cannot
+know every noun a module will discover; it must know which edges mean "inside",
+because an unrecognised relation is an edge the impact query would silently skip —
+and a screen that silently skips an edge tells an operator an outage affects
+nobody.
+
+An adapter declares what it *can* do and the row says what it *may*.
+`resource_adapters.writes_enabled` defaults to false, turning it on is audited with
+the capabilities named one by one, and the registry **narrows** rather than
+refusing — a capability the row has not enabled is absent, so a screen cannot offer
+a button the platform would then refuse. The rule lives in one place
+(`ResourceAdapter::narrow()`) because it briefly lived in two and they disagreed
+about a disabled adapter.
+
+Telemetry keeps the present, never the series (§14). One row per node and metric,
+upserted; Prometheus and Zabbix keep the history. A metric name core has no
+`MetricKind` for is counted and dropped, because a table that accepts any name is
+a time-series database nobody sized. A unit from the wrong dimension is a refusal,
+not a conversion — but a unit the source wrote into the *name* (`cpu_percent`,
+`memory_used_mb`) is read, because that is the opposite of guessing. The worked
+example found that one within a minute of first running.
+
+`value` on a metric is a `double` and that is not the money rule bending:
+telemetry is a measurement and money is an amount. No monetary value is ever
+stored in the graph; `ImpactSummary` reads `services.recurring_minor` and answers
+in `MoneyByCurrency`.
+
+Never write a translated sentence into a database column. `health_message` stays
+null for staleness: a message stored in the language of whichever scheduler run
+wrote it is a message the next operator cannot read, and the screen already has
+`sampled_at`.
+
+A new extension point has to be added to `InspectModule::declared()` as well as to
+`ExtensionPoint`, or the module's row says it registered nothing — and uninstall
+then cannot refuse without loading the package it is being asked to remove.
+
+Setup is a page, not a dropdown (`/admin/apps`), and every owner-only screen is on
+it: Modules, Servers, Connect, Licence, Import. The page itself opens to any staff
+member who holds one of the setup permissions; the owner-only section is simply
+absent for everyone else, because the gate is on the five controllers behind it
+rather than on the hub. The Setup rows stay in the nav map although the dropdown is
+gone — the command palette is built from that map, and `hidden` on a group is what
+keeps rows out of the rail and in ⌘K.
