@@ -946,3 +946,42 @@ boot**. `ModuleCatalogue` fixes its root that way and `ModuleServiceProvider::bo
 builds one, so a test that sets `platform.modules.path` afterwards is pointing a
 catalogue at a path it already decided not to use. `forget()` clears the memo,
 not the root; `forgetInstance()` is what rebuilds it.
+
+**Official integration modules live in `modules/infracms/`** and are planned in
+`docs/architecture/integration-modules-plan.md`, which maps all twenty-four
+requested integrations to the seam each needs. Fifteen plug into a contract that
+exists today; the rest are blocked on core work and the plan says on exactly
+what.
+
+The blocking one worth knowing: **`NotificationChannel` is a closed enum and
+`ChannelRegistry` keys on it**, so there is one implementation per channel and no
+member for SMS. Netgsm cannot say what it is, `NotificationRecipient` carries
+only an email so there would be no address to send to, and Discord, Slack and
+Mattermost would each overwrite the last — and core's own `WebhookChannel` with
+them. Those four need the channel vocabulary, the registry key and the recipient
+address changed first. DNS, IPAM and certificates need contracts that are already
+planned as handoff #2 phases; social login and a live-chat embed each need a
+decision first (an embed is a CSP decision before it is a module one, and
+`script-src 'self'` currently has no exceptions on purpose). **Email templates
+are already core** — building a module for them would be a second answer to a
+question core answers.
+
+`php artisan platform:package <slug> --key=<path>` builds and signs a package and
+prints its catalogue entry. The private key is read from a path and never stored:
+not in this repository, not in an environment file, not in a CI variable a build
+log can print.
+
+**Never `trim()` a binary key.** A key is random bytes and roughly one in eight
+begins or ends with something `trim()` eats — 0x09, 0x0a, 0x0d, 0x20, 0x00.
+Trimming first corrupts those keys and leaves the rest working, which looks like
+a bad signature, depends on which key was generated, and passes a test with a
+random key most of the time. Check the length first, and only trim when it is
+text.
+
+`tests/Feature/OfficialModulesTest.php` walks `modules/infracms/`, installs,
+configures and enables **every** module, and asserts the registry its manifest
+claims actually gained an entry. A module added tomorrow is covered the moment
+its directory exists. It exists because the mistake these packages will really
+make is not a wrong request shape but **declaring something and wiring
+nothing** — and it earned its place immediately, catching a manifest whose
+namespace had a doubled backslash.

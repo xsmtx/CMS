@@ -153,6 +153,20 @@ final class ModuleLoader
      */
     private function load(string $class): void
     {
+        /*
+         * Already defined is already done.
+         *
+         * Defensive rather than a fix for anything observed: one loader is
+         * registered per `ModuleLoader`, and a process that rebuilds the
+         * application — a test suite, a worker between jobs — ends up with
+         * several alive on one autoload stack, each holding its own prefixes.
+         * An autoloader asked for a class that already exists has nothing to do,
+         * and doing it anyway is the only way this could ever redeclare one.
+         */
+        if (class_exists($class, autoload: false) || interface_exists($class, autoload: false)) {
+            return;
+        }
+
         foreach ($this->prefixes as $prefix => $source) {
             if (! str_starts_with($class, $prefix)) {
                 continue;

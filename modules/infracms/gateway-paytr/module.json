@@ -1,0 +1,52 @@
+{
+    "slug": "gateway-paytr",
+    "name": "PayTR",
+    "type": "payment-gateway",
+    "version": "1.0.0",
+    "description": "Takes card payments through PayTR, the Turkish payment provider.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\GatewayPayTR",
+    "entrypoint": "PayTRModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "merchant_id",
+            "label": "Merchant ID",
+            "type": "text",
+            "required": true,
+            "hint": "From the PayTR merchant panel."
+        },
+        {
+            "key": "merchant_key",
+            "label": "Merchant key",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "merchant_salt",
+            "label": "Merchant salt",
+            "type": "secret",
+            "required": true,
+            "hint": "Every hash PayTR checks is salted with this. It is never sent anywhere."
+        },
+        {
+            "key": "test_mode",
+            "label": "Test mode",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "hint": "Sends test_mode=1, so nothing is really charged."
+        },
+        {
+            "key": "installment",
+            "label": "Allow instalments",
+            "type": "boolean",
+            "required": false,
+            "default": true
+        }
+    ]
+}

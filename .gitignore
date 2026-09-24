@@ -29,3 +29,5 @@ Thumbs.db
 # Local Herd/Docker overrides
 /.env.local
 /storage/inertia-devtools
+storage/app/keys/
+storage/app/packages/

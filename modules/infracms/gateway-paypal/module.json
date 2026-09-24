@@ -1,0 +1,43 @@
+{
+    "slug": "gateway-paypal",
+    "name": "PayPal",
+    "type": "payment-gateway",
+    "version": "1.0.0",
+    "description": "Takes payments through PayPal Orders v2, with webhook verification.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\GatewayPayPal",
+    "entrypoint": "PayPalModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "client_id",
+            "label": "Client ID",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "client_secret",
+            "label": "Client secret",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "webhook_id",
+            "label": "Webhook ID",
+            "type": "text",
+            "required": true,
+            "hint": "From the app's webhook in the PayPal dashboard. Without it a notification cannot be verified, so none is believed."
+        },
+        {
+            "key": "sandbox",
+            "label": "Sandbox",
+            "type": "boolean",
+            "required": false,
+            "default": false
+        }
+    ]
+}

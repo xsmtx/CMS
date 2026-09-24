@@ -105,16 +105,27 @@ final readonly class VerifyPackage
             return null;
         }
 
-        $contents = trim((string) file_get_contents($path));
+        $contents = (string) file_get_contents($path);
 
         if ($contents === '') {
             return null;
         }
 
-        // Either raw bytes or base64url, so a key can be committed as text.
-        return strlen($contents) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES
-            ? $contents
-            : $this->decode($contents);
+        /*
+         * The length is checked **before** anything is trimmed, and that is not
+         * a nicety: a key is 32 random bytes, and roughly one in eight starts or
+         * ends with a byte `trim()` treats as whitespace — 0x09, 0x0a, 0x0d,
+         * 0x20 or 0x00. Trimming first would corrupt those keys and leave the
+         * rest working, which is the worst kind of bug: it looks like a bad
+         * signature, it depends on which key was generated, and a test with a
+         * random key passes most of the time.
+         */
+        if (strlen($contents) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            return $contents;
+        }
+
+        // Otherwise it is text: base64url, so a key can be committed as one.
+        return $this->decode(trim($contents));
     }
 
     /**

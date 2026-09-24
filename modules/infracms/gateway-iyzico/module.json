@@ -1,0 +1,37 @@
+{
+    "slug": "gateway-iyzico",
+    "name": "İyzico",
+    "type": "payment-gateway",
+    "version": "1.0.0",
+    "description": "Takes card payments through İyzico, using its hosted checkout form.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\GatewayIyzico",
+    "entrypoint": "IyzicoModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "api_key",
+            "label": "API key",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "secret_key",
+            "label": "Secret key",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "sandbox",
+            "label": "Sandbox",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "hint": "Uses sandbox-api.iyzipay.com, so nothing is really charged."
+        }
+    ]
+}
