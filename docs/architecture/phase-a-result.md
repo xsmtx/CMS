@@ -194,6 +194,33 @@ Three things came out of it:
 - The two irreversible actions behind those screens got `owner` above
   `auth.recent`, which is how the ordering bug above was found.
 
+## 4b. The same question asked of every other screen
+
+The rule then had to be applied everywhere, so the suite was run with the matched
+route name recorded for every request and the result diffed against the router:
+**35 of the 127 admin write endpoints had never been called by any test.** Not one
+of them was unreachable — `AdminActionRoutesTest` had already proved the paths —
+but nothing had ever checked that the payload the form sends is the payload the
+controller wants.
+
+All 35 are driven now, and doing it found three more things:
+
+- **`exists:departments,id` on the predefined-replies screen.** The table is
+  `support_departments`, so choosing a department could never validate and a reply
+  could only be saved for *every* department. The identical mistake was found once
+  before on the ticket screen, where it was hidden behind a 403.
+- **Every refusal on the Modules screen was a 500 page.** `InvalidModule` carries a
+  sentence naming the module, the versions and the range; nothing caught it, so an
+  unconfigured module, one built against another SDK, and a downgrade all ended in
+  a server error rather than the reason. `ModuleController::refusable()` turns it
+  into an error on the form, and only that exception — anything else is a bug and
+  should reach the handler.
+- **The staff password reset had no test at all.** It is the only way back into an
+  installation whose operator is locked out, and it writes a password. It now has
+  three: the answer is identical for an address that exists and one that does not,
+  a staff token sets a password the operator can then sign in with, and a token for
+  another address is refused.
+
 **The rows stayed in the nav map although the dropdown went**, because the command
 palette is built from that map. Somebody who knows they want Roles presses ⌘K and
 types it rather than learning where it moved. `hidden` on the group is what keeps
@@ -235,4 +262,4 @@ them out of the rail and in the palette, and a Vitest case asserts both.
 
 Pint, Rector, PHPStan level 8, Pest on MariaDB, ESLint, Prettier, vue-tsc,
 Vitest, Vite build, `platform:openapi --check` — all green.
-**1497 Pest tests, 85 Vitest tests.**
+**1528 Pest tests, 85 Vitest tests.**

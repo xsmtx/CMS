@@ -125,9 +125,17 @@ final class CannedResponseController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:191'],
             'body' => ['required', 'string', 'max:20000'],
-            // Null means every department. A reply about billing is not
-            // wanted in the queue that answers "my site is down".
-            'department_id' => ['nullable', 'ulid', 'exists:departments,id'],
+            /*
+             * Null means every department. A reply about billing is not wanted
+             * in the queue that answers "my site is down".
+             *
+             * `support_departments`, not `departments`: a rule naming a table
+             * names the **table**, and this one named a table that does not
+             * exist — so choosing a department here always failed validation
+             * and only "every department" could be saved. The same mistake was
+             * found once before, on the ticket screen.
+             */
+            'department_id' => ['nullable', 'ulid', 'exists:support_departments,id'],
         ]);
 
         return $data;

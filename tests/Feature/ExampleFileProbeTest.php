@@ -201,6 +201,28 @@ it('reports a failure without saying which file it was reading', function (): vo
         ->and($registered->row->fresh()->health)->toBe(HealthState::Failing->value);
 });
 
+/**
+ * The Check now button, over HTTP.
+ *
+ * `checkHealth()` is tested above through the registry; this drives the
+ * endpoint the screen actually calls, because a button whose route nobody has
+ * ever requested is a button nobody knows works.
+ */
+it('checks an adapter from the screen and writes the answer on its row', function (): void {
+    writeProbeFile($this->file, ['node-1' => ['cpu_percent' => 40]]);
+    enableFileProbe($this->admin, $this->file);
+
+    $registered = app(AdapterRegistry::class)->find($this->provider->id, 'file-probe');
+
+    $this->withoutVite()
+        ->actingAs($this->admin, 'staff')
+        ->post('/admin/resources/adapters/'.$registered->row->id.'/check')
+        ->assertRedirect();
+
+    expect($registered->row->fresh()->health)->toBe(HealthState::Ok->value)
+        ->and($registered->row->fresh()->health_checked_at)->not->toBeNull();
+});
+
 it('collects nothing once the module is disabled', function (): void {
     writeProbeFile($this->file, ['node-1' => ['cpu_percent' => 40]]);
 

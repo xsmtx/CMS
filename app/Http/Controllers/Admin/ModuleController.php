@@ -11,6 +11,7 @@ use App\Application\Modules\SaveModuleConfig;
 use App\Application\Modules\UninstallModule;
 use App\Application\Modules\UpgradeModule;
 use App\Domain\Modules\ConfigField;
+use App\Domain\Modules\Exceptions\InvalidModule;
 use App\Domain\Modules\ExtensionPoint;
 use App\Domain\Modules\ModuleManifest;
 use App\Domain\Modules\Registration;
@@ -88,43 +89,56 @@ final class ModuleController extends Controller
     {
         $this->authorizeFor('platform.modules.manage');
 
-        $installer->handle($request->string('slug')->toString(), $this->actor->model());
+        $slug = $request->string('slug')->toString();
 
-        return back()->with('status', __('modules.installed'));
+        return $this->refusable(
+            fn (): ModuleRecord => $installer->handle($slug, $this->actor->model()),
+            __('modules.installed'),
+        );
     }
 
     public function enable(string $module, EnableModule $enabler): RedirectResponse
     {
         $this->authorizeFor('platform.modules.manage');
 
-        $enabler->handle($this->find($module), $this->actor->model());
-
-        return back()->with('status', __('modules.enabled'));
+        return $this->refusable(
+            fn (): ModuleRecord => $enabler->handle($this->find($module), $this->actor->model()),
+            __('modules.enabled'),
+        );
     }
 
     public function disable(string $module, DisableModule $disabler): RedirectResponse
     {
         $this->authorizeFor('platform.modules.manage');
 
-        $disabler->handle($this->find($module), $this->actor->model());
-
-        return back()->with('status', __('modules.disabled'));
+        return $this->refusable(
+            fn (): ModuleRecord => $disabler->handle($this->find($module), $this->actor->model()),
+            __('modules.disabled'),
+        );
     }
 
     public function upgrade(string $module, UpgradeModule $upgrader): RedirectResponse
     {
         $this->authorizeFor('platform.modules.manage');
 
-        $upgrader->handle($this->find($module), $this->actor->model());
-
-        return back()->with('status', __('modules.upgraded'));
+        return $this->refusable(
+            fn (): ModuleRecord => $upgrader->handle($this->find($module), $this->actor->model()),
+            __('modules.upgraded'),
+        );
     }
 
     public function uninstall(string $module, UninstallModule $uninstaller): RedirectResponse
     {
         $this->authorizeFor('platform.modules.manage');
 
-        $uninstaller->handle($this->find($module), $this->actor->model());
+        try {
+            $uninstaller->handle($this->find($module), $this->actor->model());
+        } catch (InvalidModule $refusal) {
+            // Uninstall is the one that redirects rather than going back, so it
+            // cannot share the helper: a refusal has to stay on the screen that
+            // can show it.
+            return back()->withErrors(['module' => $refusal->getMessage()]);
+        }
 
         return to_route('admin.modules.index')->with('status', __('modules.uninstalled'));
     }
@@ -264,6 +278,33 @@ final class ModuleController extends Controller
     private function assertSuperAdmin(): void
     {
         AppsController::assertSuperAdminFor($this->actor);
+    }
+
+    /**
+     * Run a lifecycle step, and turn a refusal into something an operator can
+     * read.
+     *
+     * Every one of these can refuse for a reason that is not a bug: a module
+     * built against another SDK, one that has not been configured yet, an
+     * upgrade that would move backwards, an uninstall whose registrations are
+     * still in use. `InvalidModule` already carries the sentence — it names the
+     * module, the versions and the range — and until this existed the operator
+     * got a 500 page instead of it.
+     *
+     * Only `InvalidModule` is caught. Anything else really is a bug and should
+     * reach the handler, the log and the correlation id.
+     *
+     * @param  callable(): mixed  $step
+     */
+    private function refusable(callable $step, string $status): RedirectResponse
+    {
+        try {
+            $step();
+        } catch (InvalidModule $refusal) {
+            return back()->withErrors(['module' => $refusal->getMessage()]);
+        }
+
+        return back()->with('status', $status);
     }
 
     private function authorizeFor(string $permission): void

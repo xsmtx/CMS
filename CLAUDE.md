@@ -712,5 +712,28 @@ deleting one, adding a group and testing a connection all answered 404 and looke
 like nothing happening. Nothing caught it, because the screen had a test and the
 test *rendered* the screen. Phase 9's rule was "a screen with no test that renders
 it has not been tested"; this is the one after it — **a screen whose actions no
-test performs has not been tested either**, so `ServerFleetTest` and
-`ModuleScreenTest` press the buttons over HTTP.
+test performs has not been tested either.**
+
+That rule was then applied to the whole admin area, by recording the route names
+the suite actually requests and diffing them against the router: **35 of the 127
+admin write endpoints had never been called by any test.** They are all covered
+now (`ServerFleetTest`, `ModuleScreenTest`, `ConnectScreenTest`,
+`TodoAndRepliesScreenTest`, `ContentScreenTest`, `CatalogWriteTest`,
+`AdminWriteGapsTest`, `StaffPasswordResetTest`), and driving them found three
+more bugs that rendering never would:
+
+- **`exists:departments,id` on the predefined-replies screen**, where the table is
+  `support_departments`. Choosing a department could never validate, so a reply
+  could only ever be saved for *every* department. The identical mistake had been
+  found once before, on the ticket screen — which is why a rule naming a table
+  deserves a second look every time.
+- **Every refusal on the Modules screen was a 500 page.** `InvalidModule` carries
+  a sentence naming the module, the versions and the range, and nothing caught it:
+  an unconfigured module, one built against another SDK and a downgrade all ended
+  in a server error. `ModuleController::refusable()` turns it into an error on the
+  form; anything else still reaches the handler, because anything else is a bug.
+- **The staff password reset had no test at all** — the only way back into an
+  installation whose operator is locked out, and it writes a password.
+
+When adding a screen, drive its buttons. Rendering it proves the props; only a
+request proves the payload the form sends is the payload the controller wants.

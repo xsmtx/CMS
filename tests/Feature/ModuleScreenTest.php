@@ -89,6 +89,59 @@ it('installs, configures, enables, disables and uninstalls from the screen', fun
     expect(ModuleRecord::query()->where('slug', 'status-board')->exists())->toBeFalse();
 });
 
+/**
+ * Upgrade, which is the platform catching up with what is on disk.
+ *
+ * The version here is the same as the version recorded, so this is the ordinary
+ * no-op an operator presses after replacing a package — and the thing it must
+ * not do is refuse. A downgrade is refused, and that is asserted next to it so
+ * the two answers cannot be confused.
+ */
+it('takes the version on disk, and refuses one that moves backwards', function (): void {
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/apps/modules', ['slug' => 'status-board'])
+        ->assertRedirect();
+
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/apps/modules/status-board/upgrade')
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $record = ModuleRecord::query()->where('slug', 'status-board')->firstOrFail();
+
+    expect($record->version)->toBe('1.0.0');
+
+    // Pretend the row came from a newer package than the one on disk.
+    $record->forceFill(['version' => '9.0.0'])->save();
+
+    // A refusal is a message on the screen, not a 500 page. Until the buttons
+    // were driven, nothing here caught `InvalidModule` and every refusal on
+    // this screen — an unconfigured module, one built against another SDK, this
+    // — ended in a server error instead of the sentence it already carries.
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/apps/modules/status-board/upgrade')
+        ->assertRedirect()
+        ->assertSessionHasErrors('module');
+
+    expect($record->fresh()->version)->toBe('9.0.0');
+});
+
+it('shows a refusal rather than a server error when a module cannot be enabled', function (): void {
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/apps/modules', ['slug' => 'status-board'])
+        ->assertRedirect();
+
+    // `url` is required and has not been given, so enabling cannot run the
+    // package (ADR 0038). The operator has to be told which field.
+    $this->actingAs($this->owner, 'staff')
+        ->post('/admin/apps/modules/status-board/enable')
+        ->assertRedirect()
+        ->assertSessionHasErrors('module');
+
+    expect(ModuleRecord::query()->where('slug', 'status-board')->first()?->state)
+        ->toBe(ModuleState::Failed);
+});
+
 it('refuses every button to an administrator who is not the owner', function (): void {
     $this->actingAs($this->administrator, 'staff')
         ->post('/admin/apps/modules', ['slug' => 'status-board'])
