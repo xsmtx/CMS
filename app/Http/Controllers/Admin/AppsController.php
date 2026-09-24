@@ -138,6 +138,12 @@ final class AppsController extends Controller
                 null,
                 ModuleRecord::query()->where('state', ModuleState::Enabled->value)->count(),
             ),
+            $this->area(
+                'marketplace',
+                '/admin/apps/marketplace',
+                null,
+                ModuleRecord::query()->where('source', 'marketplace')->count(),
+            ),
             $this->area('servers', '/admin/apps/infrastructure', null, Server::query()->count()),
             /*
              * Connect is **not** here. It moved back to Utilities and became a

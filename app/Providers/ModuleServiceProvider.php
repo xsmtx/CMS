@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Marketplace\VerifyPackage;
 use App\Domain\Access\PermissionRegistry;
+use App\Domain\Marketplace\Contracts\MarketplaceClient;
+use App\Infrastructure\Marketplace\HttpMarketplaceClient;
+use App\Infrastructure\Marketplace\UnconfiguredMarketplaceClient;
 use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Modules\ModuleCatalogue;
 use App\Infrastructure\Modules\ModuleLoader;
+use App\Support\Correlation\CorrelationContext;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +48,37 @@ final class ModuleServiceProvider extends ServiceProvider
             $app->make(ModuleCatalogue::class),
             $app->make(ModuleLoader::class),
         ));
+
+        /*
+         * The vendor's catalogue, or nothing at all.
+         *
+         * An installation with no marketplace URL gets the unconfigured client
+         * rather than a null: an empty catalogue is an ordinary installation,
+         * and a screen that has to check for null is a screen that will forget
+         * to once.
+         *
+         * The licence key travels with the request because the catalogue is
+         * what *this* installation may have. It is read here rather than held,
+         * so rotating it does not need a restart.
+         */
+        $this->app->singleton(MarketplaceClient::class, static function ($app): MarketplaceClient {
+            $url = config('platform.marketplace.api_url');
+
+            if (! is_string($url) || trim($url) === '') {
+                return new UnconfiguredMarketplaceClient;
+            }
+
+            $key = config('platform.licensing.key');
+
+            return new HttpMarketplaceClient(
+                baseUrl: trim($url),
+                licenceKey: is_string($key) ? $key : null,
+                correlation: $app->make(CorrelationContext::class),
+                verifier: $app->make(VerifyPackage::class),
+                timeout: (int) config('platform.marketplace.timeout', 15),
+                retries: (int) config('platform.marketplace.retries', 2),
+            );
+        });
     }
 
     public function boot(): void

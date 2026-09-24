@@ -36,6 +36,11 @@ return [
             'description' => 'Packages that add payment gateways, provisioning, registrars and more. Nothing runs until you enable it.',
             'unit' => 'enabled',
         ],
+        'marketplace' => [
+            'label' => 'Marketplace',
+            'description' => 'Packages the vendor offers this installation. Fetching one runs nothing.',
+            'unit' => 'installed',
+        ],
         'servers' => [
             'label' => 'Servers',
             'description' => 'The machines accounts are created on, and the credentials that reach them.',

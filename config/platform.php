@@ -449,6 +449,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Marketplace
+    |--------------------------------------------------------------------------
+    |
+    | Where this installation looks for packages, and the key that proves one.
+    | Both may be absent: an installation with no marketplace URL sees an empty
+    | catalogue and installs modules the way it always has, by having a
+    | directory in `modules/`.
+    |
+    | `public_key_path` is the vendor's **packaging** key, and it is not the
+    | licence key. They prove different things - "this installation is licensed"
+    | and "these bytes are ours" - and one compromise must not be both
+    | (ADR 0047). With no key configured, no downloaded package can be proven
+    | and every download is refused; that is the honest answer rather than a
+    | flag to turn the check off.
+    |
+    | `max_bytes` is a ceiling on a response body. A download with no bound is a
+    | way to fill a disk.
+    |
+    */
+
+    'marketplace' => [
+        'api_url' => env('MARKETPLACE_API_URL'),
+        'public_key_path' => env('MARKETPLACE_PUBLIC_KEY_PATH', base_path('keys/marketplace.pub')),
+        'max_bytes' => (int) env('MARKETPLACE_MAX_BYTES', 64 * 1024 * 1024),
+        'timeout' => (int) env('MARKETPLACE_TIMEOUT', 15),
+        'retries' => (int) env('MARKETPLACE_RETRIES', 2),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | CRM defaults
     |--------------------------------------------------------------------------
     |

@@ -53,4 +53,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0043](0043-the-resource-graph-is-edges-not-facts.md) | The Resource Graph is edges, not facts | accepted |
 | [0044](0044-mobile-is-react-native-and-a-separate-artefact.md) | Mobile is React Native, and a separate artefact | accepted |
 | [0045](0045-tax-is-rows-an-operator-edits.md) | Tax is rows an operator edits, not a country in the code | accepted |
-| [0046](0046-a-late-fee-is-a-new-invoice.md) | A late fee is a new invoice | accepted |
+| [0046](0046-a-late-fee-is-a-new-invoice.md) | A late fee is a new invoice | accepted |
+| [0047](0047-a-package-is-verified-before-it-touches-disk.md) | A package is verified before it touches disk | accepted |

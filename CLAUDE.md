@@ -902,3 +902,47 @@ When patching files through a script, check the output in the product, not only
 the gates. A Python escaping slip wrote `\u00fc` **literally** into two language
 files, so a screen went from showing a translation key to showing
 `M\u00fc\u015fterinin`, and every gate stayed green — a string is a string.
+
+**A marketplace exists** (`docs/architecture/marketplace-result.md`, ADR 0047).
+It is a catalogue the vendor publishes and this repository does not contain —
+the same shape as the licence control plane: a contract, `docs/marketplace/api.md`,
+`Tests\Support\FakeMarketplaceClient`, and an `Unconfigured…` client so an
+installation with no marketplace URL behaves exactly as it always did.
+
+**Four steps, not three.** ADR 0038 said installing is not enabling. Fetching is
+now its own audited step before both, because with a package copied into
+`modules/` by hand an operator chose the bytes and with a download they chose *a
+name in a catalogue*. `fetch` → `install` → `enable`, and only the last one runs
+anything.
+
+**Nothing is unpacked before it is proven.** An archive entry is a path the
+archive chooses and `../../../.env` is a valid entry name. The order is size →
+SHA-256 → Ed25519 over the raw archive bytes → unpack entry by entry into a
+staging directory → slug must match what was offered. A refusal at any step
+deletes the temp file and writes nothing. The digest catches a truncated mirror
+and is **not** the security control: the catalogue that named it could be the
+attacker. The packaging key is a different keypair from the licence key, and
+there is no flag to skip any of it.
+
+**Every refusal is named separately** (`PackageRefused::digest()`, `::signature()`,
+`::unsafePath()`, …). "The download failed" would make a broken mirror and an
+attack look identical in an audit log.
+
+`modules.source` records provenance, and the marketplace refuses to replace a
+module whose source is `disk` — otherwise a catalogue entry could quietly replace
+a hand-installed package. Any directory name built from a **remote answer** is
+reduced to `[a-z0-9-]` with no dots: a provider called `..` is a path traversal
+assembled from a field somebody else filled in.
+
+**The provider adapters in core are meant to be modules.** `StripeGateway`,
+`CpanelModule` and `NamecheapRegistrar` become `gateway-stripe`,
+`provisioning-cpanel` and `registrar-namecheap`; the `Manual*` three stay in core
+forever, because "an operator does it by hand" must always be a real answer. Not
+started — `modules-and-marketplace-plan.md` §2 has the upgrade path, and an
+installation crossing that release must find its gateway still working.
+
+A singleton that reads config in its constructor is configuration **frozen at
+boot**. `ModuleCatalogue` fixes its root that way and `ModuleServiceProvider::boot()`
+builds one, so a test that sets `platform.modules.path` afterwards is pointing a
+catalogue at a path it already decided not to use. `forget()` clears the memo,
+not the root; `forgetInstance()` is what rebuilds it.

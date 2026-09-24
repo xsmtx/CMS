@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\LicenceController;
+use App\Http\Controllers\Admin\MarketplaceController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
@@ -531,6 +532,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * refused should not cost somebody their password first.
      */
     Route::middleware('owner')->group(function (): void {
+        /*
+         * The marketplace. Owner only, beside Modules: fetching a package is the
+         * first half of an act whose second half runs somebody else's code.
+         */
+        Route::get('apps/marketplace', [MarketplaceController::class, 'index'])
+            ->name('marketplace.index');
+        Route::post('apps/marketplace', [MarketplaceController::class, 'install'])
+            ->name('marketplace.install');
+
         Route::get('apps/modules', [ModuleController::class, 'index'])->name('modules.index');
         Route::post('apps/modules', [ModuleController::class, 'install'])->name('modules.install');
         Route::post('apps/modules/{module}/enable', [ModuleController::class, 'enable'])

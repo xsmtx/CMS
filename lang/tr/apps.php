@@ -28,6 +28,11 @@ return [
             'description' => 'Ödeme yöntemi, kurulum, alan adı sağlayıcısı ve fazlasını ekleyen paketler. Siz etkinleştirene kadar hiçbiri çalışmaz.',
             'unit' => 'etkin',
         ],
+        'marketplace' => [
+            'label' => 'Mağaza',
+            'description' => 'Sağlayıcının bu kuruluma sunduğu paketler. Birini indirmek hiçbir şey çalıştırmaz.',
+            'unit' => 'kurulu',
+        ],
         'servers' => [
             'label' => 'Sunucular',
             'description' => 'Hesapların açıldığı makineler ve onlara ulaşan kimlik bilgileri.',

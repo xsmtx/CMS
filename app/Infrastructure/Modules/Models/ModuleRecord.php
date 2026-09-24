@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property ModuleType $type
  * @property string $version
  * @property string|null $provider
+ * @property string $source
+ * @property string|null $origin_digest
  * @property string $path
  * @property ModuleState $state
  * @property string|null $failure_reason
@@ -58,6 +60,8 @@ final class ModuleRecord extends Model implements AuditLabel
         'version',
         'provider',
         'path',
+        'source',
+        'origin_digest',
         'state',
         'failure_reason',
         'capabilities',
@@ -79,7 +83,7 @@ final class ModuleRecord extends Model implements AuditLabel
     /**
      * @var array<string, string>
      */
-    protected $attributes = ['state' => 'installed'];
+    protected $attributes = ['state' => 'installed', 'source' => 'disk'];
 
     public function auditLabel(): string
     {
