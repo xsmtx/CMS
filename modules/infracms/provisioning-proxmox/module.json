@@ -1,0 +1,53 @@
+{
+    "slug": "provisioning-proxmox",
+    "name": "Proxmox VE",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Clones a template into a VM on Proxmox VE, and starts, stops and destroys it.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningProxmox",
+    "entrypoint": "ProxmoxModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "node",
+            "label": "Node",
+            "type": "text",
+            "required": true,
+            "hint": "The Proxmox node name, as `pvesh ls /nodes` prints it."
+        },
+        {
+            "key": "template_id",
+            "label": "Template VMID",
+            "type": "number",
+            "required": true,
+            "hint": "A VM is cloned from this, never built from nothing. Installing an operating system is not a thing to do inside a provisioning call."
+        },
+        {
+            "key": "storage",
+            "label": "Storage",
+            "type": "text",
+            "required": false,
+            "default": "local-lvm"
+        },
+        {
+            "key": "full_clone",
+            "label": "Full clone",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "A linked clone is faster and dies with its template. For a customer's VM that is not a trade worth making."
+        },
+        {
+            "key": "bridge",
+            "label": "Network bridge",
+            "type": "text",
+            "required": false,
+            "default": "vmbr0"
+        }
+    ]
+}

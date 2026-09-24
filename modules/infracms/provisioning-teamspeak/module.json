@@ -1,0 +1,25 @@
+{
+    "slug": "provisioning-teamspeak",
+    "name": "TeamSpeak",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates and stops virtual TeamSpeak servers on a TeamSpeak instance.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningTeamSpeak",
+    "entrypoint": "TeamSpeakModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "slots",
+            "label": "Default slots",
+            "type": "number",
+            "required": false,
+            "default": 10,
+            "hint": "Used when the product's package is not a number."
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "slug": "provisioning-solusvm",
+    "name": "SolusVM",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates, suspends and terminates virtual servers through a SolusVM master.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningSolusVM",
+    "entrypoint": "SolusVMModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "virtualization",
+            "label": "Virtualisation",
+            "type": "select",
+            "required": true,
+            "options": {
+                "kvm": "KVM",
+                "openvz": "OpenVZ",
+                "xen": "Xen",
+                "xen hvm": "Xen HVM"
+            },
+            "hint": "SolusVM needs to be told which kind of machine to build."
+        },
+        {
+            "key": "node_group",
+            "label": "Node group",
+            "type": "text",
+            "required": false,
+            "hint": "Empty lets SolusVM choose the node."
+        },
+        {
+            "key": "template",
+            "label": "Template",
+            "type": "text",
+            "required": true,
+            "hint": "The operating system template, as SolusVM names it."
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "slug": "provisioning-directadmin",
+    "name": "DirectAdmin",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates, suspends and terminates DirectAdmin accounts on a server you add to the fleet.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningDirectAdmin",
+    "entrypoint": "DirectAdminModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "reseller_ip",
+            "label": "Assign a dedicated IP",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "hint": "Off means the account shares the server's IP, which is what most shared hosting does."
+        },
+        {
+            "key": "notify",
+            "label": "Let DirectAdmin email the customer",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "hint": "Off by default: this platform sends its own welcome message, and two is one too many."
+        }
+    ]
+}

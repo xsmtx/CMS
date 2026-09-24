@@ -1,0 +1,38 @@
+{
+    "slug": "provisioning-hetzner",
+    "name": "Hetzner Cloud",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates and destroys Hetzner Cloud servers from an API token.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningHetzner",
+    "entrypoint": "HetznerModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "token",
+            "label": "API token",
+            "type": "secret",
+            "required": true,
+            "hint": "A project API token with read and write."
+        },
+        {
+            "key": "region",
+            "label": "Location",
+            "type": "text",
+            "required": false,
+            "default": "fsn1"
+        },
+        {
+            "key": "image",
+            "label": "Image",
+            "type": "text",
+            "required": false,
+            "default": "ubuntu-24.04"
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "slug": "provisioning-plesk",
+    "name": "Plesk",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates, suspends and terminates Plesk subscriptions on a server you add to the fleet.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningPlesk",
+    "entrypoint": "PleskModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "owner_login",
+            "label": "Create subscriptions under",
+            "type": "text",
+            "required": false,
+            "hint": "A Plesk reseller login. Empty means the admin who owns the server connection."
+        }
+    ]
+}

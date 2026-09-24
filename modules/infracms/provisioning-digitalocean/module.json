@@ -1,0 +1,38 @@
+{
+    "slug": "provisioning-digitalocean",
+    "name": "DigitalOcean Droplets",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates and destroys DigitalOcean Droplets from an API token.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningDigitalOcean",
+    "entrypoint": "DigitalOceanModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "token",
+            "label": "API token",
+            "type": "secret",
+            "required": true,
+            "hint": "A personal access token with write scope."
+        },
+        {
+            "key": "region",
+            "label": "Region",
+            "type": "text",
+            "required": false,
+            "default": "fra1"
+        },
+        {
+            "key": "image",
+            "label": "Image",
+            "type": "text",
+            "required": false,
+            "default": "ubuntu-24-04-x64"
+        }
+    ]
+}
