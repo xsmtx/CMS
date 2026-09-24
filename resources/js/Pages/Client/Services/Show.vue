@@ -2,10 +2,11 @@
 import { Head } from '@inertiajs/vue3'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 defineProps<{
   service: {
@@ -26,13 +27,6 @@ defineProps<{
 }>()
 
 const { t } = useTranslations()
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'failed') return 'danger'
-  if (status === 'suspended' || status === 'pending' || status === 'provisioning') return 'warning'
-  return 'neutral'
-}
 </script>
 
 <template>
@@ -58,10 +52,10 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
 
         <AppCard :title="t('provisioning.portal.overview')">
           <div class="mb-4">
-            <AppBadge :tone="tone(service.status)">{{ service.statusLabel }}</AppBadge>
+            <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
           </div>
 
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div class="flex justify-between gap-4 py-2.5 first:pt-0">
               <dt class="text-content-muted">{{ t('provisioning.services.domain') }}</dt>
               <dd>{{ service.domain ?? '—' }}</dd>
@@ -82,7 +76,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         </AppCard>
 
         <AppCard v-if="service.options.length > 0" :title="t('provisioning.portal.what_you_get')">
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div
               v-for="option in service.options"
               :key="option.group + option.label"
@@ -102,24 +96,24 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
           it.
         -->
         <AppCard :title="t('provisioning.portal.credentials')">
-          <dl v-if="service.credentials" class="text-sm">
-            <dt class="text-content-muted text-xs">
+          <dl v-if="service.credentials" class="text-body">
+            <dt class="text-content-muted text-chrome">
               {{ t('provisioning.services.username') }}
             </dt>
-            <dd class="mb-3 font-mono text-xs break-all">{{ service.credentials.username }}</dd>
-            <dt class="text-content-muted text-xs">
+            <dd class="text-chrome mb-3 font-mono break-all">{{ service.credentials.username }}</dd>
+            <dt class="text-content-muted text-chrome">
               {{ t('provisioning.services.password') }}
             </dt>
-            <dd class="font-mono text-xs break-all">
+            <dd class="text-chrome font-mono break-all">
               {{ service.credentials.password ?? '—' }}
             </dd>
           </dl>
 
-          <p v-else class="text-content-muted text-sm leading-relaxed">
+          <p v-else class="text-content-muted text-body leading-relaxed">
             {{ t('provisioning.portal.no_credentials') }}
           </p>
 
-          <p v-if="service.credentials" class="text-content-muted mt-4 text-xs leading-relaxed">
+          <p v-if="service.credentials" class="text-content-muted text-chrome mt-4 leading-relaxed">
             {{ t('provisioning.portal.credentials_hint') }}
           </p>
         </AppCard>

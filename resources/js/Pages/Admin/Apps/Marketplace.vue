@@ -15,8 +15,8 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
+import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
@@ -71,15 +71,18 @@ function size(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function stateOf(item: Package): {
-  label: string
-  tone: 'neutral' | 'success' | 'info' | 'warning'
-} {
+/**
+ * Derived from flags rather than a status word, so the tone is chosen here —
+ * by the same meanings as `status.ts`: not installed is out of play, a
+ * package somebody else installed or a stale one wants a look, a current
+ * one of ours is healthy.
+ */
+function stateOf(item: Package): { label: string; tone: StatusTone } {
   if (!item.installed) return { label: t('marketplace.states.available'), tone: 'neutral' }
   if (!item.ours) return { label: t('marketplace.states.foreign'), tone: 'warning' }
-  if (item.outdated) return { label: t('marketplace.states.outdated'), tone: 'info' }
+  if (item.outdated) return { label: t('marketplace.states.outdated'), tone: 'warning' }
 
-  return { label: t('marketplace.states.installed'), tone: 'success' }
+  return { label: t('marketplace.states.installed'), tone: 'healthy' }
 }
 
 const blocked = computed(() => !props.state.modulesEnabled)
@@ -124,19 +127,19 @@ const blocked = computed(() => !props.state.modulesEnabled)
         <AppTableRow v-for="item in packages" :key="item.slug">
           <td data-col="package" class="px-4 py-3">
             <span class="font-medium">{{ item.name }}</span>
-            <span class="text-content-muted mt-0.5 block text-xs">{{ item.summary }}</span>
-            <span v-if="item.provider" class="text-content-subtle mt-0.5 block text-xs">
+            <span class="text-content-muted text-chrome mt-0.5 block">{{ item.summary }}</span>
+            <span v-if="item.provider" class="text-content-subtle text-chrome mt-0.5 block">
               {{ t('marketplace.by', { provider: item.provider }) }}
             </span>
             <span
               v-if="item.dependencies.length > 0"
-              class="text-content-subtle mt-0.5 block text-xs"
+              class="text-content-subtle text-chrome mt-0.5 block"
             >
               {{ t('marketplace.needs', { packages: item.dependencies.join(', ') }) }}
             </span>
           </td>
-          <td data-col="kind" class="text-content-muted px-4 py-3 text-xs">{{ item.type }}</td>
-          <td data-col="version" class="px-4 py-3 font-mono text-xs">
+          <td data-col="kind" class="text-content-muted text-chrome px-4 py-3">{{ item.type }}</td>
+          <td data-col="version" class="text-chrome px-4 py-3 font-mono">
             {{ item.version }}
             <span v-if="item.installedVersion && item.outdated" class="text-content-muted block">
               {{ item.installedVersion }}
@@ -144,7 +147,7 @@ const blocked = computed(() => !props.state.modulesEnabled)
           </td>
           <td data-col="size" class="numeric px-4 py-3 tabular-nums">{{ size(item.sizeBytes) }}</td>
           <td data-col="state" class="px-4 py-3">
-            <AppBadge :tone="stateOf(item).tone">{{ stateOf(item).label }}</AppBadge>
+            <AppStatus :tone="stateOf(item).tone" :label="stateOf(item).label" />
           </td>
           <td data-col="actions" class="px-4 py-3">
             <div class="flex items-center justify-end gap-2">
@@ -165,7 +168,7 @@ const blocked = computed(() => !props.state.modulesEnabled)
         </AppTableRow>
       </AppTable>
 
-      <p v-if="packages.some((item) => !item.ours)" class="text-content-muted text-xs">
+      <p v-if="packages.some((item) => !item.ours)" class="text-content-muted text-chrome">
         {{ t('marketplace.foreign_note') }}
       </p>
     </div>

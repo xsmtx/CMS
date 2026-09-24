@@ -6,10 +6,12 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface EndpointRow {
   id: string
@@ -64,14 +66,6 @@ function redeliver(delivery: DeliveryRow): void {
   )
 }
 
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'delivered') return 'success'
-  if (status === 'failed') return 'danger'
-  if (status === 'retrying') return 'warning'
-
-  return 'neutral'
-}
-
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
@@ -86,7 +80,7 @@ function formatDateTime(value: string | null): string {
       <AppAlert v-if="issued" tone="success">
         {{ t('api.webhooks.created') }}
         <code
-          class="border-line bg-surface-secondary mt-2 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
+          class="border-line bg-surface-secondary text-chrome mt-2 block overflow-x-auto rounded-sm border px-3 py-2 font-mono break-all"
         >
           {{ issued }}
         </code>
@@ -107,7 +101,7 @@ function formatDateTime(value: string | null): string {
           />
         </div>
 
-        <p class="text-content-muted mt-4 text-xs leading-relaxed">
+        <p class="text-content-muted text-chrome mt-4 leading-relaxed">
           {{ t('api.webhooks.events_hint') }}
         </p>
 
@@ -123,8 +117,8 @@ function formatDateTime(value: string | null): string {
           <li v-for="endpoint in endpoints" :key="endpoint.id" class="py-3 first:pt-0 last:pb-0">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="truncate font-mono text-sm">{{ endpoint.url }}</p>
-                <p class="text-content-muted mt-0.5 text-xs">
+                <p class="text-body truncate font-mono">{{ endpoint.url }}</p>
+                <p class="text-content-muted text-chrome mt-0.5">
                   {{ endpoint.description }}
                   <span v-if="endpoint.lastDeliveredAt">
                     · {{ t('api.webhooks.last_delivered') }}
@@ -134,7 +128,7 @@ function formatDateTime(value: string | null): string {
                 <!-- Said plainly: an endpoint that has been switched off
                      after repeated failures is the thing a customer needs
                      to know before they wonder why nothing arrives. -->
-                <p v-if="!endpoint.isActive" class="text-danger mt-1 text-xs">
+                <p v-if="!endpoint.isActive" class="text-danger text-chrome mt-1">
                   {{ t('api.webhooks.disabled') }}
                 </p>
               </div>
@@ -163,13 +157,13 @@ function formatDateTime(value: string | null): string {
           :headers="['Event', 'Status', 'Attempt', 'When', '']"
         >
           <tr v-for="delivery in deliveries" :key="delivery.id">
-            <td class="px-4 py-2.5 font-mono text-xs">{{ delivery.event }}</td>
+            <td class="text-chrome px-4 py-2.5 font-mono">{{ delivery.event }}</td>
             <td class="px-4 py-2.5">
-              <AppBadge :tone="tone(delivery.status)">{{ delivery.statusLabel }}</AppBadge>
-              <span v-if="delivery.responseStatus" class="text-content-muted ml-2 text-xs">
+              <AppStatus :tone="statusTone(delivery.status)" :label="delivery.statusLabel" />
+              <span v-if="delivery.responseStatus" class="text-content-muted text-chrome ml-2">
                 {{ delivery.responseStatus }}
               </span>
-              <span v-if="delivery.error" class="text-content-muted block max-w-[40ch] text-xs">
+              <span v-if="delivery.error" class="text-content-muted text-chrome block max-w-[40ch]">
                 {{ delivery.error }}
               </span>
             </td>
@@ -185,11 +179,11 @@ function formatDateTime(value: string | null): string {
           </tr>
         </AppTable>
 
-        <p v-else class="text-content-muted text-sm">{{ t('api.webhooks.none_description') }}</p>
+        <p v-else class="text-content-muted text-body">{{ t('api.webhooks.none_description') }}</p>
 
         <div class="border-line mt-6 border-t pt-4">
-          <p class="text-sm font-medium">{{ t('api.webhooks.verify_title') }}</p>
-          <p class="text-content-muted mt-1 text-xs leading-relaxed">
+          <p class="text-body font-medium">{{ t('api.webhooks.verify_title') }}</p>
+          <p class="text-content-muted text-chrome mt-1 leading-relaxed">
             {{ t('api.webhooks.verify_body') }}
           </p>
         </div>

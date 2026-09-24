@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Run {
   id: string
@@ -39,12 +40,6 @@ function run(task: string): void {
   router.post(`/admin/automation/${task}/run`, {}, { preserveScroll: true })
 }
 
-function tone(status: string): 'neutral' | 'success' | 'danger' {
-  if (status === 'completed') return 'success'
-  if (status === 'failed') return 'danger'
-  return 'neutral'
-}
-
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
@@ -75,19 +70,23 @@ function summarise(run: Run | null): string {
       <AppCard v-for="task in tasks" :key="task.value">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0">
-            <h2 class="text-sm font-semibold">{{ task.label }}</h2>
-            <p class="text-content-muted mt-1 text-xs leading-relaxed">{{ task.description }}</p>
+            <h2 class="text-body font-semibold">{{ task.label }}</h2>
+            <p class="text-content-muted text-chrome mt-1 leading-relaxed">
+              {{ task.description }}
+            </p>
           </div>
 
-          <AppBadge v-if="task.lastRun" :tone="tone(task.lastRun.status)">
-            {{ task.lastRun.statusLabel }}
-          </AppBadge>
+          <AppStatus
+            v-if="task.lastRun"
+            :tone="statusTone(task.lastRun.status)"
+            :label="task.lastRun.statusLabel"
+          />
           <!-- Said plainly. A task that has never run is the failure an
                operator is least likely to notice on their own. -->
-          <AppBadge v-else tone="warning">Never run</AppBadge>
+          <AppStatus v-else tone="warning" label="Never run" />
         </div>
 
-        <dl class="text-content-muted mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs">
+        <dl class="text-content-muted text-chrome mt-4 flex flex-wrap gap-x-6 gap-y-1">
           <div>
             <dt class="inline">Runs</dt>
             <dd class="text-content ml-1 inline">{{ cadence(task.intervalMinutes) }}</dd>
@@ -106,12 +105,12 @@ function summarise(run: Run | null): string {
 
         <div v-if="can.run" class="mt-4">
           <AppButton size="sm" @click="run(task.value)">Run now</AppButton>
-          <span class="text-content-subtle ml-3 font-mono text-xs">{{ task.command }}</span>
+          <span class="text-content-subtle text-chrome ml-3 font-mono">{{ task.command }}</span>
         </div>
       </AppCard>
     </div>
 
-    <h2 class="mt-10 mb-3 text-sm font-semibold">Run history</h2>
+    <h2 class="text-body mt-10 mb-3 font-semibold">Run history</h2>
 
     <AppTable
       v-if="runs.length > 0"
@@ -132,8 +131,8 @@ function summarise(run: Run | null): string {
           {{ item.failed }}
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="tone(item.status)">{{ item.statusLabel }}</AppBadge>
-          <span v-if="item.error" class="text-content-muted block max-w-[40ch] text-xs">
+          <AppStatus :tone="statusTone(item.status)" :label="item.statusLabel" />
+          <span v-if="item.error" class="text-content-muted text-chrome block max-w-[40ch]">
             {{ item.error }}
           </span>
         </td>
@@ -146,7 +145,7 @@ function summarise(run: Run | null): string {
       description="Tasks run on a schedule. You can also run one now and watch what it does."
     />
 
-    <p class="text-content-muted mt-6 text-xs">
+    <p class="text-content-muted text-chrome mt-6">
       <Link href="/admin/automation/dunning" class="underline-offset-4 hover:underline">
         Unpaid invoice sequence
       </Link>

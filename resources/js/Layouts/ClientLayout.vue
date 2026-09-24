@@ -85,7 +85,7 @@ function isCurrent(href: string): boolean {
   <div class="bg-background min-h-[100dvh]">
     <a
       href="#main"
-      class="focus:bg-surface-primary sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-20 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
+      class="focus:bg-surface-primary sr-only rounded-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-20 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
     >
       Skip to content
     </a>
@@ -97,12 +97,12 @@ function isCurrent(href: string): boolean {
     -->
     <div
       v-if="impersonation?.active"
-      class="bg-warning text-surface-secondary flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-sm font-medium"
+      class="bg-warning text-surface-secondary text-body flex flex-wrap items-center justify-center gap-3 px-4 py-2 font-medium"
     >
       <span>You are viewing this account as {{ impersonation.subjectName }}.</span>
       <button
         type="button"
-        class="pressable rounded-[var(--radius-sm)] bg-black/15 px-2 py-0.5 text-xs underline underline-offset-4"
+        class="pressable text-chrome rounded-sm bg-black/15 px-2 py-0.5 underline underline-offset-4"
         @click="stopImpersonating"
       >
         Stop
@@ -113,7 +113,7 @@ function isCurrent(href: string): boolean {
       <div class="mx-auto flex h-[4.5rem] w-full max-w-5xl items-center gap-6 px-5 sm:px-8">
         <Link
           href="/client"
-          class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight"
+          class="pressable text-body flex items-center gap-2 rounded-sm font-semibold tracking-tight"
         >
           <img
             v-if="brand.logoUrl"
@@ -130,7 +130,7 @@ function isCurrent(href: string): boolean {
               <Link
                 :href="item.href"
                 :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                class="pressable block rounded-[var(--radius-sm)] px-3.5 py-2 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body block rounded-sm px-3.5 py-2 transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="
                   isCurrent(item.href)
                     ? 'bg-surface-secondary text-content font-medium'
@@ -143,7 +143,7 @@ function isCurrent(href: string): boolean {
           </ul>
         </nav>
 
-        <span v-if="user" class="text-content-muted hidden shrink-0 text-sm sm:block">
+        <span v-if="user" class="text-content-muted text-body hidden shrink-0 sm:block">
           {{ user.name }}
         </span>
       </div>

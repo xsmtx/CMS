@@ -17,9 +17,12 @@ import { ref } from 'vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ModuleSettings from './ModuleSettings.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 import type { ConfigFieldProps } from './ModuleSettings.vue'
 
@@ -75,15 +78,19 @@ function act(slug: string, action: 'enable' | 'disable' | 'upgrade'): void {
   router.post(`/admin/apps/modules/${slug}/${action}`, {}, { preserveScroll: true })
 }
 
-function uninstall(slug: string): void {
-  router.delete(`/admin/apps/modules/${slug}`, { preserveScroll: true })
-}
+/**
+ * Uninstalling is asked about first. It was one click from a row of
+ * settings, and it removes a module the platform may be running on.
+ */
+const uninstalling = ref<{ slug: string; name: string } | null>(null)
 
-function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (state === 'enabled') return 'success'
-  if (state === 'failed') return 'danger'
-  if (state === 'installed') return 'warning'
-  return 'neutral'
+function uninstall(): void {
+  if (uninstalling.value === null) return
+
+  router.delete(`/admin/apps/modules/${uninstalling.value.slug}`, {
+    preserveScroll: true,
+    onFinish: () => (uninstalling.value = null),
+  })
 }
 </script>
 
@@ -94,7 +101,7 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
     heading="Modules"
     description="Packages that extend this platform. Nothing on disk runs until you enable it."
   >
-    <p class="text-content-muted mb-6 text-xs">
+    <p class="text-content-muted text-chrome mb-6">
       SDK {{ sdk }} — a module declares the range it was built for and is refused outside it.
     </p>
 
@@ -111,10 +118,10 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
               <h2 class="text-title font-semibold tracking-tight">{{ module.name }}</h2>
-              <AppBadge :tone="tone(module.state)">{{ module.stateLabel }}</AppBadge>
+              <AppStatus :tone="statusTone(module.state)" :label="module.stateLabel" />
               <AppBadge>{{ module.typeLabel }}</AppBadge>
             </div>
-            <p class="text-content-muted mt-1.5 text-xs">
+            <p class="text-content-muted text-chrome mt-1.5">
               {{ module.slug }} · {{ module.version }}
               <span v-if="module.provider"> · {{ module.provider }}</span>
               <span v-if="module.onDisk === null" class="text-danger">
@@ -122,7 +129,7 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
               </span>
               <span v-else-if="module.upgradable"> · {{ module.onDisk }} is on disk</span>
             </p>
-            <p v-if="module.failureReason" class="text-danger mt-2 max-w-[70ch] text-xs">
+            <p v-if="module.failureReason" class="text-danger text-chrome mt-2 max-w-[70ch]">
               {{ module.failureReason }}
             </p>
           </div>
@@ -148,15 +155,15 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
 
         <div v-if="expanded === module.slug" class="border-line mt-5 border-t pt-5">
           <div v-if="module.registers.length > 0">
-            <p class="text-content-muted mb-2 text-xs font-medium">What it adds</p>
-            <ul class="flex flex-col gap-1.5 text-sm">
+            <p class="text-content-muted text-chrome mb-2 font-medium">What it adds</p>
+            <ul class="text-body flex flex-col gap-1.5">
               <li v-for="entry in module.registers" :key="entry.point" class="flex gap-2">
                 <span class="text-content-muted min-w-[10rem]">{{ entry.label }}</span>
-                <span class="font-mono text-xs">{{ entry.keys.join(', ') }}</span>
+                <span class="text-chrome font-mono">{{ entry.keys.join(', ') }}</span>
               </li>
             </ul>
           </div>
-          <p v-else class="text-content-muted text-sm">
+          <p v-else class="text-content-muted text-body">
             Nothing recorded yet — a module says what it adds when it is enabled.
           </p>
 
@@ -167,10 +174,14 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
           />
 
           <div v-if="can.manage" class="border-line mt-5 border-t pt-5">
-            <AppButton size="sm" variant="danger" @click="uninstall(module.slug)">
+            <AppButton
+              size="sm"
+              variant="danger-subtle"
+              @click="uninstalling = { slug: module.slug, name: module.name }"
+            >
               Uninstall
             </AppButton>
-            <p class="text-content-muted mt-2 max-w-[60ch] text-xs leading-relaxed">
+            <p class="text-content-muted text-chrome mt-2 max-w-[60ch] leading-relaxed">
               Refused while anything still points at this module. Its own tables are left in place:
               removing them is a separate, deliberate act.
             </p>
@@ -198,15 +209,15 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
         >
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-sm font-medium">{{ module.name }}</span>
+              <span class="text-body font-medium">{{ module.name }}</span>
               <AppBadge>{{ module.typeLabel }}</AppBadge>
             </div>
-            <p class="text-content-muted mt-1 text-xs">
+            <p class="text-content-muted text-chrome mt-1">
               {{ module.slug }} · {{ module.version }}
               <span v-if="module.provider"> · {{ module.provider }}</span>
               · SDK {{ module.sdk }}
             </p>
-            <p v-if="module.description" class="text-content-muted mt-1 max-w-[60ch] text-sm">
+            <p v-if="module.description" class="text-content-muted text-body mt-1 max-w-[60ch]">
               {{ module.description }}
             </p>
           </div>
@@ -214,5 +225,14 @@ function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
         </li>
       </ul>
     </AppCard>
+    <AppConfirm
+      :open="uninstalling !== null"
+      level="consequential"
+      :title="`Uninstall ${uninstalling?.name ?? ''}?`"
+      description="Refused while anything still points at this module. Its own tables are left in place."
+      confirm-label="Uninstall"
+      @update:open="(value: boolean) => (uninstalling = value ? uninstalling : null)"
+      @confirm="uninstall"
+    />
   </AdminLayout>
 </template>

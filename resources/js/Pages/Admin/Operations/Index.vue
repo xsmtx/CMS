@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface OperationRow {
   id: string
@@ -52,15 +53,6 @@ function resolve(operation: OperationRow): void {
   router.post(`/admin/operations/${operation.id}/resolve`, {}, { preserveScroll: true })
 }
 
-function tone(state: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (state === 'completed') return 'success'
-  if (state === 'failed') return 'danger'
-  if (state === 'manual_intervention') return 'danger'
-  if (state === 'retrying') return 'warning'
-
-  return 'neutral'
-}
-
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
@@ -76,7 +68,7 @@ function formatDateTime(value: string | null): string {
     <div class="mb-4 flex flex-wrap gap-1.5">
       <button
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           filters.state === null
             ? 'bg-surface-secondary text-content font-medium'
@@ -91,7 +83,7 @@ function formatDateTime(value: string | null): string {
         v-for="state in states"
         :key="state.value"
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           filters.state === state.value
             ? 'bg-surface-secondary text-content font-medium'
@@ -120,21 +112,23 @@ function formatDateTime(value: string | null): string {
         </td>
         <td class="px-4 py-2.5">
           {{ operation.typeLabel }}
-          <AppBadge :tone="tone(operation.state)" class="ml-2">
-            {{ operation.stateLabel }}
-          </AppBadge>
+          <AppStatus
+            :tone="statusTone(operation.state)"
+            class="ml-2"
+            :label="operation.stateLabel"
+          />
         </td>
         <td class="px-4 py-2.5">
           <!-- Already redacted on the way in. Shown because an operator
                cannot act on "something went wrong". -->
-          <span v-if="operation.error" class="text-content-muted block max-w-[46ch] text-xs">
+          <span v-if="operation.error" class="text-content-muted text-chrome block max-w-[46ch]">
             {{ operation.error }}
           </span>
-          <span v-else class="text-content-muted text-xs">—</span>
+          <span v-else class="text-content-muted text-chrome">—</span>
         </td>
         <td class="text-content-muted px-4 py-2.5 whitespace-nowrap tabular-nums">
           {{ operation.attempt }} / {{ operation.maxAttempts }}
-          <span v-if="operation.nextAttemptAt" class="block text-xs">
+          <span v-if="operation.nextAttemptAt" class="text-chrome block">
             next {{ formatDateTime(operation.nextAttemptAt) }}
           </span>
         </td>
@@ -168,7 +162,7 @@ function formatDateTime(value: string | null): string {
       description="Provisioning, registrations, transfers and renewals appear here as they happen."
     />
 
-    <p v-if="operations.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="operations.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ operations.currentPage }} of {{ operations.lastPage }} — {{ operations.total }}
     </p>
   </AdminLayout>

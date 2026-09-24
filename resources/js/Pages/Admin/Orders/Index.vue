@@ -10,13 +10,14 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface OrderRow {
   id: string
@@ -99,13 +100,6 @@ function filterBy(status: string): void {
   apply()
 }
 
-function paymentTone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'paid') return 'success'
-  if (status === 'overdue') return 'danger'
-  if (status === 'unpaid') return 'warning'
-  return 'neutral'
-}
-
 const PAYMENT_LABELS: Record<string, string> = {
   unbilled: 'Not invoiced',
   unpaid: 'Unpaid',
@@ -133,7 +127,7 @@ function withBlank(options: { value: string; label: string }[]) {
       <div class="flex flex-wrap gap-1.5">
         <button
           type="button"
-          class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
+          class="pressable text-chrome rounded-sm px-2.5 py-1 font-medium transition-colors duration-(--duration-fast)"
           :class="
             active === ''
               ? 'bg-surface-secondary text-content'
@@ -147,7 +141,7 @@ function withBlank(options: { value: string; label: string }[]) {
           v-for="status in statuses"
           :key="status.value"
           type="button"
-          class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
+          class="pressable text-chrome rounded-sm px-2.5 py-1 font-medium transition-colors duration-(--duration-fast)"
           :class="
             active === status.value
               ? 'bg-surface-secondary text-content'
@@ -171,7 +165,7 @@ function withBlank(options: { value: string; label: string }[]) {
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.number" label="Order # or ID" />
         <AppInput v-model="form.client" label="Client" />
@@ -191,7 +185,7 @@ function withBlank(options: { value: string; label: string }[]) {
       <div class="mt-3 flex gap-2">
         <AppButton type="submit" variant="primary">Search</AppButton>
         <AppButton type="button" variant="ghost" @click="clear">Clear</AppButton>
-        <span v-if="hasFilters" class="text-content-muted self-center text-xs">
+        <span v-if="hasFilters" class="text-content-muted text-chrome self-center">
           {{ orders.total }} match
         </span>
       </div>
@@ -212,8 +206,10 @@ function withBlank(options: { value: string; label: string }[]) {
       ]"
     >
       <tr v-for="order in orders.data" :key="order.id">
-        <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">{{ order.id.slice(-8) }}</td>
-        <td class="px-4 py-2.5 font-mono text-xs">{{ order.number }}</td>
+        <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+          {{ order.id.slice(-8) }}
+        </td>
+        <td class="text-chrome px-4 py-2.5 font-mono">{{ order.number }}</td>
         <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(order.placedAt) }}
         </td>
@@ -226,25 +222,28 @@ function withBlank(options: { value: string; label: string }[]) {
             {{ order.customer ?? '—' }}
           </Link>
           <span v-else>—</span>
-          <span v-if="order.ipAddress" class="text-content-subtle block font-mono text-xs">
+          <span v-if="order.ipAddress" class="text-content-subtle text-chrome block font-mono">
             {{ order.ipAddress }}
           </span>
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ order.paymentMethod ?? '—' }}</td>
         <td class="px-4 py-2.5 tabular-nums">{{ order.total }}</td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="paymentTone(order.paymentStatus)">
-            {{ PAYMENT_LABELS[order.paymentStatus] ?? order.paymentStatus }}
-          </AppBadge>
+          <AppStatus
+            :tone="statusTone(order.paymentStatus)"
+            :label="PAYMENT_LABELS[order.paymentStatus] ?? order.paymentStatus"
+          />
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge>{{ order.statusLabel }}</AppBadge>
-          <span v-if="order.riskDecision === 'review'" class="text-warning ml-2 text-xs">Held</span>
+          <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
+          <span v-if="order.riskDecision === 'review'" class="text-warning text-chrome ml-2"
+            >Held</span
+          >
         </td>
         <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/admin/orders/${order.id}`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Open
           </Link>
@@ -264,7 +263,7 @@ function withBlank(options: { value: string; label: string }[]) {
       description="Orders appear here as soon as a customer checks out. Each one keeps its own copy of what it cost."
     />
 
-    <p v-if="orders.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="orders.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ orders.currentPage }} of {{ orders.lastPage }} — {{ orders.total }} orders
     </p>
   </AdminLayout>

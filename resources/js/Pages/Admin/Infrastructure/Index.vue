@@ -2,16 +2,17 @@
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface GroupRow {
   id: string
@@ -166,12 +167,6 @@ function test(server: ServerRow): void {
   router.post(`/admin/apps/infrastructure/servers/${server.id}/test`, {}, { preserveScroll: true })
 }
 
-function healthTone(health: string): 'neutral' | 'success' | 'danger' {
-  if (health === 'healthy') return 'success'
-  if (health === 'unreachable') return 'danger'
-  return 'neutral'
-}
-
 function usage(server: ServerRow): string {
   return server.maxServices === 0
     ? String(server.services)
@@ -217,7 +212,7 @@ function usage(server: ServerRow): string {
         />
 
         <div v-if="can.manage" class="border-line mt-5 border-t pt-5">
-          <h3 class="mb-3 text-sm font-semibold">
+          <h3 class="text-body mb-3 font-semibold">
             {{ editingGroup ? 'Edit group' : 'Add a group' }}
           </h3>
           <div class="grid gap-4 sm:grid-cols-2">
@@ -258,18 +253,16 @@ function usage(server: ServerRow): string {
           <tr v-for="server in servers" :key="server.id">
             <td class="px-4 py-2.5">
               <span class="font-medium">{{ server.name }}</span>
-              <span class="text-content-muted block text-xs">{{ server.hostname }}</span>
+              <span class="text-content-muted text-chrome block">{{ server.hostname }}</span>
             </td>
             <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
             <td class="px-4 py-2.5">{{ server.module }}</td>
             <td class="px-4 py-2.5">
-              <AppBadge :tone="server.status === 'active' ? 'success' : 'warning'">
-                {{ server.statusLabel }}
-              </AppBadge>
+              <AppStatus :tone="statusTone(server.status)" :label="server.statusLabel" />
             </td>
             <td class="px-4 py-2.5">
-              <AppBadge :tone="healthTone(server.health)">{{ server.healthLabel }}</AppBadge>
-              <span v-if="server.healthMessage" class="text-content-muted block text-xs">
+              <AppStatus :tone="statusTone(server.health)" :label="server.healthLabel" />
+              <span v-if="server.healthMessage" class="text-content-muted text-chrome block">
                 {{ server.healthMessage }}
               </span>
             </td>
@@ -298,7 +291,7 @@ function usage(server: ServerRow): string {
         />
 
         <div v-if="can.manage" class="border-line mt-5 border-t pt-5">
-          <h3 class="mb-3 text-sm font-semibold">
+          <h3 class="text-body mb-3 font-semibold">
             {{ editingServer ? 'Edit server' : 'Add a server' }}
           </h3>
 

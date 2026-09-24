@@ -50,7 +50,7 @@ const { t } = useTranslations()
           <h2 class="text-title font-semibold tracking-tight">
             {{ t(`apps.sections.${section.key}.title`) }}
           </h2>
-          <p class="text-content-muted max-w-[70ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[70ch] leading-relaxed">
             {{ t(`apps.sections.${section.key}.description`) }}
           </p>
         </div>
@@ -60,18 +60,18 @@ const { t } = useTranslations()
             v-for="area in section.areas"
             :key="area.key"
             :href="area.href"
-            class="pressable border-line bg-surface-primary hover:border-line-strong block rounded-[var(--radius-lg)] border p-5 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
+            class="pressable border-line bg-surface-primary hover:border-line-strong block rounded-lg border p-5 shadow-(--shadow-raised) transition-colors duration-(--duration-fast)"
           >
             <div class="flex items-start justify-between gap-3">
               <h3 class="text-body font-semibold">{{ area.label }}</h3>
               <span
                 v-if="area.count !== null"
-                class="text-content-muted shrink-0 text-xs tabular-nums"
+                class="text-content-muted text-chrome shrink-0 tabular-nums"
               >
                 {{ area.count }} {{ area.unit }}
               </span>
             </div>
-            <p class="text-content-muted mt-1.5 text-sm leading-relaxed">
+            <p class="text-content-muted text-body mt-1.5 leading-relaxed">
               {{ area.description }}
             </p>
           </Link>

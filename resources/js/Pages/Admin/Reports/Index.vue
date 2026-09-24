@@ -139,7 +139,7 @@ function formatMinor(minor: number, currency: string): string {
       <!-- Recurring revenue, and what it is. A figure called MRR that is
            actually an average of the period is the commonest reporting lie. -->
       <div
-        class="border-line bg-surface-primary [&>*]:border-line grid divide-y rounded-[var(--radius-lg)] border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 sm:[&>*+*]:border-l"
+        class="border-line bg-surface-primary [&>*]:border-line grid divide-y rounded-lg border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 sm:[&>*+*]:border-l"
       >
         <div class="flex flex-col gap-1 px-5 py-4">
           <span class="text-content-subtle text-label uppercase">Recurring, per month</span>

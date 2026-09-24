@@ -114,21 +114,19 @@ function formatDate(value: string): string {
 
       <section v-if="history.length > 0">
         <h2 class="text-base font-semibold tracking-tight">Rate history</h2>
-        <p class="text-content-muted mt-1 mb-4 max-w-[60ch] text-sm leading-relaxed">
+        <p class="text-content-muted text-body mt-1 mb-4 max-w-[60ch] leading-relaxed">
           Every change is kept, so a document issued last quarter can still say what the rate was
           when it was issued.
         </p>
 
-        <ul
-          class="border-line divide-line bg-surface-primary divide-y rounded-[var(--radius-lg)] border"
-        >
+        <ul class="border-line divide-line bg-surface-primary divide-y rounded-lg border">
           <li
             v-for="(snapshot, index) in history"
             :key="index"
-            class="flex items-center justify-between gap-4 px-4 py-2.5 text-sm"
+            class="text-body flex items-center justify-between gap-4 px-4 py-2.5"
           >
             <span class="font-mono tabular-nums">{{ snapshot.rate }}</span>
-            <span class="text-content-muted text-xs">
+            <span class="text-content-muted text-chrome">
               {{ formatDate(snapshot.capturedAt) }}
               <span v-if="snapshot.source" class="text-content-subtle ml-2">{{
                 snapshot.source

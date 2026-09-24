@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
 
 <template>
   <span class="inline-flex items-center gap-1">
-    <span :class="mono ? 'font-mono text-xs' : ''">{{ label ?? value }}</span>
+    <span :class="mono ? 'text-chrome font-mono' : ''">{{ label ?? value }}</span>
 
     <button
       v-if="supported"

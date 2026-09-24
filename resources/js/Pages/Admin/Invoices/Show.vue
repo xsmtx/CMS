@@ -3,13 +3,14 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import MoneyInput from '../../../Components/MoneyInput.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface InvoiceLine {
   id: string
@@ -162,15 +163,15 @@ function formatDateTime(value: string | null): string {
       <div class="flex flex-col gap-6 lg:col-span-2">
         <AppCard>
           <div class="mb-4 flex items-start justify-between gap-4">
-            <h2 class="text-sm font-semibold">Items</h2>
-            <AppBadge>{{ invoice.statusLabel }}</AppBadge>
+            <h2 class="text-body font-semibold">Items</h2>
+            <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
           </div>
 
           <ul class="divide-line divide-y">
             <li v-for="line in invoice.items" :key="line.id" class="py-3 first:pt-0 last:pb-0">
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <p class="text-sm">
+                  <p class="text-body">
                     {{ line.description }}
                     <span v-if="line.quantity > 1" class="text-content-muted">
                       × {{ line.quantity }}
@@ -178,20 +179,20 @@ function formatDateTime(value: string | null): string {
                   </p>
                   <p
                     v-if="line.detail"
-                    class="text-content-muted mt-0.5 text-xs whitespace-pre-line"
+                    class="text-content-muted text-chrome mt-0.5 whitespace-pre-line"
                   >
                     {{ line.detail }}
                   </p>
                 </div>
                 <div class="text-right whitespace-nowrap">
-                  <p class="text-sm tabular-nums">{{ line.lineAmount }}</p>
-                  <p v-if="line.discount" class="text-success text-xs">−{{ line.discount }}</p>
+                  <p class="text-body tabular-nums">{{ line.lineAmount }}</p>
+                  <p v-if="line.discount" class="text-success text-chrome">−{{ line.discount }}</p>
                 </div>
               </div>
             </li>
           </ul>
 
-          <dl class="border-line divide-line mt-4 divide-y border-t text-sm">
+          <dl class="border-line divide-line text-body mt-4 divide-y border-t">
             <div class="flex justify-between py-2">
               <dt class="text-content-muted">Subtotal</dt>
               <dd class="tabular-nums">{{ invoice.subtotal }}</dd>
@@ -220,9 +221,9 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard>
-          <h2 class="mb-4 text-sm font-semibold">Payments</h2>
+          <h2 class="text-body mb-4 font-semibold">Payments</h2>
 
-          <p v-if="invoice.payments.length === 0" class="text-content-muted text-sm">
+          <p v-if="invoice.payments.length === 0" class="text-content-muted text-body">
             No payments yet.
           </p>
 
@@ -234,29 +235,29 @@ function formatDateTime(value: string | null): string {
             >
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <p class="text-sm">
+                  <p class="text-body">
                     {{ payment.gateway }}
                     <span class="text-content-muted">· {{ payment.statusLabel }}</span>
                   </p>
-                  <p class="text-content-muted mt-0.5 text-xs">
+                  <p class="text-content-muted text-chrome mt-0.5">
                     {{ formatDateTime(payment.receivedAt) }}
                     <span v-if="payment.reference" class="font-mono"
                       >· {{ payment.reference }}</span
                     >
                   </p>
-                  <p v-if="payment.note" class="text-content-muted mt-0.5 text-xs">
+                  <p v-if="payment.note" class="text-content-muted text-chrome mt-0.5">
                     {{ payment.note }}
                   </p>
                 </div>
                 <div class="text-right whitespace-nowrap">
-                  <p class="text-sm tabular-nums">{{ payment.amount }}</p>
-                  <p v-if="payment.refunded" class="text-content-subtle text-xs">
+                  <p class="text-body tabular-nums">{{ payment.amount }}</p>
+                  <p v-if="payment.refunded" class="text-content-subtle text-chrome">
                     −{{ payment.refunded }} refunded
                   </p>
                   <button
                     v-if="can.refund && payment.refundable > 0 && refunding !== payment.id"
                     type="button"
-                    class="pressable text-danger mt-1 text-xs underline underline-offset-4"
+                    class="pressable text-danger text-chrome mt-1 underline underline-offset-4"
                     @click="
                       () => {
                         refunding = payment.id
@@ -301,17 +302,17 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="invoice.ledger.length > 0">
-          <h2 class="mb-4 text-sm font-semibold">Ledger</h2>
+          <h2 class="text-body mb-4 font-semibold">Ledger</h2>
 
           <ul class="divide-line divide-y">
             <li
               v-for="(row, index) in invoice.ledger"
               :key="index"
-              class="flex items-start justify-between gap-4 py-2.5 text-sm first:pt-0 last:pb-0"
+              class="text-body flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
             >
               <span>
                 {{ row.kindLabel }}
-                <span v-if="row.description" class="text-content-muted mt-0.5 block text-xs">
+                <span v-if="row.description" class="text-content-muted text-chrome mt-0.5 block">
                   {{ row.description }}
                 </span>
               </span>
@@ -319,7 +320,7 @@ function formatDateTime(value: string | null): string {
                 <span class="tabular-nums" :class="row.increases ? 'text-success' : 'text-danger'">
                   {{ row.increases ? '+' : '−' }}{{ row.amount }}
                 </span>
-                <span class="text-content-subtle block text-xs">
+                <span class="text-content-subtle text-chrome block">
                   {{ formatDateTime(row.occurredAt) }}
                 </span>
               </span>
@@ -330,9 +331,9 @@ function formatDateTime(value: string | null): string {
 
       <div class="flex flex-col gap-6">
         <AppCard>
-          <h2 class="mb-3 text-sm font-semibold">Bill to</h2>
+          <h2 class="text-body mb-3 font-semibold">Bill to</h2>
 
-          <div class="text-content-muted space-y-1 text-sm">
+          <div class="text-content-muted text-body space-y-1">
             <p v-if="invoice.billTo.company" class="text-content font-medium">
               {{ invoice.billTo.company }}
             </p>
@@ -341,14 +342,16 @@ function formatDateTime(value: string | null): string {
               {{ invoice.billTo.address }}
             </p>
             <p v-if="invoice.billTo.country">{{ invoice.billTo.country }}</p>
-            <p v-if="invoice.billTo.taxId" class="font-mono text-xs">{{ invoice.billTo.taxId }}</p>
-            <p v-if="invoice.billTo.email" class="text-xs">{{ invoice.billTo.email }}</p>
-            <p v-if="isDraft" class="text-content-subtle text-xs">
+            <p v-if="invoice.billTo.taxId" class="text-chrome font-mono">
+              {{ invoice.billTo.taxId }}
+            </p>
+            <p v-if="invoice.billTo.email" class="text-chrome">{{ invoice.billTo.email }}</p>
+            <p v-if="isDraft" class="text-content-subtle text-chrome">
               Copied onto the invoice when it is issued.
             </p>
           </div>
 
-          <dl class="border-line text-content-muted mt-4 space-y-2 border-t pt-4 text-xs">
+          <dl class="border-line text-content-muted text-chrome mt-4 space-y-2 border-t pt-4">
             <div class="flex justify-between gap-4">
               <dt>Issued</dt>
               <dd>{{ formatDate(invoice.issuedOn) }}</dd>
@@ -372,8 +375,8 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.update && isDraft">
-          <h2 class="mb-2 text-sm font-semibold">Issue</h2>
-          <p class="text-content-muted mb-4 text-xs leading-relaxed">
+          <h2 class="text-body mb-2 font-semibold">Issue</h2>
+          <p class="text-content-muted text-chrome mb-4 leading-relaxed">
             Takes the next number, copies the customer's details onto the document and freezes it.
           </p>
           <div class="flex gap-2">
@@ -383,7 +386,7 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.recordPayment && owes && !isDraft">
-          <h2 class="mb-3 text-sm font-semibold">Record a payment</h2>
+          <h2 class="text-body mb-3 font-semibold">Record a payment</h2>
 
           <div class="flex flex-col gap-3">
             <MoneyInput
@@ -424,8 +427,8 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.credit && invoice.creditBalanceMinor > 0 && owes">
-          <h2 class="mb-1 text-sm font-semibold">Account credit</h2>
-          <p class="text-content-muted mb-3 text-xs">{{ invoice.creditBalance }} available.</p>
+          <h2 class="text-body mb-1 font-semibold">Account credit</h2>
+          <p class="text-content-muted text-chrome mb-3">{{ invoice.creditBalance }} available.</p>
 
           <div class="flex flex-col gap-3">
             <MoneyInput
@@ -443,8 +446,8 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.credit && !isDraft">
-          <h2 class="mb-1 text-sm font-semibold">Credit note</h2>
-          <p class="text-content-muted mb-3 text-xs leading-relaxed">
+          <h2 class="text-body mb-1 font-semibold">Credit note</h2>
+          <p class="text-content-muted text-chrome mb-3 leading-relaxed">
             The only way to change what this invoice says. It stays as it is; a second document
             records the correction.
           </p>
@@ -478,7 +481,7 @@ function formatDateTime(value: string | null): string {
           </template>
           <AppButton v-else size="sm" @click="crediting = true">Issue a credit note</AppButton>
 
-          <ul v-if="invoice.creditNotes.length > 0" class="divide-line mt-4 divide-y text-xs">
+          <ul v-if="invoice.creditNotes.length > 0" class="divide-line text-chrome mt-4 divide-y">
             <li
               v-for="note in invoice.creditNotes"
               :key="note.number"
@@ -504,13 +507,13 @@ function formatDateTime(value: string | null): string {
     <div v-if="invoice.notes || invoice.terms" class="mt-6 flex flex-col gap-3">
       <p
         v-if="invoice.notes"
-        class="text-content-muted text-xs leading-relaxed whitespace-pre-line"
+        class="text-content-muted text-chrome leading-relaxed whitespace-pre-line"
       >
         {{ invoice.notes }}
       </p>
       <p
         v-if="invoice.terms"
-        class="border-line text-content-muted border-t pt-3 text-xs leading-relaxed whitespace-pre-line"
+        class="border-line text-content-muted text-chrome border-t pt-3 leading-relaxed whitespace-pre-line"
       >
         {{ invoice.terms }}
       </p>

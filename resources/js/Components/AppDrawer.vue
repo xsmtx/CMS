@@ -23,6 +23,7 @@
  * somebody tabbed into from the row behind it is a panel that reads its own
  * content and the list's at once.
  */
+import { useFocusTrap } from '../composables/useFocusTrap'
 import { nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 
 import AppIcon from './AppIcon.vue'
@@ -43,6 +44,9 @@ withDefaults(
 const open = defineModel<boolean>('open', { required: true })
 
 const panel = ref<HTMLElement | null>(null)
+
+// Tab stays inside while it is open; `aria-modal` alone does not do that.
+const trap = useFocusTrap(panel)
 const titleId = useId()
 
 /** Whatever had focus when this opened, so it can be given back. */
@@ -98,6 +102,7 @@ onBeforeUnmount(() => {
           :aria-labelledby="titleId"
           tabindex="-1"
           class="drawer-panel border-line bg-surface-primary relative flex h-full w-full max-w-full flex-col border-l shadow-(--shadow-panel) outline-none sm:max-w-[26rem]"
+          @keydown="trap"
         >
           <header class="border-line flex items-start gap-3 border-b px-4 py-3">
             <div class="min-w-0 flex-1">
@@ -109,7 +114,7 @@ onBeforeUnmount(() => {
 
             <button
               type="button"
-              class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
+              class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-sm p-1.5 transition-colors duration-(--duration-fast)"
               aria-label="Close"
               @click="open = false"
             >

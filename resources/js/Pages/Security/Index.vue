@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, router, useForm, usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppAlert from '../../Components/AppAlert.vue'
 import AppBadge from '../../Components/AppBadge.vue'
 import AppButton from '../../Components/AppButton.vue'
 import AppCard from '../../Components/AppCard.vue'
+import AppConfirm from '../../Components/AppConfirm.vue'
 import AppInput from '../../Components/AppInput.vue'
 import AdminLayout from '../../Layouts/AdminLayout.vue'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
@@ -57,8 +58,14 @@ function beginTwoFactor(): void {
   router.post(`${base.value}/two-factor`, {}, { preserveScroll: true })
 }
 
+/** Turning off your own second factor is asked about first. */
+const confirmingTwoFactor = ref(false)
+
 function disableTwoFactor(): void {
-  router.delete(`${base.value}/two-factor`, { preserveScroll: true })
+  router.delete(`${base.value}/two-factor`, {
+    preserveScroll: true,
+    onFinish: () => (confirmingTwoFactor.value = false),
+  })
 }
 
 function regenerateCodes(): void {
@@ -150,19 +157,21 @@ function describeDevice(agent: string | null): string {
         </template>
 
         <div v-if="twoFactor.enabled" class="flex flex-col gap-4">
-          <p class="text-content-muted max-w-[60ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[60ch] leading-relaxed">
             You have {{ twoFactor.recoveryCodeCount }} unused recovery code(s). Generate a new set
             if you have lost them; the old ones stop working immediately.
           </p>
           <div class="flex flex-wrap gap-2">
             <AppButton :href="`${base}/two-factor`">View setup</AppButton>
             <AppButton @click="regenerateCodes">Regenerate recovery codes</AppButton>
-            <AppButton variant="danger" @click="disableTwoFactor">Turn off</AppButton>
+            <AppButton variant="danger-subtle" @click="confirmingTwoFactor = true"
+              >Turn off</AppButton
+            >
           </div>
         </div>
 
         <div v-else class="flex flex-col gap-4">
-          <p class="text-content-muted max-w-[60ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[60ch] leading-relaxed">
             Require a code from an authenticator app in addition to your password.
           </p>
           <div>
@@ -188,11 +197,11 @@ function describeDevice(agent: string | null): string {
             class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
           >
             <div class="min-w-0">
-              <p class="text-sm font-medium">
+              <p class="text-body font-medium">
                 {{ describeDevice(session.userAgent) }}
                 <AppBadge v-if="session.current" tone="brand" class="ml-2">This device</AppBadge>
               </p>
-              <p class="text-content-muted mt-0.5 text-xs">
+              <p class="text-content-muted text-chrome mt-0.5">
                 {{ session.ipAddress ?? 'Unknown address' }} · last active
                 {{ formatTime(session.lastActiveAt) }}
               </p>
@@ -214,7 +223,7 @@ function describeDevice(agent: string | null): string {
           <li
             v-for="entry in loginHistory"
             :key="entry.id"
-            class="flex items-center justify-between gap-4 py-3 text-sm first:pt-0 last:pb-0"
+            class="text-body flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
           >
             <span>
               <AppBadge :tone="entry.successful ? 'success' : 'danger'">
@@ -224,10 +233,18 @@ function describeDevice(agent: string | null): string {
                 entry.ipAddress ?? 'Unknown address'
               }}</span>
             </span>
-            <span class="text-content-muted text-xs">{{ formatTime(entry.occurredAt) }}</span>
+            <span class="text-content-muted text-chrome">{{ formatTime(entry.occurredAt) }}</span>
           </li>
         </ul>
       </AppCard>
     </div>
+    <AppConfirm
+      v-model:open="confirmingTwoFactor"
+      level="consequential"
+      title="Turn off two-factor authentication?"
+      description="Your account will be protected by your password alone, and your recovery codes stop working."
+      confirm-label="Turn off two-factor"
+      @confirm="disableTwoFactor"
+    />
   </component>
 </template>

@@ -38,7 +38,7 @@ function width(row: number, column: number): string {
 
 <template>
   <div
-    class="border-line bg-surface-primary overflow-x-auto rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
+    class="border-line bg-surface-primary overflow-x-auto rounded-lg border shadow-(--shadow-raised)"
     aria-busy="true"
   >
     <!-- One announcement, not one per bar: a screen reader reading eighty

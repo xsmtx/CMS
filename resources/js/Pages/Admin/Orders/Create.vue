@@ -286,8 +286,8 @@ function submit(): void {
         <AppCard title="Client">
           <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">{{ chosen.name }}</p>
-              <p class="text-content-muted text-xs">
+              <p class="text-body font-medium">{{ chosen.name }}</p>
+              <p class="text-content-muted text-chrome">
                 <span v-if="chosen.email">{{ chosen.email }} · </span>{{ chosen.currency }}
               </p>
             </div>
@@ -309,7 +309,7 @@ function submit(): void {
 
             <ul
               v-if="candidates.length > 0"
-              class="border-line divide-line divide-y rounded-[var(--radius-md)] border"
+              class="border-line divide-line divide-y rounded-md border"
             >
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
@@ -317,8 +317,8 @@ function submit(): void {
                   class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
                   @click="choose(candidate)"
                 >
-                  <span class="block text-sm font-medium">{{ candidate.name }}</span>
-                  <span class="text-content-muted block text-xs">
+                  <span class="text-body block font-medium">{{ candidate.name }}</span>
+                  <span class="text-content-muted text-chrome block">
                     {{ candidate.email ?? '—' }} · {{ candidate.currency }}
                   </span>
                 </button>
@@ -331,7 +331,7 @@ function submit(): void {
           title="Products"
           :description="`Priced in ${currency}. Only what is actually sold in that currency is offered.`"
         >
-          <p v-if="products.length === 0" class="text-content-muted text-sm">
+          <p v-if="products.length === 0" class="text-content-muted text-body">
             Nothing in the catalogue has a price in {{ currency }}. Add one before taking an order
             in it.
           </p>
@@ -340,7 +340,7 @@ function submit(): void {
             <div
               v-for="(line, index) in form.lines"
               :key="index"
-              class="border-line rounded-[var(--radius-md)] border p-4"
+              class="border-line rounded-md border p-4"
             >
               <div class="grid gap-4 sm:grid-cols-2">
                 <AppSelect
@@ -399,7 +399,7 @@ function submit(): void {
           description="A domain is not a service. It is bought for a term and renewed on its own schedule."
         >
           <div class="flex flex-wrap gap-4">
-            <label class="flex items-center gap-2 text-sm">
+            <label class="text-body flex items-center gap-2">
               <input
                 v-model="form.domain_action"
                 type="radio"
@@ -411,7 +411,7 @@ function submit(): void {
             <label
               v-for="action in domainActions"
               :key="action.value"
-              class="flex items-center gap-2 text-sm"
+              class="text-body flex items-center gap-2"
             >
               <input
                 v-model="form.domain_action"
@@ -443,13 +443,13 @@ function submit(): void {
           </div>
 
           <div v-if="form.domain_action !== ''" class="mt-4">
-            <p class="text-content-muted mb-2 text-xs font-medium">Addons</p>
+            <p class="text-content-muted text-chrome mb-2 font-medium">Addons</p>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="addon in DOMAIN_ADDONS"
                 :key="addon.value"
                 type="button"
-                class="pressable border-line hover:border-line-strong rounded-full border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
+                class="pressable border-line hover:border-line-strong text-chrome rounded-full border px-3 py-1.5 transition-colors duration-(--duration-fast)"
                 :class="form.domain_addons.includes(addon.value) ? 'border-brand text-content' : ''"
                 :aria-pressed="form.domain_addons.includes(addon.value)"
                 @click="toggleAddon(addon.value)"
@@ -461,7 +461,7 @@ function submit(): void {
 
           <p
             v-if="form.domain_action === 'transfer'"
-            class="border-line text-content-muted mt-4 border-t pt-3 text-xs"
+            class="border-line text-content-muted text-chrome mt-4 border-t pt-3"
           >
             The transfer code is asked for when the transfer is submitted, not here. A transfer code
             is fetched, shown once and never written down — storing it on an order would leave it
@@ -476,7 +476,7 @@ function submit(): void {
 
       <aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
         <AppCard title="Order Summary">
-          <dl class="flex flex-col gap-2 text-sm">
+          <dl class="text-body flex flex-col gap-2">
             <div class="flex justify-between gap-4">
               <dt class="text-content-muted">Sub Total</dt>
               <dd class="tabular-nums">{{ format(subtotalMinor) }}</dd>
@@ -491,7 +491,7 @@ function submit(): void {
             </div>
           </dl>
 
-          <p class="text-content-subtle mt-3 text-xs">
+          <p class="text-content-subtle text-chrome mt-3">
             A preview. The charge is worked out server side when the order is placed, by the same
             pricing the storefront uses.
           </p>

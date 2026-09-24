@@ -49,7 +49,7 @@ function toggle(): void {
     rule they have to stay distinguishable from.
   -->
   <tr :data-selected="selected ? '' : undefined">
-    <td v-if="table?.selectable.value" class="w-0 px-4 py-2.5">
+    <td v-if="table?.selectable.value" class="w-0">
       <input
         v-if="selectable"
         type="checkbox"

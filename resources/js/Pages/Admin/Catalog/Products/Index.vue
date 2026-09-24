@@ -2,11 +2,12 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
-import AppBadge from '../../../../Components/AppBadge.vue'
 import AppButton from '../../../../Components/AppButton.vue'
+import AppStatus from '../../../../Components/AppStatus.vue'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../../status'
 
 interface ProductRow {
   id: string
@@ -60,18 +61,18 @@ function statusLabel(value: string): string {
 
     <div v-if="sections.length > 0" class="flex flex-col gap-8">
       <section v-for="section in sections" :key="section.name">
-        <h2 class="text-content-muted mb-2 text-xs font-medium">{{ section.name }}</h2>
+        <h2 class="text-content-muted text-chrome mb-2 font-medium">{{ section.name }}</h2>
 
         <AppTable :headers="['Product', 'Type', 'Status', 'Prices', '']">
           <tr v-for="product in section.products" :key="product.id">
             <td class="px-4 py-2.5">
               <p class="font-medium">{{ product.name }}</p>
-              <p class="text-content-muted font-mono text-xs">{{ product.slug }}</p>
+              <p class="text-content-muted text-chrome font-mono">{{ product.slug }}</p>
             </td>
             <td class="text-content-muted px-4 py-2.5">{{ product.typeLabel }}</td>
             <td class="px-4 py-2.5">
-              <AppBadge>{{ statusLabel(product.status) }}</AppBadge>
-              <span v-if="product.stock === 0" class="text-danger ml-2 text-xs">Sold out</span>
+              <AppStatus :tone="statusTone(product.status)" :label="statusLabel(product.status)" />
+              <span v-if="product.stock === 0" class="text-danger text-chrome ml-2">Sold out</span>
             </td>
             <td
               class="px-4 py-2.5 tabular-nums"
@@ -82,13 +83,13 @@ function statusLabel(value: string): string {
             <td class="px-4 py-2.5 text-right whitespace-nowrap">
               <Link
                 :href="`/admin/catalog/products/${product.id}/edit`"
-                class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+                class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
               >
                 Edit
               </Link>
               <Link
                 :href="`/admin/catalog/products/${product.id}/pricing`"
-                class="text-content-muted hover:text-content ml-3 text-xs underline underline-offset-4"
+                class="text-content-muted hover:text-content text-chrome ml-3 underline underline-offset-4"
               >
                 Pricing
               </Link>

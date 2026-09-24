@@ -47,7 +47,7 @@ function submit(): void {
     <div class="w-full max-w-sm">
       <div class="mb-6 flex items-center gap-2">
         <span
-          class="bg-brand text-content-inverse grid size-7 shrink-0 place-items-center rounded-[6px] text-xs font-bold"
+          class="bg-brand text-content-inverse text-chrome grid size-7 shrink-0 place-items-center rounded-[6px] font-bold"
           aria-hidden="true"
         >
           {{ brand.name.slice(0, 1).toUpperCase() }}
@@ -55,9 +55,7 @@ function submit(): void {
         <span class="text-title font-semibold">{{ brand.name }}</span>
       </div>
 
-      <div
-        class="border-line bg-surface-primary rounded-[var(--radius-lg)] border p-5 shadow-(--shadow-raised)"
-      >
+      <div class="border-line bg-surface-primary rounded-lg border p-5 shadow-(--shadow-raised)">
         <div class="mb-4 flex items-start gap-3">
           <span class="text-warning mt-0.5 shrink-0" aria-hidden="true">
             <AppIcon name="security" :size="18" />

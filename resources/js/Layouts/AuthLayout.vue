@@ -17,10 +17,10 @@ const brand = computed(() => page.props.brand?.name ?? 'InfraCMS')
 <template>
   <div class="flex min-h-[100dvh] flex-col">
     <main id="main" class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
-      <p class="mb-10 text-sm font-semibold tracking-tight">{{ brand }}</p>
+      <p class="text-body mb-10 font-semibold tracking-tight">{{ brand }}</p>
 
       <h1 class="text-2xl font-semibold tracking-tight">{{ heading }}</h1>
-      <p v-if="subheading" class="text-content-muted mt-2 text-sm leading-relaxed">
+      <p v-if="subheading" class="text-content-muted text-body mt-2 leading-relaxed">
         {{ subheading }}
       </p>
 

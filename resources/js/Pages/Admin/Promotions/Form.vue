@@ -195,7 +195,7 @@ function submit(): void {
 
         <fieldset v-if="needsProducts" class="border-line mt-5 border-t pt-5">
           <legend class="sr-only">Products</legend>
-          <p class="mb-3 text-sm font-medium">Products</p>
+          <p class="text-body mb-3 font-medium">Products</p>
 
           <div class="grid gap-2 sm:grid-cols-2">
             <AppCheckbox
@@ -210,8 +210,8 @@ function submit(): void {
 
         <fieldset class="border-line mt-5 border-t pt-5">
           <legend class="sr-only">Billing cycles</legend>
-          <p class="mb-1 text-sm font-medium">Billing cycles</p>
-          <p class="text-content-muted mb-3 text-xs">
+          <p class="text-body mb-1 font-medium">Billing cycles</p>
+          <p class="text-content-muted text-chrome mb-3">
             Leave every box unticked to cover all of them.
           </p>
 
@@ -269,7 +269,10 @@ function submit(): void {
           </div>
         </div>
 
-        <p v-if="promotion && promotion.redemptions > 0" class="text-content-muted mt-4 text-xs">
+        <p
+          v-if="promotion && promotion.redemptions > 0"
+          class="text-content-muted text-chrome mt-4"
+        >
           Redeemed {{ promotion.redemptions }} time(s). The terms below apply to future orders only;
           what past customers were charged does not change.
         </p>

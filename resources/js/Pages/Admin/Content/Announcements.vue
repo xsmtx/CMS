@@ -149,7 +149,7 @@ function formatDate(value: string | null): string {
       <li v-for="announcement in announcements" :key="announcement.id" class="py-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-sm font-semibold">
+            <p class="text-body font-semibold">
               {{ announcement.title }}
               <AppBadge v-if="announcement.isPinned" class="ml-2" tone="brand">Pinned</AppBadge>
               <!-- Scheduled and published look identical in a list of rows
@@ -158,7 +158,7 @@ function formatDate(value: string | null): string {
                 Scheduled
               </AppBadge>
             </p>
-            <p class="text-content-muted mt-1 text-xs">
+            <p class="text-content-muted text-chrome mt-1">
               {{ announcement.visibility }} · {{ formatDate(announcement.publishedAt) }}
             </p>
           </div>

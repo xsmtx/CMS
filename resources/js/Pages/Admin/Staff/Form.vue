@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -52,9 +53,18 @@ function submit(): void {
   form.post('/admin/staff')
 }
 
+/**
+ * Turning off somebody else's second factor weakens their account, so it
+ * is asked about first rather than done on one press.
+ */
+const confirmingTwoFactor = ref(false)
+
 function disableTwoFactor(): void {
   if (!props.member) return
-  router.delete(`/admin/staff/${props.member.id}/two-factor`, { preserveScroll: true })
+  router.delete(`/admin/staff/${props.member.id}/two-factor`, {
+    preserveScroll: true,
+    onFinish: () => (confirmingTwoFactor.value = false),
+  })
 }
 </script>
 
@@ -111,7 +121,7 @@ function disableTwoFactor(): void {
         title="Two-factor authentication"
         description="Turn this off only when the person has lost their authenticator. The action is audited."
       >
-        <AppButton variant="danger" type="button" @click="disableTwoFactor">
+        <AppButton variant="danger-subtle" type="button" @click="confirmingTwoFactor = true">
           Turn off their two-factor
         </AppButton>
       </AppCard>
@@ -123,5 +133,13 @@ function disableTwoFactor(): void {
         <AppButton href="/admin/staff" variant="ghost">Cancel</AppButton>
       </div>
     </form>
+    <AppConfirm
+      v-model:open="confirmingTwoFactor"
+      level="consequential"
+      :title="`Turn off two-factor for ${member?.name ?? 'this person'}?`"
+      description="They will sign in with a password alone until they set it up again. The action is audited."
+      confirm-label="Turn off two-factor"
+      @confirm="disableTwoFactor"
+    />
   </AdminLayout>
 </template>

@@ -45,11 +45,11 @@ function formatDate(value: string): string {
     <BillingTabs current="transactions" />
 
     <div class="mb-6">
-      <p class="text-content-muted text-xs">
+      <p class="text-content-muted text-chrome">
         {{ t('billing.portal.credit_balance') }} · {{ credit.currency }}
       </p>
       <p class="mt-0.5 text-xl font-semibold tracking-tight tabular-nums">{{ credit.balance }}</p>
-      <p class="text-content-muted mt-1 max-w-[60ch] text-sm leading-relaxed">
+      <p class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
         {{ t('billing.portal.credit_explained') }}
       </p>
     </div>
@@ -101,7 +101,7 @@ function formatDate(value: string): string {
       :description="t('billing.portal.credit_explained')"
     />
 
-    <p v-if="transactions.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="transactions.lastPage > 1" class="text-content-muted text-chrome mt-4">
       {{ transactions.currentPage }} / {{ transactions.lastPage }} — {{ transactions.total }}
     </p>
   </ClientLayout>

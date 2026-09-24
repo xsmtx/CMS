@@ -6,9 +6,11 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppPagination from '../../../Components/AppPagination.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface StaffRow {
   id: string
@@ -42,11 +44,6 @@ watch(search, (value) => {
   }, 300)
 })
 
-function statusTone(status: string): 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  return status === 'suspended' ? 'warning' : 'danger'
-}
-
 function formatTime(value: string | null): string {
   return value ? new Date(value).toLocaleString() : 'Never'
 }
@@ -77,26 +74,26 @@ function formatTime(value: string | null): string {
         <tr v-for="member in staff.data" :key="member.id">
           <td class="px-4 py-2.5">
             <p class="font-medium">{{ member.name }}</p>
-            <p class="text-content-muted text-xs">{{ member.email }}</p>
+            <p class="text-content-muted text-chrome">{{ member.email }}</p>
           </td>
           <td class="text-content-muted px-4 py-2.5">
             {{ member.roles.length > 0 ? member.roles.join(', ') : 'No roles' }}
           </td>
           <td class="px-4 py-2.5">
-            <AppBadge :tone="statusTone(member.status)">{{ member.status }}</AppBadge>
+            <AppStatus :tone="statusTone(member.status)" :label="member.status" />
           </td>
           <td class="px-4 py-2.5">
             <AppBadge :tone="member.twoFactor ? 'success' : 'neutral'">
               {{ member.twoFactor ? 'On' : 'Off' }}
             </AppBadge>
           </td>
-          <td class="text-content-muted px-4 py-2.5 text-xs">
+          <td class="text-content-muted text-chrome px-4 py-2.5">
             {{ formatTime(member.lastLoginAt) }}
           </td>
           <td class="px-4 py-2.5 text-right">
             <Link
               :href="`/admin/staff/${member.id}/edit`"
-              class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+              class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
             >
               Edit
             </Link>

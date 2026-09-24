@@ -169,18 +169,21 @@ function when(value: string | null): string {
                   {{ t('infrastructure.adapters.read_only') }}
                 </AppBadge>
               </div>
-              <p class="text-content-subtle font-mono text-xs">{{ adapter.key }}</p>
+              <p class="text-content-subtle text-chrome font-mono">{{ adapter.key }}</p>
               <div class="flex flex-wrap items-center gap-2">
                 <AppStatus :tone="toneOf(adapter)" :label="adapter.healthLabel" />
-                <span class="text-content-muted text-xs">{{ when(adapter.checkedAt) }}</span>
+                <span class="text-content-muted text-chrome">{{ when(adapter.checkedAt) }}</span>
               </div>
-              <p v-if="adapter.healthMessage" class="text-content-muted text-xs">
+              <p v-if="adapter.healthMessage" class="text-content-muted text-chrome">
                 {{ adapter.healthMessage }}
               </p>
               <!-- Said out loud rather than folded into "degraded": an operator
                    debugging an adapter that returns nothing usually finds that
                    somebody upgraded the device. -->
-              <p v-if="!adapter.supported && adapter.remoteVersion" class="text-warning text-xs">
+              <p
+                v-if="!adapter.supported && adapter.remoteVersion"
+                class="text-warning text-chrome"
+              >
                 {{
                   t('infrastructure.adapters.unsupported').replace(
                     ':version',
@@ -212,7 +215,7 @@ function when(value: string | null): string {
                 >
                   {{ t('infrastructure.adapters.revoke_writes') }}
                 </AppButton>
-                <span v-else class="text-content-muted text-xs">
+                <span v-else class="text-content-muted text-chrome">
                   {{ t('infrastructure.adapters.writes_none') }}
                 </span>
 
@@ -237,7 +240,7 @@ function when(value: string | null): string {
                   {{ area.label }}
                 </AppBadge>
               </div>
-              <ul class="text-content-muted mt-1 flex flex-col gap-0.5 text-xs">
+              <ul class="text-content-muted text-chrome mt-1 flex flex-col gap-0.5">
                 <li v-for="capability in adapter.reads" :key="capability.value">
                   {{ capability.label }}
                 </li>
@@ -281,7 +284,7 @@ function when(value: string | null): string {
           <p class="text-content-muted text-body">{{ t('infrastructure.adapters.orphaned') }}</p>
           <ul class="flex flex-col gap-1">
             <li v-for="row in orphaned" :key="row.id" class="text-body flex items-center gap-2">
-              <span class="font-mono text-xs">{{ row.key }}</span>
+              <span class="text-chrome font-mono">{{ row.key }}</span>
               <span>{{ row.name }}</span>
               <AppBadge v-if="row.writesEnabled" tone="warning">
                 {{ t('infrastructure.adapters.writes_allowed') }}
@@ -311,7 +314,7 @@ function when(value: string | null): string {
           class="text-body"
         >
           <span class="font-medium">{{ capability.label }}</span>
-          <span v-if="capability.description" class="text-content-muted block text-xs">
+          <span v-if="capability.description" class="text-content-muted text-chrome block">
             {{ capability.description }}
           </span>
         </li>

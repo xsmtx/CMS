@@ -25,7 +25,7 @@ const emit = defineEmits<{ select: [] }>()
 <template>
   <button
     type="button"
-    class="pressable border-line bg-surface-primary hover:border-line-strong flex min-w-[8.5rem] flex-col items-start gap-0.5 rounded-[var(--radius-md)] border px-3.5 py-2.5 text-left transition-colors duration-(--duration-fast) ease-(--ease-out)"
+    class="pressable border-line bg-surface-primary hover:border-line-strong flex min-w-[8.5rem] flex-col items-start gap-0.5 rounded-md border px-3.5 py-2.5 text-left transition-colors duration-(--duration-fast) ease-(--ease-out)"
     :class="active ? 'border-brand' : ''"
     :aria-pressed="active"
     @click="emit('select')"

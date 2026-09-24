@@ -43,7 +43,7 @@ const loginUrl = computed(() => (props.guard === 'staff' ? '/admin/login' : '/lo
 
     <a
       :href="loginUrl"
-      class="text-content-muted hover:text-content mt-6 inline-block text-sm underline underline-offset-4"
+      class="text-content-muted hover:text-content text-body mt-6 inline-block underline underline-offset-4"
     >
       Back to sign in
     </a>

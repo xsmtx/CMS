@@ -135,7 +135,7 @@ function formatDateTime(value: string | null): string {
         <AppTable :headers="['Domain', 'In the source', 'What it was', 'Why not']">
           <tr v-for="failure in failures" :key="failure.id">
             <td class="text-content-muted px-4 py-2.5">{{ failure.domain }}</td>
-            <td class="px-4 py-2.5 font-mono text-xs">{{ failure.externalId }}</td>
+            <td class="text-chrome px-4 py-2.5 font-mono">{{ failure.externalId }}</td>
             <!-- A name somebody recognises. "Client 4182" is not a customer they
                  can telephone about. -->
             <td class="px-4 py-2.5">{{ failure.label ?? '—' }}</td>

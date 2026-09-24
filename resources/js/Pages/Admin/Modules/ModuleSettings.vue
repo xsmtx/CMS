@@ -72,7 +72,7 @@ function hintFor(field: ConfigFieldProps): string | undefined {
 
 <template>
   <form class="border-line mt-5 border-t pt-5" @submit.prevent="submit">
-    <p class="mb-3 text-sm font-medium">Settings</p>
+    <p class="text-body mb-3 font-medium">Settings</p>
 
     <div class="grid max-w-xl gap-5">
       <template v-for="field in fields" :key="field.key">

@@ -212,7 +212,7 @@ function submit(): void {
         <div class="flex items-end justify-between gap-4">
           <div>
             <h2 class="text-base font-semibold tracking-tight">Choices</h2>
-            <p class="text-content-muted mt-1 max-w-[60ch] text-sm leading-relaxed">
+            <p class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
               Each choice carries its own price difference. A choice that makes the plan cheaper
               takes a negative amount.
             </p>
@@ -220,7 +220,7 @@ function submit(): void {
           <AppButton type="button" size="sm" @click="addChoice">Add choice</AppButton>
         </div>
 
-        <p v-if="form.options.length === 0" class="text-content-muted text-sm">
+        <p v-if="form.options.length === 0" class="text-content-muted text-body">
           No choices yet. A dropdown with nothing in it cannot be answered.
         </p>
 
@@ -241,14 +241,14 @@ function submit(): void {
               <div class="flex items-end gap-3 pb-1">
                 <button
                   type="button"
-                  class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-xs underline underline-offset-4"
+                  class="pressable text-content-muted hover:text-content text-chrome rounded-sm px-2 py-1 underline underline-offset-4"
                   @click="expanded = expanded === index ? null : index"
                 >
                   {{ expanded === index ? 'Hide prices' : 'Prices' }}
                 </button>
                 <button
                   type="button"
-                  class="pressable text-danger rounded-[var(--radius-sm)] px-2 py-1 text-xs underline underline-offset-4"
+                  class="pressable text-danger text-chrome rounded-sm px-2 py-1 underline underline-offset-4"
                   @click="removeChoice(index)"
                 >
                   Remove
@@ -256,7 +256,7 @@ function submit(): void {
               </div>
             </div>
 
-            <label class="flex items-center gap-3 text-sm">
+            <label class="text-body flex items-center gap-3">
               <input
                 type="radio"
                 :checked="choice.isDefault"

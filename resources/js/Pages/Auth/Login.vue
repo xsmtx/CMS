@@ -64,7 +64,7 @@ function submit(): void {
 
     <a
       :href="forgotPasswordUrl"
-      class="text-content-muted hover:text-content mt-6 inline-block text-sm underline underline-offset-4"
+      class="text-content-muted hover:text-content text-body mt-6 inline-block underline underline-offset-4"
     >
       Forgot your password?
     </a>

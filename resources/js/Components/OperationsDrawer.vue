@@ -123,7 +123,7 @@ function formatTime(value: string | null): string {
   <template v-if="counts">
     <button
       type="button"
-      class="pressable text-content-muted hover:text-content relative rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
+      class="pressable text-content-muted hover:text-content relative rounded-sm p-1.5 transition-colors duration-(--duration-fast)"
       :aria-label="
         counts.attention > 0
           ? `Background operations — ${counts.attention} need attention`

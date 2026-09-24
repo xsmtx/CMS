@@ -1,31 +1,47 @@
 <script setup lang="ts">
-import { useId } from 'vue'
+import { computed, useId } from 'vue'
 
-withDefaults(defineProps<{ label: string; error?: string; hint?: string; rows?: number }>(), {
-  error: undefined,
-  hint: undefined,
-  rows: 4,
-})
+const props = withDefaults(
+  defineProps<{ label: string; error?: string; hint?: string; rows?: number }>(),
+  {
+    error: undefined,
+    hint: undefined,
+    rows: 4,
+  },
+)
 
 const model = defineModel<string>({ required: true })
 
 const id = useId()
+
+// The hint and the error are tied to the field the same way `AppInput` ties
+// them: an error that is only red text under a box is an error a screen
+// reader never says.
+const describedBy = computed(() => {
+  const ids = []
+  if (props.hint && !props.error) ids.push(`${id}-hint`)
+  if (props.error) ids.push(`${id}-error`)
+  return ids.length > 0 ? ids.join(' ') : undefined
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="text-sm font-medium">{{ label }}</label>
+    <label :for="id" class="text-body font-medium">{{ label }}</label>
 
     <textarea
       :id="id"
       v-model="model"
       :rows="rows"
       :aria-invalid="error ? true : undefined"
-      class="border-line bg-surface-primary text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out)"
+      :aria-describedby="describedBy"
+      class="border-line bg-surface-primary text-content placeholder:text-content-subtle text-body w-full rounded-md border px-3 py-2 transition-colors duration-(--duration-fast) ease-(--ease-out)"
       :class="error ? 'border-danger' : 'focus:border-brand'"
     />
 
-    <p v-if="hint && !error" class="text-content-muted text-xs">{{ hint }}</p>
-    <p v-if="error" class="text-danger text-xs">{{ error }}</p>
+    <p v-if="hint && !error" :id="`${id}-hint`" class="text-content-muted text-chrome">
+      {{ hint }}
+    </p>
+    <p v-if="error" :id="`${id}-error`" class="text-danger text-chrome">{{ error }}</p>
   </div>
 </template>

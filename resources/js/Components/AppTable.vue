@@ -25,10 +25,12 @@
  * "the setting". A **saved view** is the opposite — a named question about
  * the data — and that lives on the server.
  */
-import { computed, provide, ref, toRef, useId, watch } from 'vue'
+import { computed, provide, ref, toRef, useId, useSlots, watch } from 'vue'
 
+import AppIcon from './AppIcon.vue'
 import AppMenu from './AppMenu.vue'
-import { TABLE_CONTEXT, type TableColumn } from './tableContext'
+import { useTranslations } from '../composables/useTranslations'
+import { TABLE_CONTEXT, type TableColumn, type TableSort } from './tableContext'
 
 const props = withDefaults(
   defineProps<{
@@ -66,11 +68,30 @@ const props = withDefaults(
 /** The ids of the selected rows. Owned by the caller, because the actions are. */
 const selected = defineModel<string[]>('selected', { default: () => [] })
 
+/**
+ * The sort, owned by the caller because the server does the sorting. A
+ * header press cycles ascending → descending → the server's default.
+ */
+const sort = defineModel<TableSort | null>('sort', { default: null })
+
+function cycleSort(key: string): void {
+  if (sort.value?.key !== key) sort.value = { key, direction: 'asc' }
+  else if (sort.value.direction === 'asc') sort.value = { key, direction: 'desc' }
+  else sort.value = null
+}
+
+function ariaSort(key: string): 'ascending' | 'descending' | undefined {
+  if (sort.value?.key !== key) return undefined
+
+  return sort.value.direction === 'asc' ? 'ascending' : 'descending'
+}
+
 interface ResolvedColumn {
   key: string
   label: string
   numeric: boolean
   optional: boolean
+  sortable: boolean
 }
 
 const declared = computed<ResolvedColumn[]>(() =>
@@ -82,12 +103,14 @@ const declared = computed<ResolvedColumn[]>(() =>
         label,
         numeric: (props.numeric ?? []).includes(index),
         optional: false,
+        sortable: false,
       }))
     : props.columns.map((column) => ({
         key: column.key,
         label: column.label,
         numeric: column.numeric === true,
         optional: column.optional === true,
+        sortable: column.sortable === true,
       })),
 )
 
@@ -135,6 +158,13 @@ const canChooseColumns = computed(
   () => storageKey.value !== null && optionalColumns.value.length > 0,
 )
 
+const { t } = useTranslations()
+
+const slots = useSlots()
+
+/** The columns control lives in the header row when there is no toolbar. */
+const inlineColumns = computed(() => canChooseColumns.value && slots.toolbar === undefined)
+
 const visibleColumns = computed(() =>
   declared.value.filter((column) => !hidden.value.includes(column.key)),
 )
@@ -158,13 +188,47 @@ function toggleColumn(key: string): void {
  */
 const tableId = useId()
 
+/** Tailwind's breakpoints, as the widths a priority column disappears below. */
+const BREAKPOINTS = { md: 768, lg: 1024, xl: 1280 } as const
+
+const SAFE_KEY = /^[\w-]+$/
+
 const columnCss = computed(() => {
+  const rules: string[] = []
+
   const keys = hidden.value
     // Our own keys, but a generated stylesheet takes nothing on trust.
-    .filter((key) => /^[\w-]+$/.test(key))
+    .filter((key) => SAFE_KEY.test(key))
     .map((key) => `#${tableId} [data-col="${key}"]`)
 
-  return keys.length === 0 ? '' : `${keys.join(',')}{display:none}`
+  if (keys.length > 0) rules.push(`${keys.join(',')}{display:none}`)
+
+  for (const column of props.columns ?? []) {
+    if (!SAFE_KEY.test(column.key)) continue
+
+    const cell = `#${tableId} [data-col="${column.key}"]`
+
+    // Priority columns: gone below a width, so the ones that identify the
+    // row and say its state are what a laptop keeps.
+    if (column.hideBelow !== undefined) {
+      rules.push(
+        `@media (max-width:${BREAKPOINTS[column.hideBelow] - 0.02}px){${cell}{display:none}}`,
+      )
+    }
+
+    // The identity column stays put while the rest scrolls sideways. It
+    // needs its own background or the scrolled cells show through it.
+    if (column.sticky === true) {
+      rules.push(
+        `${cell}{position:sticky;left:0;z-index:1;background:var(--surface-primary);box-shadow:inset -1px 0 0 var(--border-subtle)}`,
+        `#${tableId} thead [data-col="${column.key}"]{z-index:2}`,
+        // An opaque cell would otherwise hide the row's hover and selection.
+        `#${tableId} tbody tr:hover [data-col="${column.key}"]{background:var(--surface-hover)}`,
+      )
+    }
+  }
+
+  return rules.join('')
 })
 
 // --- selection --------------------------------------------------------------
@@ -213,19 +277,24 @@ provide(TABLE_CONTEXT, {
       A strip above the table, and only when something is on it. An empty
       toolbar is 40px of nothing above every list in the panel.
     -->
-    <div
-      v-if="$slots.toolbar || canChooseColumns"
-      class="flex flex-wrap items-center gap-x-3 gap-y-2"
-    >
+    <!--
+      A strip above the table, and only when the caller has something to put
+      on it. Without a toolbar the columns control sits in the header row
+      itself (below): a row of height spent on one small menu is a row of
+      data an operator does not see.
+    -->
+    <div v-if="$slots.toolbar" class="flex flex-wrap items-center gap-x-3 gap-y-2">
       <slot name="toolbar" />
 
       <span v-if="canChooseColumns" class="ml-auto">
-        <AppMenu label="Columns" align="end" width="14rem">
-          <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">Show</p>
+        <AppMenu :label="t('ui.common.columns', {}, 'Columns')" align="end" width="14rem">
+          <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
+            {{ t('ui.common.show_columns', {}, 'Show') }}
+          </p>
           <label
             v-for="column in optionalColumns"
             :key="column.key"
-            class="hover:bg-surface-secondary flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+            class="hover:bg-surface-secondary text-body flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5"
           >
             <input
               type="checkbox"
@@ -251,39 +320,90 @@ provide(TABLE_CONTEXT, {
 
     <component :is="'style'" v-if="columnCss">{{ columnCss }}</component>
 
-    <div
-      :id="tableId"
-      class="border-line bg-surface-primary overflow-x-auto rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
-    >
-      <table class="data-table text-body w-full text-left">
-        <thead>
-          <tr>
-            <th v-if="selectable" scope="col" class="w-0 px-4 py-2.5">
-              <input
-                type="checkbox"
-                class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
-                :checked="allSelected"
-                :indeterminate="someSelected"
-                :aria-label="`Select every ${noun} on this page`"
-                @change="toggleAll"
-              />
-            </th>
-            <th
-              v-for="column in visibleColumns"
-              :key="column.key"
-              scope="col"
-              :data-col="column.key"
-              class="text-content-subtle text-label px-4 py-2.5 font-medium uppercase"
-              :class="column.numeric ? 'numeric' : ''"
-            >
-              {{ column.label }}
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-line divide-y">
-          <slot />
-        </tbody>
-      </table>
+    <div class="relative">
+      <div :id="tableId" class="border-line bg-surface-primary overflow-x-auto rounded-lg border">
+        <table class="data-table text-body w-full text-left">
+          <thead>
+            <tr>
+              <th v-if="selectable" scope="col" class="w-0">
+                <input
+                  type="checkbox"
+                  class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
+                  :checked="allSelected"
+                  :indeterminate="someSelected"
+                  :aria-label="`Select every ${noun} on this page`"
+                  @change="toggleAll"
+                />
+              </th>
+              <th
+                v-for="(column, index) in visibleColumns"
+                :key="column.key"
+                scope="col"
+                :data-col="column.key"
+                :aria-sort="column.sortable ? ariaSort(column.key) : undefined"
+                class="text-content-subtle text-label font-medium whitespace-nowrap uppercase"
+                :class="[
+                  column.numeric ? 'numeric' : '',
+                  inlineColumns && index === visibleColumns.length - 1 ? 'pr-11' : '',
+                ]"
+              >
+                <!-- A sortable header is a button inside the th, so the th keeps
+                   its header semantics and the control is a real control. -->
+                <button
+                  v-if="column.sortable"
+                  type="button"
+                  class="hover:text-content inline-flex items-center gap-1 uppercase"
+                  :class="sort?.key === column.key ? 'text-content' : ''"
+                  @click="cycleSort(column.key)"
+                >
+                  {{ column.label }}
+                  <AppIcon
+                    :name="
+                      sort?.key === column.key && sort.direction === 'desc'
+                        ? 'chevronDown'
+                        : 'chevronUp'
+                    "
+                    :size="12"
+                    :class="sort?.key === column.key ? '' : 'opacity-0'"
+                  />
+                </button>
+                <template v-else>{{ column.label }}</template>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-line divide-y">
+            <slot />
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Over the header's right end, outside the scrolling box so it stays
+         put when the table scrolls sideways. -->
+      <span v-if="inlineColumns" class="absolute top-0.5 right-1.5 z-[2]">
+        <AppMenu
+          :label="t('ui.common.choose_columns', {}, 'Choose columns')"
+          icon="settings"
+          align="end"
+          width="14rem"
+        >
+          <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
+            {{ t('ui.common.show_columns', {}, 'Show') }}
+          </p>
+          <label
+            v-for="column in optionalColumns"
+            :key="column.key"
+            class="hover:bg-surface-secondary text-body flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5"
+          >
+            <input
+              type="checkbox"
+              class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
+              :checked="isShown(column.key)"
+              @change="toggleColumn(column.key)"
+            />
+            <span class="truncate">{{ column.label }}</span>
+          </label>
+        </AppMenu>
+      </span>
     </div>
   </div>
 </template>

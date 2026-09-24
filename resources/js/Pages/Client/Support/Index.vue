@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface TicketRow {
   id: string
@@ -23,12 +24,6 @@ interface TicketRow {
 defineProps<{ tickets: TicketRow[]; can: { create: boolean } }>()
 
 const { t } = useTranslations()
-
-function tone(status: string): 'neutral' | 'success' | 'warning' {
-  if (status === 'closed') return 'neutral'
-  if (status === 'answered') return 'success'
-  return 'warning'
-}
 
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
@@ -62,11 +57,11 @@ function formatDate(value: string | null): string {
           >
             {{ ticket.subject }}
           </Link>
-          <span class="text-content-muted block text-xs">{{ ticket.number }}</span>
+          <span class="text-content-muted text-chrome block">{{ ticket.number }}</span>
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ ticket.department ?? '—' }}</td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="tone(ticket.status)">{{ ticket.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
         </td>
         <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDate(ticket.lastReplyAt) }}

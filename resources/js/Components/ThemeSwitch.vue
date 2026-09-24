@@ -13,7 +13,7 @@ const { choice, set, options } = useTheme()
 
 <template>
   <div
-    class="border-line bg-surface-secondary inline-flex gap-0.5 rounded-[var(--radius-sm)] border p-0.5"
+    class="border-line bg-surface-secondary inline-flex gap-0.5 rounded-sm border p-0.5"
     role="radiogroup"
     aria-label="Colour theme"
   >

@@ -89,7 +89,7 @@ function formatDate(value: string | null): string {
       <AppAlert v-if="issued" tone="success">
         {{ t('api.tokens.created') }}
         <code
-          class="border-line bg-surface-secondary mt-2 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
+          class="border-line bg-surface-secondary text-chrome mt-2 block overflow-x-auto rounded-sm border px-3 py-2 font-mono break-all"
         >
           {{ issued }}
         </code>
@@ -108,8 +108,8 @@ function formatDate(value: string | null): string {
         </div>
 
         <div class="mt-6">
-          <p class="text-sm font-medium">{{ t('api.tokens.scopes') }}</p>
-          <p class="text-content-muted mt-1 text-xs leading-relaxed">
+          <p class="text-body font-medium">{{ t('api.tokens.scopes') }}</p>
+          <p class="text-content-muted text-chrome mt-1 leading-relaxed">
             {{ t('api.tokens.scopes_hint') }}
           </p>
 
@@ -129,7 +129,7 @@ function formatDate(value: string | null): string {
                   <!-- Shown as unavailable rather than hidden: being told
                        "you cannot grant this" teaches something a missing
                        row does not. -->
-                  <p v-if="!scope.available" class="text-content-subtle mt-0.5 ml-7 text-xs">
+                  <p v-if="!scope.available" class="text-content-subtle text-chrome mt-0.5 ml-7">
                     {{ t('api.tokens.no_scopes') }}
                   </p>
                 </div>
@@ -155,8 +155,8 @@ function formatDate(value: string | null): string {
           <li v-for="token in tokens" :key="token.id" class="py-3 first:pt-0 last:pb-0">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ token.name }}</p>
-                <p class="text-content-muted mt-0.5 text-xs">
+                <p class="text-body truncate font-medium">{{ token.name }}</p>
+                <p class="text-content-muted text-chrome mt-0.5">
                   {{
                     token.lastUsedAt
                       ? `${t('api.tokens.last_used')} ${formatDate(token.lastUsedAt)}`
@@ -182,7 +182,9 @@ function formatDate(value: string | null): string {
             <!-- A token issued before scopes existed carries nothing now,
                  and saying so is kinder than letting somebody believe it
                  still works. -->
-            <p v-else class="text-content-subtle mt-2 text-xs">{{ t('api.tokens.no_scopes') }}</p>
+            <p v-else class="text-content-subtle text-chrome mt-2">
+              {{ t('api.tokens.no_scopes') }}
+            </p>
           </li>
         </ul>
 

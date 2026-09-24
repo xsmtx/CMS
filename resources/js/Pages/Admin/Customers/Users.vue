@@ -82,20 +82,19 @@ function formatDateTime(value: string | null): string {
       <!-- Under the row rather than under the field: a hint inside the
            input's own column makes it taller than the button beside it,
            and `items-end` then aligns the button to the hint. -->
-      <p class="text-content-muted mt-2 text-xs">A full name works. % anchors: Zeyn% or %nep.</p>
+      <p class="text-content-muted text-chrome mt-2">
+        A full name works. % anchors: Zeyn% or %nep.
+      </p>
     </form>
 
     <!-- Changing somebody else's password is the most abusable thing a
          support desk can do, so it asks for a reason and says where that
          reason goes. -->
-    <div
-      v-if="changing"
-      class="border-line bg-surface-primary mb-6 rounded-[var(--radius-lg)] border p-4"
-    >
-      <p class="text-sm font-semibold">
+    <div v-if="changing" class="border-line bg-surface-primary mb-6 rounded-lg border p-4">
+      <p class="text-body font-semibold">
         Change the password for {{ changing.firstName }} {{ changing.lastName }}
       </p>
-      <p class="text-content-muted mt-1 text-xs">{{ changing.email }}</p>
+      <p class="text-content-muted text-chrome mt-1">{{ changing.email }}</p>
 
       <div class="mt-4 grid gap-4 sm:grid-cols-3">
         <AppInput
@@ -119,7 +118,7 @@ function formatDateTime(value: string | null): string {
         />
       </div>
 
-      <p class="text-content-muted mt-3 text-xs leading-relaxed">
+      <p class="text-content-muted text-chrome mt-3 leading-relaxed">
         Every session this person has will end, and they will have to sign in again.
       </p>
 
@@ -136,7 +135,9 @@ function formatDateTime(value: string | null): string {
       :headers="['ID', 'First name', 'Last name', 'Email address', 'Two factor', 'Last login', '']"
     >
       <tr v-for="user in users.data" :key="user.id">
-        <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">{{ user.id.slice(-8) }}</td>
+        <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+          {{ user.id.slice(-8) }}
+        </td>
         <td class="px-4 py-2.5">{{ user.firstName }}</td>
         <td class="px-4 py-2.5">{{ user.lastName }}</td>
         <td class="px-4 py-2.5">
@@ -144,7 +145,7 @@ function formatDateTime(value: string | null): string {
           <Link
             v-if="user.customer"
             :href="`/admin/customers/${user.customerId}`"
-            class="text-content-muted block text-xs underline-offset-4 hover:underline"
+            class="text-content-muted text-chrome block underline-offset-4 hover:underline"
           >
             {{ user.customer }}
           </Link>
@@ -163,7 +164,7 @@ function formatDateTime(value: string | null): string {
           <AppMenu v-if="can.manage" v-slot="{ close }" label="Manage user">
             <button
               type="button"
-              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
               role="menuitem"
               @click="sendReset(user, close)"
             >
@@ -171,7 +172,7 @@ function formatDateTime(value: string | null): string {
             </button>
             <button
               type="button"
-              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
               role="menuitem"
               @click="startChange(user, close)"
             >
@@ -188,7 +189,7 @@ function formatDateTime(value: string | null): string {
       description="Only contacts with portal access appear here — a person on a customer's record who was never given a login is not a user."
     />
 
-    <p v-if="users.last_page > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="users.last_page > 1" class="text-content-muted text-chrome mt-4">
       Page {{ users.current_page }} of {{ users.last_page }} — {{ users.total }}
     </p>
   </AdminLayout>

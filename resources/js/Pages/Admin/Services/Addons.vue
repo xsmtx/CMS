@@ -13,13 +13,14 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Option {
   value: string
@@ -139,14 +140,6 @@ function toggleRow(id: string): void {
   expanded.value = expanded.value === id ? null : id
 }
 
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'terminated') return 'danger'
-  if (status === 'suspended' || status === 'pending' || status === 'cancel_pending')
-    return 'warning'
-  return 'neutral'
-}
-
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
 }
@@ -178,7 +171,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         type="button"
         role="switch"
         :aria-checked="!includeInactive"
-        class="pressable border-line bg-surface-primary text-content-muted hover:text-content hover:border-line-strong inline-flex items-center gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable border-line bg-surface-primary text-content-muted hover:text-content hover:border-line-strong text-chrome inline-flex items-center gap-2.5 rounded-sm border px-3.5 py-2 transition-colors duration-(--duration-fast)"
         @click="toggleInactive"
       >
         <span
@@ -193,12 +186,12 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
         Hide inactive clients
       </button>
 
-      <span v-if="hasFilters" class="text-content-muted text-xs">{{ addons.total }} match</span>
+      <span v-if="hasFilters" class="text-content-muted text-chrome">{{ addons.total }} match</span>
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
         <AppSelect
           v-model="form.product_type"
@@ -264,7 +257,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
           <td class="py-3.5 pl-5">
             <button
               type="button"
-              class="pressable border-line text-content-muted hover:text-content inline-flex size-5 items-center justify-center rounded-[var(--radius-sm)] border font-mono text-xs leading-none"
+              class="pressable border-line text-content-muted hover:text-content text-chrome inline-flex size-5 items-center justify-center rounded-sm border font-mono leading-none"
               :aria-expanded="expanded === addon.id"
               :aria-label="expanded === addon.id ? 'Hide details' : 'Show details'"
               @click="toggleRow(addon.id)"
@@ -272,7 +265,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ expanded === addon.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">
+          <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
             {{ addon.id.slice(-8) }}
           </td>
           <td class="px-4 py-2.5 font-medium">{{ addon.name }}</td>
@@ -304,13 +297,13 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             {{ formatDate(addon.nextDueOn) }}
           </td>
           <td class="px-4 py-2.5">
-            <AppBadge :tone="tone(addon.status)">{{ addon.statusLabel }}</AppBadge>
+            <AppStatus :tone="statusTone(addon.status)" :label="addon.statusLabel" />
           </td>
         </tr>
 
         <tr v-if="expanded === addon.id" class="bg-surface-secondary">
           <td colspan="9" class="px-4 py-4">
-            <dl class="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
+            <dl class="text-chrome grid gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
               <div>
                 <dt class="text-content-muted">Order #</dt>
                 <dd class="mt-0.5">
@@ -370,7 +363,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       description="An addon appears here when an order containing one is paid for."
     />
 
-    <p v-if="addons.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="addons.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ addons.currentPage }} of {{ addons.lastPage }} — {{ addons.total }} addons
     </p>
   </AdminLayout>

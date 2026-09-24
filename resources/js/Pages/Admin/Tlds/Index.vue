@@ -303,19 +303,19 @@ function cellsFor(currency: string, action: string): EditableCell[] {
       </div>
 
       <div v-for="currency in options.currencies" :key="currency.code" class="mt-8">
-        <h3 class="text-sm font-semibold">{{ currency.code }}</h3>
-        <p class="text-content-muted mt-1 text-xs leading-relaxed">
+        <h3 class="text-body font-semibold">{{ currency.code }}</h3>
+        <p class="text-content-muted text-chrome mt-1 leading-relaxed">
           Leave a cell unticked and that term is not sold in this currency. Zero means free.
         </p>
 
         <div v-for="action in options.actions" :key="action.value" class="mt-4">
-          <p class="text-content-muted mb-2 text-xs font-medium">{{ action.label }}</p>
+          <p class="text-content-muted text-chrome mb-2 font-medium">{{ action.label }}</p>
 
           <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div
               v-for="cell in cellsFor(currency.code, action.value)"
               :key="`${cell.action}-${cell.years}-${cell.currencyCode}`"
-              class="border-line rounded-[var(--radius-sm)] border p-3"
+              class="border-line rounded-sm border p-3"
             >
               <AppCheckbox v-model="cell.enabled" :label="`${cell.years} year(s)`" />
 

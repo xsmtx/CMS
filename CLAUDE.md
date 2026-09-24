@@ -79,6 +79,24 @@ Tests run against **MariaDB**, never SQLite — start it with
 `docker compose up -d db redis` first. See
 `docs/operations/local-development.md`.
 
+## Frontend work
+
+Any change to `resources/js`, `resources/css` or `themes/` follows the project
+skills in `.claude/skills/`: `enterprise-design-system` (visual language),
+`enterprise-cms-ux` (page structure, actions, states), `frontend-architecture`
+(which primitive to use), `accessibility`, `responsive-enterprise-ui`, and
+`visual-quality-review` — which must be run in the browser before a frontend
+task is called done. Reference screens: `Admin/Dashboard`,
+`Admin/Customers/Index`, `Admin/Customers/Show`. Status words map to colours
+only in `resources/js/status.ts` (ADR 0048). Compilation is not completion.
+
+Redesigning an existing screen: pick the next unticked page in
+`docs/design/propagation.md`, convert it with
+`.claude/skills/frontend-architecture/page-recipes.md` (keep the page's
+script logic and props), put new strings in `lang/en` + `lang/tr` (the `ui`
+group is already published to the browser), run the gates and
+`visual-quality-review`, then tick the page.
+
 ## Definition of Done
 
 Migrations reviewed and reversible where practical; policies and permissions

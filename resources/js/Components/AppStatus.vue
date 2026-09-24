@@ -20,7 +20,8 @@
  */
 import { computed } from 'vue'
 
-export type StatusTone = 'healthy' | 'warning' | 'critical' | 'maintenance' | 'unknown' | 'info'
+export type StatusTone =
+  'healthy' | 'warning' | 'critical' | 'maintenance' | 'unknown' | 'info' | 'neutral'
 
 const props = withDefaults(
   defineProps<{
@@ -54,6 +55,9 @@ const SHAPES: Record<StatusTone, string> = {
   maintenance: '◆',
   unknown: '○',
   info: '◐',
+  // Out of play — closed, cancelled, archived. Hollow, like unknown, but
+  // square: "we know, and it no longer matters" is not "we do not know".
+  neutral: '□',
 }
 
 const COLOURS: Record<StatusTone, string> = {
@@ -63,6 +67,7 @@ const COLOURS: Record<StatusTone, string> = {
   maintenance: 'text-maintenance',
   unknown: 'text-unknown',
   info: 'text-info',
+  neutral: 'text-content-subtle',
 }
 
 const shape = computed(() => SHAPES[props.tone])

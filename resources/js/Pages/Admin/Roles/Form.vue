@@ -118,7 +118,7 @@ function submit(): void {
       <AppCard v-else title="Permissions">
         <div class="flex flex-col gap-6">
           <section v-for="group in visibleGroups" :key="group.key">
-            <h3 class="text-content-muted mb-3 text-xs font-medium">{{ group.label }}</h3>
+            <h3 class="text-content-muted text-chrome mb-3 font-medium">{{ group.label }}</h3>
             <div class="grid gap-3 sm:grid-cols-2">
               <div v-for="permission in group.permissions" :key="permission.slug">
                 <!-- The name, then what it lets somebody do. The slug is

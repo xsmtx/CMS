@@ -91,8 +91,8 @@ const customerForm = useForm({
           <AppInput v-model="meForm.phone" label="Phone" :error="meForm.errors.phone" />
 
           <fieldset class="flex flex-col gap-3">
-            <legend class="mb-1 text-sm font-medium">Email preferences</legend>
-            <p class="text-content-muted -mt-1 mb-2 text-xs">
+            <legend class="text-body mb-1 font-medium">Email preferences</legend>
+            <p class="text-content-muted text-chrome -mt-1 mb-2">
               Invoices and service notices about what you pay for are always sent.
             </p>
             <AppCheckbox v-model="meForm.notify_invoices" label="Invoices and receipts" />

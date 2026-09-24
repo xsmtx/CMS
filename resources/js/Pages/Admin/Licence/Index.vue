@@ -187,7 +187,7 @@ function readAction(action: string): string {
             <dl v-if="licence.configured" class="text-body grid gap-2 sm:grid-cols-2">
               <div class="flex items-baseline justify-between gap-4">
                 <dt class="text-content-muted">Licence</dt>
-                <dd class="font-mono text-xs">{{ licence.licenceId ?? '—' }}</dd>
+                <dd class="text-chrome font-mono">{{ licence.licenceId ?? '—' }}</dd>
               </div>
               <div class="flex items-baseline justify-between gap-4">
                 <dt class="text-content-muted">Expires</dt>
@@ -209,7 +209,7 @@ function readAction(action: string): string {
                 <li
                   v-for="feature in licence.excluded"
                   :key="feature"
-                  class="bg-surface-secondary rounded-[var(--radius-sm)] px-2 py-0.5 font-mono text-xs"
+                  class="bg-surface-secondary text-chrome rounded-sm px-2 py-0.5 font-mono"
                 >
                   {{ feature }}
                 </li>
@@ -224,7 +224,7 @@ function readAction(action: string): string {
                   :key="name"
                   class="flex items-baseline justify-between gap-4"
                 >
-                  <dt class="text-content-muted font-mono text-xs">{{ name }}</dt>
+                  <dt class="text-content-muted text-chrome font-mono">{{ name }}</dt>
                   <dd class="tabular-nums">{{ value }}</dd>
                 </div>
               </dl>

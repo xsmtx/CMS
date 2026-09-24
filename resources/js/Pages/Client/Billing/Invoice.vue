@@ -2,11 +2,12 @@
 import { Head, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface InvoiceLine {
   id: string
@@ -85,21 +86,19 @@ function formatDate(value: string | null): string {
         <AppCard>
           <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <AppBadge :tone="invoice.isOwed ? 'warning' : 'success'">
-                {{ invoice.statusLabel }}
-              </AppBadge>
-              <p class="text-content-muted mt-2 text-xs">
+              <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
+              <p class="text-content-muted text-chrome mt-2">
                 {{ invoice.issuedOn ?? '—' }} ·
                 {{ t('billing.portal.due', { date: invoice.dueOn ?? '—' }) }}
               </p>
             </div>
 
             <div v-if="invoice.billTo.length > 0" class="text-right">
-              <p class="text-content-muted text-xs">{{ t('billing.portal.bill_to') }}</p>
+              <p class="text-content-muted text-chrome">{{ t('billing.portal.bill_to') }}</p>
               <p
                 v-for="line in invoice.billTo"
                 :key="line"
-                class="text-sm leading-relaxed whitespace-pre-line"
+                class="text-body leading-relaxed whitespace-pre-line"
               >
                 {{ line }}
               </p>
@@ -110,7 +109,7 @@ function formatDate(value: string | null): string {
             <li v-for="item in invoice.items" :key="item.id" class="py-3 first:pt-0">
               <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
-                  <p class="text-sm font-medium">
+                  <p class="text-body font-medium">
                     {{ item.description }}
                     <span v-if="item.quantity > 1" class="text-content-muted">
                       × {{ item.quantity }}
@@ -118,17 +117,17 @@ function formatDate(value: string | null): string {
                   </p>
                   <p
                     v-if="item.detail"
-                    class="text-content-muted mt-0.5 text-xs leading-relaxed whitespace-pre-line"
+                    class="text-content-muted text-chrome mt-0.5 leading-relaxed whitespace-pre-line"
                   >
                     {{ item.detail }}
                   </p>
                 </div>
-                <p class="shrink-0 text-sm tabular-nums">{{ item.amount }}</p>
+                <p class="text-body shrink-0 tabular-nums">{{ item.amount }}</p>
               </div>
             </li>
           </ul>
 
-          <dl class="border-line mt-4 border-t pt-4 text-sm">
+          <dl class="border-line text-body mt-4 border-t pt-4">
             <div class="flex justify-between gap-4 py-1">
               <dt class="text-content-muted">{{ t('billing.invoices.total') }}</dt>
               <dd class="tabular-nums">{{ invoice.subtotal }}</dd>
@@ -157,7 +156,7 @@ function formatDate(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="invoice.payments.length > 0" :title="t('billing.invoices.payments')">
-          <ul class="divide-line divide-y text-sm">
+          <ul class="divide-line text-body divide-y">
             <li
               v-for="payment in invoice.payments"
               :key="payment.id"
@@ -172,7 +171,7 @@ function formatDate(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="invoice.creditNotes.length > 0" :title="t('billing.credit_notes.title')">
-          <ul class="divide-line divide-y text-sm">
+          <ul class="divide-line text-body divide-y">
             <li
               v-for="note in invoice.creditNotes"
               :key="note.id"
@@ -190,7 +189,7 @@ function formatDate(value: string | null): string {
 
       <div>
         <AppCard v-if="invoice.isOwed && can.pay && gateways.length > 0">
-          <h2 class="mb-1 text-sm font-semibold">{{ t('billing.payments.pay_now') }}</h2>
+          <h2 class="text-body mb-1 font-semibold">{{ t('billing.payments.pay_now') }}</h2>
           <p class="text-content-muted mb-4 text-2xl font-semibold tracking-tight tabular-nums">
             {{ invoice.balance }}
           </p>
@@ -199,7 +198,7 @@ function formatDate(value: string | null): string {
             <label
               v-for="gateway in gateways"
               :key="gateway.value"
-              class="border-line hover:bg-surface-secondary flex cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] border px-3 py-2.5 text-sm transition-colors duration-(--duration-fast)"
+              class="border-line hover:bg-surface-secondary text-body flex cursor-pointer items-center gap-2.5 rounded-sm border px-3 py-2.5 transition-colors duration-(--duration-fast)"
               :class="form.gateway === gateway.value ? 'border-brand' : ''"
             >
               <input
@@ -216,7 +215,7 @@ function formatDate(value: string | null): string {
 
           <p
             v-if="chosen?.instructions"
-            class="border-line bg-surface-secondary mt-3 rounded-[var(--radius-sm)] border px-3 py-2 text-xs leading-relaxed whitespace-pre-line"
+            class="border-line bg-surface-secondary text-chrome mt-3 rounded-sm border px-3 py-2 leading-relaxed whitespace-pre-line"
           >
             {{ chosen.instructions }}
           </p>
@@ -227,7 +226,7 @@ function formatDate(value: string | null): string {
         </AppCard>
 
         <AppCard v-else-if="!invoice.isOwed">
-          <p class="text-sm leading-relaxed">{{ t('billing.portal.nothing_owed') }}</p>
+          <p class="text-body leading-relaxed">{{ t('billing.portal.nothing_owed') }}</p>
         </AppCard>
       </div>
     </div>
@@ -239,7 +238,7 @@ function formatDate(value: string | null): string {
     -->
     <p
       v-if="invoice.terms"
-      class="border-line text-content-muted mt-6 border-t pt-4 text-xs leading-relaxed whitespace-pre-line"
+      class="border-line text-content-muted text-chrome mt-6 border-t pt-4 leading-relaxed whitespace-pre-line"
     >
       {{ invoice.terms }}
     </p>

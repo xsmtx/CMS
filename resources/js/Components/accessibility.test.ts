@@ -166,7 +166,15 @@ describe('status is never colour alone', () => {
    * needs to.
    */
   it('carries a shape and a word, not just a tone', () => {
-    const tones = ['healthy', 'warning', 'critical', 'maintenance', 'unknown', 'info'] as const
+    const tones = [
+      'healthy',
+      'warning',
+      'critical',
+      'maintenance',
+      'unknown',
+      'info',
+      'neutral',
+    ] as const
 
     const marks = new Set<string>()
 
@@ -184,7 +192,7 @@ describe('status is never colour alone', () => {
       marks.add(mark.text())
     }
 
-    // Six tones, six distinguishable marks. Two tones sharing a glyph would be
+    // Seven tones, seven distinguishable marks. Two tones sharing a glyph would be
     // two states that look identical in greyscale.
     expect(marks.size).toBe(tones.length)
   })

@@ -19,14 +19,15 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Candidate {
   id: string
@@ -178,8 +179,8 @@ function submit(): void {
         <AppCard title="Client" description="Whose money this is. Every ledger row belongs to one.">
           <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">{{ chosen.name }}</p>
-              <p class="text-content-muted text-xs">Currency {{ chosen.currency }}</p>
+              <p class="text-body font-medium">{{ chosen.name }}</p>
+              <p class="text-content-muted text-chrome">Currency {{ chosen.currency }}</p>
             </div>
             <AppButton type="button" variant="ghost" size="sm" @click="forget">Change</AppButton>
           </div>
@@ -196,27 +197,27 @@ function submit(): void {
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="hover:bg-surface-secondary flex w-full items-center justify-between gap-3 rounded-[var(--radius-sm)] px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
+                  class="hover:bg-surface-secondary flex w-full items-center justify-between gap-3 rounded-sm px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
                   @click="choose(candidate)"
                 >
                   <span>
-                    <span class="block text-sm">{{ candidate.name }}</span>
-                    <span v-if="candidate.email" class="text-content-muted block text-xs">
+                    <span class="text-body block">{{ candidate.name }}</span>
+                    <span v-if="candidate.email" class="text-content-muted text-chrome block">
                       {{ candidate.email }}
                     </span>
                   </span>
-                  <span class="text-content-subtle text-xs">{{ candidate.currency }}</span>
+                  <span class="text-content-subtle text-chrome">{{ candidate.currency }}</span>
                 </button>
               </li>
             </ul>
 
-            <p v-else-if="term !== ''" class="text-content-muted text-sm">
+            <p v-else-if="term !== ''" class="text-content-muted text-body">
               Nobody matches that. A closed account still appears here — money arrives for those
               too.
             </p>
           </div>
 
-          <p v-if="form.errors.customer_id" class="text-danger mt-2 text-xs">
+          <p v-if="form.errors.customer_id" class="text-danger text-chrome mt-2">
             {{ form.errors.customer_id }}
           </p>
         </AppCard>
@@ -300,19 +301,18 @@ function submit(): void {
                   @change="toggleInvoice(invoice)"
                 />
                 <span>
-                  <span class="block font-mono text-xs">{{ invoice.number }}</span>
-                  <span class="text-content-muted block text-xs">
-                    <AppBadge
-                      :tone="invoice.status === 'overdue' ? 'danger' : 'neutral'"
+                  <span class="text-chrome block font-mono">{{ invoice.number }}</span>
+                  <span class="text-content-muted text-chrome block">
+                    <AppStatus
+                      :tone="statusTone(invoice.status)"
                       class="mr-1.5"
-                    >
-                      {{ invoice.statusLabel }}
-                    </AppBadge>
+                      :label="invoice.statusLabel"
+                    />
                     <span v-if="invoice.dueOn">due {{ invoice.dueOn }}</span>
                   </span>
                 </span>
               </label>
-              <span class="text-right text-xs tabular-nums">
+              <span class="text-chrome text-right tabular-nums">
                 <span class="block">{{ invoice.balance }}</span>
                 <span class="text-content-muted block">of {{ invoice.total }}</span>
               </span>
@@ -323,7 +323,7 @@ function submit(): void {
 
       <aside class="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
         <AppCard title="Before it is written">
-          <dl class="flex flex-col gap-2 text-sm">
+          <dl class="text-body flex flex-col gap-2">
             <div class="flex justify-between gap-4">
               <dt class="text-content-muted">Direction</dt>
               <dd v-if="bothFilled" class="text-danger">Both filled</dd>
@@ -340,10 +340,10 @@ function submit(): void {
             </div>
           </dl>
 
-          <p v-if="bothFilled" class="text-danger mt-4 text-xs">
+          <p v-if="bothFilled" class="text-danger text-chrome mt-4">
             A transaction moves money one way. Fill in an amount in or an amount out, not both.
           </p>
-          <p v-else-if="nowhereToPutIt" class="text-warning mt-4 text-xs">
+          <p v-else-if="nowhereToPutIt" class="text-warning text-chrome mt-4">
             Money that arrived has to go somewhere: tick an invoice, or add it to the client's
             credit balance.
           </p>

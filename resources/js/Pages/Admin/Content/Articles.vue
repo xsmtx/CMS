@@ -209,7 +209,7 @@ function verdict(article: ArticleRow): string {
 
       <div>
         <AppCard title="Categories">
-          <ul v-if="categories.length > 0" class="divide-line mb-4 divide-y text-sm">
+          <ul v-if="categories.length > 0" class="divide-line text-body mb-4 divide-y">
             <li v-for="category in categories" :key="category.id" class="flex justify-between py-2">
               <span>{{ category.name }}</span>
               <span class="text-content-muted tabular-nums">{{ category.articles }}</span>

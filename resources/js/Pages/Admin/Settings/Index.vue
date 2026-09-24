@@ -211,7 +211,7 @@ function removeLink(index: number): void {
                    is the one setting nobody can check by reading. -->
               <div
                 v-if="form.accent_color"
-                class="border-line mt-2 h-6 rounded-[var(--radius-sm)] border"
+                class="border-line mt-2 h-6 rounded-sm border"
                 :style="{ background: form.accent_color }"
                 aria-hidden="true"
               />
@@ -280,7 +280,7 @@ function removeLink(index: number): void {
             </div>
           </div>
 
-          <p v-else class="text-content-muted text-sm">No links yet.</p>
+          <p v-else class="text-content-muted text-body">No links yet.</p>
 
           <div class="mt-4">
             <AppButton size="sm" variant="ghost" @click="addLink">Add a link</AppButton>
@@ -298,7 +298,7 @@ function removeLink(index: number): void {
           />
           <!-- Said in words rather than shown as a switch that silently does
                nothing. -->
-          <p v-if="!can.removeVendorMark" class="text-content-subtle mt-1 ml-7 text-xs">
+          <p v-if="!can.removeVendorMark" class="text-content-subtle text-chrome mt-1 ml-7">
             Removing the platform mark is not included in this licence.
           </p>
         </AppCard>
@@ -320,14 +320,14 @@ function removeLink(index: number): void {
               :alt="inherited.name"
               class="h-8 w-auto max-w-[10rem] object-contain"
             />
-            <span class="text-sm font-semibold">{{ inherited.name }}</span>
+            <span class="text-body font-semibold">{{ inherited.name }}</span>
           </div>
 
           <ul v-if="inherited.legalLinks.length > 0" class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
             <li
               v-for="link in inherited.legalLinks"
               :key="link.url"
-              class="text-content-muted text-xs"
+              class="text-content-muted text-chrome"
             >
               {{ link.label }}
             </li>
@@ -343,23 +343,23 @@ function removeLink(index: number): void {
           </AppAlert>
 
           <div v-for="surface in surfaces" :key="surface.value" class="mb-6 last:mb-0">
-            <p class="text-sm font-medium">{{ surface.label }}</p>
+            <p class="text-body font-medium">{{ surface.label }}</p>
 
             <ul class="mt-2 flex flex-col gap-2">
               <li
                 v-for="theme in surface.themes"
                 :key="theme.value"
-                class="border-line rounded-[var(--radius-sm)] border p-3"
+                class="border-line rounded-sm border p-3"
               >
                 <div class="flex flex-wrap items-start justify-between gap-2">
                   <div class="min-w-0">
-                    <p class="text-sm">
+                    <p class="text-body">
                       {{ theme.label }}
                       <AppBadge v-if="theme.value === surface.current" class="ml-2" tone="brand">
                         In use
                       </AppBadge>
                     </p>
-                    <p v-if="theme.parent" class="text-content-muted mt-0.5 text-xs">
+                    <p v-if="theme.parent" class="text-content-muted text-chrome mt-0.5">
                       Extends {{ theme.parent }}
                     </p>
                   </div>
@@ -379,7 +379,11 @@ function removeLink(index: number): void {
                 <!-- Every problem at once, named. An operator fixing a theme
                      wants the four bad files, not one per attempt. -->
                 <ul v-if="theme.problems.length > 0" class="mt-2 flex flex-col gap-1">
-                  <li v-for="problem in theme.problems" :key="problem" class="text-danger text-xs">
+                  <li
+                    v-for="problem in theme.problems"
+                    :key="problem"
+                    class="text-danger text-chrome"
+                  >
                     {{ problem }}
                   </li>
                 </ul>

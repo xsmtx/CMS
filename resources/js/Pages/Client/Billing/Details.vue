@@ -84,7 +84,7 @@ function remove(id: string): void {
           otherwise has taught them the wrong thing: an issued invoice keeps
           the details it was issued with.
         -->
-        <p class="text-content-muted mb-5 max-w-[60ch] text-sm leading-relaxed">
+        <p class="text-content-muted text-body mb-5 max-w-[60ch] leading-relaxed">
           {{ t('billing.portal.details_note') }}
         </p>
 
@@ -102,7 +102,7 @@ function remove(id: string): void {
           <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
         </div>
 
-        <h3 class="mt-6 mb-3 text-sm font-semibold">{{ t('billing.portal.address') }}</h3>
+        <h3 class="text-body mt-6 mb-3 font-semibold">{{ t('billing.portal.address') }}</h3>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <AppInput
@@ -150,7 +150,7 @@ function remove(id: string): void {
             class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
           >
             <div>
-              <p class="text-sm font-medium">
+              <p class="text-body font-medium">
                 {{ method.brand ?? method.gateway }}
                 <span v-if="method.lastFour" class="text-content-muted">
                   •••• {{ method.lastFour }}
@@ -159,7 +159,7 @@ function remove(id: string): void {
                   {{ t('billing.portal.default') }}
                 </AppBadge>
               </p>
-              <p v-if="method.expiry" class="text-content-muted mt-0.5 text-xs">
+              <p v-if="method.expiry" class="text-content-muted text-chrome mt-0.5">
                 {{ method.expiry }}
               </p>
             </div>

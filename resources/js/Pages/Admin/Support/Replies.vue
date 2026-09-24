@@ -12,6 +12,7 @@ import { ref } from 'vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
@@ -62,8 +63,16 @@ function submit(): void {
   form.put(`/admin/support/replies/${editing.value}`, done)
 }
 
-function remove(reply: ReplyRow): void {
-  router.delete(`/admin/support/replies/${reply.id}`, { preserveScroll: true })
+/** Deleting a reply the whole support team uses is asked about first. */
+const removing = ref<ReplyRow | null>(null)
+
+function remove(): void {
+  if (removing.value === null) return
+
+  router.delete(`/admin/support/replies/${removing.value.id}`, {
+    preserveScroll: true,
+    onFinish: () => (removing.value = null),
+  })
 }
 </script>
 
@@ -110,7 +119,7 @@ function remove(reply: ReplyRow): void {
               <AppBadge tone="neutral">used {{ reply.usedCount }}×</AppBadge>
             </div>
             <p
-              class="text-content-muted mt-2 max-w-[80ch] text-sm leading-relaxed whitespace-pre-line"
+              class="text-content-muted text-body mt-2 max-w-[80ch] leading-relaxed whitespace-pre-line"
             >
               {{ reply.body }}
             </p>
@@ -118,7 +127,9 @@ function remove(reply: ReplyRow): void {
 
           <div v-if="can.manage" class="flex gap-2">
             <AppButton size="sm" @click="startEdit(reply)">Edit</AppButton>
-            <AppButton size="sm" variant="danger" @click="remove(reply)">Delete</AppButton>
+            <AppButton size="sm" variant="danger-subtle" @click="removing = reply"
+              >Delete</AppButton
+            >
           </div>
         </div>
       </AppCard>
@@ -128,6 +139,15 @@ function remove(reply: ReplyRow): void {
       v-else
       title="No predefined replies"
       description="Write the answer once here and the ticket screen offers it on every reply box."
+    />
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="`Delete the reply “${removing?.name ?? ''}”?`"
+      description="Staff stop seeing it in the reply picker. Tickets it was already used in keep their text."
+      confirm-label="Delete reply"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
     />
   </AdminLayout>
 </template>

@@ -50,7 +50,7 @@ function submit(): void {
         </div>
         <AppButton type="submit" variant="primary">Search</AppButton>
       </div>
-      <p class="text-content-muted mt-2 text-xs">
+      <p class="text-content-muted text-chrome mt-2">
         % anchors a term: Zeyn% or %nep. A whole name works.
       </p>
     </form>
@@ -60,7 +60,7 @@ function submit(): void {
         <template #actions>
           <Link
             :href="group.more"
-            class="text-content-muted text-xs underline-offset-4 hover:underline"
+            class="text-content-muted text-chrome underline-offset-4 hover:underline"
           >
             See all
           </Link>
@@ -70,10 +70,10 @@ function submit(): void {
           <li v-for="row in group.rows" :key="row.href">
             <Link
               :href="row.href"
-              class="pressable hover:bg-surface-secondary -mx-2 block rounded-[var(--radius-sm)] px-2 py-2.5 transition-colors duration-(--duration-fast)"
+              class="pressable hover:bg-surface-secondary -mx-2 block rounded-sm px-2 py-2.5 transition-colors duration-(--duration-fast)"
             >
-              <span class="block text-sm font-medium">{{ row.title }}</span>
-              <span v-if="row.subtitle" class="text-content-muted block text-xs">
+              <span class="text-body block font-medium">{{ row.title }}</span>
+              <span v-if="row.subtitle" class="text-content-muted text-chrome block">
                 {{ row.subtitle }}
               </span>
             </Link>

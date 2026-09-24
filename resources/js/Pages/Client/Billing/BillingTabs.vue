@@ -32,7 +32,7 @@ const tabs = [
       :key="tab.key"
       :href="tab.href"
       :aria-current="current === tab.key ? 'page' : undefined"
-      class="pressable -mb-px rounded-t-[var(--radius-sm)] border-b-2 px-3 py-2 text-sm transition-colors duration-(--duration-fast)"
+      class="pressable text-body -mb-px rounded-t-sm border-b-2 px-3 py-2 transition-colors duration-(--duration-fast)"
       :class="
         current === tab.key
           ? 'border-brand text-content font-medium'

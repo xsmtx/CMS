@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 
-import AppBadge from '../../../../Components/AppBadge.vue'
 import AppButton from '../../../../Components/AppButton.vue'
+import AppStatus from '../../../../Components/AppStatus.vue'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../../status'
 
 interface AddonRow {
   id: string
@@ -51,10 +52,10 @@ function remove(addon: AddonRow): void {
       <tr v-for="addon in addons" :key="addon.id">
         <td class="px-4 py-2.5">
           <p class="font-medium">{{ addon.name }}</p>
-          <p class="text-content-muted font-mono text-xs">{{ addon.slug }}</p>
+          <p class="text-content-muted text-chrome font-mono">{{ addon.slug }}</p>
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge>{{ statusLabel(addon.status) }}</AppBadge>
+          <AppStatus :tone="statusTone(addon.status)" :label="statusLabel(addon.status)" />
         </td>
         <td
           class="px-4 py-2.5 tabular-nums"
@@ -65,14 +66,14 @@ function remove(addon: AddonRow): void {
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/products/${product.id}/addons/${addon.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="canManage"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(addon)"
           >
             Delete

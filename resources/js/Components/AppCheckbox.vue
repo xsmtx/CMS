@@ -17,9 +17,9 @@ const id = useId()
       :disabled="disabled"
       class="border-line-strong text-brand accent-brand mt-0.5 size-4 shrink-0 rounded-[4px] border disabled:opacity-60"
     />
-    <label :for="id" class="text-sm leading-tight select-none">
+    <label :for="id" class="text-body leading-tight select-none">
       {{ label }}
-      <span v-if="description" class="text-content-muted mt-0.5 block text-xs">{{
+      <span v-if="description" class="text-content-muted text-chrome mt-0.5 block">{{
         description
       }}</span>
     </label>

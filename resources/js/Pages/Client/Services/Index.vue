@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface ServiceRow {
   id: string
@@ -22,13 +23,6 @@ interface ServiceRow {
 defineProps<{ services: ServiceRow[] }>()
 
 const { t } = useTranslations()
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'failed') return 'danger'
-  if (status === 'suspended' || status === 'pending' || status === 'provisioning') return 'warning'
-  return 'neutral'
-}
 </script>
 
 <template>
@@ -44,18 +38,18 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
           <div class="min-w-0">
             <Link
               :href="`/client/services/${service.id}`"
-              class="text-sm font-semibold underline-offset-4 hover:underline"
+              class="text-body font-semibold underline-offset-4 hover:underline"
             >
               {{ service.name }}
             </Link>
-            <p v-if="service.domain" class="text-content-muted mt-0.5 text-xs">
+            <p v-if="service.domain" class="text-content-muted text-chrome mt-0.5">
               {{ service.domain }}
             </p>
           </div>
-          <AppBadge :tone="tone(service.status)">{{ service.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
         </div>
 
-        <dl class="border-line mt-4 border-t pt-3 text-sm">
+        <dl class="border-line text-body mt-4 border-t pt-3">
           <div class="flex justify-between gap-4 py-1">
             <dt class="text-content-muted">{{ service.cycleLabel ?? '' }}</dt>
             <dd class="tabular-nums">{{ service.recurring }}</dd>

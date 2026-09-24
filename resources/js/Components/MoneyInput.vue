@@ -65,12 +65,12 @@ function onBlur(): void {
 
 <template>
   <label class="flex flex-col gap-1.5">
-    <span v-if="label" class="text-content-muted text-xs font-medium">{{ label }}</span>
+    <span v-if="label" class="text-content-muted text-chrome font-medium">{{ label }}</span>
 
     <span class="relative flex items-center">
       <span
         v-if="symbol"
-        class="text-content-subtle pointer-events-none absolute left-3 text-xs"
+        class="text-content-subtle text-chrome pointer-events-none absolute left-3"
         aria-hidden="true"
       >
         {{ symbol }}
@@ -83,7 +83,7 @@ function onBlur(): void {
         :disabled="disabled"
         :placeholder="placeholder"
         :aria-label="ariaLabel"
-        class="border-line bg-surface-primary text-content placeholder:text-content-subtle focus:border-brand w-full rounded-[var(--radius-sm)] border py-2 text-right text-sm tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+        class="border-line bg-surface-primary text-content placeholder:text-content-subtle focus:border-brand text-body w-full rounded-sm border py-2 text-right tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
         :class="symbol ? 'pr-3 pl-9' : 'px-3'"
         @focus="focused = true"
         @input="onInput"

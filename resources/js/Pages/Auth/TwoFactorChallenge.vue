@@ -57,7 +57,7 @@ function submit(): void {
 
     <button
       type="button"
-      class="text-content-muted hover:text-content mt-6 text-sm underline underline-offset-4"
+      class="text-content-muted hover:text-content text-body mt-6 underline underline-offset-4"
       @click="toggleMode"
     >
       {{ useRecoveryCode ? 'Use an authenticator code instead' : 'Use a recovery code instead' }}

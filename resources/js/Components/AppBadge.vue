@@ -61,7 +61,7 @@ const classes = computed(
 
 <template>
   <span
-    class="text-label inline-flex items-center rounded-[var(--radius-sm)] px-1.5 py-0.5 font-medium ring-1 ring-inset"
+    class="text-label inline-flex items-center rounded-sm px-1.5 py-0.5 font-medium ring-1 ring-inset"
     :class="classes"
   >
     <slot />

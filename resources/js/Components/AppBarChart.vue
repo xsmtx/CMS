@@ -25,6 +25,12 @@ interface Row {
 const props = withDefaults(
   defineProps<{
     title: string
+    /**
+     * Keep the title for screen readers only, when the section around the
+     * chart already says what it is. Two headings saying "Money in" one
+     * above the other is the commonest dashboard stutter.
+     */
+    hideTitle?: boolean
     rows: Row[]
     /** Horizontal bars read better when the labels are words. */
     horizontal?: boolean
@@ -74,9 +80,11 @@ const columns = computed(() =>
 <template>
   <div>
     <div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h3 class="text-body font-semibold tracking-tight">{{ title }}</h3>
+      <h3 class="text-body font-semibold tracking-tight" :class="hideTitle ? 'sr-only' : ''">
+        {{ title }}
+      </h3>
 
-      <div class="flex items-center gap-3 text-xs">
+      <div class="text-chrome flex items-center gap-3">
         <span class="flex items-center gap-1.5">
           <span v-if="compare" class="bg-brand size-2 rounded-full" aria-hidden="true" />
           <span class="text-content-muted tabular-nums">
@@ -94,7 +102,7 @@ const columns = computed(() =>
       </div>
     </div>
 
-    <p v-if="total === 0 && compareTotal === 0" class="text-content-muted text-sm">
+    <p v-if="total === 0 && compareTotal === 0" class="text-content-muted text-body">
       Nothing in this period.
     </p>
 
@@ -105,14 +113,14 @@ const columns = computed(() =>
         :key="row.label"
         class="grid grid-cols-[10rem_1fr_3rem] items-center gap-3"
       >
-        <span class="text-content-muted truncate text-xs">{{ row.label }}</span>
+        <span class="text-content-muted text-chrome truncate">{{ row.label }}</span>
         <span class="bg-surface-secondary h-2 overflow-hidden rounded-full">
           <span
             class="bg-brand block h-full rounded-full transition-[width] duration-(--duration-base) ease-(--ease-out)"
             :style="{ width: `${percent(row.value)}%` }"
           />
         </span>
-        <span class="text-right text-xs tabular-nums">{{ write(row.value) }}</span>
+        <span class="text-chrome text-right tabular-nums">{{ write(row.value) }}</span>
       </li>
     </ul>
 
@@ -138,7 +146,7 @@ const columns = computed(() =>
             :title="`${column.label}: ${write(column.compare)}`"
           />
         </span>
-        <span class="text-content-subtle w-full truncate text-center text-[10px]">
+        <span class="text-content-subtle text-label w-full truncate text-center">
           {{ column.label }}
         </span>
       </div>

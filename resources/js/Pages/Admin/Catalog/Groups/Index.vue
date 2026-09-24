@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 
-import AppBadge from '../../../../Components/AppBadge.vue'
 import AppButton from '../../../../Components/AppButton.vue'
+import AppStatus from '../../../../Components/AppStatus.vue'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../../status'
 
 interface GroupRow {
   id: string
@@ -43,23 +44,23 @@ function remove(group: GroupRow): void {
       <tr v-for="group in groups" :key="group.id">
         <td class="px-4 py-2.5">
           <p class="font-medium">{{ group.name }}</p>
-          <p class="text-content-muted font-mono text-xs">{{ group.slug }}</p>
+          <p class="text-content-muted text-chrome font-mono">{{ group.slug }}</p>
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge>{{ label(statuses, group.status) }}</AppBadge>
+          <AppStatus :tone="statusTone(group.status)" :label="label(statuses, group.status)" />
         </td>
         <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ group.productCount }}</td>
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/groups/${group.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="group.productCount === 0"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(group)"
           >
             Delete

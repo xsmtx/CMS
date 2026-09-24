@@ -117,7 +117,7 @@ function formatDateTime(value: string | null): string {
             <ul class="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
               <li v-for="domain in domains" :key="domain.value">
                 <label
-                  class="hover:bg-surface-hover flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5"
+                  class="hover:bg-surface-hover flex items-center gap-2.5 rounded-sm px-2 py-1.5"
                 >
                   <input
                     v-model="form.domains"
@@ -191,7 +191,7 @@ function formatDateTime(value: string | null): string {
             <td class="px-4 py-2.5 text-right">
               <Link
                 :href="`/admin/import/${run.id}`"
-                class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+                class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
               >
                 Report
               </Link>

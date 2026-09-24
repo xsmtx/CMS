@@ -26,6 +26,8 @@
  * The primary button is never the destructive one by default, and it stays
  * disabled until whatever the level requires has been given.
  */
+import { useFocusTrap } from '../composables/useFocusTrap'
+import { useTranslations } from '../composables/useTranslations'
 import { computed, nextTick, ref, useId, watch } from 'vue'
 
 import AppButton from './AppButton.vue'
@@ -59,11 +61,16 @@ const props = withDefaults(
 
 const emit = defineEmits<{ confirm: [reason: string | null] }>()
 
+const { t } = useTranslations()
+
 const open = defineModel<boolean>('open', { required: true })
 
 const reason = ref('')
 const typed = ref('')
 const dialog = ref<HTMLElement | null>(null)
+
+// Tab stays inside while it is open; `aria-modal` alone does not do that.
+const trap = useFocusTrap(dialog)
 
 const titleId = useId()
 const descriptionId = useId()
@@ -81,7 +88,11 @@ const ready = computed(() => {
 })
 
 const label = computed(
-  () => props.confirmLabel ?? (props.level === 'destructive' ? 'Delete' : 'Confirm'),
+  () =>
+    props.confirmLabel ??
+    (props.level === 'destructive'
+      ? t('ui.confirm.delete', {}, 'Delete')
+      : t('ui.confirm.confirm', {}, 'Confirm')),
 )
 
 watch(open, async (isOpen) => {
@@ -134,7 +145,8 @@ function confirm(): void {
         :aria-labelledby="titleId"
         :aria-describedby="description ? descriptionId : undefined"
         tabindex="-1"
-        class="panel-enter border-line bg-surface-primary relative w-full max-w-lg origin-top rounded-[var(--radius-xl)] border p-5 shadow-(--shadow-panel)"
+        class="panel-enter border-line bg-surface-primary relative w-full max-w-lg origin-top rounded-xl border p-5 shadow-(--shadow-panel)"
+        @keydown="trap"
       >
         <div class="flex items-start gap-3">
           <span
@@ -162,7 +174,7 @@ function confirm(): void {
           consent to, and a description string is the wrong place for four
           bullet points.
         -->
-        <div v-if="$slots.default" class="border-line mt-4 rounded-[var(--radius-md)] border p-3">
+        <div v-if="$slots.default" class="border-line mt-4 rounded-md border p-3">
           <slot />
         </div>
 
@@ -170,21 +182,31 @@ function confirm(): void {
           <AppTextarea
             v-if="needsReason"
             v-model="reason"
-            label="Reason"
+            :label="t('ui.confirm.reason', {}, 'Reason')"
             :rows="2"
-            hint="Written to the audit record. The person reading it later is usually you."
+            :hint="
+              t(
+                'ui.confirm.reason_hint',
+                {},
+                'Written to the audit record. The person reading it later is usually you.',
+              )
+            "
           />
 
           <AppInput
             v-if="needsPhrase"
             v-model="typed"
-            :label="`Type ${phrase} to confirm`"
+            :label="
+              t('ui.confirm.type_phrase', { phrase: phrase ?? '' }, `Type ${phrase} to confirm`)
+            "
             autocomplete="off"
           />
         </div>
 
         <div class="mt-5 flex items-center justify-end gap-2">
-          <AppButton variant="ghost" :disabled="busy" @click="cancel">Cancel</AppButton>
+          <AppButton variant="ghost" :disabled="busy" @click="cancel">
+            {{ t('ui.confirm.cancel', {}, 'Cancel') }}
+          </AppButton>
           <AppButton
             :variant="level === 'consequential' ? 'primary' : 'danger'"
             :disabled="!ready"

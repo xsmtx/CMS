@@ -25,6 +25,7 @@ import {
   PhBriefcase,
   PhBuildings,
   PhCaretDown,
+  PhCaretUp,
   PhCaretRight,
   PhCheck,
   PhCheckCircle,
@@ -128,6 +129,7 @@ export const ICONS = {
   help: PhQuestion,
   close: PhX,
   chevronDown: PhCaretDown,
+  chevronUp: PhCaretUp,
   chevronRight: PhCaretRight,
 } satisfies Record<string, Component>
 

@@ -8,6 +8,7 @@ import CommandPalette, { type Destination } from '../Components/CommandPalette.v
 import { type IconName } from '../icons'
 import AppMenu from '../Components/AppMenu.vue'
 import OperationsDrawer from '../Components/OperationsDrawer.vue'
+import PageHeader from '../Components/PageHeader.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { useBranding } from '../composables/useBranding'
@@ -796,7 +797,7 @@ onBeforeUnmount(() => {
   >
     <a
       href="#main"
-      class="focus:bg-surface-elevated sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-40 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
+      class="focus:bg-surface-elevated sr-only rounded-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-40 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
     >
       Skip to content
     </a>
@@ -837,7 +838,7 @@ onBeforeUnmount(() => {
           href="/admin"
           :aria-current="currentPath === '/admin' ? 'page' : undefined"
           :title="`${brand.name} dashboard`"
-          class="pressable flex min-w-0 items-center gap-2 rounded-[var(--radius-sm)]"
+          class="pressable flex min-w-0 items-center gap-2 rounded-sm"
         >
           <img
             v-if="brand.logoUrl"
@@ -867,7 +868,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           data-rail-toggle
-          class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-[var(--radius-sm)] transition-colors duration-(--duration-fast)"
+          class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-sm transition-colors duration-(--duration-fast)"
           :class="railOpen ? 'ml-auto p-1.5' : 'p-0.5'"
           :aria-expanded="railOpen"
           :aria-label="railOpen ? 'Collapse the sidebar' : 'Expand the sidebar'"
@@ -896,7 +897,7 @@ onBeforeUnmount(() => {
             <li v-for="group in entry.groups" :key="group.label" class="relative">
               <button
                 type="button"
-                class="pressable text-body flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
+                class="pressable text-body flex w-full items-center gap-2.5 rounded-sm px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="[
                   isCurrentGroup(group)
                     ? 'bg-surface-selected text-content'
@@ -931,7 +932,7 @@ onBeforeUnmount(() => {
                     <Link
                       :href="item.href"
                       :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable text-body block flex-1 truncate rounded-[var(--radius-sm)] px-2 py-1 transition-colors duration-(--duration-fast)"
+                      class="pressable text-body block flex-1 truncate rounded-sm px-2 py-1 transition-colors duration-(--duration-fast)"
                       :class="
                         isCurrent(item.href)
                           ? 'text-content font-medium'
@@ -943,7 +944,7 @@ onBeforeUnmount(() => {
                     <button
                       v-if="item.children"
                       type="button"
-                      class="pressable text-content-subtle hover:text-content rounded-[var(--radius-sm)] px-1"
+                      class="pressable text-content-subtle hover:text-content rounded-sm px-1"
                       :aria-expanded="openItem === item.label"
                       :aria-label="`${item.label} submenu`"
                       @click.stop="openItem = openItem === item.label ? null : item.label"
@@ -960,7 +961,7 @@ onBeforeUnmount(() => {
                       <Link
                         :href="child.href"
                         :aria-current="isCurrent(child.href) ? 'page' : undefined"
-                        class="pressable text-chrome block truncate rounded-[var(--radius-sm)] px-2 py-1 transition-colors duration-(--duration-fast)"
+                        class="pressable text-chrome block truncate rounded-sm px-2 py-1 transition-colors duration-(--duration-fast)"
                         :class="
                           isCurrent(child.href)
                             ? 'text-content font-medium'
@@ -993,7 +994,7 @@ onBeforeUnmount(() => {
         ref="flyoutPanel"
         data-rail-flyout
         :style="flyoutStyle"
-        class="panel-enter border-line bg-surface-elevated text-content z-50 rounded-[var(--radius-lg)] border p-1.5 shadow-(--shadow-panel)"
+        class="panel-enter border-line bg-surface-elevated text-content z-50 rounded-lg border p-1.5 shadow-(--shadow-panel)"
       >
         <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
           {{ flyoutGroup.label }}
@@ -1003,7 +1004,7 @@ onBeforeUnmount(() => {
             <Link
               :href="item.href"
               :aria-current="isCurrent(item.href) ? 'page' : undefined"
-              class="pressable text-body block rounded-[var(--radius-sm)] border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
+              class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
               :class="
                 isCurrent(item.href)
                   ? 'bg-surface-hover text-content border-accent font-medium'
@@ -1028,7 +1029,7 @@ onBeforeUnmount(() => {
       >
         <button
           type="button"
-          class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 lg:hidden"
+          class="pressable text-content-muted hover:text-content rounded-sm p-1.5 lg:hidden"
           :aria-expanded="mobileOpen"
           aria-label="Sections"
           @click="mobileOpen = !mobileOpen"
@@ -1069,7 +1070,7 @@ onBeforeUnmount(() => {
               v-for="tool in tools"
               :key="tool.href"
               :href="tool.href"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
               {{ tool.label }}
@@ -1086,12 +1087,15 @@ onBeforeUnmount(() => {
               :href="url"
               target="_blank"
               rel="noopener noreferrer"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
               {{ HELP_LABELS[key] ?? key }}
             </a>
-            <p v-if="Object.keys(help).length === 0" class="text-content-muted px-2 py-1.5 text-xs">
+            <p
+              v-if="Object.keys(help).length === 0"
+              class="text-content-muted text-chrome px-2 py-1.5"
+            >
               No help links are configured for this installation.
             </p>
           </AppMenu>
@@ -1102,19 +1106,19 @@ onBeforeUnmount(() => {
                already know. -->
           <AppMenu v-if="user" :label="initials" align="end" width="14rem" avatar>
             <p class="border-line mb-1 border-b px-2 pb-2">
-              <span class="block truncate text-sm font-medium">{{ user.name }}</span>
-              <span class="text-content-muted block truncate text-xs">{{ user.email }}</span>
+              <span class="text-body block truncate font-medium">{{ user.name }}</span>
+              <span class="text-content-muted text-chrome block truncate">{{ user.email }}</span>
             </p>
             <Link
               href="/admin/security"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
               My Account
             </Link>
             <a
               href="/client"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
+              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
               Visit Client Area
@@ -1123,7 +1127,7 @@ onBeforeUnmount(() => {
               href="/admin/logout"
               method="post"
               as="button"
-              class="pressable hover:bg-surface-secondary block w-full rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm"
+              class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
               role="menuitem"
             >
               Sign out
@@ -1132,23 +1136,21 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <!-- pb: the footer is fixed, so the last row of a table would sit
-           underneath it without this. -->
-      <main id="main" class="flex-1 px-4 pt-5 pb-20 sm:px-6 sm:pt-6">
+      <main id="main" class="flex-1 px-4 pt-5 pb-10 sm:px-6">
         <div class="mx-auto max-w-[110rem]">
-          <!-- Title and actions on one line. An operator wants the name of
-               the screen and the button they came for, in one glance; the
-               breadcrumb above already said how they got here. -->
-          <div class="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-            <div class="min-w-0">
-              <h1 class="text-page font-semibold">{{ heading }}</h1>
-              <p v-if="description" class="text-content-muted text-chrome mt-1 max-w-[90ch]">
-                {{ description }}
-              </p>
-            </div>
-            <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
-              <slot name="actions" />
-            </div>
+          <!--
+            Title, state and actions in one band (PageHeader). A screen that
+            needs more — a resource's status and identity — passes its own
+            header; the rest get this one from `heading`.
+          -->
+          <div class="mb-5">
+            <slot name="header">
+              <PageHeader :title="heading" :description="description">
+                <template v-if="$slots.status" #status><slot name="status" /></template>
+                <template v-if="$slots.meta" #meta><slot name="meta" /></template>
+                <template v-if="$slots.actions" #actions><slot name="actions" /></template>
+              </PageHeader>
+            </slot>
           </div>
 
           <AppAlert v-if="flash?.error" tone="danger" class="mb-5">{{ flash.error }}</AppAlert>
@@ -1159,29 +1161,31 @@ onBeforeUnmount(() => {
           <slot />
         </div>
       </main>
+
+      <!--
+        At the end of the document, not fixed. A fixed footer cost every
+        screen 36px of rows to repeat a copyright line; the links on it are
+        also on the Help menu, which *is* always on screen.
+      -->
+      <footer
+        class="border-line text-content-subtle text-label flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-4 py-2.5 sm:px-6"
+      >
+        <p>&copy; {{ year }} {{ brand.name }}</p>
+
+        <nav v-if="footerLinks.length > 0" aria-label="Help" class="flex items-center gap-2">
+          <template v-for="(link, index) in footerLinks" :key="link.key">
+            <span v-if="index > 0" aria-hidden="true">|</span>
+            <a
+              :href="link.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-content underline-offset-4 transition-colors duration-(--duration-fast) hover:underline"
+            >
+              {{ link.label }}
+            </a>
+          </template>
+        </nav>
+      </footer>
     </div>
-
-    <!-- Fixed rather than at the end of the document: an operator three
-         hundred rows into a list still needs the link that reports what is
-         wrong with the page they are looking at. -->
-    <footer
-      class="border-line bg-surface-chrome text-content-muted text-label fixed right-0 bottom-0 left-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-4 py-2.5 sm:px-6 lg:left-(--rail-w)"
-    >
-      <p>&copy; {{ year }} {{ brand.name }}</p>
-
-      <nav v-if="footerLinks.length > 0" aria-label="Help" class="flex items-center gap-2">
-        <template v-for="(link, index) in footerLinks" :key="link.key">
-          <span v-if="index > 0" class="text-content-subtle" aria-hidden="true">|</span>
-          <a
-            :href="link.href"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-content underline-offset-4 transition-colors duration-(--duration-fast) hover:underline"
-          >
-            {{ link.label }}
-          </a>
-        </template>
-      </nav>
-    </footer>
   </div>
 </template>

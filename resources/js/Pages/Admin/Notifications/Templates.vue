@@ -80,7 +80,7 @@ function switchLocale(locale: string): void {
         v-for="option in locales"
         :key="option.value"
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           locale === option.value
             ? 'bg-surface-secondary text-content font-medium'
@@ -96,14 +96,14 @@ function switchLocale(locale: string): void {
       <AppCard v-for="template in templates" :key="template.event">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 class="text-sm font-semibold">
+            <h2 class="text-body font-semibold">
               {{ template.label }}
               <AppBadge v-if="template.isCustomised" class="ml-2" tone="brand">Edited</AppBadge>
               <!-- Stated, because an operator editing this should know it
                    goes out whatever the customer has switched off. -->
               <AppBadge v-if="template.transactional" class="ml-2">Always sent</AppBadge>
             </h2>
-            <p class="text-content-muted mt-1 text-xs">{{ template.category }}</p>
+            <p class="text-content-muted text-chrome mt-1">{{ template.category }}</p>
           </div>
 
           <div v-if="can.manage" class="flex gap-2">
@@ -132,7 +132,7 @@ function switchLocale(locale: string): void {
               :error="form.errors.action_label"
             />
 
-            <p class="text-content-muted text-xs leading-relaxed">
+            <p class="text-content-muted text-chrome leading-relaxed">
               Placeholders: {{ template.placeholders.map((name) => `:${name}`).join(', ') }} — write
               them as :name. One with no value is left as itself rather than blanked, so a mistake
               is visible.
@@ -148,9 +148,9 @@ function switchLocale(locale: string): void {
         </template>
 
         <template v-else>
-          <div class="border-line mt-4 rounded-[var(--radius-sm)] border p-3">
-            <p class="text-sm font-medium">{{ template.previewSubject }}</p>
-            <p class="text-content-muted mt-2 text-sm leading-relaxed whitespace-pre-line">
+          <div class="border-line mt-4 rounded-sm border p-3">
+            <p class="text-body font-medium">{{ template.previewSubject }}</p>
+            <p class="text-content-muted text-body mt-2 leading-relaxed whitespace-pre-line">
               {{ template.previewBody }}
             </p>
           </div>

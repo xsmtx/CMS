@@ -114,10 +114,10 @@ defineExpose({ insert })
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label class="text-sm font-medium">{{ props.label }}</label>
+    <label class="text-body font-medium">{{ props.label }}</label>
 
     <div
-      class="border-line focus-within:border-brand overflow-hidden rounded-[var(--radius-sm)] border transition-colors duration-(--duration-fast)"
+      class="border-line focus-within:border-brand overflow-hidden rounded-sm border transition-colors duration-(--duration-fast)"
     >
       <div
         class="border-line bg-surface-secondary flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1"
@@ -126,7 +126,7 @@ defineExpose({ insert })
           v-for="tool in TOOLS"
           :key="tool.key"
           type="button"
-          class="pressable text-content-muted hover:bg-surface-primary hover:text-content rounded-[var(--radius-sm)] px-2 py-1 text-xs transition-colors duration-(--duration-fast)"
+          class="pressable text-content-muted hover:bg-surface-primary hover:text-content text-chrome rounded-sm px-2 py-1 transition-colors duration-(--duration-fast)"
           :class="tool.key === 'bold' ? 'font-bold' : tool.key === 'italic' ? 'italic' : ''"
           :title="tool.title"
           :aria-label="tool.title"
@@ -144,11 +144,11 @@ defineExpose({ insert })
         ref="field"
         v-model="model"
         :rows="props.rows"
-        class="bg-surface-primary text-content placeholder:text-content-subtle block w-full resize-y px-3 py-2.5 text-sm leading-relaxed outline-none"
+        class="bg-surface-primary text-content placeholder:text-content-subtle text-body block w-full resize-y px-3 py-2.5 leading-relaxed outline-none"
       />
     </div>
 
-    <p v-if="props.hint" class="text-content-muted text-xs">{{ props.hint }}</p>
-    <p v-if="props.error" class="text-danger text-xs">{{ props.error }}</p>
+    <p v-if="props.hint" class="text-content-muted text-chrome">{{ props.hint }}</p>
+    <p v-if="props.error" class="text-danger text-chrome">{{ props.error }}</p>
   </div>
 </template>

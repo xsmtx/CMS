@@ -34,7 +34,7 @@ withDefaults(defineProps<{ title?: string; description?: string }>(), {
     This one is a warning about what could.
   -->
   <section
-    class="border-danger/35 bg-danger/[0.04] mt-8 rounded-[var(--radius-lg)] border"
+    class="border-danger/35 bg-danger/[0.04] mt-8 rounded-lg border"
     aria-labelledby="danger-zone"
   >
     <header class="border-danger/25 flex items-start gap-2.5 border-b px-4 py-3">

@@ -8,27 +8,35 @@
  *
  * So the order is what an operator acts on, top to bottom:
  *
- * 1. **Attention Required** — the rows that are somebody's job today. First,
- *    because it is the only block that asks for anything.
- * 2. **The headline strip** — four figures, in one strip rather than four
- *    cards, so they read as a sentence about the business instead of four
- *    unrelated claims.
- * 3. **Infrastructure and revenue**, side by side: is it up, and is it
- *    growing.
- * 4. **What just happened** — the audit trail, last eight.
+ * 1. **Attention required** — the rows that are somebody's job today. First,
+ *    because it is the only block that asks for anything. When it is empty
+ *    it is one line, not a box.
+ * 2. **The headline strip** — four figures in one `MetricStrip`, so they
+ *    read as a sentence about the business instead of four unrelated claims.
+ * 3. **Revenue and infrastructure**, side by side: is it growing, and is it up.
+ * 4. **Recent activity** — the audit trail as a table, because it is one:
+ *    when, what, to what, by whom.
+ *
+ * Sections are headings and hairlines, not cards (enterprise-design-system,
+ * "Containers"). The only framed surfaces are the strip and the table, which
+ * are the two things that are genuinely objects on the page.
  *
  * Every block is `null` when the operator may not see it, rather than empty:
  * a support agent gets tickets and no revenue, and the layout closes up
  * around what is missing instead of leaving a hole where a permission was.
  */
-import { Link } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppBarChart from '../../Components/AppBarChart.vue'
-import AppCard from '../../Components/AppCard.vue'
 import AppIcon from '../../Components/AppIcon.vue'
 import AppStatus, { type StatusTone } from '../../Components/AppStatus.vue'
+import AppTable from '../../Components/AppTable.vue'
+import DescriptionList from '../../Components/DescriptionList.vue'
+import DetailSection from '../../Components/DetailSection.vue'
 import EmptyState from '../../Components/EmptyState.vue'
+import MetricStrip from '../../Components/MetricStrip.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AdminLayout from '../../Layouts/AdminLayout.vue'
 import { type IconName } from '../../icons'
 
@@ -74,6 +82,8 @@ const props = defineProps<{
   version: string | null
 }>()
 
+const { t } = useTranslations()
+
 /**
  * Minor units into money. The decimal point exists in this one function,
  * because the chart is drawn from integers — which is what money is here.
@@ -116,6 +126,16 @@ function formatTime(value: string): string {
   })
 }
 
+/**
+ * The actor without the address in angle brackets. The audit record keeps
+ * the whole string; a dashboard row only needs to say who.
+ */
+function readActor(actor: string | null): string {
+  if (actor === null) return t('ui.common.system')
+
+  return actor.replace(/\s*<[^>]+>\s*$/, '') || actor
+}
+
 const serverTone = computed<StatusTone>(() => {
   const infrastructure = props.infrastructure
 
@@ -123,173 +143,162 @@ const serverTone = computed<StatusTone>(() => {
 
   return infrastructure.unavailable > 0 ? 'warning' : 'healthy'
 })
+
+const infrastructureFacts = computed(() => [
+  { key: 'servers', label: t('ui.dashboard.servers') },
+  {
+    key: 'provisioning',
+    label: t('ui.dashboard.setting_up'),
+    value: props.infrastructure?.provisioning ?? 0,
+  },
+  {
+    key: 'suspended',
+    label: t('ui.dashboard.suspended'),
+    value: props.infrastructure?.suspended ?? 0,
+  },
+])
+
+const activityColumns = [
+  { key: 'at', label: t('ui.dashboard.activity_when') },
+  { key: 'action', label: t('ui.dashboard.activity_event') },
+  { key: 'target', label: t('ui.dashboard.activity_target') },
+  { key: 'actor', label: t('ui.dashboard.activity_actor') },
+]
 </script>
 
 <template>
-  <AdminLayout
-    heading="Dashboard"
-    description="What needs attention, what the business is doing, and what just happened."
-  >
-    <div class="flex flex-col gap-5">
-      <!--
-        First, because it is the only block that asks for anything.
+  <Head :title="t('ui.dashboard.title')" />
 
-        Rows appear only when they are not zero: a list padded with zeroes is
-        a list an operator learns to skim, and then the one row that mattered
-        is skimmed with it.
+  <AdminLayout :heading="t('ui.dashboard.title')">
+    <template #meta>
+      <span>{{ environment }}</span>
+      <span aria-hidden="true">·</span>
+      <span class="font-mono">{{ version ?? 'dev' }}</span>
+    </template>
+
+    <div class="flex flex-col gap-8">
+      <!--
+        First, because it is the only block that asks for anything. Rows
+        appear only when they are not zero: a list padded with zeroes is a
+        list an operator learns to skim.
       -->
-      <AppCard title="Attention required">
-        <ul v-if="attention.length > 0" class="divide-line -my-1 divide-y">
+      <DetailSection :title="t('ui.dashboard.attention')" :divided="attention.length > 0">
+        <ul v-if="attention.length > 0" class="divide-line-subtle divide-y">
           <li v-for="row in attention" :key="row.key">
             <Link
               :href="row.href"
-              class="hover:bg-surface-hover group -mx-2 flex items-center gap-3 rounded-[var(--radius-sm)] px-2 py-2.5 transition-colors duration-(--duration-fast)"
+              class="hover:bg-surface-hover group -mx-2 flex items-center gap-3 rounded-sm px-2 py-2 transition-colors duration-(--duration-fast)"
             >
-              <span
-                class="bg-surface-secondary text-content-subtle grid size-7 shrink-0 place-items-center rounded-[var(--radius-sm)]"
-                aria-hidden="true"
-              >
-                <AppIcon :name="row.icon" :size="15" />
-              </span>
-
-              <span class="text-body min-w-0 flex-1 truncate">{{ row.label }}</span>
-
+              <AppIcon :name="row.icon" :size="16" class="text-content-subtle" />
+              <span class="min-w-0 flex-1 truncate">{{ row.label }}</span>
               <AppStatus :tone="row.tone" :label="row.label" compact />
-              <span class="text-title font-semibold tabular-nums">{{ row.count }}</span>
-
+              <span class="w-10 text-right font-semibold tabular-nums">{{ row.count }}</span>
               <AppIcon
                 name="chevronRight"
-                :size="13"
+                :size="14"
                 class="text-content-subtle group-hover:text-content"
               />
             </Link>
           </li>
         </ul>
 
-        <!-- An empty list is a good morning, and the screen says so rather
-             than showing an empty box. -->
-        <div v-else class="flex items-center gap-3">
-          <span class="text-success" aria-hidden="true"><AppIcon name="ok" :size="20" /></span>
-          <div>
-            <p class="text-body font-medium">Nothing needs attention</p>
-            <p class="text-content-muted text-chrome mt-0.5">
-              No overdue invoices, no broken promises, nothing stuck.
-            </p>
-          </div>
-        </div>
-      </AppCard>
-
-      <!--
-        Four figures in one strip, not four cards. They read as a sentence
-        about the business; four cards read as four unrelated claims, and a
-        fifth would have to displace one of these.
-      -->
-      <div
-        v-if="headline.length > 0"
-        class="border-line bg-surface-primary [&>*]:border-line grid divide-y rounded-[var(--radius-lg)] border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 sm:[&>*+*]:border-l"
-      >
-        <Link
-          v-for="figure in headline"
-          :key="figure.key"
-          :href="figure.href"
-          class="hover:bg-surface-hover flex flex-col gap-1 px-5 py-4 transition-colors duration-(--duration-fast)"
-        >
-          <span class="text-content-subtle text-label uppercase">{{ figure.label }}</span>
-          <span class="text-[1.625rem] leading-none font-semibold tabular-nums">
-            {{ figure.value }}
+        <!-- An empty list is a good morning, said in one line. -->
+        <p v-else class="text-content-muted flex items-center gap-2">
+          <AppIcon name="ok" :size="16" class="text-success" />
+          <span>
+            <span class="text-content font-medium">{{ t('ui.dashboard.all_clear') }}</span>
+            {{ t('ui.dashboard.all_clear_detail') }}
           </span>
-          <span v-if="figure.hint" class="text-content-subtle text-chrome">{{ figure.hint }}</span>
-        </Link>
-      </div>
+        </p>
+      </DetailSection>
 
-      <div class="grid gap-5 lg:grid-cols-3">
+      <MetricStrip v-if="headline.length > 0" :items="headline" />
+
+      <div
+        v-if="revenue || infrastructure"
+        class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]"
+      >
         <!--
           Money in, by month. Monthly rather than daily: the daily shape is
-          already on the Transactions screen, and what a dashboard is asked is
-          "are we growing", which a day cannot answer.
+          on the Transactions screen, and what a dashboard is asked is "are
+          we growing", which a day cannot answer.
         -->
-        <AppCard
+        <DetailSection
           v-if="revenue"
-          class="lg:col-span-2"
-          title="Money in"
-          :description="`${revenue.total} over twelve months.`"
+          :title="t('ui.dashboard.money_in')"
+          :description="t('ui.dashboard.money_in_total', { total: revenue.total })"
         >
-          <AppBarChart title="Money in, by month" :rows="revenue.months" :format="formatMinor" />
-        </AppCard>
+          <AppBarChart
+            :title="t('ui.dashboard.money_in_chart')"
+            hide-title
+            :rows="revenue.months"
+            :format="formatMinor"
+          />
+        </DetailSection>
 
-        <AppCard v-if="infrastructure" title="Infrastructure">
-          <dl class="flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-4">
-              <dt class="text-content-muted text-body">Servers</dt>
-              <dd>
-                <AppStatus
-                  :tone="serverTone"
-                  :label="
-                    infrastructure.servers === 0
-                      ? 'None registered'
-                      : `${infrastructure.active} of ${infrastructure.servers} available`
-                  "
-                />
-              </dd>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <dt class="text-content-muted text-body">Setting up</dt>
-              <dd class="text-body tabular-nums">{{ infrastructure.provisioning }}</dd>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <dt class="text-content-muted text-body">Suspended</dt>
-              <dd class="text-body tabular-nums">{{ infrastructure.suspended }}</dd>
-            </div>
-          </dl>
-
-          <div class="border-line mt-4 border-t pt-3">
+        <DetailSection v-if="infrastructure" :title="t('ui.dashboard.infrastructure')">
+          <template #actions>
             <!-- The health page runs the checks. This block reads rows, so
                  that a dashboard stays openable during the incident it is
                  wanted for. -->
             <Link
               href="/admin/health"
-              class="text-brand text-chrome inline-flex items-center gap-1.5 underline-offset-4 hover:underline"
+              class="text-brand text-chrome inline-flex items-center gap-1 underline-offset-4 hover:underline"
             >
-              Run the health checks
+              {{ t('ui.dashboard.run_health_checks') }}
               <AppIcon name="chevronRight" :size="12" />
             </Link>
-          </div>
-        </AppCard>
+          </template>
+
+          <DescriptionList :items="infrastructureFacts">
+            <template #servers>
+              <AppStatus
+                :tone="serverTone"
+                :label="
+                  infrastructure.servers === 0
+                    ? t('ui.dashboard.no_servers')
+                    : t('ui.dashboard.servers_available', {
+                        active: infrastructure.active,
+                        total: infrastructure.servers,
+                      })
+                "
+              />
+            </template>
+          </DescriptionList>
+        </DetailSection>
       </div>
 
-      <AppCard
+      <DetailSection
         v-if="activity"
-        title="What just happened"
-        description="Every sensitive action writes a record as it happens, with the actor and the reason."
+        :title="t('ui.dashboard.activity')"
+        :description="t('ui.dashboard.activity_description')"
+        :divided="false"
       >
-        <ul v-if="activity.length > 0" class="divide-line -my-1 divide-y">
-          <li
-            v-for="entry in activity"
-            :key="entry.id"
-            class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 py-2"
-          >
-            <span class="text-body font-medium">{{ readAction(entry.action) }}</span>
-            <span v-if="entry.target" class="text-content-muted text-body truncate">
-              {{ entry.target }}
-            </span>
-            <span class="text-content-subtle text-chrome ml-auto whitespace-nowrap tabular-nums">
+        <AppTable v-if="activity.length > 0" :columns="activityColumns">
+          <tr v-for="entry in activity" :key="entry.id">
+            <td data-col="at" class="text-content-muted w-0 whitespace-nowrap tabular-nums">
               {{ formatTime(entry.at) }}
-            </span>
-            <span v-if="entry.actor" class="text-content-subtle text-chrome w-full">
-              {{ entry.actor }}<template v-if="entry.reason"> — {{ entry.reason }}</template>
-            </span>
-          </li>
-        </ul>
+            </td>
+            <td data-col="action" class="font-medium whitespace-nowrap">
+              {{ readAction(entry.action) }}
+            </td>
+            <td data-col="target" class="text-content-muted max-w-[24rem] truncate">
+              {{ entry.target ?? '—' }}
+            </td>
+            <td data-col="actor" class="text-content-muted">
+              {{ readActor(entry.actor) }}
+              <span v-if="entry.reason" class="text-content-subtle">— {{ entry.reason }}</span>
+            </td>
+          </tr>
+        </AppTable>
 
         <EmptyState
           v-else
           icon="history"
-          title="Nothing has happened yet"
-          description="Suspensions, refunds, credential rotations and permission changes appear here with the actor and the reason."
+          :title="t('ui.dashboard.activity_empty')"
+          :description="t('ui.dashboard.activity_empty_detail')"
         />
-      </AppCard>
-
-      <p class="text-content-subtle text-label">{{ environment }} · {{ version ?? 'dev' }}</p>
+      </DetailSection>
     </div>
   </AdminLayout>
 </template>

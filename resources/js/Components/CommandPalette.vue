@@ -255,7 +255,7 @@ defineExpose({ show })
        what it becomes. Showing the shortcut is how anybody learns it. -->
   <button
     type="button"
-    class="pressable border-line bg-background text-content-subtle hover:border-line-strong text-body hidden items-center gap-2 rounded-[var(--radius-sm)] border py-1.5 pr-1.5 pl-2.5 transition-colors duration-(--duration-fast) sm:flex sm:w-64"
+    class="pressable border-line bg-background text-content-subtle hover:border-line-strong text-body hidden items-center gap-2 rounded-sm border py-1.5 pr-1.5 pl-2.5 transition-colors duration-(--duration-fast) sm:flex sm:w-64"
     @click="show"
   >
     <AppIcon name="search" :size="15" />
@@ -269,7 +269,7 @@ defineExpose({ show })
 
   <button
     type="button"
-    class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast) sm:hidden"
+    class="pressable text-content-muted hover:text-content rounded-sm p-1.5 transition-colors duration-(--duration-fast) sm:hidden"
     @click="show"
   >
     <AppIcon name="search" :size="16" label="Search" />
@@ -288,7 +288,7 @@ defineExpose({ show })
       <div class="bg-background/70 absolute inset-0" @click="hide" />
 
       <div
-        class="border-line bg-surface-primary relative w-full max-w-xl overflow-hidden rounded-[var(--radius-lg)] border shadow-(--shadow-panel)"
+        class="border-line bg-surface-primary relative w-full max-w-xl overflow-hidden rounded-lg border shadow-(--shadow-panel)"
       >
         <div class="border-line flex items-center gap-2.5 border-b px-3.5 py-2.5">
           <AppIcon name="search" :size="16" class="text-content-subtle" />
@@ -314,7 +314,7 @@ defineExpose({ show })
           <li v-for="(row, index) in rows" :key="row.kind + row.href + row.title">
             <button
               type="button"
-              class="flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2.5 py-2 text-left transition-colors duration-(--duration-fast)"
+              class="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-left transition-colors duration-(--duration-fast)"
               :class="index === active ? 'bg-surface-secondary text-content' : 'text-content-muted'"
               @click="go(index)"
               @mousemove="active = index"

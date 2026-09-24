@@ -53,10 +53,20 @@ function lookup(key: string): string | null {
 }
 
 export function useTranslations(): {
-  t: (key: string, replacements?: Record<string, string | number>) => string
+  t: (key: string, replacements?: Record<string, string | number>, fallback?: string) => string
 } {
-  function t(key: string, replacements: Record<string, string | number> = {}): string {
-    let value = lookup(key) ?? key
+  /**
+   * `fallback` is for primitives only: a shared component can be mounted
+   * where no translations were rendered (a unit test, a module's own page),
+   * and there it should say "Choose columns", not `ui.common.choose_columns`.
+   * A page never passes one — a missing key on a page is a bug to see.
+   */
+  function t(
+    key: string,
+    replacements: Record<string, string | number> = {},
+    fallback?: string,
+  ): string {
+    let value = lookup(key) ?? fallback ?? key
 
     for (const [name, replacement] of Object.entries(replacements)) {
       value = value.replaceAll(`:${name}`, String(replacement))

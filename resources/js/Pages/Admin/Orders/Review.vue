@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface ReviewRow {
   id: string
   number: string
   customer: string | null
+  status: string
   statusLabel: string
   total: string
   placedAt: string | null
@@ -36,18 +38,18 @@ function formatDateTime(value: string | null): string {
       <AppCard v-for="order in orders" :key="order.id">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p class="text-sm font-medium">
+            <p class="text-body font-medium">
               <Link :href="`/admin/orders/${order.id}`" class="underline underline-offset-4">
                 {{ order.number }}
               </Link>
-              <AppBadge class="ml-2">{{ order.statusLabel }}</AppBadge>
+              <AppStatus class="ml-2" :tone="statusTone(order.status)" :label="order.statusLabel" />
             </p>
-            <p class="text-content-muted mt-0.5 text-xs">
+            <p class="text-content-muted text-chrome mt-0.5">
               {{ order.customer ?? '—' }} · {{ formatDateTime(order.placedAt) }}
             </p>
 
             <ul v-if="order.riskReasons.length > 0" class="mt-3 space-y-1">
-              <li v-for="(reason, index) in order.riskReasons" :key="index" class="text-sm">
+              <li v-for="(reason, index) in order.riskReasons" :key="index" class="text-body">
                 {{ reason }}
               </li>
             </ul>

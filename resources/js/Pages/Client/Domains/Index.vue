@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface DomainRow {
   id: string
@@ -21,13 +22,6 @@ interface DomainRow {
 defineProps<{ domains: DomainRow[] }>()
 
 const { t } = useTranslations()
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'failed' || status === 'redemption') return 'danger'
-  if (status === 'expired' || status === 'pending' || status === 'registering') return 'warning'
-  return 'neutral'
-}
 </script>
 
 <template>
@@ -39,14 +33,14 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         <div class="flex items-start justify-between gap-4">
           <Link
             :href="`/client/domains/${domain.id}`"
-            class="min-w-0 text-sm font-semibold break-all underline-offset-4 hover:underline"
+            class="text-body min-w-0 font-semibold break-all underline-offset-4 hover:underline"
           >
             {{ domain.name }}
           </Link>
-          <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
         </div>
 
-        <dl class="border-line mt-4 border-t pt-3 text-sm">
+        <dl class="border-line text-body mt-4 border-t pt-3">
           <div v-if="domain.expiresOn" class="flex justify-between gap-4 py-1">
             <dt class="text-content-muted">
               {{ t('domains.portal.expires_on', { date: domain.expiresOn }) }}

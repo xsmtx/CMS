@@ -16,9 +16,11 @@ import { Head, router } from '@inertiajs/vue3'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface ServerRow {
   id: string
@@ -55,13 +57,13 @@ function openSession(server: ServerRow): void {
       title="This installation"
       description="What the licence says this installation may do. A seam with a dull default: a gate whose default is deny turns an unreachable licence service into an outage."
     >
-      <dl class="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+      <dl class="text-body grid gap-x-8 gap-y-3 sm:grid-cols-2">
         <div>
-          <dt class="text-content-muted text-xs">Platform version</dt>
+          <dt class="text-content-muted text-chrome">Platform version</dt>
           <dd class="mt-0.5 font-mono">{{ platform.version }}</dd>
         </div>
         <div v-for="entitlement in platform.entitlements" :key="entitlement.key">
-          <dt class="text-content-muted text-xs">{{ entitlement.label }}</dt>
+          <dt class="text-content-muted text-chrome">{{ entitlement.label }}</dt>
           <dd class="mt-0.5">
             <AppBadge :tone="entitlement.allowed ? 'success' : 'neutral'">
               {{ entitlement.allowed ? 'Allowed' : 'Not allowed' }}
@@ -79,25 +81,23 @@ function openSession(server: ServerRow): void {
         <td class="px-4 py-2.5 font-medium">{{ server.name }}</td>
         <td class="text-content-muted px-4 py-2.5">
           {{ server.hostname }}
-          <span v-if="server.ipAddress" class="block font-mono text-xs">
+          <span v-if="server.ipAddress" class="text-chrome block font-mono">
             {{ server.ipAddress }}
           </span>
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
         <td class="text-content-muted px-4 py-2.5">{{ server.module ?? '—' }}</td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="server.status === 'active' ? 'success' : 'warning'">
-            {{ server.status }}
-          </AppBadge>
+          <AppStatus :tone="statusTone(server.status)" :label="server.status" />
         </td>
         <td class="px-4 py-2.5 text-right">
           <AppButton v-if="server.canOpenSession" size="sm" @click="openSession(server)">
             Open panel
           </AppButton>
-          <span v-else-if="!server.hasSecret" class="text-content-muted text-xs">
+          <span v-else-if="!server.hasSecret" class="text-content-muted text-chrome">
             No credential stored
           </span>
-          <span v-else class="text-content-muted text-xs">Panel cannot issue a session</span>
+          <span v-else class="text-content-muted text-chrome">Panel cannot issue a session</span>
         </td>
       </tr>
     </AppTable>
@@ -108,7 +108,7 @@ function openSession(server: ServerRow): void {
       description="Add one under Apps & Integrations. Its credential stays on this machine; what travels is a session the panel issued."
     />
 
-    <p class="text-content-muted mt-6 max-w-[74ch] text-xs leading-relaxed">
+    <p class="text-content-muted text-chrome mt-6 max-w-[74ch] leading-relaxed">
       Opening a panel never reveals a stored password. The platform asks the panel for a short-lived
       session using the API credential it already holds, and that credential never reaches a
       browser. Every session is recorded against the operator who asked for it.

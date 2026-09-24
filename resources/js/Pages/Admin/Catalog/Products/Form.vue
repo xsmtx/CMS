@@ -205,19 +205,19 @@ function submit(): void {
           <Link
             v-if="product.canPrice"
             :href="`/admin/catalog/products/${product.id}/pricing`"
-            class="text-content-muted hover:text-content text-sm underline underline-offset-4"
+            class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
             Pricing
           </Link>
           <Link
             :href="`/admin/catalog/products/${product.id}/options`"
-            class="text-content-muted hover:text-content text-sm underline underline-offset-4"
+            class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
             Options ({{ product.optionGroupCount }})
           </Link>
           <Link
             :href="`/admin/catalog/products/${product.id}/addons`"
-            class="text-content-muted hover:text-content text-sm underline underline-offset-4"
+            class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
             Addons ({{ product.addonCount }})
           </Link>

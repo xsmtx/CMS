@@ -139,7 +139,7 @@ function saveSequence(key: string): void {
 
             <!-- Where the timing lives. Without this line an operator sets a
                  rate, waits, and concludes the fee is broken. -->
-            <p class="text-content-muted text-sm leading-relaxed">
+            <p class="text-content-muted text-body leading-relaxed">
               {{ t('billing.settings.late_fee_step_note') }}
             </p>
           </div>
@@ -169,7 +169,7 @@ function saveSequence(key: string): void {
           <h2 class="text-title font-semibold tracking-tight">
             {{ t('billing.settings.numbering.title') }}
           </h2>
-          <p class="text-content-muted max-w-[75ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[75ch] leading-relaxed">
             {{ t('billing.settings.numbering.intro') }}
           </p>
         </div>
@@ -180,7 +180,7 @@ function saveSequence(key: string): void {
               <h3 class="text-body font-semibold">{{ sequence.label }}</h3>
 
               <div class="flex items-center gap-2">
-                <span class="text-content-muted text-xs">
+                <span class="text-content-muted text-chrome">
                   {{ t('billing.settings.numbering.preview') }}
                 </span>
                 <AppBadge tone="brand">{{ sequence.preview }}</AppBadge>
@@ -188,7 +188,7 @@ function saveSequence(key: string): void {
               </div>
             </div>
 
-            <p v-if="!sequence.exists" class="text-content-muted text-xs leading-relaxed">
+            <p v-if="!sequence.exists" class="text-content-muted text-chrome leading-relaxed">
               {{ t('billing.settings.numbering.not_created') }}
             </p>
 

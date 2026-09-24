@@ -55,27 +55,31 @@ function formatDate(value: string | null): string {
     >
       <tr v-for="promotion in promotions" :key="promotion.id">
         <td class="px-4 py-2.5">
-          <p class="font-mono text-sm font-medium">
+          <p class="text-body font-mono font-medium">
             {{ promotion.code }}
             <AppBadge v-if="!promotion.isActive" class="ml-2">Inactive</AppBadge>
           </p>
-          <p class="text-content-muted text-xs">{{ promotion.name }}</p>
+          <p class="text-content-muted text-chrome">{{ promotion.name }}</p>
         </td>
         <td class="px-4 py-2.5 tabular-nums">{{ promotion.value ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-2.5 text-xs">{{ promotion.scope }}</td>
-        <td class="text-content-muted px-4 py-2.5 text-xs tabular-nums">{{ usage(promotion) }}</td>
-        <td class="text-content-muted px-4 py-2.5 text-xs">{{ formatDate(promotion.endsAt) }}</td>
+        <td class="text-content-muted text-chrome px-4 py-2.5">{{ promotion.scope }}</td>
+        <td class="text-content-muted text-chrome px-4 py-2.5 tabular-nums">
+          {{ usage(promotion) }}
+        </td>
+        <td class="text-content-muted text-chrome px-4 py-2.5">
+          {{ formatDate(promotion.endsAt) }}
+        </td>
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/promotions/${promotion.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="canManage && promotion.redemptions === 0"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(promotion)"
           >
             Delete

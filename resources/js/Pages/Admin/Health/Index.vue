@@ -8,6 +8,7 @@ import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Check {
   key: string
@@ -53,14 +54,15 @@ function turnOff(): void {
  * over a call or photographed into a post-mortem. A green dot beside an
  * amber dot is one bit of information for most readers and none for the
  * rest, so every state here also carries a mark that survives greyscale.
+ *
+ * The words come from the shared vocabulary. One rule stays local: on this
+ * screen a state nobody recognises is treated as failing, not as unknown —
+ * only a check that says `unknown` gets to be unknown.
  */
-function tone(state: string): StatusTone {
-  if (state === 'ok') return 'healthy'
-  if (state === 'degraded') return 'warning'
-  if (state === 'maintenance') return 'maintenance'
-  if (state === 'unknown') return 'unknown'
+function healthTone(state: string): StatusTone {
+  const tone = statusTone(state)
 
-  return 'critical'
+  return tone === 'unknown' && state !== 'unknown' ? 'critical' : tone
 }
 
 function formatDateTime(value: string): string {
@@ -77,11 +79,11 @@ function formatDateTime(value: string): string {
   >
     <div class="mb-6 flex flex-wrap items-center gap-3">
       <AppStatus
-        :tone="tone(overall)"
+        :tone="healthTone(overall)"
         :label="checks.find((check) => check.state === overall)?.stateLabel ?? overall"
         class="text-title font-semibold"
       />
-      <span class="text-content-muted text-xs">
+      <span class="text-content-muted text-chrome">
         Checked {{ formatDateTime(runtime.checkedAt) }}
       </span>
     </div>
@@ -89,11 +91,11 @@ function formatDateTime(value: string): string {
     <div class="grid gap-4 md:grid-cols-2">
       <AppCard v-for="check in checks" :key="check.key">
         <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="text-sm font-semibold">{{ check.label }}</h2>
-          <AppStatus :tone="tone(check.state)" :label="check.stateLabel" />
+          <h2 class="text-body font-semibold">{{ check.label }}</h2>
+          <AppStatus :tone="healthTone(check.state)" :label="check.stateLabel" />
         </div>
 
-        <p v-if="check.detail" class="text-content-muted mt-2 text-xs leading-relaxed">
+        <p v-if="check.detail" class="text-content-muted text-chrome mt-2 leading-relaxed">
           {{ check.detail }}
         </p>
 
@@ -102,7 +104,7 @@ function formatDateTime(value: string): string {
              published a password. -->
         <dl
           v-if="Object.keys(check.measurements).length > 0"
-          class="text-content-muted mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs"
+          class="text-content-muted text-chrome mt-3 flex flex-wrap gap-x-5 gap-y-1"
         >
           <div v-for="(value, key) in check.measurements" :key="key">
             <dt class="inline">{{ key }}</dt>
@@ -114,7 +116,7 @@ function formatDateTime(value: string): string {
 
     <div class="mt-8 grid gap-4 md:grid-cols-2">
       <AppCard title="This installation">
-        <dl class="text-content-muted flex flex-wrap gap-x-6 gap-y-1 text-xs">
+        <dl class="text-content-muted text-chrome flex flex-wrap gap-x-6 gap-y-1">
           <div>
             <dt class="inline">Version</dt>
             <dd class="text-content ml-1 inline">{{ runtime.version }}</dd>
@@ -135,8 +137,8 @@ function formatDateTime(value: string): string {
         description="Closes the storefront and the client area. Staff can still sign in."
       >
         <template v-if="maintenance.active">
-          <p class="text-sm">{{ maintenance.message }}</p>
-          <p v-if="maintenance.until" class="text-content-muted mt-1 text-xs">
+          <p class="text-body">{{ maintenance.message }}</p>
+          <p v-if="maintenance.until" class="text-content-muted text-chrome mt-1">
             Ends {{ formatDateTime(maintenance.until) }}
           </p>
 
@@ -171,7 +173,7 @@ function formatDateTime(value: string): string {
         </template>
 
         <template v-else>
-          <p class="text-content-muted text-xs">Off.</p>
+          <p class="text-content-muted text-chrome">Off.</p>
 
           <div v-if="can.manage" class="mt-4">
             <AppButton size="sm" @click="editing = true">Turn on</AppButton>

@@ -313,7 +313,7 @@ function duration(seconds: number): string {
             >
               {{ node.label }}
             </button>
-            <span class="text-content-subtle block font-mono text-xs">{{ node.key }}</span>
+            <span class="text-content-subtle text-chrome block font-mono">{{ node.key }}</span>
           </td>
           <td data-col="kind" class="px-4 py-2.5">
             <AppBadge tone="neutral">{{ node.kindLabel }}</AppBadge>
@@ -321,10 +321,10 @@ function duration(seconds: number): string {
           <td data-col="health" class="px-4 py-2.5">
             <AppStatus :tone="toneOf(node)" :label="node.healthLabel" />
           </td>
-          <td data-col="source" class="text-content-muted px-4 py-2.5 font-mono text-xs">
+          <td data-col="source" class="text-content-muted text-chrome px-4 py-2.5 font-mono">
             {{ node.source }}
           </td>
-          <td data-col="seen" class="text-content-muted px-4 py-2.5 text-xs tabular-nums">
+          <td data-col="seen" class="text-content-muted text-chrome px-4 py-2.5 tabular-nums">
             {{ when(node.lastSeenAt) }}
           </td>
         </AppTableRow>
@@ -338,7 +338,7 @@ function duration(seconds: number): string {
         >
           Previous
         </AppButton>
-        <span class="text-content-muted text-xs tabular-nums">
+        <span class="text-content-muted text-chrome tabular-nums">
           {{ nodes.currentPage }} / {{ nodes.lastPage }} — {{ nodes.total }}
         </span>
         <AppButton
@@ -378,7 +378,7 @@ function duration(seconds: number): string {
           >
             {{ row.amount }}
           </p>
-          <p v-if="peek.impact.truncated" class="text-content-muted text-xs">
+          <p v-if="peek.impact.truncated" class="text-content-muted text-chrome">
             {{
               t('infrastructure.explorer.drawer.truncated').replace(
                 ':depth',
@@ -394,9 +394,9 @@ function duration(seconds: number): string {
           </h3>
           <ul class="flex flex-col gap-1">
             <li v-for="row in peek.above" :key="row.node.id" class="text-body flex gap-2">
-              <span class="text-content-subtle text-xs">{{ row.relationLabel }}</span>
+              <span class="text-content-subtle text-chrome">{{ row.relationLabel }}</span>
               <span>{{ row.node.label }}</span>
-              <span class="text-content-subtle text-xs">{{ row.node.kindLabel }}</span>
+              <span class="text-content-subtle text-chrome">{{ row.node.kindLabel }}</span>
             </li>
           </ul>
         </section>
@@ -414,7 +414,7 @@ function duration(seconds: number): string {
             >
               <AppStatus :tone="toneOf(row.node)" :label="row.node.healthLabel" compact />
               <span>{{ row.node.label }}</span>
-              <span class="text-content-subtle text-xs">{{ row.node.kindLabel }}</span>
+              <span class="text-content-subtle text-chrome">{{ row.node.kindLabel }}</span>
             </li>
           </ul>
         </section>
@@ -431,7 +431,7 @@ function duration(seconds: number): string {
               <dt class="text-content-muted text-body">{{ metric.metricLabel }}</dt>
               <dd class="text-body text-right font-medium tabular-nums">
                 {{ reading(metric) }}
-                <span v-if="metric.stale" class="text-warning text-xs">
+                <span v-if="metric.stale" class="text-warning text-chrome">
                   · {{ t('infrastructure.telemetry.stale') }}
                 </span>
               </dd>
@@ -452,9 +452,9 @@ function duration(seconds: number): string {
               :key="index"
               class="text-body flex flex-wrap gap-2"
             >
-              <span class="text-content-subtle text-xs">{{ row.relationLabel }}</span>
+              <span class="text-content-subtle text-chrome">{{ row.relationLabel }}</span>
               <span>{{ row.other.label }}</span>
-              <span class="text-content-muted text-xs tabular-nums">
+              <span class="text-content-muted text-chrome tabular-nums">
                 {{ when(row.observedAt) }}
                 <template v-if="row.endedAt"> → {{ when(row.endedAt) }}</template>
               </span>

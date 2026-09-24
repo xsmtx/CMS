@@ -55,3 +55,4 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0045](0045-tax-is-rows-an-operator-edits.md) | Tax is rows an operator edits, not a country in the code | accepted |
 | [0046](0046-a-late-fee-is-a-new-invoice.md) | A late fee is a new invoice | accepted |
 | [0047](0047-a-package-is-verified-before-it-touches-disk.md) | A package is verified before it touches disk | accepted |
+| [0048](0048-sections-not-cards-and-one-status-vocabulary.md) | Sections, not cards; one status vocabulary; skills govern the UI | accepted |

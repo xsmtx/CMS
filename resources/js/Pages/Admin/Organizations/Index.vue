@@ -61,7 +61,9 @@ function formatDate(value: string): string {
         <td class="px-4 py-2.5">
           <AppBadge :tone="tone(organization.type)">{{ organization.typeLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted px-4 py-2.5 font-mono text-xs">{{ organization.slug }}</td>
+        <td class="text-content-muted text-chrome px-4 py-2.5 font-mono">
+          {{ organization.slug }}
+        </td>
         <td class="px-4 py-2.5 tabular-nums">{{ organization.children }}</td>
         <td class="px-4 py-2.5">
           <AppBadge :tone="organization.isActive ? 'success' : 'warning'">

@@ -48,7 +48,7 @@ const describedBy = computed(() => {
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="text-sm font-medium">
+    <label :for="id" class="text-body font-medium">
       {{ label }}
       <span v-if="required" class="text-content-subtle" aria-hidden="true">*</span>
     </label>
@@ -63,11 +63,11 @@ const describedBy = computed(() => {
       :placeholder="placeholder"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      class="border-line bg-surface-primary text-content placeholder:text-content-subtle w-full rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-sm transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+      class="border-line bg-surface-primary text-content placeholder:text-content-subtle text-body h-(--control-h) w-full rounded-md border px-3 transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
       :class="error ? 'border-danger' : 'focus:border-brand'"
     />
 
-    <p v-if="hint && !error" :id="hintId" class="text-content-muted text-xs">{{ hint }}</p>
-    <p v-if="error" :id="errorId" class="text-danger text-xs">{{ error }}</p>
+    <p v-if="hint && !error" :id="hintId" class="text-content-muted text-chrome">{{ hint }}</p>
+    <p v-if="error" :id="errorId" class="text-danger text-chrome">{{ error }}</p>
   </div>
 </template>

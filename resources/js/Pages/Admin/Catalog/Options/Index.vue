@@ -51,21 +51,21 @@ function remove(group: OptionGroupRow): void {
             {{ group.name }}
             <AppBadge v-if="group.isRequired" class="ml-2">Required</AppBadge>
           </p>
-          <p class="text-content-muted font-mono text-xs">{{ group.key }}</p>
+          <p class="text-content-muted text-chrome font-mono">{{ group.key }}</p>
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ group.typeLabel }}</td>
         <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ group.choices }}</td>
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/products/${product.id}/options/${group.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="canManage"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(group)"
           >
             Delete

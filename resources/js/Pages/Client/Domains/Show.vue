@@ -2,12 +2,13 @@
 import { Head, router, useForm } from '@inertiajs/vue3'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 const props = defineProps<{
   domain: {
@@ -46,13 +47,6 @@ function toggleAutoRenew(): void {
 function requestCode(): void {
   router.post(`/client/domains/${props.domain.id}/transfer-code`, {}, { preserveScroll: true })
 }
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'failed' || status === 'redemption') return 'danger'
-  if (status === 'expired' || status === 'pending' || status === 'registering') return 'warning'
-  return 'neutral'
-}
 </script>
 
 <template>
@@ -70,10 +64,10 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
 
         <AppCard :title="t('domains.portal.overview')">
           <div class="mb-4">
-            <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
+            <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
           </div>
 
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div class="flex justify-between gap-4 py-2.5 first:pt-0">
               <dt class="text-content-muted">{{ t('domains.domains.registered') }}</dt>
               <dd>{{ domain.registeredOn ?? '—' }}</dd>
@@ -116,7 +110,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
 
       <div class="flex flex-col gap-6">
         <AppCard v-if="can.autoRenew" :title="t('domains.portal.auto_renew_title')">
-          <p class="text-sm leading-relaxed">
+          <p class="text-body leading-relaxed">
             {{
               domain.autoRenew
                 ? t('domains.portal.auto_renew_on')
@@ -133,18 +127,21 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
           shown once, and never written down on our side.
         -->
         <AppCard v-if="can.transferCode" :title="t('domains.portal.transfer_title')">
-          <p class="text-content-muted text-sm leading-relaxed">
+          <p class="text-content-muted text-body leading-relaxed">
             {{ t('domains.portal.transfer_hint') }}
           </p>
 
-          <p v-if="domain.registrarLock" class="text-content-muted mt-3 text-xs leading-relaxed">
+          <p
+            v-if="domain.registrarLock"
+            class="text-content-muted text-chrome mt-3 leading-relaxed"
+          >
             {{ t('domains.portal.transfer_locked') }}
           </p>
 
           <div v-if="transferCode" class="mt-4">
-            <p class="text-content-muted text-xs">{{ t('domains.portal.transfer_code') }}</p>
+            <p class="text-content-muted text-chrome">{{ t('domains.portal.transfer_code') }}</p>
             <code
-              class="border-line bg-surface-secondary mt-1 block overflow-x-auto rounded-[var(--radius-sm)] border px-3 py-2 font-mono text-xs break-all"
+              class="border-line bg-surface-secondary text-chrome mt-1 block overflow-x-auto rounded-sm border px-3 py-2 font-mono break-all"
             >
               {{ transferCode }}
             </code>

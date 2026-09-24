@@ -41,13 +41,13 @@ function remove(role: RoleRow): void {
             {{ role.name }}
             <AppBadge v-if="role.isSystem" class="ml-2">System</AppBadge>
           </p>
-          <p class="text-content-muted font-mono text-xs">{{ role.slug }}</p>
+          <p class="text-content-muted text-chrome font-mono">{{ role.slug }}</p>
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ role.scope }}</td>
         <td class="text-content-muted px-4 py-2.5">
           <span v-if="role.isSuperAdmin">
             All, by bypass
-            <span class="text-content-subtle block text-xs">
+            <span class="text-content-subtle text-chrome block">
               Grants are not listed; the role skips the check entirely.
             </span>
           </span>
@@ -56,14 +56,14 @@ function remove(role: RoleRow): void {
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/roles/${role.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="!role.isSystem"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(role)"
           >
             Delete

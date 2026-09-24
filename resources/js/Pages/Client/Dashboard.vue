@@ -53,7 +53,7 @@ function formatDate(value: string | null): string {
         <template #actions>
           <Link
             href="/client/billing"
-            class="text-content-muted hover:text-content text-sm underline-offset-4 hover:underline"
+            class="text-content-muted hover:text-content text-body underline-offset-4 hover:underline"
           >
             {{ t('portal.dashboard.see_all') }}
           </Link>
@@ -69,11 +69,11 @@ function formatDate(value: string | null): string {
           <li v-for="invoice in unpaid" :key="invoice.number">
             <Link
               :href="`/client/billing/invoices/${invoice.number}`"
-              class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
+              class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-sm px-2 py-3 transition-colors duration-(--duration-fast)"
             >
               <span class="min-w-0">
-                <span class="block text-sm font-medium">{{ invoice.number }}</span>
-                <span class="text-content-muted block text-xs">
+                <span class="text-body block font-medium">{{ invoice.number }}</span>
+                <span class="text-content-muted text-chrome block">
                   {{ t('billing.portal.due', { date: invoice.dueOn ?? '—' }) }}
                 </span>
               </span>
@@ -81,7 +81,7 @@ function formatDate(value: string | null): string {
                 <AppBadge v-if="invoice.isPastDue" tone="danger">
                   {{ t('billing.portal.past_due') }}
                 </AppBadge>
-                <span class="text-sm font-semibold tabular-nums">{{ invoice.balance }}</span>
+                <span class="text-body font-semibold tabular-nums">{{ invoice.balance }}</span>
               </span>
             </Link>
           </li>
@@ -93,7 +93,7 @@ function formatDate(value: string | null): string {
           <template #actions>
             <Link
               href="/client/orders"
-              class="text-content-muted hover:text-content text-sm underline-offset-4 hover:underline"
+              class="text-content-muted hover:text-content text-body underline-offset-4 hover:underline"
             >
               {{ t('portal.dashboard.see_all') }}
             </Link>
@@ -109,15 +109,15 @@ function formatDate(value: string | null): string {
             <li v-for="order in orders" :key="order.number">
               <Link
                 :href="`/client/orders/${order.number}`"
-                class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-[var(--radius-sm)] px-2 py-3 transition-colors duration-(--duration-fast)"
+                class="hover:bg-surface-secondary -mx-2 flex items-center justify-between gap-4 rounded-sm px-2 py-3 transition-colors duration-(--duration-fast)"
               >
                 <span class="min-w-0">
-                  <span class="block text-sm font-medium">{{ order.number }}</span>
-                  <span class="text-content-muted block text-xs">
+                  <span class="text-body block font-medium">{{ order.number }}</span>
+                  <span class="text-content-muted text-chrome block">
                     {{ formatDate(order.placedAt) }} · {{ order.statusLabel }}
                   </span>
                 </span>
-                <span class="shrink-0 text-sm tabular-nums">{{ order.total }}</span>
+                <span class="text-body shrink-0 tabular-nums">{{ order.total }}</span>
               </Link>
             </li>
           </ul>
@@ -129,7 +129,7 @@ function formatDate(value: string | null): string {
             <p class="text-2xl font-semibold tracking-tight tabular-nums">
               {{ credit.balance }}
             </p>
-            <p class="text-content-muted mt-2 text-sm leading-relaxed">
+            <p class="text-content-muted text-body mt-2 leading-relaxed">
               {{ t('billing.portal.credit_explained') }}
             </p>
           </AppCard>

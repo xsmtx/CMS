@@ -77,7 +77,7 @@ function formatDate(value: string): string {
           >
             {{ reseller.name }}
           </Link>
-          <span class="text-content-subtle block font-mono text-xs">{{ reseller.slug }}</span>
+          <span class="text-content-subtle text-chrome block font-mono">{{ reseller.slug }}</span>
         </td>
         <td data-col="state" class="px-4 py-2.5">
           <AppStatus

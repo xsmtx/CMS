@@ -98,18 +98,18 @@ watch(
   <section class="flex flex-col gap-4">
     <div v-if="title">
       <h2 class="text-base font-semibold tracking-tight">{{ title }}</h2>
-      <p v-if="description" class="text-content-muted mt-1 max-w-[60ch] text-sm leading-relaxed">
+      <p v-if="description" class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
         {{ description }}
       </p>
     </div>
 
-    <p v-if="currencies.length === 0" class="text-content-muted text-sm">
+    <p v-if="currencies.length === 0" class="text-content-muted text-body">
       No active currencies yet. Add one before pricing anything.
     </p>
 
     <template v-else>
       <div
-        class="border-line bg-surface-secondary inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-[var(--radius-sm)] border p-0.5"
+        class="border-line bg-surface-secondary inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-sm border p-0.5"
         role="tablist"
         aria-label="Currency"
       >
@@ -134,13 +134,13 @@ watch(
         </button>
       </div>
 
-      <div class="border-line overflow-x-auto rounded-[var(--radius-lg)] border">
-        <table class="w-full text-left text-sm">
+      <div class="border-line overflow-x-auto rounded-lg border">
+        <table class="text-body w-full text-left">
           <thead class="bg-surface-secondary text-content-muted">
             <tr>
-              <th scope="col" class="px-4 py-2.5 text-xs font-medium">Billing cycle</th>
-              <th scope="col" class="w-40 px-4 py-2.5 text-xs font-medium">Recurring</th>
-              <th scope="col" class="w-40 px-4 py-2.5 text-xs font-medium">Setup fee</th>
+              <th scope="col" class="text-chrome px-4 py-2.5 font-medium">Billing cycle</th>
+              <th scope="col" class="text-chrome w-40 px-4 py-2.5 font-medium">Recurring</th>
+              <th scope="col" class="text-chrome w-40 px-4 py-2.5 font-medium">Setup fee</th>
             </tr>
           </thead>
           <tbody class="divide-line bg-surface-primary divide-y">
@@ -182,7 +182,7 @@ watch(
         </table>
       </div>
 
-      <p class="text-content-subtle text-xs">
+      <p class="text-content-subtle text-chrome">
         Unticked cycles are not sold in {{ active }}. Zero means free.
       </p>
     </template>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface OrderRow {
   id: string
@@ -21,13 +22,6 @@ defineProps<{
 }>()
 
 const { t } = useTranslations()
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active' || status === 'paid') return 'success'
-  if (status === 'cancelled' || status === 'failed') return 'danger'
-  if (status === 'awaiting_payment') return 'warning'
-  return 'neutral'
-}
 
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
@@ -61,13 +55,13 @@ function formatDate(value: string | null): string {
           {{ formatDate(order.placedAt) }}
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="tone(order.status)">{{ order.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
         </td>
         <td class="px-4 py-2.5 tabular-nums">{{ order.total }}</td>
         <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/client/orders/${order.number}`"
-            class="text-content-muted hover:text-content text-xs underline-offset-4 hover:underline"
+            class="text-content-muted hover:text-content text-chrome underline-offset-4 hover:underline"
           >
             {{ t('ordering.portal.view') }}
           </Link>
@@ -81,7 +75,7 @@ function formatDate(value: string | null): string {
       :description="t('ordering.portal.description')"
     />
 
-    <p v-if="orders.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="orders.lastPage > 1" class="text-content-muted text-chrome mt-4">
       {{ orders.currentPage }} / {{ orders.lastPage }} — {{ orders.total }}
     </p>
   </ClientLayout>

@@ -154,19 +154,19 @@ function when(value: string): string {
         <AppTableRow v-for="metric in metrics.data" :key="metric.id">
           <td data-col="resource" class="px-4 py-2.5">
             <span class="font-medium">{{ metric.node?.label ?? '—' }}</span>
-            <span class="text-content-subtle block text-xs">{{ metric.node?.kindLabel }}</span>
+            <span class="text-content-subtle text-chrome block">{{ metric.node?.kindLabel }}</span>
           </td>
           <td data-col="metric" class="px-4 py-2.5">{{ metric.metricLabel }}</td>
           <td data-col="value" class="numeric px-4 py-2.5 font-medium tabular-nums">
             {{ reading(metric) }}
           </td>
-          <td data-col="sampled" class="px-4 py-2.5 text-xs tabular-nums">
+          <td data-col="sampled" class="text-chrome px-4 py-2.5 tabular-nums">
             {{ when(metric.sampledAt) }}
             <AppBadge v-if="metric.stale" tone="warning">
               {{ t('infrastructure.telemetry.stale') }}
             </AppBadge>
           </td>
-          <td data-col="source" class="text-content-muted px-4 py-2.5 font-mono text-xs">
+          <td data-col="source" class="text-content-muted text-chrome px-4 py-2.5 font-mono">
             {{ metric.source }}
           </td>
         </AppTableRow>
@@ -180,7 +180,7 @@ function when(value: string): string {
         >
           Previous
         </AppButton>
-        <span class="text-content-muted text-xs tabular-nums">
+        <span class="text-content-muted text-chrome tabular-nums">
           {{ metrics.currentPage }} / {{ metrics.lastPage }} — {{ metrics.total }}
         </span>
         <AppButton

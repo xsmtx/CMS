@@ -22,12 +22,12 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCopy from '../../../Components/AppCopy.vue'
 import AppDrawer from '../../../Components/AppDrawer.vue'
 import AppSelectionBar from '../../../Components/AppSelectionBar.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import AppTableSkeleton from '../../../Components/AppTableSkeleton.vue'
@@ -35,6 +35,7 @@ import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 
 interface InvoiceRow {
   id: string
@@ -211,9 +212,9 @@ function formatDate(value: string | null): string {
          lira is the mistake this platform refuses everywhere else. -->
     <div v-if="owed.length > 0" class="mb-6 flex flex-wrap gap-6">
       <div v-for="row in owed" :key="row.currency">
-        <p class="text-content-muted text-xs">Outstanding ({{ row.currency }})</p>
+        <p class="text-content-muted text-chrome">Outstanding ({{ row.currency }})</p>
         <p class="text-xl font-semibold tabular-nums">{{ row.amount }}</p>
-        <p class="text-content-subtle text-xs">{{ row.count }} invoice(s)</p>
+        <p class="text-content-subtle text-chrome">{{ row.count }} invoice(s)</p>
       </div>
     </div>
 
@@ -236,7 +237,7 @@ function formatDate(value: string | null): string {
         <div class="flex flex-wrap gap-1.5">
           <button
             type="button"
-            class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
+            class="pressable text-chrome rounded-sm px-2.5 py-1 font-medium transition-colors duration-(--duration-fast)"
             :class="
               active === null
                 ? 'bg-surface-secondary text-content'
@@ -250,7 +251,7 @@ function formatDate(value: string | null): string {
             v-for="status in statuses"
             :key="status.value"
             type="button"
-            class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors duration-(--duration-fast)"
+            class="pressable text-chrome rounded-sm px-2.5 py-1 font-medium transition-colors duration-(--duration-fast)"
             :class="
               active === status.value
                 ? 'bg-surface-secondary text-content'
@@ -296,7 +297,7 @@ function formatDate(value: string | null): string {
           <span class="inline-flex items-center gap-1">
             <button
               type="button"
-              class="pressable font-mono text-xs underline-offset-4 hover:underline"
+              class="pressable text-chrome font-mono underline-offset-4 hover:underline"
               @click="inspect(invoice)"
             >
               {{ invoice.number }}
@@ -326,7 +327,7 @@ function formatDate(value: string | null): string {
         </td>
         <td data-col="capture" class="text-content-muted px-4 py-2.5 whitespace-nowrap">
           {{ formatDateTime(invoice.lastCaptureAt) }}
-          <span v-if="invoice.lastCaptureOutcome" class="block text-xs">
+          <span v-if="invoice.lastCaptureOutcome" class="text-chrome block">
             {{ invoice.lastCaptureOutcome }}
           </span>
         </td>
@@ -334,7 +335,7 @@ function formatDate(value: string | null): string {
           {{ invoice.total }}
           <span
             v-if="invoice.balanceMinor > 0"
-            class="text-content-muted block text-xs tabular-nums"
+            class="text-content-muted text-chrome block tabular-nums"
           >
             {{ invoice.balance }} owed
           </span>
@@ -343,7 +344,7 @@ function formatDate(value: string | null): string {
           {{ invoice.paymentMethod ?? '—' }}
         </td>
         <td data-col="status" class="px-4 py-2.5">
-          <AppBadge>{{ invoice.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
         </td>
         <td data-col="actions" class="px-4 py-2.5 text-right">
           <!-- `row-actions`: shown on hover, on focus, and on a touch screen
@@ -351,7 +352,7 @@ function formatDate(value: string | null): string {
                exist. -->
           <Link
             :href="`/admin/invoices/${invoice.id}`"
-            class="row-actions text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="row-actions text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Open
           </Link>
@@ -365,7 +366,7 @@ function formatDate(value: string | null): string {
       description="An invoice is raised from an order, or by hand. Once issued it keeps its own copy of the customer's details and every amount."
     />
 
-    <p v-if="invoices.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="invoices.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ invoices.currentPage }} of {{ invoices.lastPage }} — {{ invoices.total }} invoices
     </p>
 
@@ -382,7 +383,7 @@ function formatDate(value: string | null): string {
     >
       <div v-if="peek" class="flex flex-col gap-5">
         <div class="flex flex-wrap items-center gap-2">
-          <AppBadge>{{ peek.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(peek.status)" :label="peek.statusLabel" />
           <span v-if="peek.isPastDue" class="text-danger text-chrome">
             Past due {{ formatDate(peek.dueOn) }}
           </span>

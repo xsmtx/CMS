@@ -42,25 +42,27 @@ function remove(currency: CurrencyRow): void {
           <p class="font-medium">
             {{ currency.code }}
             <AppBadge v-if="currency.isBase" class="ml-2">Base</AppBadge>
-            <span v-if="!currency.isActive" class="text-content-subtle ml-2 text-xs">Inactive</span>
+            <span v-if="!currency.isActive" class="text-content-subtle text-chrome ml-2"
+              >Inactive</span
+            >
           </p>
-          <p class="text-content-muted text-xs">{{ currency.name }}</p>
+          <p class="text-content-muted text-chrome">{{ currency.name }}</p>
         </td>
         <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ currency.exponent }}</td>
-        <td class="text-content-muted px-4 py-2.5 font-mono text-xs tabular-nums">
+        <td class="text-content-muted text-chrome px-4 py-2.5 font-mono tabular-nums">
           {{ currency.rate }}
         </td>
         <td class="px-4 py-2.5 text-right whitespace-nowrap">
           <Link
             :href="`/admin/catalog/currencies/${currency.id}/edit`"
-            class="text-content-muted hover:text-content text-xs underline underline-offset-4"
+            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
             Edit
           </Link>
           <button
             v-if="canManage && !currency.isBase"
             type="button"
-            class="text-danger ml-3 text-xs underline underline-offset-4"
+            class="text-danger text-chrome ml-3 underline underline-offset-4"
             @click="remove(currency)"
           >
             Delete

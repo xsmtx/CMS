@@ -85,11 +85,19 @@ describe('AppTable columns', () => {
   })
 
   it('offers only the optional columns, and only when the table is named', async () => {
-    expect(mount(AppTable, { props: { columns: COLUMNS } }).text()).not.toContain('Columns')
+    const control = '[aria-label="Choose columns"]'
 
+    expect(
+      mount(AppTable, { props: { columns: COLUMNS } })
+        .find(control)
+        .exists(),
+    ).toBe(false)
+
+    // Without a toolbar the control is an icon in the header row, so it is
+    // found by its accessible name rather than by visible text.
     const wrapper = mount(AppTable, { props: { columns: COLUMNS, name: 'invoices' } })
 
-    expect(wrapper.text()).toContain('Columns')
+    expect(wrapper.find(control).exists()).toBe(true)
 
     const offered = (await openColumns(wrapper)).map((label) => label.textContent?.trim())
 

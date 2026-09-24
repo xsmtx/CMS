@@ -23,7 +23,7 @@ withDefaults(
 <template>
   <component
     :is="as"
-    class="border-line bg-surface-primary rounded-[var(--radius-lg)] border shadow-(--shadow-raised)"
+    class="border-line bg-surface-primary rounded-lg border shadow-(--shadow-raised)"
   >
     <header
       v-if="title || description || $slots.actions"

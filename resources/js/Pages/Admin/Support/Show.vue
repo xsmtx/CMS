@@ -7,8 +7,10 @@ import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Attachment {
   id: string
@@ -112,7 +114,7 @@ function formatDateTime(value: string | null): string {
           <li
             v-for="reply in ticket.replies"
             :key="reply.id"
-            class="rounded-[var(--radius-lg)] border p-4"
+            class="rounded-lg border p-4"
             :class="
               reply.isInternal
                 ? 'border-warning/40 bg-surface-secondary'
@@ -120,26 +122,26 @@ function formatDateTime(value: string | null): string {
             "
           >
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p class="text-sm font-medium">
+              <p class="text-body font-medium">
                 {{ reply.author }}
                 <!-- Loud on purpose: an agent must never be in doubt about
                      whether the customer can read what they wrote. -->
                 <AppBadge v-if="reply.isInternal" class="ml-2" tone="warning">Internal</AppBadge>
               </p>
-              <p class="text-content-subtle text-xs">{{ formatDateTime(reply.createdAt) }}</p>
+              <p class="text-content-subtle text-chrome">{{ formatDateTime(reply.createdAt) }}</p>
             </div>
 
             <!-- Rendered by TicketMarkdown, which strips author HTML
                  rather than escaping it. The raw body is never
                  interpolated anywhere. -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <div class="prose-article text-sm leading-relaxed" v-html="reply.html" />
+            <div class="prose-article text-body leading-relaxed" v-html="reply.html" />
 
             <ul v-if="reply.attachments.length > 0" class="mt-3 flex flex-wrap gap-2">
               <li v-for="file in reply.attachments" :key="file.id">
                 <a
                   :href="`/attachments/${file.id}`"
-                  class="border-line hover:bg-surface-secondary inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs"
+                  class="border-line hover:bg-surface-secondary text-chrome inline-flex items-center gap-2 rounded-sm border px-2.5 py-1"
                 >
                   {{ file.name }}
                   <span class="text-content-subtle">{{ file.size }}</span>
@@ -178,16 +180,13 @@ function formatDateTime(value: string | null): string {
             </AppButton>
           </div>
 
-          <ul
-            v-if="showCanned"
-            class="divide-line border-line mt-4 divide-y rounded-[var(--radius-sm)] border"
-          >
+          <ul v-if="showCanned" class="divide-line border-line mt-4 divide-y rounded-sm border">
             <li
               v-for="canned in options.canned"
               :key="canned.id"
               class="flex items-center justify-between gap-3 px-3 py-2"
             >
-              <span class="text-sm">{{ canned.name }}</span>
+              <span class="text-body">{{ canned.name }}</span>
               <AppButton size="sm" variant="ghost" @click="insert(canned.body)">Insert</AppButton>
             </li>
           </ul>
@@ -197,11 +196,11 @@ function formatDateTime(value: string | null): string {
       <div class="flex flex-col gap-6">
         <AppCard title="Status">
           <div class="flex flex-wrap items-center gap-2">
-            <AppBadge>{{ ticket.statusLabel }}</AppBadge>
+            <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
             <AppBadge v-if="ticket.hasBreached" tone="danger">Overdue</AppBadge>
           </div>
 
-          <dl class="divide-line mt-4 divide-y text-sm">
+          <dl class="divide-line text-body mt-4 divide-y">
             <div class="flex justify-between gap-4 py-2 first:pt-0">
               <dt class="text-content-muted">Opened</dt>
               <dd>{{ formatDateTime(ticket.openedAt) }}</dd>
@@ -255,7 +254,7 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="ticket.service || ticket.domain || ticket.invoice" title="Related">
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div v-if="ticket.service" class="flex justify-between gap-4 py-2 first:pt-0">
               <dt class="text-content-muted">Service</dt>
               <dd>

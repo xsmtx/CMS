@@ -128,21 +128,44 @@
    * the one measurement that decides whether a panel feels like a tool, and
    * it is not the same answer for a NOC wallboard and a customer portal.
    */
-  --row-y: 10px;
+  --row-y: 8px;
   --control-y: 8px;
   --card-p: 20px;
+  /* Control heights. A button, an input and a select in one row are the
+     same height because they read the same token, not because somebody
+     matched paddings by eye. */
+  --control-h: 2rem;
+  --control-h-sm: 1.75rem;
 }
 
 :root[data-density='compact'] {
-  --row-y: 6px;
+  --row-y: 5px;
   --control-y: 5px;
   --card-p: 14px;
+  --control-h: 1.75rem;
+  --control-h-sm: 1.5rem;
 }
 
 :root[data-density='comfortable'] {
-  --row-y: 14px;
+  --row-y: 12px;
   --control-y: 10px;
   --card-p: 28px;
+  --control-h: 2.25rem;
+  --control-h-sm: 2rem;
+}
+
+/*
+ * Native controls — checkboxes, selects, scrollbars, date pickers — follow
+ * `color-scheme`, not our tokens. The document's meta tag says "light dark",
+ * which means "whatever the OS says", so an operator who chose Light on a
+ * dark OS got black checkboxes on a white page. The explicit choice wins.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 /*
@@ -350,7 +373,7 @@
   }
 
   body {
-    background-color: var(--color-surface);
+    background-color: var(--background);
     color: var(--color-content);
     /* 13px, which is what a panel somebody reads all day wants. Larger is
        a document; smaller is a spreadsheet. */
@@ -402,7 +425,7 @@
   }
 
   .data-table tbody tr:hover {
-    background-color: color-mix(in oklab, var(--color-surface-sunken) 60%, transparent);
+    background-color: var(--surface-hover);
   }
 
   /*
@@ -456,9 +479,9 @@
   .skeleton {
     background-image: linear-gradient(
       90deg,
-      var(--color-surface-sunken) 0%,
-      color-mix(in oklab, var(--color-surface-sunken) 55%, var(--color-line)) 50%,
-      var(--color-surface-sunken) 100%
+      var(--surface-secondary) 0%,
+      color-mix(in oklab, var(--surface-secondary) 55%, var(--color-line)) 50%,
+      var(--surface-secondary) 100%
     );
     background-size: 200% 100%;
     animation: skeleton-sweep 1600ms linear infinite;
@@ -471,6 +494,25 @@
     to {
       background-position: -50% 0;
     }
+  }
+
+  /*
+     * Cell padding comes from the density preset.
+     *
+     * `:where()` keeps the specificity at zero, so a legacy cell that still
+     * carries `px-4 py-2.5` keeps it; a cell written against the design
+     * system carries no padding class at all and follows `data-density`.
+     */
+  .data-table :where(th, td) {
+    padding: var(--row-y) var(--space-3);
+  }
+
+  .data-table :where(th, td):first-child {
+    padding-left: var(--space-4);
+  }
+
+  .data-table :where(th, td):last-child {
+    padding-right: var(--space-4);
   }
 
   /*
@@ -496,8 +538,20 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    background-color: var(--color-surface-raised);
+    background-color: var(--surface-primary);
     box-shadow: inset 0 -1px 0 var(--color-line);
+  }
+
+  /*
+     * The baseline under a tab strip, drawn *inside* the strip.
+     *
+     * A border on the strip plus a -1px margin on the active tab is the
+     * usual trick, and it breaks the moment the strip scrolls sideways: the
+     * overlap becomes a vertical scrollbar. An inset shadow is painted under
+     * the tabs' own 2px edge and never overflows.
+     */
+  .tab-list {
+    box-shadow: inset 0 -1px 0 var(--border-default);
   }
 
   /*
@@ -541,7 +595,7 @@
   .skeleton {
     animation: none;
     background-image: none;
-    background-color: var(--color-surface-sunken);
+    background-color: var(--surface-secondary);
   }
 
   *,
@@ -598,7 +652,7 @@
 
 .prose-article code {
   border-radius: var(--radius-sm);
-  background: var(--color-surface-sunken);
+  background: var(--surface-secondary);
   padding: 0.15em 0.4em;
   font-size: 0.9em;
 }
@@ -607,7 +661,7 @@
   overflow-x: auto;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-sunken);
+  background: var(--surface-secondary);
   padding: 1em;
   font-size: 0.85em;
 }

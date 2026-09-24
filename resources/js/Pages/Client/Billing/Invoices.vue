@@ -2,11 +2,12 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { statusTone } from '../../../status'
 import BillingTabs from './BillingTabs.vue'
 
 interface InvoiceRow {
@@ -37,13 +38,6 @@ function filterBy(status: string | null): void {
     replace: true,
   })
 }
-
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'paid' || status === 'refunded') return 'success'
-  if (status === 'overdue') return 'danger'
-  if (status === 'unpaid' || status === 'partially_paid') return 'warning'
-  return 'neutral'
-}
 </script>
 
 <template>
@@ -61,18 +55,18 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
     -->
     <div v-if="outstanding.length > 0" class="mb-6 flex flex-wrap gap-6">
       <div v-for="row in outstanding" :key="row.currency">
-        <p class="text-content-muted text-xs">
+        <p class="text-content-muted text-chrome">
           {{ t('billing.portal.outstanding') }} · {{ row.currency }}
         </p>
         <p class="mt-0.5 text-xl font-semibold tracking-tight tabular-nums">{{ row.amount }}</p>
       </div>
     </div>
-    <p v-else class="text-content-muted mb-6 text-sm">{{ t('billing.portal.nothing_owed') }}</p>
+    <p v-else class="text-content-muted text-body mb-6">{{ t('billing.portal.nothing_owed') }}</p>
 
     <div class="mb-4 flex flex-wrap gap-1.5">
       <button
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           active === null
             ? 'bg-surface-secondary text-content font-medium'
@@ -86,7 +80,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         v-for="status in statuses"
         :key="status.value"
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           active === status.value
             ? 'bg-surface-secondary text-content font-medium'
@@ -119,7 +113,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
           </Link>
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="tone(invoice.status)">{{ invoice.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
         </td>
         <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">{{ invoice.dueOn ?? '—' }}</td>
         <td class="px-4 py-2.5 tabular-nums">{{ invoice.total }}</td>
@@ -127,7 +121,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
         <td class="px-4 py-2.5 text-right">
           <Link
             :href="`/client/billing/invoices/${invoice.number}`"
-            class="text-content-muted hover:text-content text-xs underline-offset-4 hover:underline"
+            class="text-content-muted hover:text-content text-chrome underline-offset-4 hover:underline"
           >
             {{ invoice.isOwed ? t('billing.payments.pay_now') : t('billing.portal.view') }}
           </Link>
@@ -141,7 +135,7 @@ function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
       :description="t('billing.portal.invoices_description')"
     />
 
-    <p v-if="invoices.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="invoices.lastPage > 1" class="text-content-muted text-chrome mt-4">
       {{ invoices.currentPage }} / {{ invoices.lastPage }} — {{ invoices.total }}
     </p>
   </ClientLayout>

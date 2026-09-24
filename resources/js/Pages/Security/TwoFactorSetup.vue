@@ -43,12 +43,12 @@ function confirm(): void {
             secret. The markup is generated from a server-side value and no
             user input reaches it.
           -->
-          <div class="border-line inline-block rounded-[var(--radius-sm)] border bg-white p-3">
+          <div class="border-line inline-block rounded-sm border bg-white p-3">
             <!-- eslint-disable-next-line vue/no-v-html -->
             <div v-html="qrCode" />
           </div>
 
-          <p class="text-content-muted mt-3 max-w-[28ch] text-xs leading-relaxed">
+          <p class="text-content-muted text-chrome mt-3 max-w-[28ch] leading-relaxed">
             Cannot scan? Enter this key by hand:
           </p>
           <p class="text-body mt-1 font-mono break-all">{{ secret }}</p>

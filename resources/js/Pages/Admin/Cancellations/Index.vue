@@ -14,9 +14,11 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface RequestRow {
   id: string
@@ -100,12 +102,14 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
       <AppButton :aria-expanded="open" @click="open = !open">
         {{ open ? 'Hide search' : 'Search / filter' }}
       </AppButton>
-      <span v-if="hasFilters" class="text-content-muted text-xs">{{ requests.total }} match</span>
+      <span v-if="hasFilters" class="text-content-muted text-chrome"
+        >{{ requests.total }} match</span
+      >
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-3"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
         <AppInput v-model="form.reason" label="Reason" />
         <AppInput v-model="form.client" label="Client" />
@@ -141,7 +145,9 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
           >
             {{ row.service ?? '—' }}
           </Link>
-          <span v-if="row.domain" class="text-content-muted block text-xs">{{ row.domain }}</span>
+          <span v-if="row.domain" class="text-content-muted text-chrome block">{{
+            row.domain
+          }}</span>
         </td>
         <td class="px-4 py-2.5">
           <Link
@@ -150,11 +156,13 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
           >
             {{ row.customer ?? '—' }}
           </Link>
-          <span v-if="row.requestedBy" class="text-content-muted block text-xs">
+          <span v-if="row.requestedBy" class="text-content-muted text-chrome block">
             asked by {{ row.requestedBy }}
           </span>
         </td>
-        <td class="text-content-muted max-w-[32ch] px-4 py-2.5 text-sm">{{ row.reason ?? '—' }}</td>
+        <td class="text-content-muted text-body max-w-[32ch] px-4 py-2.5">
+          {{ row.reason ?? '—' }}
+        </td>
         <td class="px-4 py-2.5">
           <AppBadge :tone="row.type === 'immediate' ? 'danger' : 'neutral'">
             {{ row.typeLabel }}
@@ -164,9 +172,7 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
           {{ row.type === 'immediate' ? 'Now' : formatDate(row.endsOn) }}
         </td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="row.status === 'pending' ? 'warning' : 'neutral'">
-            {{ row.statusLabel }}
-          </AppBadge>
+          <AppStatus :tone="statusTone(row.status)" :label="row.statusLabel" />
         </td>
         <td class="px-4 py-2.5 text-right">
           <div v-if="can.manage && row.status === 'pending'" class="flex justify-end gap-2">
@@ -185,7 +191,7 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
       description="A request appears here when a customer asks to stop, whether they asked in the portal or told somebody on the telephone."
     />
 
-    <p v-if="requests.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="requests.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ requests.currentPage }} of {{ requests.lastPage }} — {{ requests.total }} requests
     </p>
   </AdminLayout>

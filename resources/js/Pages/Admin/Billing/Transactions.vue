@@ -171,7 +171,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
       <div class="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          class="pressable border-line hover:border-line-strong rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
+          class="pressable border-line hover:border-line-strong text-chrome rounded-sm border px-3 py-1.5 transition-colors duration-(--duration-fast)"
           :class="form.direction === 'in' ? 'border-brand text-content font-medium' : ''"
           :aria-pressed="form.direction === 'in'"
           @click="only('in')"
@@ -180,7 +180,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
         </button>
         <button
           type="button"
-          class="pressable border-line hover:border-line-strong rounded-[var(--radius-sm)] border px-3 py-1.5 text-xs transition-colors duration-(--duration-fast)"
+          class="pressable border-line hover:border-line-strong text-chrome rounded-sm border px-3 py-1.5 transition-colors duration-(--duration-fast)"
           :class="form.direction === 'out' ? 'border-brand text-content font-medium' : ''"
           :aria-pressed="form.direction === 'out'"
           @click="only('out')"
@@ -197,14 +197,14 @@ function withBlank(options: Option[], label = 'All'): Option[] {
       <AppButton size="sm" :aria-expanded="open" @click="open = !open">
         {{ open ? 'Hide search' : 'Search / filter' }}
       </AppButton>
-      <span v-if="hasFilters" class="text-content-muted text-xs">
+      <span v-if="hasFilters" class="text-content-muted text-chrome">
         {{ transactions.total }} match
       </span>
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.client" label="Client" />
         <AppSelect v-model="form.kind" label="Kind" :options="withBlank(kinds)" />
@@ -252,7 +252,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
           <Link
             v-if="row.invoiceId"
             :href="`/admin/invoices/${row.invoiceId}`"
-            class="text-content-muted block font-mono text-xs underline-offset-4 hover:underline"
+            class="text-content-muted text-chrome block font-mono underline-offset-4 hover:underline"
           >
             {{ row.invoice }}
           </Link>
@@ -271,7 +271,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
           <AppBadge :tone="row.increasesBalance ? 'success' : 'neutral'">
             {{ row.kindLabel }}
           </AppBadge>
-          <span v-if="row.description" class="text-content-muted mt-1 block text-xs">
+          <span v-if="row.description" class="text-content-muted text-chrome mt-1 block">
             {{ row.description }}
           </span>
         </td>
@@ -295,7 +295,7 @@ function withBlank(options: Option[], label = 'All'): Option[] {
       description="A row appears here the moment money moves — a payment, a refund, a credit."
     />
 
-    <p v-if="transactions.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="transactions.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ transactions.currentPage }} of {{ transactions.lastPage }} —
       {{ transactions.total }} transactions
     </p>

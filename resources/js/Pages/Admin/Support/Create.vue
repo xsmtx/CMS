@@ -27,7 +27,9 @@ import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppRichText from '../../../Components/AppRichText.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface Candidate {
   id: string
@@ -233,8 +235,8 @@ function submit(): void {
         <AppCard title="Client">
           <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">{{ chosen.name }}</p>
-              <p v-if="chosen.email" class="text-content-muted text-xs">{{ chosen.email }}</p>
+              <p class="text-body font-medium">{{ chosen.name }}</p>
+              <p v-if="chosen.email" class="text-content-muted text-chrome">{{ chosen.email }}</p>
             </div>
             <AppButton type="button" variant="ghost" size="sm" @click="forget">Change</AppButton>
           </div>
@@ -255,7 +257,7 @@ function submit(): void {
 
             <ul
               v-if="candidates.length > 0"
-              class="border-line divide-line divide-y rounded-[var(--radius-md)] border"
+              class="border-line divide-line divide-y rounded-md border"
             >
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
@@ -263,8 +265,8 @@ function submit(): void {
                   class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
                   @click="choose(candidate)"
                 >
-                  <span class="block text-sm font-medium">{{ candidate.name }}</span>
-                  <span v-if="candidate.email" class="text-content-muted block text-xs">
+                  <span class="text-body block font-medium">{{ candidate.name }}</span>
+                  <span v-if="candidate.email" class="text-content-muted text-chrome block">
                     {{ candidate.email }}
                   </span>
                 </button>
@@ -296,7 +298,7 @@ function submit(): void {
               v-for="contact in contacts"
               :key="contact.id"
               type="button"
-              class="pressable border-line hover:border-line-strong rounded-full border px-2.5 py-1 text-xs"
+              class="pressable border-line hover:border-line-strong text-chrome rounded-full border px-2.5 py-1"
               :disabled="!contact.email || form.cc.includes(contact.email.toLowerCase())"
               @click="contact.email && addCc(contact.email)"
             >
@@ -309,7 +311,7 @@ function submit(): void {
             <li
               v-for="address in form.cc"
               :key="address"
-              class="bg-surface-secondary flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
+              class="bg-surface-secondary text-chrome flex items-center gap-1.5 rounded-full px-2.5 py-1"
             >
               {{ address }}
               <button
@@ -330,7 +332,7 @@ function submit(): void {
           description="A ticket linked to the thing it concerns is a ticket the next agent does not have to ask 'which one' about."
         >
           <div class="max-h-72 overflow-y-auto">
-            <table class="w-full text-left text-sm">
+            <table class="text-body w-full text-left">
               <tbody class="divide-line divide-y">
                 <tr
                   v-for="row in owned"
@@ -350,13 +352,15 @@ function submit(): void {
                   </td>
                   <td class="py-2 pr-3">
                     <span class="block">{{ row.label }}</span>
-                    <span v-if="row.detail" class="text-content-muted block text-xs">
+                    <span v-if="row.detail" class="text-content-muted text-chrome block">
                       {{ row.detail }}
                     </span>
                   </td>
-                  <td class="text-content-muted py-2 pr-3 text-xs capitalize">{{ row.kind }}</td>
+                  <td class="text-content-muted text-chrome py-2 pr-3 capitalize">
+                    {{ row.kind }}
+                  </td>
                   <td class="py-2 text-right">
-                    <AppBadge tone="neutral">{{ row.status }}</AppBadge>
+                    <AppStatus :tone="statusTone(row.status)" :label="row.status" />
                   </td>
                 </tr>
               </tbody>
@@ -398,16 +402,16 @@ function submit(): void {
             />
 
             <div>
-              <label class="text-sm font-medium" for="ticket-attachments">Attachments</label>
+              <label class="text-body font-medium" for="ticket-attachments">Attachments</label>
               <input
                 id="ticket-attachments"
                 type="file"
                 multiple
                 :accept="accept || undefined"
-                class="text-content-muted mt-1.5 block w-full text-xs"
+                class="text-content-muted text-chrome mt-1.5 block w-full"
                 @change="onFiles"
               />
-              <p class="text-content-muted mt-1 text-xs">
+              <p class="text-content-muted text-chrome mt-1">
                 Up to 10 files, {{ Math.round(attachmentRules.maxKilobytes / 1024) }} MB each.
                 <template v-if="attachmentRules.extensions.length > 0">
                   Allowed: {{ attachmentRules.extensions.join(', ') }}.
@@ -417,7 +421,7 @@ function submit(): void {
                 <li
                   v-for="file in form.attachments"
                   :key="file.name"
-                  class="bg-surface-secondary rounded-full px-2.5 py-1 text-xs"
+                  class="bg-surface-secondary text-chrome rounded-full px-2.5 py-1"
                 >
                   {{ file.name }}
                 </li>
@@ -435,7 +439,7 @@ function submit(): void {
             description="Off for a call you have already answered. The ticket is written either way."
           />
 
-          <div v-if="about" class="border-line mt-4 border-t pt-3 text-xs">
+          <div v-if="about" class="border-line text-chrome mt-4 border-t pt-3">
             <p class="text-content-muted">About</p>
             <p class="mt-0.5">{{ about.label }}</p>
           </div>
@@ -466,7 +470,7 @@ function submit(): void {
               :key="reply.id"
               class="flex items-center justify-between gap-2 py-2"
             >
-              <span class="truncate text-sm">{{ reply.name }}</span>
+              <span class="text-body truncate">{{ reply.name }}</span>
               <AppButton size="sm" variant="ghost" @click="insertReply(reply.body)">
                 Insert
               </AppButton>
@@ -488,7 +492,7 @@ function submit(): void {
               class="flex items-center justify-between gap-2 py-2"
             >
               <span class="min-w-0">
-                <span class="block truncate text-sm">{{ article.title }}</span>
+                <span class="text-body block truncate">{{ article.title }}</span>
                 <AppBadge v-if="!article.public" tone="warning">Staff only</AppBadge>
               </span>
               <AppButton size="sm" variant="ghost" @click="insertArticle(article)">

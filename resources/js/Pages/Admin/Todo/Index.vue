@@ -14,6 +14,7 @@ import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -107,10 +108,15 @@ function formatDate(value: string | null): string {
   return value === null ? 'No date' : new Date(value).toLocaleDateString()
 }
 
-function tone(item: TodoRow): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (item.status === 'done') return 'success'
-  if (item.overdue) return 'danger'
-  if (item.status === 'in_progress') return 'warning'
+/**
+ * Kept local rather than `statusTone(item.status)`: an overdue item is
+ * critical whatever its status word says, and a pending item with no date
+ * is simply waiting, not something to look at.
+ */
+function tone(item: TodoRow): StatusTone {
+  if (item.status === 'done') return 'healthy'
+  if (item.overdue) return 'critical'
+  if (item.status === 'in_progress') return 'info'
   return 'neutral'
 }
 </script>
@@ -163,20 +169,23 @@ function tone(item: TodoRow): 'neutral' | 'success' | 'warning' | 'danger' {
       <div
         v-for="item in items"
         :key="item.id"
-        class="border-line bg-surface-primary flex flex-wrap items-start justify-between gap-4 rounded-[var(--radius-md)] border px-5 py-4 shadow-(--shadow-raised)"
+        class="border-line bg-surface-primary flex flex-wrap items-start justify-between gap-4 rounded-md border px-5 py-4 shadow-(--shadow-raised)"
       >
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm font-medium" :class="item.status === 'done' ? 'line-through' : ''">
+            <span
+              class="text-body font-medium"
+              :class="item.status === 'done' ? 'line-through' : ''"
+            >
               {{ item.title }}
             </span>
-            <AppBadge :tone="tone(item)">{{ item.statusLabel }}</AppBadge>
+            <AppStatus :tone="tone(item)" :label="item.statusLabel" />
             <AppBadge v-if="item.assignee" tone="neutral">{{ item.assignee }}</AppBadge>
           </div>
-          <p v-if="item.body" class="text-content-muted mt-1.5 max-w-[70ch] text-sm">
+          <p v-if="item.body" class="text-content-muted text-body mt-1.5 max-w-[70ch]">
             {{ item.body }}
           </p>
-          <p class="text-content-muted mt-1 text-xs" :class="item.overdue ? 'text-danger' : ''">
+          <p class="text-content-muted text-chrome mt-1" :class="item.overdue ? 'text-danger' : ''">
             {{ formatDate(item.dueOn) }}
           </p>
         </div>

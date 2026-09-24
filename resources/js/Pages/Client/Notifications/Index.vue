@@ -85,7 +85,7 @@ function formatDateTime(value: string): string {
           <li
             v-for="notification in notifications"
             :key="notification.id"
-            class="rounded-[var(--radius-lg)] border p-4"
+            class="rounded-lg border p-4"
             :class="
               notification.readAt === null
                 ? 'border-brand/40 bg-surface-primary'
@@ -93,20 +93,20 @@ function formatDateTime(value: string): string {
             "
           >
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <p class="text-sm font-medium">{{ notification.title }}</p>
-              <p class="text-content-subtle text-xs">
+              <p class="text-body font-medium">{{ notification.title }}</p>
+              <p class="text-content-subtle text-chrome">
                 {{ formatDateTime(notification.createdAt) }}
               </p>
             </div>
 
-            <p class="text-content-muted mt-1 text-sm leading-relaxed whitespace-pre-line">
+            <p class="text-content-muted text-body mt-1 leading-relaxed whitespace-pre-line">
               {{ notification.body }}
             </p>
 
             <a
               v-if="notification.actionUrl"
               :href="notification.actionUrl"
-              class="mt-2 inline-block text-sm underline-offset-4 hover:underline"
+              class="text-body mt-2 inline-block underline-offset-4 hover:underline"
             >
               {{ t('billing.portal.view') }}
             </a>
@@ -129,25 +129,25 @@ function formatDateTime(value: string): string {
             <div>
               <AppCheckbox v-model="form.invoices" :label="labelFor('invoices')" />
               <!-- Said, rather than shown as a switch that does nothing. -->
-              <p v-if="alwaysSent('invoices')" class="text-content-subtle mt-1 ml-7 text-xs">
+              <p v-if="alwaysSent('invoices')" class="text-content-subtle text-chrome mt-1 ml-7">
                 {{ t('notifications.portal.always_sent') }}
               </p>
             </div>
             <div>
               <AppCheckbox v-model="form.support" :label="labelFor('support')" />
-              <p v-if="alwaysSent('support')" class="text-content-subtle mt-1 ml-7 text-xs">
+              <p v-if="alwaysSent('support')" class="text-content-subtle text-chrome mt-1 ml-7">
                 {{ t('notifications.portal.always_sent') }}
               </p>
             </div>
             <div>
               <AppCheckbox v-model="form.product" :label="labelFor('product')" />
-              <p v-if="alwaysSent('product')" class="text-content-subtle mt-1 ml-7 text-xs">
+              <p v-if="alwaysSent('product')" class="text-content-subtle text-chrome mt-1 ml-7">
                 {{ t('notifications.portal.always_sent') }}
               </p>
             </div>
             <div>
               <AppCheckbox v-model="form.marketing" :label="labelFor('marketing')" />
-              <p v-if="alwaysSent('marketing')" class="text-content-subtle mt-1 ml-7 text-xs">
+              <p v-if="alwaysSent('marketing')" class="text-content-subtle text-chrome mt-1 ml-7">
                 {{ t('notifications.portal.always_sent') }}
               </p>
             </div>

@@ -7,7 +7,14 @@ document and the handoff disagree, the handoff wins and this document is
 wrong. Where this document says *more* than the handoff, it is recording a
 decision the handoff left open — each of those says so.
 
+**How to apply it:** the Claude Code skills in `.claude/skills/` —
+`enterprise-design-system`, `enterprise-cms-ux`, `frontend-architecture`,
+`visual-quality-review`, `accessibility`, `responsive-enterprise-ui` — turn
+this document into working rules and a review workflow. Read them before any
+frontend change; `docs/design/audit-2026-09-24.md` records why they exist.
+
 Related: [ADR 0040 — The UI is primitives, not a component library](../adr/0040-the-ui-is-primitives.md),
+[ADR 0048 — Sections, not cards; one status vocabulary](../adr/0048-sections-not-cards-and-one-status-vocabulary.md),
 [ADR 0036 — A brand is a row](../adr/0036-a-brand-is-a-row.md),
 [ADR 0037 — A theme is a package and may not execute](../adr/0037-a-theme-is-a-package-and-may-not-execute.md).
 
@@ -54,7 +61,9 @@ spellings, and this is the table:
 | `--status-unknown` | `unknown` | `text-unknown` |
 | `--accent-billing` … `--accent-storage` | `billing` … `storage` | `text-automation` |
 | `--focus-ring` | — | `outline` in `:focus-visible` |
-| `--radius-control/card/badge/modal` | via `--radius-sm/md/lg/xl` | `rounded-[var(--radius-md)]` |
+| `--radius-badge/control/card/modal` | `--radius-sm/md/lg/xl` | `rounded-sm` (6) · `rounded-md` (8) · `rounded-lg` (10) · `rounded-xl` (12) |
+| `--control-h`, `--control-h-sm` | — | `h-(--control-h)` — every button, input and select |
+| `--row-y` | — | table cell padding (automatic on `.data-table` cells) |
 | `--space-1` … `--space-16` | — | the 4/8/12/16/20/24/32/40/48/64 scale |
 
 † **`--surface-chrome` is an addition** beyond the handoff's required
@@ -95,7 +104,20 @@ Every status carries **shape + text + colour**:
 | maintenance | `◆` | `--status-maintenance` | We took it down on purpose. |
 | unknown | `○` | `--status-unknown` | The check did not answer. |
 
-`AppStatus` is the component. **Maintenance and unknown are statuses, not
+Two tones were added with the enterprise pass: `info` (◐ — moving: running,
+provisioning, retrying) and `neutral` (□ — out of play: closed, cancelled,
+archived, refunded).
+
+**One vocabulary.** A status *word* is mapped to a tone in exactly one place,
+`resources/js/status.ts` (`statusTone()`, plus `httpTone()` for response
+codes). Pages never carry their own `tone()` function: 25 of them did, and
+they disagreed — a closed customer was red and a closed ticket grey, an
+expired domain red on its list and amber on its page. A word nobody mapped
+renders as `unknown`, visibly. Add words by meaning, not by the colour you
+want.
+
+`AppStatus` is the component; `AppBadge` is for labels that are not a status
+(tags, "Primary", a type). **Maintenance and unknown are statuses, not
 shades of warning** — those two are the things an operator most needs to tell
 apart from "it is broken", and every panel that coloured them amber taught
 its users to ignore amber.
@@ -118,6 +140,12 @@ reads for eight hours wants: larger is a document, smaller is a spreadsheet.
 Tracking tightens as size grows — what optical sizing does by hand. A sixth
 size is how a product ends up with nine.
 
+**Tailwind's own sizes are not used.** `text-xs`/`text-sm` appeared 578 times
+before the enterprise pass, and `text-sm` is 14px — larger than body — so
+labels outranked the text they labelled. They were replaced with
+`text-chrome`/`text-body`; `text-base`/`xl`/`2xl` remain only on the client
+area and auth screens, pending their own pass. Weights: 500 and 600; no bold.
+
 Monospace (`font-mono`) is for technical identifiers only: IP, CIDR, MAC,
 ASN, UUID, invoice number, config. Not for prose and not for ordinary
 numbers — those get `tabular-nums`, which is the `.numeric` cell on a table.
@@ -133,14 +161,30 @@ decoration, which is what a status must not be.
 Spacing is the handoff's scale — 4, 8, 12, 16, 20, 24, 32, 40, 48, 64 — as
 `--space-1` … `--space-16`.
 
-Density is `data-density` on the root, and it moves three measurements: row
-padding, control padding, card padding.
+**Containers: sections, not cards.** A page is Page → Section → Content. The
+default grouping is `DetailSection` — a heading and a hairline, no box. A
+framed surface (`rounded-lg border bg-surface-primary`) is reserved for things
+that are objects: a table, a `MetricStrip`, the danger zone, a filter panel.
+One framed surface deep, at most. In-flow surfaces carry no shadow; only
+floating layers (menus, dialogs, drawers) do. (ADR 0048.)
 
-| Preset | Theme | Row |
-| --- | --- | --- |
-| `compact` | NOC | 6px |
-| *(default)* | Core | 10px |
-| `comfortable` | Horizon | 14px |
+**Controls share one height.** `--control-h` (32px) / `--control-h-sm` (28px)
+set the height of every button, input, select, `SearchInput` and
+`FilterSelect`, so a row of mixed controls lines up because it reads one
+number. Before this, inputs were ~42px and buttons ~38px.
+
+Density is `data-density` on the root, and it moves four measurements: row
+padding, control height, control padding, card padding.
+
+| Preset | Theme | Row padding | Control height |
+| --- | --- | --- | --- |
+| `compact` | NOC | 5px | 28px |
+| *(default)* | Core | 8px | 32px |
+| `comfortable` | Horizon | 12px | 36px |
+
+Table cells take their padding from `--row-y` through a zero-specificity
+`:where()` rule, so a cell written today carries no `px-*`/`py-*` classes and
+follows the density; older cells that still set `px-4 py-2.5` keep them.
 
 ---
 
@@ -168,12 +212,12 @@ storefront.
 
 | Primitive | Surfaces | Notes |
 | --- | --- | --- |
-| `AppButton` | all | primary / secondary / ghost / danger, two sizes. One primary per context; destructive is never the default. |
+| `AppButton` | all | primary / secondary / ghost / danger-subtle / danger, two sizes, optional `icon`. One primary per context; `danger-subtle` is the way *into* a destructive action, solid `danger` only the final press in `AppConfirm`. |
 | `AppInput`, `AppSelect`, `AppTextarea`, `AppCheckbox` | all | Persistent labels. A placeholder is never the only label (§7). |
 | `MoneyInput` | admin | Integer minor units; the decimal exists only as the field's text. |
 | `AppRichText` | admin | Markdown with a toolbar. Stores what was typed; the server renders it. |
 | `AppCard` | all | Header separated by a hairline, not by whitespace. |
-| `AppTable` | admin, client | Sticky header, hairline rows, `.numeric` cells right-aligned and tabular. Columns, selection and the toolbar strip (§7). |
+| `AppTable` | admin, client | Sticky header, hairline rows, `.numeric` cells right-aligned and tabular. Columns, selection and the toolbar strip (§7); `sortable` headers with `aria-sort` (server-side sort only); `hideBelow` priority columns and a `sticky` identity column; the columns menu sits in the header row when there is no toolbar. |
 | `AppTableRow` | admin | A row that can be selected. Exists because the checkbox cell cannot be injected into slot markup. |
 | `AppTableSkeleton` | admin | The table's own shape while it loads, so the page does not jump when rows land. |
 | `AppSelectionBar` | admin | The count, Clear, and the screen's own bulk actions. Above the table, never floating over it. |
@@ -189,10 +233,20 @@ storefront.
 | `AppMenu` | admin, client | Teleported, origin-aware, escapes table overflow. Positioning is `useAnchoredPanel`'s. |
 | `AppIcon` | all | Phosphor `regular`, one family, concepts not drawings. |
 | `AppAlert` | all | Page-level message. |
-| `EmptyState` | all | Left-aligned where the data will be, so arriving rows do not move the page. |
+| `EmptyState` | all | Left-aligned where the data will be, so arriving rows do not move the page. `boxed` in place of a table, `plain` inside a section. |
 | `AppPagination` | admin, client | |
 | `CommandPalette` | admin | ⌘K / Ctrl+K / `/`. Destinations locally, records from the search endpoint. |
 | `ThemeSwitch` | all | light / dark / system. |
+| `PageHeader` | admin, client | Title, `#status`, `#meta` line, `#actions`. Rendered by `AdminLayout`; detail pages pass their own via `#header`. |
+| `DetailSection` | all | Heading + hairline. The default grouping — reach for it before `AppCard`. |
+| `DescriptionList` | all | Label/value facts, `rows` or `grid`, slots by item key, em dash for missing. |
+| `AppTabs` | admin, client | ARIA tabs with roving focus; `query` deep-links a facet. |
+| `FilterBar` | admin, client | One row of filters, `#end` toggles, `#more` panel. |
+| `SearchInput` | admin, client | The one field with no visible label (icon + `aria-label`). |
+| `FilterSelect` | admin, client | `Status: Any ▾` — label inside the control; applies on change. |
+| `MetricStrip` | admin, client | Headline figures in one strip, at `text-page`. Replaces KPI-card rows. |
+| `LoadingState` / `ErrorState` | all | Non-table loading; failure vs. permission-denied, with correlation ID. |
+| `useFocusTrap` | all | Keeps Tab inside `AppConfirm` and `AppDrawer`. |
 
 ### Table craft (§7)
 
@@ -314,10 +368,10 @@ name typed out, and the reason reaches the job and the audit record.
 
 | Template (§9) | Exists | Where |
 | --- | --- | --- |
-| Resource list | yes | Customers, Services, Domains, Orders, Invoices, Transactions, Tickets |
+| Resource list | yes | Customers, Services, Domains, Orders, Invoices, Transactions, Tickets. **Reference: `Admin/Customers/Index`** (FilterBar, priority columns, pagination). |
 | Resource detail | yes | Customer, Service, Domain, Order, Invoice, Ticket |
-| Dashboard | yes | `Admin/Dashboard` — Attention Required, the four-figure strip, infrastructure, revenue trend, recent activity (§3) |
-| Customer 360 | partial | `Admin/Customers/Show` — profile, services, billing, tickets; **no unified timeline** |
+| Dashboard | yes | `Admin/Dashboard` — Attention Required, `MetricStrip`, revenue + infrastructure, activity as a table (§3). **Reference implementation** of the enterprise pass. |
+| Customer 360 | partial | `Admin/Customers/Show` — identity header, tabs (Overview / Contacts / Notes), danger zone. **Reference detail page.** Services, billing, tickets and a unified timeline need controller data first. |
 | Incident | no | Phase 13+ / Handoff #2 |
 | Network device | no | Handoff #2 |
 | Service | yes | `Admin/Services/Show` |
@@ -364,6 +418,10 @@ content, which is what keeps it from becoming a second header.
 On the topbar: ⌘K, the **background operations count**, appearance, tools,
 help, account.
 
+The footer is in the document flow, not fixed: a fixed footer cost every
+screen 36px of rows to repeat a copyright line whose links are also on the
+Help menu.
+
 **Not on the topbar**, and named here rather than faked: the health indicator
 and the notification count (§3). Each needs a query cheap enough to run on
 every request. Operations turned out to have one — `operations_state_index` —
@@ -396,5 +454,11 @@ WCAG 2.2 AA (§14). What is enforced today:
 - Contrast: `--text-inverse` is dark on the dark theme's primary, because
   #3B82F6 against white is 3.7:1 and fails AA for body text.
 
-Not yet done: a contrast check on brand overrides (§12), and 200% zoom
-testing.
+- Dialogs and drawers trap Tab (`useFocusTrap`) as well as declaring
+  `aria-modal`.
+- `color-scheme` follows the chosen theme, so native checkboxes, selects and
+  date pickers match it (they followed the OS before).
+- Textarea hints and errors are tied to the field with `aria-describedby`.
+
+Not yet done: a contrast check on brand overrides (§12), 200% zoom testing,
+and a screen-reader pass on the new primitives.

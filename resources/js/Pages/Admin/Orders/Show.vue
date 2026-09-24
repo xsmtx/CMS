@@ -8,7 +8,9 @@ import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface OrderOption {
   group: string
@@ -113,19 +115,19 @@ function formatDateTime(value: string | null): string {
     <div class="grid gap-6 lg:grid-cols-3">
       <div class="flex flex-col gap-6 lg:col-span-2">
         <AppCard>
-          <h2 class="mb-4 text-sm font-semibold">Items</h2>
+          <h2 class="text-body mb-4 font-semibold">Items</h2>
 
           <ul class="divide-line divide-y">
             <li v-for="line in order.items" :key="line.id" class="py-3 first:pt-0 last:pb-0">
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <p class="text-sm font-medium">
+                  <p class="text-body font-medium">
                     {{ line.name }}
                     <span v-if="line.quantity > 1" class="text-content-muted">
                       × {{ line.quantity }}
                     </span>
                   </p>
-                  <p class="text-content-muted text-xs">
+                  <p class="text-content-muted text-chrome">
                     <span v-if="line.groupName">{{ line.groupName }} · </span>
                     <span v-if="line.cycleLabel">{{ line.cycleLabel }}</span>
                     <span v-if="line.domain"> · {{ line.domain }}</span>
@@ -135,7 +137,7 @@ function formatDateTime(value: string | null): string {
                     <li
                       v-for="option in line.options"
                       :key="`${line.id}-${option.group}`"
-                      class="text-content-muted text-xs"
+                      class="text-content-muted text-chrome"
                     >
                       {{ option.group }}: {{ option.label }}
                       <span v-if="option.amount" class="tabular-nums"> ({{ option.amount }})</span>
@@ -146,7 +148,7 @@ function formatDateTime(value: string | null): string {
                     <li
                       v-for="child in line.children"
                       :key="child.id"
-                      class="text-content-muted text-xs"
+                      class="text-content-muted text-chrome"
                     >
                       + {{ child.name }}
                       <span class="tabular-nums">{{ child.lineTotal }}</span>
@@ -155,11 +157,11 @@ function formatDateTime(value: string | null): string {
                 </div>
 
                 <div class="text-right whitespace-nowrap">
-                  <p class="text-sm tabular-nums">{{ line.lineTotal }}</p>
-                  <p v-if="line.lineSetup" class="text-content-subtle text-xs">
+                  <p class="text-body tabular-nums">{{ line.lineTotal }}</p>
+                  <p v-if="line.lineSetup" class="text-content-subtle text-chrome">
                     incl. {{ line.lineSetup }} setup
                   </p>
-                  <p v-if="line.lineDiscount" class="text-success text-xs">
+                  <p v-if="line.lineDiscount" class="text-success text-chrome">
                     −{{ line.lineDiscount }}
                   </p>
                 </div>
@@ -169,21 +171,21 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard>
-          <h2 class="mb-4 text-sm font-semibold">History</h2>
+          <h2 class="text-body mb-4 font-semibold">History</h2>
 
           <ol class="divide-line divide-y">
             <li
               v-for="(entry, index) in order.history"
               :key="index"
-              class="flex items-start justify-between gap-4 py-2.5 text-sm first:pt-0 last:pb-0"
+              class="text-body flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
             >
               <span>
                 {{ entry.toLabel }}
-                <span v-if="entry.reason" class="text-content-muted mt-0.5 block text-xs">
+                <span v-if="entry.reason" class="text-content-muted text-chrome mt-0.5 block">
                   {{ entry.reason }}
                 </span>
               </span>
-              <span class="text-content-muted text-right text-xs whitespace-nowrap">
+              <span class="text-content-muted text-chrome text-right whitespace-nowrap">
                 {{ formatDateTime(entry.occurredAt) }}
                 <span v-if="entry.actor" class="text-content-subtle block">{{ entry.actor }}</span>
               </span>
@@ -194,9 +196,9 @@ function formatDateTime(value: string | null): string {
 
       <div class="flex flex-col gap-6">
         <AppCard>
-          <h2 class="mb-3 text-sm font-semibold">Totals</h2>
+          <h2 class="text-body mb-3 font-semibold">Totals</h2>
 
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div class="flex justify-between py-2">
               <dt class="text-content-muted">Subtotal</dt>
               <dd class="tabular-nums">{{ order.subtotal }}</dd>
@@ -230,17 +232,17 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="order.riskDecision">
-          <h2 class="mb-2 text-sm font-semibold">
+          <h2 class="text-body mb-2 font-semibold">
             Risk
             <AppBadge class="ml-2">{{ order.riskDecision }}</AppBadge>
           </h2>
 
-          <ul v-if="order.riskReasons.length > 0" class="text-content-muted space-y-1 text-xs">
+          <ul v-if="order.riskReasons.length > 0" class="text-content-muted text-chrome space-y-1">
             <li v-for="(reason, index) in order.riskReasons" :key="index">{{ reason }}</li>
           </ul>
-          <p v-else class="text-content-muted text-xs">Nothing flagged.</p>
+          <p v-else class="text-content-muted text-chrome">Nothing flagged.</p>
 
-          <p v-if="order.riskReviewedAt" class="text-content-subtle mt-3 text-xs">
+          <p v-if="order.riskReviewedAt" class="text-content-subtle text-chrome mt-3">
             Reviewed {{ formatDateTime(order.riskReviewedAt) }}
             <span v-if="order.riskReviewedBy">by {{ order.riskReviewedBy }}</span>
           </p>
@@ -278,25 +280,25 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="invoice || can.invoice">
-          <h2 class="mb-3 text-sm font-semibold">Invoice</h2>
+          <h2 class="text-body mb-3 font-semibold">Invoice</h2>
 
           <template v-if="invoice">
             <div class="flex items-baseline justify-between gap-3">
               <Link
                 :href="`/admin/invoices/${invoice.id}`"
-                class="text-sm font-medium underline-offset-4 hover:underline"
+                class="text-body font-medium underline-offset-4 hover:underline"
               >
                 {{ invoice.number }}
               </Link>
-              <AppBadge>{{ invoice.status }}</AppBadge>
+              <AppStatus :tone="statusTone(invoice.status)" :label="invoice.status" />
             </div>
-            <p class="text-content-muted mt-2 text-xs">
+            <p class="text-content-muted text-chrome mt-2">
               Outstanding <span class="tabular-nums">{{ invoice.balance }}</span>
             </p>
           </template>
 
           <template v-else>
-            <p class="text-content-muted mb-3 text-xs">
+            <p class="text-content-muted text-chrome mb-3">
               No invoice yet. Raising one creates a draft you can check before issuing it.
             </p>
             <AppButton size="sm" :loading="invoiceForm.processing" @click="raiseInvoice">
@@ -306,7 +308,7 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.update && order.transitions.length > 0">
-          <h2 class="mb-3 text-sm font-semibold">Change status</h2>
+          <h2 class="text-body mb-3 font-semibold">Change status</h2>
 
           <div class="flex flex-col gap-3">
             <AppSelect
@@ -335,9 +337,9 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard>
-          <h2 class="mb-3 text-sm font-semibold">Placement</h2>
+          <h2 class="text-body mb-3 font-semibold">Placement</h2>
 
-          <dl class="text-content-muted space-y-2 text-xs">
+          <dl class="text-content-muted text-chrome space-y-2">
             <div class="flex justify-between gap-4">
               <dt>Placed</dt>
               <dd>{{ formatDateTime(order.placedAt) }}</dd>

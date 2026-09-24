@@ -22,20 +22,31 @@ withDefaults(
     title: string
     description: string
     icon?: IconName
+    /**
+     * `boxed` stands in for a table that has no rows. `plain` sits inside a
+     * section that already has a heading and a hairline — a dashed box
+     * inside that would be a container inside a container.
+     */
+    variant?: 'boxed' | 'plain'
   }>(),
-  { icon: 'database' },
+  { icon: 'database', variant: 'boxed' },
 )
 </script>
 
 <template>
   <div
-    class="border-line bg-surface-primary flex items-start gap-4 rounded-[var(--radius-lg)] border border-dashed px-5 py-8"
+    class="flex items-start gap-3"
+    :class="
+      variant === 'boxed'
+        ? 'border-line bg-surface-primary rounded-lg border border-dashed px-5 py-6'
+        : 'py-2'
+    "
   >
     <span
-      class="bg-surface-secondary text-content-subtle grid size-9 shrink-0 place-items-center rounded-[var(--radius-md)]"
+      class="bg-surface-secondary text-content-subtle grid size-8 shrink-0 place-items-center rounded-md"
       aria-hidden="true"
     >
-      <AppIcon :name="icon" :size="18" />
+      <AppIcon :name="icon" :size="16" />
     </span>
 
     <div class="min-w-0">

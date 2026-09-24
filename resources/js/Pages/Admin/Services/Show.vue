@@ -3,15 +3,16 @@ import { Head, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import DangerZone from '../../../Components/DangerZone.vue'
 import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface ServiceEvent {
   id: string
@@ -135,13 +136,6 @@ function changeStatus(): void {
   statusForm.put(`/admin/services/${props.service.id}/status`, { preserveScroll: true })
 }
 
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active' || status === 'succeeded' || status === 'already_done') return 'success'
-  if (status === 'failed' || status === 'terminated') return 'danger'
-  if (status === 'suspended' || status === 'grace_period' || status === 'pending') return 'warning'
-  return 'neutral'
-}
-
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
@@ -155,8 +149,8 @@ function formatDateTime(value: string | null): string {
       <div class="flex flex-col gap-6 lg:col-span-2">
         <AppCard>
           <div class="mb-4 flex flex-wrap items-center gap-3">
-            <AppBadge :tone="tone(service.status)">{{ service.statusLabel }}</AppBadge>
-            <span v-if="service.module" class="text-content-muted text-xs">
+            <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
+            <span v-if="service.module" class="text-content-muted text-chrome">
               {{ service.module }}
             </span>
           </div>
@@ -168,7 +162,7 @@ function formatDateTime(value: string | null): string {
             {{ service.suspensionReason }}
           </AppAlert>
 
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div class="flex justify-between gap-4 py-2.5 first:pt-0">
               <dt class="text-content-muted">Domain</dt>
               <dd>{{ service.domain ?? '—' }}</dd>
@@ -183,7 +177,7 @@ function formatDateTime(value: string | null): string {
             </div>
             <div class="flex justify-between gap-4 py-2.5">
               <dt class="text-content-muted">Account</dt>
-              <dd class="font-mono text-xs">{{ service.externalId ?? '—' }}</dd>
+              <dd class="text-chrome font-mono">{{ service.externalId ?? '—' }}</dd>
             </div>
             <div class="flex justify-between gap-4 py-2.5">
               <dt class="text-content-muted">Recurring</dt>
@@ -205,7 +199,7 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="service.options.length > 0" title="Configuration">
-          <dl class="divide-line divide-y text-sm">
+          <dl class="divide-line text-body divide-y">
             <div
               v-for="option in service.options"
               :key="option.group + option.label"
@@ -222,27 +216,31 @@ function formatDateTime(value: string | null): string {
             <li v-for="event in service.events" :key="event.id" class="py-3 first:pt-0 last:pb-0">
               <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
-                  <p class="text-sm font-medium">
+                  <p class="text-body font-medium">
                     {{ event.operation }}
-                    <AppBadge class="ml-2" :tone="tone(event.outcome)">
-                      {{ event.outcomeLabel }}
-                    </AppBadge>
+                    <AppStatus
+                      class="ml-2"
+                      :tone="statusTone(event.outcome)"
+                      :label="event.outcomeLabel"
+                    />
                   </p>
                   <p
                     v-if="event.message"
-                    class="text-content-muted mt-1 text-xs leading-relaxed break-words"
+                    class="text-content-muted text-chrome mt-1 leading-relaxed break-words"
                   >
                     {{ event.message }}
                   </p>
                 </div>
-                <p class="text-content-subtle shrink-0 text-xs whitespace-nowrap">
+                <p class="text-content-subtle text-chrome shrink-0 whitespace-nowrap">
                   {{ formatDateTime(event.occurredAt) }}
                 </p>
               </div>
-              <p v-if="event.actor" class="text-content-subtle mt-1 text-xs">{{ event.actor }}</p>
+              <p v-if="event.actor" class="text-content-subtle text-chrome mt-1">
+                {{ event.actor }}
+              </p>
             </li>
           </ul>
-          <p v-else class="text-content-muted text-sm">Nothing has been attempted yet.</p>
+          <p v-else class="text-content-muted text-body">Nothing has been attempted yet.</p>
         </AppCard>
       </div>
 
@@ -296,15 +294,15 @@ function formatDateTime(value: string | null): string {
         </AppCard>
 
         <AppCard v-if="can.update && service.username" title="Credentials">
-          <p class="text-content-muted mb-3 text-xs leading-relaxed">
+          <p class="text-content-muted text-chrome mb-3 leading-relaxed">
             Reading this is recorded in the audit log.
           </p>
 
-          <dl v-if="credentials" class="text-sm">
-            <dt class="text-content-muted text-xs">Username</dt>
-            <dd class="mb-2 font-mono text-xs">{{ credentials.username }}</dd>
-            <dt class="text-content-muted text-xs">Password</dt>
-            <dd class="font-mono text-xs break-all">{{ credentials.password ?? '—' }}</dd>
+          <dl v-if="credentials" class="text-body">
+            <dt class="text-content-muted text-chrome">Username</dt>
+            <dd class="text-chrome mb-2 font-mono">{{ credentials.username }}</dd>
+            <dt class="text-content-muted text-chrome">Password</dt>
+            <dd class="text-chrome font-mono break-all">{{ credentials.password ?? '—' }}</dd>
           </dl>
 
           <AppButton v-else size="sm" @click="revealCredentials">Reveal</AppButton>

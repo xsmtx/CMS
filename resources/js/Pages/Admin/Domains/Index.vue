@@ -11,14 +11,15 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStat from '../../../Components/AppStat.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface DomainDetail {
   orderNumber: string | null
@@ -97,13 +98,6 @@ function toggleRow(id: string): void {
   expanded.value = expanded.value === id ? null : id
 }
 
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'active') return 'success'
-  if (status === 'failed' || status === 'expired') return 'danger'
-  if (status === 'pending' || status === 'transfer_pending') return 'warning'
-  return 'neutral'
-}
-
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
 }
@@ -158,12 +152,14 @@ function addonsOf(detail: DomainDetail): string {
       <AppButton :aria-expanded="open" @click="open = !open">
         {{ open ? 'Hide search' : 'Search / filter' }}
       </AppButton>
-      <span v-if="hasFilters" class="text-content-muted text-xs">{{ domains.total }} match</span>
+      <span v-if="hasFilters" class="text-content-muted text-chrome"
+        >{{ domains.total }} match</span
+      >
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.domain" label="Domain" hint="% anchors: kaya% or %.com.tr" />
         <AppSelect v-model="form.status" label="Status" :options="withBlank(statuses)" />
@@ -197,7 +193,7 @@ function addonsOf(detail: DomainDetail): string {
           <td class="py-3.5 pl-5">
             <button
               type="button"
-              class="pressable border-line text-content-muted hover:text-content inline-flex size-5 items-center justify-center rounded-[var(--radius-sm)] border font-mono text-xs leading-none"
+              class="pressable border-line text-content-muted hover:text-content text-chrome inline-flex size-5 items-center justify-center rounded-sm border font-mono leading-none"
               :aria-expanded="expanded === domain.id"
               :aria-label="expanded === domain.id ? 'Hide details' : 'Show details'"
               @click="toggleRow(domain.id)"
@@ -205,7 +201,7 @@ function addonsOf(detail: DomainDetail): string {
               {{ expanded === domain.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle px-4 py-2.5 font-mono text-xs">
+          <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
             {{ domain.id.slice(-8) }}
           </td>
           <td class="px-4 py-2.5">
@@ -238,19 +234,19 @@ function addonsOf(detail: DomainDetail): string {
             {{ formatDate(domain.expiresOn) }}
             <span
               v-if="domain.daysUntilExpiry !== null && domain.daysUntilExpiry <= 45"
-              class="text-warning block text-xs"
+              class="text-warning text-chrome block"
             >
               {{ domain.daysUntilExpiry }} days
             </span>
           </td>
           <td class="px-4 py-2.5">
-            <AppBadge :tone="tone(domain.status)">{{ domain.statusLabel }}</AppBadge>
+            <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
           </td>
         </tr>
 
         <tr v-if="expanded === domain.id" class="bg-surface-secondary">
           <td colspan="10" class="px-5 py-4">
-            <dl class="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
+            <dl class="text-chrome grid gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
               <div>
                 <dt class="text-content-muted">Order #</dt>
                 <dd class="mt-0.5">
@@ -298,7 +294,7 @@ function addonsOf(detail: DomainDetail): string {
       description="A domain appears here when an order containing one is paid for."
     />
 
-    <p v-if="domains.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="domains.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ domains.currentPage }} of {{ domains.lastPage }} — {{ domains.total }} domains
     </p>
   </AdminLayout>

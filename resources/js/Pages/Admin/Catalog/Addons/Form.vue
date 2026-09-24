@@ -145,7 +145,7 @@ function savePrices(): void {
         </div>
       </form>
 
-      <p v-else class="text-content-muted text-sm">Prices can be set once the addon exists.</p>
+      <p v-else class="text-content-muted text-body">Prices can be set once the addon exists.</p>
     </div>
   </AdminLayout>
 </template>

@@ -65,6 +65,17 @@ final class FrontEndTranslations
 
         'crm.fields',
         'crm.save',
+        // Customer status and address-type names, drawn by the client detail
+        // page. The same words the server already prints on the list.
+        'crm.statuses',
+        'crm.address_types',
+
+        /*
+         * The design-system primitives and the enterprise reference screens
+         * (ADR 0048). Chrome and screen vocabulary only; nothing operator-
+         * private lives in `ui`.
+         */
+        'ui',
 
         'domains.domains',
         'domains.portal',

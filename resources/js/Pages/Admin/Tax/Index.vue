@@ -235,7 +235,7 @@ function labelOf(options: Option[], value: string): string {
       <section class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <h2 class="text-title font-semibold tracking-tight">{{ t('tax.rules.title') }}</h2>
-          <p class="text-content-muted max-w-[75ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[75ch] leading-relaxed">
             {{ t('tax.rules.intro') }}
           </p>
         </div>
@@ -256,13 +256,13 @@ function labelOf(options: Option[], value: string): string {
               {{ rule.level }}
               <AppBadge v-if="rule.compound" tone="info">+</AppBadge>
             </td>
-            <td data-col="applies" class="text-content-muted px-4 py-2.5 text-xs">
+            <td data-col="applies" class="text-content-muted text-chrome px-4 py-2.5">
               {{ labelOf(options.appliesTo, rule.appliesTo) }}
             </td>
-            <td data-col="customer" class="text-content-muted px-4 py-2.5 text-xs">
+            <td data-col="customer" class="text-content-muted text-chrome px-4 py-2.5">
               {{ labelOf(options.customerKinds, rule.customerKind) }}
             </td>
-            <td data-col="dates" class="text-content-muted px-4 py-2.5 text-xs tabular-nums">
+            <td data-col="dates" class="text-content-muted text-chrome px-4 py-2.5 tabular-nums">
               {{ dates(rule) }}
             </td>
             <td data-col="state" class="px-4 py-2.5">
@@ -398,7 +398,7 @@ function labelOf(options: Option[], value: string): string {
       <section class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <h2 class="text-title font-semibold tracking-tight">{{ t('tax.settings.title') }}</h2>
-          <p class="text-content-muted max-w-[75ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[75ch] leading-relaxed">
             {{ t('tax.settings.intro') }}
           </p>
         </div>
@@ -453,7 +453,7 @@ function labelOf(options: Option[], value: string): string {
       <section class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <h2 class="text-title font-semibold tracking-tight">{{ t('tax.preview.title') }}</h2>
-          <p class="text-content-muted max-w-[75ch] text-sm leading-relaxed">
+          <p class="text-content-muted text-body max-w-[75ch] leading-relaxed">
             {{ t('tax.preview.intro') }}
           </p>
         </div>
@@ -504,10 +504,7 @@ function labelOf(options: Option[], value: string): string {
               </AppButton>
             </div>
 
-            <div
-              v-if="preview"
-              class="border-line flex flex-col gap-2 rounded-[var(--radius-md)] border p-4"
-            >
+            <div v-if="preview" class="border-line flex flex-col gap-2 rounded-md border p-4">
               <dl class="grid grid-cols-2 gap-x-4 gap-y-1">
                 <dt class="text-content-muted text-body">{{ t('tax.preview.net') }}</dt>
                 <dd class="text-body text-right tabular-nums">{{ preview.net }}</dd>
@@ -515,7 +512,7 @@ function labelOf(options: Option[], value: string): string {
                 <template v-for="component in preview.components" :key="component.name">
                   <dt class="text-content-muted text-body">
                     {{ component.name }} {{ component.rate }}%
-                    <span v-if="component.jurisdiction" class="text-content-subtle text-xs">
+                    <span v-if="component.jurisdiction" class="text-content-subtle text-chrome">
                       {{ component.jurisdiction }}
                     </span>
                   </dt>
@@ -530,7 +527,7 @@ function labelOf(options: Option[], value: string): string {
                 {{ t('tax.preview.exempt', { reason: preview.exemption }) }}
               </AppAlert>
 
-              <p v-else-if="preview.components.length === 0" class="text-content-muted text-sm">
+              <p v-else-if="preview.components.length === 0" class="text-content-muted text-body">
                 {{ t('tax.preview.nothing') }}
               </p>
             </div>

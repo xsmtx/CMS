@@ -203,7 +203,7 @@ function submit(): void {
           <AppSelect v-model="form.role" label="Role" :options="roles" :error="form.errors.role" />
         </div>
 
-        <p v-if="chosenRole" class="text-content-muted mt-4 text-xs leading-relaxed">
+        <p v-if="chosenRole" class="text-content-muted text-chrome mt-4 leading-relaxed">
           <span class="text-content font-medium">{{ chosenRole.label }}</span> can:
           <span v-if="chosenRole.can.length > 0" class="font-mono">
             {{ chosenRole.can.join(', ') }}
@@ -262,7 +262,7 @@ function submit(): void {
         </div>
 
         <div v-if="tags.length > 0" class="border-line mt-5 border-t pt-5">
-          <p class="mb-3 text-sm font-medium">Client group</p>
+          <p class="text-body mb-3 font-medium">Client group</p>
           <div class="grid gap-3 sm:grid-cols-3">
             <AppCheckbox
               v-for="tag in tags"

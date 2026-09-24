@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import AppIcon from './AppIcon.vue'
+import { type IconName } from '../icons'
+
 /**
  * `warning` exists because "something will break later" is neither
  * information nor an error, and drawing it as one of those is how a warning
@@ -12,13 +15,26 @@ const props = withDefaults(defineProps<{ tone?: 'info' | 'success' | 'warning' |
   tone: 'info',
 })
 
+// The tone is carried by the edge and the glyph; the sentence stays in the
+// body colour. A whole paragraph in amber or red is hard to read, and the
+// alert that matters most is the one somebody has to read to the end.
 const classes = computed(
   () =>
     ({
-      info: 'border-line bg-surface-secondary text-content',
-      success: 'border-success/30 bg-surface-secondary text-success',
-      warning: 'border-warning/30 bg-surface-secondary text-warning',
-      danger: 'border-danger/30 bg-surface-secondary text-danger',
+      info: 'border-info/35',
+      success: 'border-success/35',
+      warning: 'border-warning/40',
+      danger: 'border-danger/45',
+    })[props.tone],
+)
+
+const icon = computed<{ name: IconName; colour: string }>(
+  () =>
+    ({
+      info: { name: 'info' as const, colour: 'text-info' },
+      success: { name: 'ok' as const, colour: 'text-success' },
+      warning: { name: 'warning' as const, colour: 'text-warning' },
+      danger: { name: 'warning' as const, colour: 'text-danger' },
     })[props.tone],
 )
 
@@ -31,9 +47,12 @@ const role = computed(() => (props.tone === 'danger' ? 'alert' : 'status'))
 <template>
   <div
     :role="role"
-    class="rounded-[var(--radius-md)] border px-4 py-3 text-sm leading-relaxed"
+    class="bg-surface-primary text-content text-body flex items-start gap-2.5 rounded-md border px-3.5 py-2.5"
     :class="classes"
   >
-    <slot />
+    <span class="mt-0.5" :class="icon.colour" aria-hidden="true">
+      <AppIcon :name="icon.name" :size="16" />
+    </span>
+    <div class="min-w-0 flex-1"><slot /></div>
   </div>
 </template>

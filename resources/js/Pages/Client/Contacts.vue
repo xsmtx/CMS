@@ -86,14 +86,14 @@ function remove(contact: ContactRow): void {
             class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
           >
             <div>
-              <p class="text-sm font-medium">
+              <p class="text-body font-medium">
                 {{ contact.name }}
                 <AppBadge v-if="contact.isPrimary" tone="brand" class="ml-2">
                   Account owner
                 </AppBadge>
                 <AppBadge v-if="contact.isMe" class="ml-2">You</AppBadge>
               </p>
-              <p class="text-content-muted mt-0.5 text-xs">
+              <p class="text-content-muted text-chrome mt-0.5">
                 {{ contact.email }}
                 <span v-if="!contact.portalAccess"> · cannot sign in</span>
               </p>
@@ -102,7 +102,7 @@ function remove(contact: ContactRow): void {
             <button
               v-if="can.manage && !contact.isPrimary && !contact.isMe"
               type="button"
-              class="text-danger text-xs underline underline-offset-4"
+              class="text-danger text-chrome underline underline-offset-4"
               @click="remove(contact)"
             >
               Remove

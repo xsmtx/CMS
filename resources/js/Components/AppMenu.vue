@@ -64,20 +64,20 @@ defineExpose({ close })
     v-if="icon"
     ref="trigger"
     type="button"
-    class="pressable text-content-muted hover:text-content rounded-[var(--radius-sm)] p-1.5 transition-colors duration-(--duration-fast)"
+    class="pressable text-content-muted hover:text-content rounded-sm p-1.5 transition-colors duration-(--duration-fast)"
     :aria-expanded="open"
     aria-haspopup="menu"
     :aria-label="label"
     @click="toggle"
   >
-    <AppIcon :name="icon ?? 'more'" :size="17" />
+    <AppIcon :name="icon ?? 'more'" :size="16" />
   </button>
 
   <button
     v-else-if="avatar"
     ref="trigger"
     type="button"
-    class="pressable bg-surface-secondary text-content-muted hover:text-content border-line hover:border-line-strong inline-flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-(--duration-fast)"
+    class="pressable bg-surface-secondary text-content-muted hover:text-content border-line hover:border-line-strong text-chrome inline-flex size-8 items-center justify-center rounded-full border font-semibold transition-colors duration-(--duration-fast)"
     :aria-expanded="open"
     aria-haspopup="menu"
     aria-label="Account"
@@ -90,7 +90,7 @@ defineExpose({ close })
     v-else
     ref="trigger"
     type="button"
-    class="pressable text-content-muted hover:text-content inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-sm"
+    class="pressable text-content-muted hover:text-content text-body inline-flex items-center gap-1.5 rounded-sm px-2 py-1"
     :aria-expanded="open"
     aria-haspopup="menu"
     @click="toggle"
@@ -110,7 +110,7 @@ defineExpose({ close })
         v-if="open"
         ref="panel"
         role="menu"
-        class="panel-enter border-line bg-surface-primary z-50 origin-top-right rounded-[var(--radius-lg)] border p-1 text-left shadow-(--shadow-panel)"
+        class="panel-enter border-line bg-surface-primary z-50 origin-top-right rounded-lg border p-1 text-left shadow-(--shadow-panel)"
         :style="style"
       >
         <slot :close="close" />

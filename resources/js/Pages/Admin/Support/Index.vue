@@ -13,14 +13,15 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStat from '../../../Components/AppStat.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { statusTone } from '../../../status'
 
 interface TicketRow {
   id: string
@@ -192,13 +193,6 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
   return [{ value: '', label }, ...options]
 }
 
-function tone(status: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (status === 'closed') return 'neutral'
-  if (status === 'open' || status === 'customer_reply') return 'warning'
-  if (status === 'answered') return 'success'
-  return 'neutral'
-}
-
 /**
  * A null due date is "not measured", never "overdue". A department that
  * nobody has given an SLA is a real configuration.
@@ -241,7 +235,7 @@ function formatDate(value: string | null): string {
         v-for="status in statuses"
         :key="status.value"
         type="button"
-        class="pressable rounded-[var(--radius-sm)] px-2.5 py-1 text-xs transition-colors duration-(--duration-fast)"
+        class="pressable text-chrome rounded-sm px-2.5 py-1 transition-colors duration-(--duration-fast)"
         :class="
           chosenStatuses.includes(status.value)
             ? 'bg-surface-secondary text-content font-medium'
@@ -259,11 +253,11 @@ function formatDate(value: string | null): string {
         {{ open ? 'Hide search' : 'Search / filter' }}
       </AppButton>
 
-      <label class="text-content-muted flex items-center gap-2 text-xs">
+      <label class="text-content-muted text-chrome flex items-center gap-2">
         Auto refresh
         <select
           v-model="refreshChoice"
-          class="border-line bg-surface-primary text-content rounded-[var(--radius-sm)] border px-2 py-1 text-xs"
+          class="border-line bg-surface-primary text-content text-chrome rounded-sm border px-2 py-1"
         >
           <option v-for="option in REFRESH_OPTIONS" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -271,12 +265,14 @@ function formatDate(value: string | null): string {
         </select>
       </label>
 
-      <span v-if="hasFilters" class="text-content-muted text-xs">{{ tickets.total }} match</span>
+      <span v-if="hasFilters" class="text-content-muted text-chrome"
+        >{{ tickets.total }} match</span
+      >
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
-        class="border-line bg-surface-primary grid gap-4 rounded-[var(--radius-lg)] border p-4 sm:grid-cols-2 lg:grid-cols-4"
+        class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <AppInput v-model="form.client" label="Client" />
         <AppSelect v-model="form.department" label="Department" :options="withBlank(departments)" />
@@ -315,7 +311,7 @@ function formatDate(value: string | null): string {
           >
             {{ ticket.subject }}
           </Link>
-          <span class="text-content-muted block text-xs">
+          <span class="text-content-muted text-chrome block">
             {{ ticket.number }} · {{ ticket.priorityLabel }}
             <span v-for="tag in ticket.tags" :key="tag" class="text-brand">· {{ tag }}</span>
           </span>
@@ -323,12 +319,12 @@ function formatDate(value: string | null): string {
         <td class="px-4 py-2.5">{{ ticket.customer ?? '—' }}</td>
         <td class="text-content-muted px-4 py-2.5">{{ ticket.department ?? '—' }}</td>
         <td class="px-4 py-2.5">
-          <AppBadge :tone="tone(ticket.status)">{{ ticket.statusLabel }}</AppBadge>
+          <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
         </td>
         <td class="text-content-muted px-4 py-2.5">{{ ticket.assignee ?? 'Unassigned' }}</td>
         <td class="px-4 py-2.5 whitespace-nowrap" :class="ticket.hasBreached ? 'text-danger' : ''">
           {{ due(ticket) }}
-          <span class="text-content-subtle block text-xs">{{
+          <span class="text-content-subtle text-chrome block">{{
             formatDate(ticket.lastReplyAt)
           }}</span>
         </td>
@@ -341,7 +337,7 @@ function formatDate(value: string | null): string {
       description="Tickets customers open appear here, sorted by what is closest to its deadline."
     />
 
-    <p v-if="tickets.lastPage > 1" class="text-content-muted mt-4 text-xs">
+    <p v-if="tickets.lastPage > 1" class="text-content-muted text-chrome mt-4">
       Page {{ tickets.currentPage }} of {{ tickets.lastPage }} — {{ tickets.total }} tickets
     </p>
   </AdminLayout>

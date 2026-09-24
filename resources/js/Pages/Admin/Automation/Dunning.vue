@@ -68,11 +68,11 @@ function tone(action: string): 'neutral' | 'warning' | 'danger' {
             class="flex flex-wrap items-center justify-between gap-3 py-4"
           >
             <div>
-              <p class="text-sm font-medium">
+              <p class="text-body font-medium">
                 {{ step.when }}
                 <AppBadge :tone="tone(step.action)" class="ml-2">{{ step.actionLabel }}</AppBadge>
               </p>
-              <p v-if="step.event" class="text-content-muted mt-1 text-xs">{{ step.event }}</p>
+              <p v-if="step.event" class="text-content-muted text-chrome mt-1">{{ step.event }}</p>
             </div>
 
             <AppButton v-if="can.manage" size="sm" variant="ghost" @click="remove(step)">

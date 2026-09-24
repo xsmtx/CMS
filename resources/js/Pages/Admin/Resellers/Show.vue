@@ -279,7 +279,7 @@ function formatDateTime(value: string): string {
                 type="text"
                 inputmode="decimal"
                 placeholder="—"
-                class="border-line bg-surface-primary w-20 rounded-[var(--radius-sm)] border px-2 py-1 text-right text-xs tabular-nums"
+                class="border-line bg-surface-primary text-chrome w-20 rounded-sm border px-2 py-1 text-right tabular-nums"
                 :aria-label="`Margin for ${row.name}, per cent`"
               />
             </td>
@@ -434,7 +434,7 @@ function formatDateTime(value: string): string {
             <td class="numeric px-4 py-2.5">{{ row.balance }}</td>
             <td class="text-content-muted px-4 py-2.5">
               {{ row.description ?? '—' }}
-              <span v-if="row.recordedBy" class="text-content-subtle block text-xs">
+              <span v-if="row.recordedBy" class="text-content-subtle text-chrome block">
                 {{ row.recordedBy }}
               </span>
             </td>
