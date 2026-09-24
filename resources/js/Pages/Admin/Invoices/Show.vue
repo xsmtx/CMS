@@ -64,6 +64,7 @@ const props = defineProps<{
     orderNumber: string | null
     orderId: string | null
     notes: string | null
+    terms: string | null
     billTo: {
       name: string | null
       company: string | null
@@ -492,6 +493,27 @@ function formatDateTime(value: string | null): string {
           </ul>
         </AppCard>
       </div>
+    </div>
+
+    <!--
+      What the document says at the foot of it. The operator's own note about
+      this invoice, and the sentence the seller's terms put on every document —
+      copied onto the row when it was issued, so an invoice from last year still
+      carries last year's wording.
+    -->
+    <div v-if="invoice.notes || invoice.terms" class="mt-6 flex flex-col gap-3">
+      <p
+        v-if="invoice.notes"
+        class="text-content-muted text-xs leading-relaxed whitespace-pre-line"
+      >
+        {{ invoice.notes }}
+      </p>
+      <p
+        v-if="invoice.terms"
+        class="border-line text-content-muted border-t pt-3 text-xs leading-relaxed whitespace-pre-line"
+      >
+        {{ invoice.terms }}
+      </p>
     </div>
 
     <div class="mt-6">

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Shared\Models;
 
+use App\Domain\Shared\NumberResetPeriod;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use Database\Factories\NumberSequenceFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -18,10 +19,18 @@ use Illuminate\Database\Eloquent\Model;
  * that. Phase 4 reuses this for invoices and credit notes, which is why it
  * is a general table rather than a column on orders.
  *
+ * `reset_period` and `period_key` are how a sequence restarts at one every
+ * year, which several countries require of an invoice book. The key is stored
+ * and compared rather than derived from `updated_at`: a sequence nobody used in
+ * January must still restart in January, and a timestamp cannot tell that from
+ * "already restarted in January".
+ *
  * @property string $key
  * @property string $prefix
  * @property int $next_value
  * @property int $padding
+ * @property NumberResetPeriod $reset_period
+ * @property string|null $period_key
  */
 final class NumberSequence extends Model
 {
@@ -40,11 +49,34 @@ final class NumberSequence extends Model
         'prefix',
         'next_value',
         'padding',
+        'reset_period',
+        'period_key',
+    ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'prefix' => '',
+        'next_value' => 1,
+        'padding' => 6,
+        'reset_period' => 'never',
     ];
 
     public function format(int $value): string
     {
         return $this->prefix.str_pad((string) $value, $this->padding, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Whether this row's current value belongs to a period that has passed.
+     *
+     * A sequence that has never been reset has no `period_key`, and the first
+     * allocation after the reset period is turned on adopts the current one
+     * rather than restarting — turning the setting on must not renumber the
+     * documents already issued this year.
+     */
+    public function isStale(string $currentKey): bool
+    {
+        return $this->period_key !== null && $this->period_key !== $currentKey;
     }
 
     /**
@@ -55,6 +87,7 @@ final class NumberSequence extends Model
         return [
             'next_value' => 'integer',
             'padding' => 'integer',
+            'reset_period' => NumberResetPeriod::class,
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];

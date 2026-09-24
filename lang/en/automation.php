@@ -93,6 +93,7 @@ return [
         'saved' => 'The sequence has been saved.',
         'removed' => 'The step has been removed.',
         'actions' => [
+            'late_fee' => 'Charge a late fee',
             'notify' => 'Send a message',
             'suspend' => 'Suspend the services',
             'terminate' => 'Terminate the services',

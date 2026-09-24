@@ -98,6 +98,10 @@ final class InvoiceController extends Controller
                     $invoice->bill_to_address,
                     $invoice->bill_to_tax_id,
                 ])),
+                // The seller's document note as it was when this invoice was
+                // issued. `notes` is deliberately not here: that one is the
+                // operator's own working note about the document.
+                'terms' => $invoice->terms,
                 'items' => $invoice->items
                     ->map(fn (InvoiceItem $item): array => [
                         'id' => $item->id,

@@ -53,6 +53,9 @@ final class FrontEndTranslations
         'billing.payment_statuses',
         'billing.payments',
         'billing.portal',
+        // Setup -> Billing terms. Operator vocabulary only; the fee wording a
+        // customer reads is rendered server side onto the document.
+        'billing.settings',
         'billing.statuses',
         'billing.transaction_kinds',
         'billing.transactions',

@@ -186,4 +186,65 @@ return [
         'order_not_invoiceable' => 'That order cannot be invoiced.',
         'already_invoiced' => 'That order already has an invoice.',
     ],
+
+    /*
+     * Setup -> Billing terms. Operator vocabulary, and it states no country's
+     * law: every sentence here is about *saying* what the terms are.
+     */
+    'settings' => [
+        'title' => 'Billing terms',
+        'intro' => 'When an invoice falls due, what being late costs, and what every document has to say. These are yours to state; this platform ships defaults, not rules.',
+        'saved' => 'Saved.',
+        'default_note' => 'Nobody has stated these yet, so the values below are what this installation ships with. Saving makes them yours.',
+
+        'terms_title' => 'Payment terms',
+        'terms_intro' => 'How long a customer has before an invoice is overdue — and therefore before the unpaid-invoice sequence starts.',
+        'due_days' => 'Days to pay',
+        'due_days_hint' => 'Counted from the day the invoice is issued. Zero means on receipt.',
+
+        'late_fee_title' => 'Late payment fee',
+        'late_fee_intro' => 'Charged as its own invoice, not added to the one that was late — an issued invoice is frozen, and a document a customer has already filed must not grow a line.',
+        'late_fee_rate' => 'Fee (% of what is outstanding)',
+        'late_fee_rate_hint' => 'Zero charges nothing. Of what is still owed, not of the total: an invoice half paid is half a debt.',
+        'late_fee_label' => 'What the fee is called',
+        'late_fee_label_hint' => 'Your customers will read this and some of them will query it.',
+        'late_fee_step_note' => 'A fee is charged by a step in the unpaid-invoice sequence, so the timing is set there rather than here.',
+
+        'document_title' => 'On every document',
+        'document_intro' => 'A sentence printed on each invoice and credit note. Several countries require one — a registration number, a court of registry, a statement about retention of title.',
+        'document_note' => 'Document note',
+
+        'numbering' => [
+            'title' => 'Document numbering',
+            'intro' => 'What a number looks like and where the next one starts. A sequence that restarts every year is a legal requirement in several countries.',
+            'saved' => 'Saved.',
+            'save' => 'Save',
+            'prefix' => 'Prefix',
+            'padding' => 'Digits',
+            'next_value' => 'Next number',
+            'next_value_hint' => 'The next one to be handed out, not the last one used. Set it to continue a book you are migrating.',
+            'reset' => 'Restart at one',
+            'preview' => 'Next',
+            'not_created' => 'Not created yet — it appears the first time a document of this kind is raised. Saving creates it now.',
+            'period' => 'Current period',
+            'keys' => [
+                'order' => 'Orders',
+                'invoice' => 'Invoices',
+                'proforma' => 'Proforma invoices',
+                'credit_note' => 'Credit notes',
+            ],
+            'periods' => [
+                'never' => 'Never',
+                'yearly' => 'Every year',
+                'monthly' => 'Every month',
+            ],
+        ],
+    ],
+
+    'late_fee' => [
+        // What the line says when the operator gave the fee no wording of
+        // their own. It names the invoice: an unexplained amount arriving on
+        // its own document weeks later is a support ticket.
+        'description' => 'Late payment fee for invoice :invoice',
+    ],
 ];

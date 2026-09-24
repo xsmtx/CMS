@@ -93,6 +93,7 @@ return [
         'saved' => 'Sıra kaydedildi.',
         'removed' => 'Adım kaldırıldı.',
         'actions' => [
+            'late_fee' => 'Gecikme bedeli al',
             'notify' => 'Mesaj gönder',
             'suspend' => 'Hizmetleri askıya al',
             'terminate' => 'Hizmetleri sonlandır',

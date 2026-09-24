@@ -46,6 +46,11 @@ return [
             'description' => 'What to charge, where. No rates are shipped: these are yours to state.',
             'unit' => 'rules',
         ],
+        'billing_settings' => [
+            'label' => 'Billing terms',
+            'description' => 'When an invoice falls due, what being late costs, and what a document number looks like.',
+            'unit' => '',
+        ],
         'licence' => [
             'label' => 'Licence',
             'description' => 'What this installation is licensed to do, and when it last spoke to the vendor.',

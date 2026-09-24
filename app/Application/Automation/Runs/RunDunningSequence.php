@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation\Runs;
 
+use App\Application\Billing\ChargeLateFee;
 use App\Application\Notifications\Notifier;
 use App\Application\Notifications\ResolveRecipients;
 use App\Application\Provisioning\RunServiceOperation;
@@ -55,6 +56,7 @@ final readonly class RunDunningSequence implements AutomationRun
         private Notifier $notifier,
         private ResolveRecipients $recipients,
         private RunServiceOperation $services,
+        private ChargeLateFee $lateFees,
     ) {}
 
     public function handle(): RunSummary
@@ -152,6 +154,12 @@ final readonly class RunDunningSequence implements AutomationRun
 
         return match ($step->action) {
             DunningAction::Notify => $customer->send_overdue_notices,
+            // A fee is a charge, not a withdrawal of service. Reading the
+            // suspension preference for it would let "never suspend us" mean
+            // "never charge us interest", which is not what anybody agreed to,
+            // and reading the notice preference would let opting out of email
+            // opt somebody out of the debt.
+            DunningAction::LateFee => true,
             DunningAction::Suspend, DunningAction::Terminate => $customer->automatic_suspension,
         };
     }
@@ -160,6 +168,7 @@ final readonly class RunDunningSequence implements AutomationRun
     {
         match ($step->action) {
             DunningAction::Notify => $this->notify($step, $invoice),
+            DunningAction::LateFee => $this->chargeLateFee($invoice),
             DunningAction::Suspend => $this->suspendServices($invoice),
             DunningAction::Terminate => $this->terminateServices($invoice),
         };
@@ -189,6 +198,20 @@ final readonly class RunDunningSequence implements AutomationRun
             url('/client/invoices/'.$invoice->id),
             organizationId: $invoice->organization_id,
         );
+    }
+
+    /**
+     * The fee for this invoice, as its own document (ADR 0046).
+     *
+     * A seller charging no fee, an invoice with nothing outstanding and a fee
+     * that rounds to zero all return null, and the step is still recorded as
+     * run. That is deliberate: "there was nothing to charge" is an answer, and
+     * leaving the step unrecorded would have the sweep ask the same question
+     * every night for as long as the debt lives.
+     */
+    private function chargeLateFee(Invoice $invoice): void
+    {
+        $this->lateFees->handle($invoice);
     }
 
     private function suspendServices(Invoice $invoice): void
@@ -289,6 +312,10 @@ final readonly class RunDunningSequence implements AutomationRun
         return $this->organizations->withoutBoundary(
             static fn (): array => array_values(Invoice::query()
                 ->owed()
+                // A late fee is its own invoice (ADR 0046) and is never itself
+                // chased: a fee on an unpaid fee compounds nightly, and the
+                // debt that matters is still in this query under its own row.
+                ->where('is_late_fee', false)
                 ->whereNotNull('due_on')
                 ->with('customer')
                 ->orderBy('due_on')

@@ -469,7 +469,7 @@ const groups: NavGroup[] = [
       },
       { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
       { label: 'Tax', href: '/admin/tax', superAdmin: true },
-      { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
+      { label: 'Billing Terms', href: '/admin/billing/settings', superAdmin: true },
       { label: 'Licence', href: '/admin/licence', superAdmin: true },
       { label: 'Import', href: '/admin/import', superAdmin: true },
     ],

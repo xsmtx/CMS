@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable|null $last_capture_at
  * @property string|null $last_capture_outcome
  * @property bool $is_proforma
+ * @property bool $is_late_fee
  */
 final class Invoice extends Model implements AuditLabel
 {
@@ -82,6 +83,7 @@ final class Invoice extends Model implements AuditLabel
         'last_capture_outcome',
         'cancelled_at',
         'is_proforma',
+        'is_late_fee',
         'notes',
         'terms',
     ];
@@ -102,6 +104,7 @@ final class Invoice extends Model implements AuditLabel
         'total_minor' => 0,
         'paid_minor' => 0,
         'is_proforma' => false,
+        'is_late_fee' => false,
     ];
 
     /**
@@ -219,6 +222,7 @@ final class Invoice extends Model implements AuditLabel
             'paid_minor' => 'integer',
             'tax_breakdown' => 'array',
             'is_proforma' => 'boolean',
+            'is_late_fee' => 'boolean',
             'issued_on' => 'immutable_date',
             'due_on' => 'immutable_date',
             'paid_at' => 'immutable_datetime',

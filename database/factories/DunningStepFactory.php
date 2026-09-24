@@ -43,6 +43,16 @@ final class DunningStepFactory extends Factory
         ]);
     }
 
+    public function lateFee(int $offsetDays): self
+    {
+        return $this->state(fn (): array => [
+            'offset_days' => $offsetDays,
+            'action' => DunningAction::LateFee->value,
+            'event' => null,
+            'position' => $offsetDays + 100,
+        ]);
+    }
+
     public function suspend(int $offsetDays): self
     {
         return $this->state(fn (): array => [

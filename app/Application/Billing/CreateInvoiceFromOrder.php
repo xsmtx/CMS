@@ -30,16 +30,26 @@ use Illuminate\Support\Str;
  * The result is a draft. Issuing it is a separate decision, because an
  * operator may want to look first, and because issuing is what freezes the
  * document.
+ *
+ * The due date comes from the seller's terms rather than from configuration:
+ * net 14 is a habit, net 30 is the norm for business selling across much of
+ * Europe, and a reseller in another country sells on their own terms. A seller
+ * who has stated nothing still gets the configured default, so nothing about an
+ * existing installation changes.
  */
 final readonly class CreateInvoiceFromOrder
 {
+    public function __construct(private BillingSettings $settings) {}
+
     public function handle(Order $order, ?Model $actor = null): Invoice
     {
         $this->assertInvoiceable($order);
 
         $order->load(['items.options', 'items.children.options', 'customer']);
 
-        $invoice = DB::transaction(function () use ($order): Invoice {
+        $dueDays = $this->settings->forOrganization($order->organization_id)->due_days;
+
+        $invoice = DB::transaction(function () use ($order, $dueDays): Invoice {
             $invoice = Invoice::query()->create([
                 'organization_id' => $order->organization_id,
                 // A draft has no number: numbers come from a sequence and
@@ -56,9 +66,7 @@ final readonly class CreateInvoiceFromOrder
                 'total_minor' => $order->total->minorUnits,
                 'tax_breakdown' => $order->tax_breakdown,
                 'tax_exemption_reason' => $order->tax_exemption_reason,
-                'due_on' => CarbonImmutable::now()
-                    ->addDays((int) config('platform.billing.due_days', 14))
-                    ->toDateString(),
+                'due_on' => CarbonImmutable::now()->addDays($dueDays)->toDateString(),
             ]);
 
             $this->writeLines($invoice, $order);

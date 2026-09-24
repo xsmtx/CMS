@@ -38,6 +38,11 @@ return [
             'description' => 'Nerede ne tahsil edileceği. Hiçbir oran hazır gelmez, kuralları siz yazarsınız.',
             'unit' => 'kural',
         ],
+        'billing_settings' => [
+            'label' => 'Fatura koşulları',
+            'description' => 'Faturanın vadesi, gecikmenin bedeli ve belge numarasının biçimi.',
+            'unit' => '',
+        ],
         'licence' => [
             'label' => 'Lisans',
             'description' => 'Bu kurulumun neye lisanslı olduğu ve sağlayıcıyla en son ne zaman konuştuğu.',

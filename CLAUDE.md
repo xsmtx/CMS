@@ -763,3 +763,47 @@ Six of the seven new screen tests passed while it was broken, because nothing
 that does not render a document touches that class. A test that renders any page
 is a guard on the document chrome, so `assertOk()` on a real render belongs in a
 new screen test before anything about the screen's own data.
+
+A document sequence may restart, and that is a legal requirement rather than a
+preference: an unbroken run from INV-000001 forever is not an acceptable invoice
+book in Turkey, Italy, Spain, Portugal or Poland. `number_sequences.reset_period`
+plus `period_key` express it, and the key is **stored and compared**, never
+derived from `updated_at` — a timestamp cannot tell "nobody invoiced in January"
+from "already reset in January", and the second must not reset twice. The reset
+happens **inside `AllocateNumber`, under the same row lock as the increment**: two
+documents raised in the same second must not both decide they are the one that
+resets, and a scheduled task that reset sequences at midnight would be a task
+that *has* to run — a reset that did not happen is a duplicate invoice number.
+Turning the reset on adopts the current period instead of restarting, and
+switching it off does not cause one last restart from the stale key; both are
+somebody's invoice numbers and both are pinned by tests. `next_value` is writable
+because an installation migrating from another panel has to continue its book at
+10421, and lowering it is audited rather than refused — the next failure is a
+unique-index violation and the audit row is what explains it.
+
+A late fee is a new invoice (ADR 0046), answering a question `DunningAction` left
+open on purpose in Phase 9. The invoice the fee is about is frozen so it cannot
+grow a line, and a line on the *next* invoice arrives weeks after the behaviour it
+exists to discourage. It is a **dunning step**, so the timing is the step's
+`offset_days` and `invoice_dunning_steps` is what stops it charging thirty times;
+it is a percentage of what is **outstanding**, not of the total; `invoices.is_late_fee`
+keeps the fee invoice out of the sweep, or a fee earns a fee nightly and a suspend
+step takes a server down over three euros of interest; nothing to charge returns
+null and the step is still recorded, because "there was nothing to charge" is an
+answer; and the customer's **suspension** preference does not apply to it — "never
+suspend us" is about service, not about owing money.
+
+`billing_settings` is a seller's terms: `due_days`, `late_fee_rate_ppm`,
+`late_fee_label`, `document_note`. A seller with no row gets `config('platform.billing')`
+and **no row is written on read** — that would be terms nobody agreed to, frozen
+where the next deploy could not reach them. The document note is copied onto
+`invoices.terms` at issue and never read at render, for the same reason the
+bill-to party is (ADR 0023).
+
+Never memoise a settings lookup that can miss. `BillingSettings` briefly cached
+per seller, which cached the **miss** — a model saying "nobody has stated these" —
+and held it across a save: the form redirected, the screen re-rendered from the
+cached default, and it read as a settings page that did not save. A single indexed
+lookup per call is the cheaper mistake. The test that caught it asserted that a
+banner disappears after saving, which is why a sentence shown to an operator is
+worth a test of its own.

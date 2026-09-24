@@ -46,6 +46,7 @@ const props = defineProps<{
     tax: string
     paid: string
     billTo: string[]
+    terms: string | null
     items: InvoiceLine[]
     payments: InvoicePayment[]
     creditNotes: InvoiceCreditNote[]
@@ -230,5 +231,17 @@ function formatDate(value: string | null): string {
         </AppCard>
       </div>
     </div>
+
+    <!--
+      The sentence the seller's country obliges the document to carry, as it was
+      when this invoice was issued. A customer reading a two-year-old invoice
+      sees what they were sent, not what the terms say today.
+    -->
+    <p
+      v-if="invoice.terms"
+      class="border-line text-content-muted mt-6 border-t pt-4 text-xs leading-relaxed whitespace-pre-line"
+    >
+      {{ invoice.terms }}
+    </p>
   </ClientLayout>
 </template>

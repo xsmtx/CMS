@@ -151,6 +151,13 @@ final class AppsController extends Controller
              * Administrator holds every staff permission by design (ADR 0045).
              */
             $this->area('tax', '/admin/tax', null, TaxRule::query()->count()),
+            /*
+             * Billing terms belong beside tax for the same reason: `due_days`
+             * decides when dunning starts touching somebody's services and
+             * `late_fee_rate_ppm` is money charged to a customer, so neither is
+             * a setting a day-to-day administrator should meet by accident.
+             */
+            $this->area('billing_settings', '/admin/billing/settings'),
             $this->area('licence', '/admin/licence'),
             $this->area('import', '/admin/import'),
         ];

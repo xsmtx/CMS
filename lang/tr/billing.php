@@ -183,4 +183,58 @@ return [
         'order_not_invoiceable' => 'Bu sipariş faturalandırılamaz.',
         'already_invoiced' => 'Bu siparişin zaten bir faturası var.',
     ],
+
+    'settings' => [
+        'title' => 'Fatura koşulları',
+        'intro' => 'Faturanın ne zaman vadesinin geldiği, gecikmenin ne kadara mal olduğu ve her belgede ne yazması gerektiği. Bunları siz belirlersiniz; bu platform kural değil varsayılan gönderir.',
+        'saved' => 'Kaydedildi.',
+        'default_note' => 'Bunları henüz kimse belirlemedi; aşağıdaki değerler kurulumun kendi varsayılanları. Kaydettiğinizde sizin olurlar.',
+
+        'terms_title' => 'Ödeme koşulları',
+        'terms_intro' => 'Fatura vadesi geçmeden — yani ödenmemiş fatura dizisi başlamadan — müşterinin ne kadar süresi olduğu.',
+        'due_days' => 'Ödeme süresi (gün)',
+        'due_days_hint' => 'Faturanın kesildiği günden itibaren. Sıfır, peşin anlamına gelir.',
+
+        'late_fee_title' => 'Gecikme bedeli',
+        'late_fee_intro' => 'Geciken faturaya eklenmez, kendi faturası olarak kesilir — kesilmiş fatura dondurulmuştur ve müşterinin dosyaladığı bir belgeye sonradan satır eklenmemelidir.',
+        'late_fee_rate' => 'Bedel (kalan borcun yüzdesi)',
+        'late_fee_rate_hint' => 'Sıfır, bedel alınmaz demektir. Toplamın değil kalan borcun üzerinden: yarısı ödenmiş fatura yarım borçtur.',
+        'late_fee_label' => 'Bedelin adı',
+        'late_fee_label_hint' => 'Müşterileriniz bunu okuyacak, bir kısmı da soracak.',
+        'late_fee_step_note' => 'Bedel, ödenmemiş fatura dizisindeki bir adımla alınır; zamanlaması burada değil orada belirlenir.',
+
+        'document_title' => 'Her belgede',
+        'document_intro' => 'Her fatura ve iade faturasında yazan bir cümle. Bazı ülkeler bunu zorunlu tutar — sicil numarası, ticaret sicili, mülkiyetin saklı tutulduğuna dair ibare.',
+        'document_note' => 'Belge notu',
+
+        'numbering' => [
+            'title' => 'Belge numaralandırma',
+            'intro' => 'Numaranın nasıl göründüğü ve bir sonrakinin nereden başladığı. Her yıl birden başlayan bir dizi bazı ülkelerde yasal zorunluluktur.',
+            'saved' => 'Kaydedildi.',
+            'save' => 'Kaydet',
+            'prefix' => 'Ön ek',
+            'padding' => 'Basamak',
+            'next_value' => 'Sıradaki numara',
+            'next_value_hint' => 'Kullanılan son numara değil, verilecek ilk numara. Taşıdığınız bir deftere devam etmek için ayarlayın.',
+            'reset' => 'Birden başlat',
+            'preview' => 'Sıradaki',
+            'not_created' => 'Henüz oluşmadı — bu türden ilk belge kesildiğinde oluşur. Kaydederseniz şimdi oluşur.',
+            'period' => 'Geçerli dönem',
+            'keys' => [
+                'order' => 'Siparişler',
+                'invoice' => 'Faturalar',
+                'proforma' => 'Proforma faturalar',
+                'credit_note' => 'İade faturaları',
+            ],
+            'periods' => [
+                'never' => 'Hiç',
+                'yearly' => 'Her yıl',
+                'monthly' => 'Her ay',
+            ],
+        ],
+    ],
+
+    'late_fee' => [
+        'description' => ':invoice numaralı fatura için gecikme bedeli',
+    ],
 ];

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
+use App\Http\Controllers\Admin\BillingSettingsController;
 use App\Http\Controllers\Admin\CancellationController;
 use App\Http\Controllers\Admin\CannedResponseController;
 use App\Http\Controllers\Admin\ClientController;
@@ -509,6 +510,19 @@ Route::middleware(['auth:staff'])->group(function (): void {
         Route::delete('tax/rules/{rule}', [TaxController::class, 'destroy'])
             ->name('tax.rules.destroy');
         Route::put('tax/settings', [TaxController::class, 'settings'])->name('tax.settings');
+
+        /*
+         * Billing terms and document numbering. Owner only for the same
+         * reasons: when an invoice falls due decides when dunning starts
+         * taking services away, the late-fee rate is money charged to a
+         * customer, and a mistyped `next_value` is a duplicate invoice number.
+         */
+        Route::get('billing/settings', [BillingSettingsController::class, 'index'])
+            ->name('billing.settings');
+        Route::put('billing/settings', [BillingSettingsController::class, 'update'])
+            ->name('billing.settings.update');
+        Route::put('billing/numbering/{key}', [BillingSettingsController::class, 'numbering'])
+            ->name('billing.numbering.update');
     });
 
     /*

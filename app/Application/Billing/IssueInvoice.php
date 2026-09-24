@@ -25,12 +25,20 @@ use Illuminate\Support\Facades\DB;
  *
  * The number is allocated inside the same transaction that issues the
  * invoice, so a rollback cannot leave a gap in the sequence.
+ *
+ * The seller's document note is copied onto the document here, which is the only
+ * correct moment for it: the wording a country obliges an invoice to carry is
+ * part of what the customer received, so changing it next year must not change
+ * what last year's invoices say. An invoice that already carries its own terms
+ * keeps them — an operator who typed something onto one document meant that
+ * document.
  */
 final readonly class IssueInvoice
 {
     public function __construct(
         private AllocateNumber $numbers,
         private TransitionInvoice $transitions,
+        private BillingSettings $settings,
     ) {}
 
     /**
@@ -50,7 +58,13 @@ final readonly class IssueInvoice
 
         $customer = $invoice->customer;
 
-        DB::transaction(function () use ($invoice, $customer): void {
+        // Read before the transaction: it is a query against another
+        // organization's row and has nothing to do with writing this document.
+        $terms = $invoice->terms ?? $this->settings
+            ->forOrganization($invoice->organization_id)
+            ->document_note;
+
+        DB::transaction(function () use ($invoice, $customer, $terms): void {
             $invoice->forceFill([
                 'number' => $this->numbers->handle(
                     $invoice->organization_id,
@@ -64,6 +78,7 @@ final readonly class IssueInvoice
                     (int) config('platform.billing.numbering.padding', 6),
                 ),
                 'issued_on' => CarbonImmutable::now()->toDateString(),
+                'terms' => $terms,
                 ...($customer === null ? [] : CreateInvoiceFromOrder::billTo($customer)),
             ])->save();
         });
