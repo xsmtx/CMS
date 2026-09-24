@@ -29,16 +29,16 @@ Numbers generated 2026-09-24; re-count with the grep in
 
 | Done | Page | Type | cards | padded td | solid danger | arbitrary type | i18n |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | `Admin/Invoices/Show.vue` | detail | 8 |  | **1** |  |  |
-| [ ] | `Admin/Orders/Show.vue` | detail | 7 |  | **1** |  |  |
-| [ ] | `Admin/Services/Show.vue` | detail | 6 |  | **1** |  |  |
-| [ ] | `Admin/Reports/Index.vue` | list | 5 | 10 |  | 6 | yes |
-| [ ] | `Admin/Support/Create.vue` | form | 7 |  |  |  |  |
-| [ ] | `Admin/Settings/Index.vue` | list | 8 |  |  |  |  |
+| [x] | `Admin/Invoices/Show.vue` | detail |  |  |  |  | yes |
+| [x] | `Admin/Orders/Show.vue` | detail |  |  |  |  | yes |
+| [x] | `Admin/Services/Show.vue` | detail |  |  |  |  | yes |
+| [x] | `Admin/Reports/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Support/Create.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Settings/Index.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Orders/Create.vue` | form | 6 |  |  |  |  |
 | [ ] | `Admin/Customers/Create.vue` | form | 7 |  |  |  |  |
-| [ ] | `Admin/Domains/Show.vue` | detail | 6 |  |  |  |  |
-| [ ] | `Admin/Billing/AddTransaction.vue` | form | 4 |  |  |  |  |
+| [x] | `Admin/Domains/Show.vue` | detail |  |  |  |  | yes |
+| [x] | `Admin/Billing/AddTransaction.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Resellers/Show.vue` | detail | 5 | 16 |  |  |  |
 | [ ] | `Admin/Licence/Index.vue` | list | 4 | 4 |  |  |  |
 | [ ] | `Admin/Billing/Settings.vue` | form | 4 |  |  |  | yes |

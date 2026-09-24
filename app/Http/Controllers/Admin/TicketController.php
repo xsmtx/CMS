@@ -474,7 +474,11 @@ final class TicketController extends Controller
                 'id' => $service->id,
                 'label' => $service->name,
                 'detail' => $service->domain,
-                'status' => (string) __($service->status->labelKey()),
+                // Two fields: the raw word for `statusTone()`, the label for a
+                // reader. Sending only the label matched in English by
+                // coincidence and drew the unknown mark in every other locale.
+                'status' => $service->status->value,
+                'statusLabel' => (string) __($service->status->labelKey()),
             ];
         }
 
@@ -486,7 +490,8 @@ final class TicketController extends Controller
                 'id' => $domain->id,
                 'label' => $domain->name,
                 'detail' => $domain->expires_on?->toDateString(),
-                'status' => (string) __($domain->status->labelKey()),
+                'status' => $domain->status->value,
+                'statusLabel' => (string) __($domain->status->labelKey()),
             ];
         }
 
@@ -502,7 +507,8 @@ final class TicketController extends Controller
                 'id' => $invoice->id,
                 'label' => $invoice->number,
                 'detail' => $invoice->total->format($locale),
-                'status' => (string) __($invoice->status->labelKey()),
+                'status' => $invoice->status->value,
+                'statusLabel' => (string) __($invoice->status->labelKey()),
             ];
         }
 

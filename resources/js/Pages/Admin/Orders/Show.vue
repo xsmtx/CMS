@@ -1,14 +1,39 @@
 <script setup lang="ts">
+/**
+ * One order: what was bought, what it came to, and whether it may proceed.
+ *
+ * Laid out as a resource page (enterprise-cms-ux, "Detail pages"):
+ *
+ * 1. **Identity** — the number, the status, who placed it, and Raise invoice
+ *    as the one primary action while there is no invoice.
+ * 2. **Figures** — what is due now and what it renews at, side by side. An
+ *    order's total and its recurring total are different numbers and the
+ *    second is the one people forget to look at.
+ * 3. **The order** — the lines with their options and addons, its totals, and
+ *    the history of every status it has been in.
+ * 4. **Decisions** — risk, invoice and status in the aside, where work is done.
+ *
+ * There is no Danger Zone here on purpose. The one irreversible action is
+ * refusing an order held for review, and that is one half of a single
+ * decision: an operator reads the risk reasons and answers release or refuse.
+ * Moving the refusal to the foot of the page would separate the answer from
+ * the question it answers, which is the opposite of what a danger zone is for.
+ * The entry is `danger-subtle` and the solid press is inside the confirmation.
+ */
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import MetricStrip, { type Metric } from '../../../Components/MetricStrip.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
 
@@ -74,9 +99,19 @@ const props = defineProps<{
     history: HistoryEntry[]
     transitions: { value: string; label: string }[]
   }
-  invoice: { id: string; number: string; status: string; balance: string } | null
+  invoice: {
+    id: string
+    number: string
+    status: string
+    statusLabel: string
+    balance: string
+  } | null
   can: { update: boolean; review: boolean; invoice: boolean }
 }>()
+
+const { t } = useTranslations()
+
+const heading = computed(() => t('ui.order.title', { number: props.order.number }))
 
 const statusForm = useForm({
   status: props.order.transitions[0]?.value ?? '',
@@ -84,8 +119,42 @@ const statusForm = useForm({
 })
 
 const reviewForm = useForm({ reason: '' })
-const reviewing = ref(false)
 const invoiceForm = useForm({})
+
+/** Which half of the review decision is being confirmed, if either. */
+const deciding = ref<'release' | 'refuse' | null>(null)
+
+const heldForReview = computed(() => props.can.review && props.order.status === 'fraud_review')
+
+/**
+ * What is due now, and what it will be every cycle after that. A one-time
+ * order renews at zero and says so — an absent line would read as unknown.
+ */
+const figures = computed<Metric[]>(() => {
+  const items: Metric[] = [
+    { key: 'total', label: t('ui.order.total'), value: props.order.total },
+    { key: 'recurring', label: t('ui.order.renews_at'), value: props.order.recurringTotal },
+  ]
+
+  if (props.invoice) {
+    items.push({
+      key: 'outstanding',
+      label: t('ui.order.outstanding'),
+      value: props.invoice.balance,
+      hint: props.invoice.number,
+      href: `/admin/invoices/${props.invoice.id}`,
+    })
+  }
+
+  return items
+})
+
+const placement = computed<DescriptionItem[]>(() => [
+  { key: 'placed', label: t('ui.order.placed'), value: formatDateTime(props.order.placedAt) },
+  { key: 'contact', label: t('ui.order.contact'), value: props.order.contact },
+  { key: 'terms', label: t('ui.order.terms') },
+  { key: 'from', label: t('ui.order.from'), value: props.order.ipAddress, mono: true },
+])
 
 function raiseInvoice(): void {
   invoiceForm.post(`/admin/orders/${props.order.id}/invoice`)
@@ -95,12 +164,24 @@ function changeStatus(): void {
   statusForm.put(`/admin/orders/${props.order.id}/status`, { preserveScroll: true })
 }
 
-function release(): void {
-  reviewForm.post(`/admin/orders/${props.order.id}/release`, { preserveScroll: true })
-}
+/**
+ * Both halves of the review post the same payload to different routes, and
+ * the reason comes from the confirmation rather than from a field on the
+ * page — an override has to be explainable later, and the dialog is where
+ * the operator is actually committing to it.
+ */
+function decide(reason: string | null): void {
+  const choice = deciding.value
 
-function refuse(): void {
-  reviewForm.post(`/admin/orders/${props.order.id}/refuse`, { preserveScroll: true })
+  if (choice === null) return
+
+  reviewForm.reason = reason ?? ''
+  reviewForm.post(`/admin/orders/${props.order.id}/${choice}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      deciding.value = null
+    },
+  })
 }
 
 function formatDateTime(value: string | null): string {
@@ -109,267 +190,290 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-  <Head :title="`Order ${order.number}`" />
+  <Head :title="heading" />
 
-  <AdminLayout :heading="`Order ${order.number}`" :description="order.customer ?? undefined">
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
-        <AppCard>
-          <h2 class="text-body mb-4 font-semibold">Items</h2>
+  <AdminLayout :heading="heading">
+    <template #header>
+      <PageHeader :title="heading">
+        <template #status>
+          <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
+        </template>
 
-          <ul class="divide-line divide-y">
-            <li v-for="line in order.items" :key="line.id" class="py-3 first:pt-0 last:pb-0">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-body font-medium">
-                    {{ line.name }}
-                    <span v-if="line.quantity > 1" class="text-content-muted">
-                      × {{ line.quantity }}
-                    </span>
-                  </p>
-                  <p class="text-content-muted text-chrome">
-                    <span v-if="line.groupName">{{ line.groupName }} · </span>
-                    <span v-if="line.cycleLabel">{{ line.cycleLabel }}</span>
-                    <span v-if="line.domain"> · {{ line.domain }}</span>
-                  </p>
+        <template #meta>
+          <span v-if="order.customer">{{ order.customer }}</span>
+          <template v-if="order.placedAt">
+            <span v-if="order.customer" aria-hidden="true">·</span>
+            <span>{{ t('ui.order.placed_on', { date: formatDateTime(order.placedAt) }) }}</span>
+          </template>
+        </template>
 
-                  <ul v-if="line.options.length > 0" class="mt-2 space-y-0.5">
-                    <li
-                      v-for="option in line.options"
-                      :key="`${line.id}-${option.group}`"
-                      class="text-content-muted text-chrome"
-                    >
-                      {{ option.group }}: {{ option.label }}
-                      <span v-if="option.amount" class="tabular-nums"> ({{ option.amount }})</span>
-                    </li>
-                  </ul>
+        <template v-if="can.invoice && !invoice" #actions>
+          <AppButton
+            variant="primary"
+            icon="invoice"
+            :loading="invoiceForm.processing"
+            @click="raiseInvoice"
+          >
+            {{ t('ui.order.raise_invoice') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
 
-                  <ul v-if="line.children.length > 0" class="mt-2 space-y-0.5">
-                    <li
-                      v-for="child in line.children"
-                      :key="child.id"
-                      class="text-content-muted text-chrome"
-                    >
-                      + {{ child.name }}
-                      <span class="tabular-nums">{{ child.lineTotal }}</span>
-                    </li>
-                  </ul>
+    <div class="flex flex-col gap-8">
+      <AppAlert v-if="order.notes" tone="info">{{ order.notes }}</AppAlert>
+
+      <MetricStrip :items="figures" />
+
+      <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+        <div class="flex min-w-0 flex-col gap-8">
+          <DetailSection :title="t('ui.order.items')">
+            <ul class="divide-line-subtle divide-y">
+              <li v-for="line in order.items" :key="line.id" class="py-3 first:pt-0 last:pb-0">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="text-body font-medium">
+                      {{ line.name }}
+                      <span v-if="line.quantity > 1" class="text-content-muted">
+                        × {{ line.quantity }}
+                      </span>
+                    </p>
+                    <p class="text-content-muted text-chrome">
+                      <span v-if="line.groupName">{{ line.groupName }} · </span>
+                      <span v-if="line.cycleLabel">{{ line.cycleLabel }}</span>
+                      <span v-if="line.domain"> · {{ line.domain }}</span>
+                    </p>
+
+                    <ul v-if="line.options.length > 0" class="mt-2 space-y-0.5">
+                      <li
+                        v-for="option in line.options"
+                        :key="`${line.id}-${option.group}`"
+                        class="text-content-muted text-chrome"
+                      >
+                        {{ option.group }}: {{ option.label }}
+                        <span v-if="option.amount" class="tabular-nums">
+                          ({{ option.amount }})
+                        </span>
+                      </li>
+                    </ul>
+
+                    <!--
+                      Addons, one level down and no further: an order line is a
+                      product with its addons under it, and nothing loads a
+                      third level (ADR 0035).
+                    -->
+                    <ul v-if="line.children.length > 0" class="mt-2 space-y-0.5">
+                      <li
+                        v-for="child in line.children"
+                        :key="child.id"
+                        class="text-content-muted text-chrome"
+                      >
+                        + {{ child.name }}
+                        <span class="tabular-nums">{{ child.lineTotal }}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="shrink-0 text-right whitespace-nowrap">
+                    <p class="text-body tabular-nums">{{ line.lineTotal }}</p>
+                    <p v-if="line.lineSetup" class="text-content-subtle text-chrome">
+                      {{ t('ui.order.setup_included', { amount: line.lineSetup }) }}
+                    </p>
+                    <p v-if="line.lineDiscount" class="text-success text-chrome">
+                      −{{ line.lineDiscount }}
+                    </p>
+                  </div>
                 </div>
+              </li>
+            </ul>
 
-                <div class="text-right whitespace-nowrap">
-                  <p class="text-body tabular-nums">{{ line.lineTotal }}</p>
-                  <p v-if="line.lineSetup" class="text-content-subtle text-chrome">
-                    incl. {{ line.lineSetup }} setup
-                  </p>
-                  <p v-if="line.lineDiscount" class="text-success text-chrome">
-                    −{{ line.lineDiscount }}
-                  </p>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </AppCard>
-
-        <AppCard>
-          <h2 class="text-body mb-4 font-semibold">History</h2>
-
-          <ol class="divide-line divide-y">
-            <li
-              v-for="(entry, index) in order.history"
-              :key="index"
-              class="text-body flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
+            <!--
+              The totals read against the amounts above them, so they sit in a
+              narrow column on the right rather than in a second framed box.
+            -->
+            <dl
+              class="border-line divide-line-subtle text-body mt-4 divide-y border-t pt-1 lg:ml-auto lg:w-80"
             >
-              <span>
-                {{ entry.toLabel }}
-                <span v-if="entry.reason" class="text-content-muted text-chrome mt-0.5 block">
-                  {{ entry.reason }}
-                </span>
-              </span>
-              <span class="text-content-muted text-chrome text-right whitespace-nowrap">
-                {{ formatDateTime(entry.occurredAt) }}
-                <span v-if="entry.actor" class="text-content-subtle block">{{ entry.actor }}</span>
-              </span>
-            </li>
-          </ol>
-        </AppCard>
-      </div>
-
-      <div class="flex flex-col gap-6">
-        <AppCard>
-          <h2 class="text-body mb-3 font-semibold">Totals</h2>
-
-          <dl class="divide-line text-body divide-y">
-            <div class="flex justify-between py-2">
-              <dt class="text-content-muted">Subtotal</dt>
-              <dd class="tabular-nums">{{ order.subtotal }}</dd>
-            </div>
-            <div v-if="order.promotionCode" class="flex justify-between py-2">
-              <dt class="text-content-muted">Discount ({{ order.promotionCode }})</dt>
-              <dd class="text-success tabular-nums">−{{ order.discount }}</dd>
-            </div>
-            <div class="flex justify-between py-2">
-              <dt class="text-content-muted">Setup</dt>
-              <dd class="tabular-nums">{{ order.setup }}</dd>
-            </div>
-            <div class="flex justify-between py-2">
-              <dt class="text-content-muted">
-                Tax
-                <span v-if="order.taxBreakdown.length > 0" class="text-content-subtle">
-                  ({{ order.taxBreakdown[0]?.name }} {{ order.taxBreakdown[0]?.rate }}%)
-                </span>
-              </dt>
-              <dd class="tabular-nums">{{ order.tax }}</dd>
-            </div>
-            <div class="flex justify-between py-2 font-semibold">
-              <dt>Total</dt>
-              <dd class="tabular-nums">{{ order.total }}</dd>
-            </div>
-            <div class="flex justify-between py-2">
-              <dt class="text-content-muted">Renews at</dt>
-              <dd class="text-content-muted tabular-nums">{{ order.recurringTotal }}</dd>
-            </div>
-          </dl>
-        </AppCard>
-
-        <AppCard v-if="order.riskDecision">
-          <h2 class="text-body mb-2 font-semibold">
-            Risk
-            <AppBadge class="ml-2">{{ order.riskDecision }}</AppBadge>
-          </h2>
-
-          <ul v-if="order.riskReasons.length > 0" class="text-content-muted text-chrome space-y-1">
-            <li v-for="(reason, index) in order.riskReasons" :key="index">{{ reason }}</li>
-          </ul>
-          <p v-else class="text-content-muted text-chrome">Nothing flagged.</p>
-
-          <p v-if="order.riskReviewedAt" class="text-content-subtle text-chrome mt-3">
-            Reviewed {{ formatDateTime(order.riskReviewedAt) }}
-            <span v-if="order.riskReviewedBy">by {{ order.riskReviewedBy }}</span>
-          </p>
-
-          <div v-if="can.review && order.status === 'fraud_review'" class="mt-4">
-            <template v-if="reviewing">
-              <AppInput
-                v-model="reviewForm.reason"
-                label="Reason"
-                :error="reviewForm.errors.reason"
-                hint="Recorded against the order. Required, because an override has to be explainable later."
-              />
-              <div class="mt-3 flex gap-2">
-                <AppButton
-                  size="sm"
-                  variant="primary"
-                  :loading="reviewForm.processing"
-                  @click="release"
-                >
-                  Release
-                </AppButton>
-                <AppButton
-                  size="sm"
-                  variant="danger"
-                  :loading="reviewForm.processing"
-                  @click="refuse"
-                >
-                  Refuse
-                </AppButton>
-                <AppButton size="sm" variant="ghost" @click="reviewing = false">Cancel</AppButton>
+              <div class="flex justify-between gap-4 py-2">
+                <dt class="text-content-muted">{{ t('ui.order.subtotal') }}</dt>
+                <dd class="tabular-nums">{{ order.subtotal }}</dd>
               </div>
+              <div v-if="order.promotionCode" class="flex justify-between gap-4 py-2">
+                <dt class="text-content-muted">
+                  {{ t('ui.order.discount_with_code', { code: order.promotionCode }) }}
+                </dt>
+                <dd class="text-success tabular-nums">−{{ order.discount }}</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-2">
+                <dt class="text-content-muted">{{ t('ui.order.setup') }}</dt>
+                <dd class="tabular-nums">{{ order.setup }}</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-2">
+                <dt class="text-content-muted">
+                  {{ t('ui.order.tax') }}
+                  <span v-if="order.taxBreakdown.length > 0" class="text-content-subtle">
+                    ({{ order.taxBreakdown[0]?.name }} {{ order.taxBreakdown[0]?.rate }}%)
+                  </span>
+                </dt>
+                <dd class="tabular-nums">{{ order.tax }}</dd>
+              </div>
+              <div class="flex justify-between gap-4 py-2 font-medium">
+                <dt>{{ t('ui.order.total') }}</dt>
+                <dd class="tabular-nums">{{ order.total }}</dd>
+              </div>
+            </dl>
+          </DetailSection>
+
+          <DetailSection :title="t('ui.order.history')" :description="t('ui.order.history_intro')">
+            <ol class="divide-line-subtle divide-y">
+              <li
+                v-for="(entry, index) in order.history"
+                :key="index"
+                class="text-body flex items-start justify-between gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <span class="min-w-0">
+                  {{ entry.toLabel }}
+                  <span v-if="entry.reason" class="text-content-muted text-chrome mt-0.5 block">
+                    {{ entry.reason }}
+                  </span>
+                </span>
+                <span class="text-content-muted text-chrome shrink-0 text-right whitespace-nowrap">
+                  {{ formatDateTime(entry.occurredAt) }}
+                  <span v-if="entry.actor" class="text-content-subtle block">
+                    {{ entry.actor }}
+                  </span>
+                </span>
+              </li>
+            </ol>
+          </DetailSection>
+        </div>
+
+        <aside class="flex min-w-0 flex-col gap-8">
+          <DetailSection v-if="order.riskDecision" :title="t('ui.order.risk')">
+            <template #actions>
+              <AppStatus
+                :tone="statusTone(order.riskDecision)"
+                :label="t(`ui.order.risk_decisions.${order.riskDecision}`)"
+              />
             </template>
-            <AppButton v-else size="sm" @click="reviewing = true">Review this order</AppButton>
-          </div>
-        </AppCard>
 
-        <AppCard v-if="invoice || can.invoice">
-          <h2 class="text-body mb-3 font-semibold">Invoice</h2>
+            <ul
+              v-if="order.riskReasons.length > 0"
+              class="text-content-muted text-body list-disc space-y-1 pl-4"
+            >
+              <li v-for="(reason, index) in order.riskReasons" :key="index">{{ reason }}</li>
+            </ul>
+            <p v-else class="text-content-muted text-body">{{ t('ui.order.risk_nothing') }}</p>
 
-          <template v-if="invoice">
-            <div class="flex items-baseline justify-between gap-3">
-              <Link
-                :href="`/admin/invoices/${invoice.id}`"
-                class="text-body font-medium underline-offset-4 hover:underline"
-              >
-                {{ invoice.number }}
-              </Link>
-              <AppStatus :tone="statusTone(invoice.status)" :label="invoice.status" />
-            </div>
-            <p class="text-content-muted text-chrome mt-2">
-              Outstanding <span class="tabular-nums">{{ invoice.balance }}</span>
+            <p v-if="order.riskReviewedAt" class="text-content-subtle text-chrome mt-3">
+              {{ t('ui.order.risk_reviewed', { date: formatDateTime(order.riskReviewedAt) }) }}
+              <span v-if="order.riskReviewedBy">
+                {{ t('ui.order.risk_reviewed_by', { name: order.riskReviewedBy }) }}
+              </span>
             </p>
-          </template>
 
-          <template v-else>
-            <p class="text-content-muted text-chrome mb-3">
-              No invoice yet. Raising one creates a draft you can check before issuing it.
-            </p>
-            <AppButton size="sm" :loading="invoiceForm.processing" @click="raiseInvoice">
-              Raise invoice
-            </AppButton>
-          </template>
-        </AppCard>
-
-        <AppCard v-if="can.update && order.transitions.length > 0">
-          <h2 class="text-body mb-3 font-semibold">Change status</h2>
-
-          <div class="flex flex-col gap-3">
-            <AppSelect
-              v-model="statusForm.status"
-              label="New status"
-              :options="order.transitions"
-              :error="statusForm.errors.status"
-            />
-            <AppInput
-              v-model="statusForm.reason"
-              label="Reason"
-              :error="statusForm.errors.reason"
-              hint="Optional, and kept forever."
-            />
-            <div>
-              <AppButton
-                size="sm"
-                variant="primary"
-                :loading="statusForm.processing"
-                @click="changeStatus"
-              >
-                Apply
+            <!--
+              One decision with two answers, so both live here. Refuse is the
+              entry to something irreversible and is `danger-subtle`; the solid
+              red press is inside the confirmation, which is also where the
+              reason is written.
+            -->
+            <div v-if="heldForReview" class="mt-4 flex flex-wrap gap-2">
+              <AppButton variant="primary" @click="deciding = 'release'">
+                {{ t('ui.order.release') }}
+              </AppButton>
+              <AppButton variant="danger-subtle" @click="deciding = 'refuse'">
+                {{ t('ui.order.refuse') }}
               </AppButton>
             </div>
-          </div>
-        </AppCard>
+          </DetailSection>
 
-        <AppCard>
-          <h2 class="text-body mb-3 font-semibold">Placement</h2>
-
-          <dl class="text-content-muted text-chrome space-y-2">
-            <div class="flex justify-between gap-4">
-              <dt>Placed</dt>
-              <dd>{{ formatDateTime(order.placedAt) }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt>Contact</dt>
-              <dd>{{ order.contact ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt>Terms</dt>
-              <dd>
-                {{ order.termsVersion ?? '—' }}
-                <span v-if="order.termsAcceptedAt"
-                  >· {{ formatDateTime(order.termsAcceptedAt) }}</span
+          <DetailSection v-if="invoice || can.invoice" :title="t('ui.order.invoice')">
+            <template v-if="invoice">
+              <div class="flex items-baseline justify-between gap-3">
+                <Link
+                  :href="`/admin/invoices/${invoice.id}`"
+                  class="text-body font-medium underline-offset-4 hover:underline"
                 >
-              </dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt>From</dt>
-              <dd class="font-mono">{{ order.ipAddress ?? '—' }}</dd>
-            </div>
-          </dl>
-        </AppCard>
+                  {{ invoice.number }}
+                </Link>
+                <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
+              </div>
+              <p class="text-content-muted text-chrome mt-2">
+                {{ t('ui.order.outstanding') }}
+                <span class="tabular-nums">{{ invoice.balance }}</span>
+              </p>
+            </template>
 
-        <AppAlert v-if="order.notes" tone="info">{{ order.notes }}</AppAlert>
+            <p v-else class="text-content-muted text-body">{{ t('ui.order.no_invoice') }}</p>
+          </DetailSection>
+
+          <DetailSection
+            v-if="can.update && order.transitions.length > 0"
+            :title="t('ui.order.change_status')"
+          >
+            <form class="flex flex-col gap-3" @submit.prevent="changeStatus">
+              <AppSelect
+                v-model="statusForm.status"
+                :label="t('ui.order.new_status')"
+                :options="order.transitions"
+                :error="statusForm.errors.status"
+              />
+              <AppInput
+                v-model="statusForm.reason"
+                :label="t('ui.order.reason')"
+                :error="statusForm.errors.reason"
+                :hint="t('ui.order.reason_hint')"
+              />
+              <div>
+                <AppButton type="submit" variant="primary" :loading="statusForm.processing">
+                  {{ t('ui.order.apply') }}
+                </AppButton>
+              </div>
+            </form>
+          </DetailSection>
+
+          <DetailSection :title="t('ui.order.placement')">
+            <DescriptionList :items="placement">
+              <template #terms>
+                <span v-if="order.termsVersion">
+                  {{ order.termsVersion }}
+                  <span v-if="order.termsAcceptedAt" class="text-content-muted">
+                    · {{ formatDateTime(order.termsAcceptedAt) }}
+                  </span>
+                </span>
+                <span v-else>—</span>
+              </template>
+            </DescriptionList>
+          </DetailSection>
+        </aside>
       </div>
     </div>
 
-    <div class="mt-6">
-      <AppButton href="/admin/orders" variant="ghost">Back to orders</AppButton>
-    </div>
+    <AppConfirm
+      :open="deciding === 'release'"
+      level="high-risk"
+      :title="t('ui.order.release_title')"
+      :description="t('ui.order.release_detail')"
+      :confirm-label="t('ui.order.release_confirm')"
+      :busy="reviewForm.processing"
+      @update:open="(value: boolean) => (deciding = value ? deciding : null)"
+      @confirm="decide"
+    />
+
+    <AppConfirm
+      :open="deciding === 'refuse'"
+      level="high-risk"
+      :title="t('ui.order.refuse_title')"
+      :description="t('ui.order.refuse_detail')"
+      :confirm-label="t('ui.order.refuse_confirm')"
+      :busy="reviewForm.processing"
+      @update:open="(value: boolean) => (deciding = value ? deciding : null)"
+      @confirm="decide"
+    />
+
+    <p v-if="reviewForm.errors.reason" class="text-danger text-chrome mt-2" role="alert">
+      {{ reviewForm.errors.reason }}
+    </p>
   </AdminLayout>
 </template>

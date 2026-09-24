@@ -16,8 +16,13 @@
  * customer should hear their ticket exists. Unchecked is for the call the
  * desk has already answered — the row is written either way, so what is
  * skipped is the message, not the history.
+ *
+ * The sections are `DetailSection`s with one exception: Sending is an
+ * `AppCard`, because it is a sticky side panel carrying the primary action on
+ * a long form, which is exactly what the design system keeps a framed surface
+ * for. Everything else is a heading and a hairline.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
@@ -28,6 +33,9 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppRichText from '../../../Components/AppRichText.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
 
@@ -51,6 +59,7 @@ interface OwnedRow {
   label: string
   detail: string | null
   status: string
+  statusLabel: string
 }
 
 interface Article {
@@ -71,6 +80,8 @@ const props = defineProps<{
   owned: OwnedRow[]
   attachmentRules: { extensions: string[]; maxKilobytes: number }
 }>()
+
+const { t } = useTranslations()
 
 const form = useForm<{
   customer_id: string
@@ -218,27 +229,36 @@ const accept = computed(() =>
   props.attachmentRules.extensions.map((extension) => `.${extension}`).join(','),
 )
 
+const maxMegabytes = computed(() => Math.round(props.attachmentRules.maxKilobytes / 1024))
+
 function submit(): void {
   form.post('/admin/support', { forceFormData: true })
 }
 </script>
 
 <template>
-  <Head title="Open new ticket" />
+  <Head :title="t('ui.ticket_new.title')" />
 
-  <AdminLayout
-    heading="Open New Ticket"
-    description="Opened on the account rather than on one person, so the reply reaches whoever the customer asked it to."
-  >
-    <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]" @submit.prevent="submit">
-      <div class="flex flex-col gap-6">
-        <AppCard title="Client">
-          <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="text-body font-medium">{{ chosen.name }}</p>
-              <p v-if="chosen.email" class="text-content-muted text-chrome">{{ chosen.email }}</p>
-            </div>
-            <AppButton type="button" variant="ghost" size="sm" @click="forget">Change</AppButton>
+  <AdminLayout :heading="t('ui.ticket_new.title')">
+    <template #header>
+      <PageHeader :title="t('ui.ticket_new.title')" :description="t('ui.ticket_new.intro')" />
+    </template>
+
+    <form
+      class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)]"
+      @submit.prevent="submit"
+    >
+      <div class="flex min-w-0 flex-col gap-8">
+        <DetailSection :title="t('ui.ticket_new.client')">
+          <template v-if="chosen" #actions>
+            <AppButton type="button" variant="ghost" size="sm" @click="forget">
+              {{ t('ui.ticket_new.change') }}
+            </AppButton>
+          </template>
+
+          <div v-if="chosen">
+            <p class="text-body font-medium">{{ chosen.name }}</p>
+            <p v-if="chosen.email" class="text-content-muted text-chrome">{{ chosen.email }}</p>
           </div>
 
           <div v-else class="flex flex-col gap-3">
@@ -246,23 +266,27 @@ function submit(): void {
               <div class="flex-1">
                 <AppInput
                   v-model="term"
-                  label="Find a client"
-                  hint="Name, company or email. % anchors a term."
+                  :label="t('ui.ticket_new.find_client')"
+                  :hint="t('ui.ticket_new.find_client_hint')"
                   :error="form.errors.customer_id"
                   @keyup.enter="search"
                 />
               </div>
-              <AppButton type="button" @click="search">Search</AppButton>
+              <AppButton type="button" @click="search">{{ t('ui.ticket_new.search') }}</AppButton>
             </div>
 
+            <!--
+              A framed list, because the results are an object sitting in the
+              flow of a form rather than a section of it.
+            -->
             <ul
               v-if="candidates.length > 0"
-              class="border-line divide-line divide-y rounded-md border"
+              class="border-line divide-line-subtle divide-y rounded-lg border"
             >
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="pressable hover:bg-surface-secondary block w-full px-3 py-2 text-left"
+                  class="pressable hover:bg-surface-hover block w-full px-3 py-2 text-left transition-colors duration-(--duration-fast)"
                   @click="choose(candidate)"
                 >
                   <span class="text-body block font-medium">{{ candidate.name }}</span>
@@ -273,24 +297,26 @@ function submit(): void {
               </li>
             </ul>
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           v-if="chosen"
-          title="Copy in"
-          description="Addresses that are not on the account: the developer they hired, the accounts mailbox."
+          :title="t('ui.ticket_new.copy_in')"
+          :description="t('ui.ticket_new.copy_in_intro')"
         >
           <div class="flex items-end gap-2">
             <div class="flex-1">
               <AppInput
                 v-model="ccDraft"
-                label="Email address"
+                :label="t('ui.ticket_new.email_address')"
                 type="email"
                 :error="form.errors.cc"
                 @keyup.enter.prevent="addCc(ccDraft)"
               />
             </div>
-            <AppButton type="button" @click="addCc(ccDraft)">Add</AppButton>
+            <AppButton type="button" @click="addCc(ccDraft)">{{
+              t('ui.ticket_new.add')
+            }}</AppButton>
           </div>
 
           <div v-if="contacts.length > 0" class="mt-3 flex flex-wrap gap-1.5">
@@ -298,12 +324,14 @@ function submit(): void {
               v-for="contact in contacts"
               :key="contact.id"
               type="button"
-              class="pressable border-line hover:border-line-strong text-chrome rounded-full border px-2.5 py-1"
+              class="pressable border-line hover:border-line-strong text-chrome rounded-sm border px-2 py-1 disabled:opacity-50"
               :disabled="!contact.email || form.cc.includes(contact.email.toLowerCase())"
               @click="contact.email && addCc(contact.email)"
             >
               {{ contact.name }}
-              <span v-if="contact.primary" class="text-content-subtle">· primary</span>
+              <span v-if="contact.primary" class="text-content-subtle">
+                · {{ t('ui.ticket_new.primary') }}
+              </span>
             </button>
           </div>
 
@@ -311,83 +339,80 @@ function submit(): void {
             <li
               v-for="address in form.cc"
               :key="address"
-              class="bg-surface-secondary text-chrome flex items-center gap-1.5 rounded-full px-2.5 py-1"
+              class="bg-surface-secondary text-chrome flex items-center gap-1.5 rounded-sm px-2 py-1"
             >
               {{ address }}
               <button
                 type="button"
                 class="text-content-subtle hover:text-danger"
-                :aria-label="`Remove ${address}`"
+                :aria-label="t('ui.ticket_new.remove_cc', { address })"
                 @click="removeCc(address)"
               >
                 ×
               </button>
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           v-if="chosen && owned.length > 0"
-          title="What it is about"
-          description="A ticket linked to the thing it concerns is a ticket the next agent does not have to ask 'which one' about."
+          :title="t('ui.ticket_new.about')"
+          :description="t('ui.ticket_new.about_intro')"
         >
-          <div class="max-h-72 overflow-y-auto">
-            <table class="text-body w-full text-left">
-              <tbody class="divide-line divide-y">
-                <tr
-                  v-for="row in owned"
-                  :key="row.id"
-                  class="hover:bg-surface-secondary cursor-pointer transition-colors duration-(--duration-fast)"
-                  :class="about?.id === row.id ? 'bg-surface-secondary' : ''"
-                  @click="link(row)"
-                >
-                  <td class="py-2 pr-3">
-                    <input
-                      type="radio"
-                      class="accent-brand size-3.5"
-                      :checked="about?.id === row.id"
-                      :aria-label="row.label"
-                      @change="link(row)"
-                    />
-                  </td>
-                  <td class="py-2 pr-3">
-                    <span class="block">{{ row.label }}</span>
-                    <span v-if="row.detail" class="text-content-muted text-chrome block">
-                      {{ row.detail }}
-                    </span>
-                  </td>
-                  <td class="text-content-muted text-chrome py-2 pr-3 capitalize">
-                    {{ row.kind }}
-                  </td>
-                  <td class="py-2 text-right">
-                    <AppStatus :tone="statusTone(row.status)" :label="row.status" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </AppCard>
+          <!--
+            Radios inside their own labels, so the whole row is a hit target
+            without a click handler pretending to be one, and a screen reader
+            hears one control per row rather than a table it has to interpret.
+          -->
+          <ul class="divide-line-subtle max-h-72 divide-y overflow-y-auto">
+            <li v-for="row in owned" :key="row.id">
+              <label
+                class="hover:bg-surface-hover flex cursor-pointer items-start gap-3 px-2 py-2 transition-colors duration-(--duration-fast)"
+                :class="about?.id === row.id ? 'bg-surface-selected' : ''"
+              >
+                <input
+                  type="radio"
+                  class="accent-brand mt-1 size-3.5 shrink-0"
+                  :checked="about?.id === row.id"
+                  @change="link(row)"
+                />
+                <span class="min-w-0 flex-1">
+                  <span class="text-body block">{{ row.label }}</span>
+                  <span v-if="row.detail" class="text-content-muted text-chrome block">
+                    {{ row.detail }}
+                  </span>
+                </span>
+                <span class="text-content-muted text-chrome shrink-0">
+                  {{ t(`ui.ticket_new.kinds.${row.kind}`) }}
+                </span>
+                <span class="shrink-0">
+                  <AppStatus :tone="statusTone(row.status)" :label="row.statusLabel" />
+                </span>
+              </label>
+            </li>
+          </ul>
+        </DetailSection>
 
-        <AppCard title="The ticket">
+        <DetailSection :title="t('ui.ticket_new.ticket')">
           <div class="grid gap-5">
             <div class="grid gap-5 sm:grid-cols-2">
               <AppSelect
                 v-model="form.department_id"
-                label="Department"
-                :options="[{ value: '', label: 'Unassigned' }, ...departments]"
+                :label="t('ui.ticket_new.department')"
+                :options="[{ value: '', label: t('ui.ticket_new.unassigned') }, ...departments]"
                 :error="form.errors.department_id"
               />
               <AppSelect
                 v-model="form.priority"
-                label="Priority"
+                :label="t('ui.ticket_new.priority')"
                 :options="priorities"
-                hint="Priority scales the department's promise; it does not replace it."
+                :hint="t('ui.ticket_new.priority_hint')"
               />
             </div>
 
             <AppInput
               v-model="form.subject"
-              label="Subject"
+              :label="t('ui.ticket_new.subject')"
               :error="form.errors.subject"
               required
             />
@@ -395,14 +420,16 @@ function submit(): void {
             <AppRichText
               ref="editor"
               v-model="form.body"
-              label="Message"
+              :label="t('ui.ticket_new.message')"
               :rows="12"
-              hint="Markdown. What you type is what is stored; the thread renders it."
+              :hint="t('ui.ticket_new.message_hint')"
               :error="form.errors.body"
             />
 
             <div>
-              <label class="text-body font-medium" for="ticket-attachments">Attachments</label>
+              <label class="text-body font-medium" for="ticket-attachments">
+                {{ t('ui.ticket_new.attachments') }}
+              </label>
               <input
                 id="ticket-attachments"
                 type="file"
@@ -412,35 +439,45 @@ function submit(): void {
                 @change="onFiles"
               />
               <p class="text-content-muted text-chrome mt-1">
-                Up to 10 files, {{ Math.round(attachmentRules.maxKilobytes / 1024) }} MB each.
+                {{ t('ui.ticket_new.attachment_rules', { megabytes: maxMegabytes }) }}
                 <template v-if="attachmentRules.extensions.length > 0">
-                  Allowed: {{ attachmentRules.extensions.join(', ') }}.
+                  {{
+                    t('ui.ticket_new.attachment_types', {
+                      types: attachmentRules.extensions.join(', '),
+                    })
+                  }}
                 </template>
               </p>
               <ul v-if="form.attachments.length > 0" class="mt-2 flex flex-wrap gap-1.5">
                 <li
                   v-for="file in form.attachments"
                   :key="file.name"
-                  class="bg-surface-secondary text-chrome rounded-full px-2.5 py-1"
+                  class="bg-surface-secondary text-chrome rounded-sm px-2 py-1"
                 >
                   {{ file.name }}
                 </li>
               </ul>
             </div>
           </div>
-        </AppCard>
+        </DetailSection>
       </div>
 
-      <aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
-        <AppCard title="Sending">
+      <aside class="flex min-w-0 flex-col gap-8 lg:sticky lg:top-20 lg:self-start">
+        <!--
+          The one framed surface on the page. It carries the primary action and
+          it is sticky, so it has to read as a thing that stays put while the
+          form scrolls under it — which is what a frame says and a hairline
+          does not.
+        -->
+        <AppCard :title="t('ui.ticket_new.sending')">
           <AppCheckbox
             v-model="form.send_email"
-            label="Send email"
-            description="Off for a call you have already answered. The ticket is written either way."
+            :label="t('ui.ticket_new.send_email')"
+            :description="t('ui.ticket_new.send_email_hint')"
           />
 
           <div v-if="about" class="border-line text-chrome mt-4 border-t pt-3">
-            <p class="text-content-muted">About</p>
+            <p class="text-content-muted">{{ t('ui.ticket_new.about_label') }}</p>
             <p class="mt-0.5">{{ about.label }}</p>
           </div>
 
@@ -451,20 +488,20 @@ function submit(): void {
               :loading="form.processing"
               :disabled="form.customer_id === ''"
             >
-              Open ticket
+              {{ t('ui.ticket_new.open') }}
             </AppButton>
-            <Link href="/admin/support">
-              <AppButton type="button" variant="ghost">Cancel</AppButton>
-            </Link>
+            <AppButton type="button" variant="ghost" href="/admin/support">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
           </div>
         </AppCard>
 
-        <AppCard
+        <DetailSection
           v-if="canned.length > 0"
-          title="Predefined replies"
-          description="What the desk has already written down for this question."
+          :title="t('ui.ticket_new.canned')"
+          :description="t('ui.ticket_new.canned_intro')"
         >
-          <ul class="divide-line max-h-56 divide-y overflow-y-auto">
+          <ul class="divide-line-subtle max-h-56 divide-y overflow-y-auto">
             <li
               v-for="reply in canned"
               :key="reply.id"
@@ -472,20 +509,20 @@ function submit(): void {
             >
               <span class="text-body truncate">{{ reply.name }}</span>
               <AppButton size="sm" variant="ghost" @click="insertReply(reply.body)">
-                Insert
+                {{ t('ui.ticket_new.insert') }}
               </AppButton>
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           v-if="articles.length > 0"
-          title="Knowledgebase"
-          description="Inserted as a link. Staff-only articles say so — one in a customer thread is a mistake you can see yourself making."
+          :title="t('ui.ticket_new.knowledgebase')"
+          :description="t('ui.ticket_new.knowledgebase_intro')"
         >
-          <AppInput v-model="articleFilter" label="Find an article" />
+          <AppInput v-model="articleFilter" :label="t('ui.ticket_new.find_article')" />
 
-          <ul class="divide-line mt-3 max-h-56 divide-y overflow-y-auto">
+          <ul class="divide-line-subtle mt-3 max-h-56 divide-y overflow-y-auto">
             <li
               v-for="article in matchingArticles"
               :key="article.slug"
@@ -493,14 +530,16 @@ function submit(): void {
             >
               <span class="min-w-0">
                 <span class="text-body block truncate">{{ article.title }}</span>
-                <AppBadge v-if="!article.public" tone="warning">Staff only</AppBadge>
+                <AppBadge v-if="!article.public" tone="warning">
+                  {{ t('ui.ticket_new.staff_only') }}
+                </AppBadge>
               </span>
               <AppButton size="sm" variant="ghost" @click="insertArticle(article)">
-                Insert
+                {{ t('ui.ticket_new.insert') }}
               </AppButton>
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
       </aside>
     </form>
   </AdminLayout>

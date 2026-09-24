@@ -246,7 +246,12 @@ final class OrderController extends Controller
             'invoice' => $invoice === null ? null : [
                 'id' => $invoice->id,
                 'number' => $invoice->number,
-                'status' => (string) __($invoice->status->labelKey()),
+                // The word and the tone come from different places: the label
+                // is what an operator reads, and the raw value is what
+                // `statusTone()` maps. Sending only the label worked in
+                // English by coincidence and drew the unknown mark in Turkish.
+                'status' => $invoice->status->value,
+                'statusLabel' => (string) __($invoice->status->labelKey()),
                 'balance' => $invoice->balance()->format(app()->getLocale()),
             ],
             'can' => [

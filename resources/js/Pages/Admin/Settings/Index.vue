@@ -1,14 +1,34 @@
 <script setup lang="ts">
+/**
+ * What this installation calls itself, and what it looks like.
+ *
+ * A settings page, so it is one form and one save (enterprise-cms-ux). The
+ * sections are `DetailSection`s rather than cards: eight rectangles down a
+ * page make eight things look equally important, and the grouping here is a
+ * heading and a hairline, not eight separate surfaces.
+ *
+ * Themes are in the aside and save on their own. Choosing a theme is not part
+ * of the brand form — it takes effect immediately and has nothing to do with
+ * the fields beside it, so a shared Save would be a button that did two
+ * unrelated things.
+ *
+ * A brand inherits field by field up the organization path, so the aside also
+ * shows what customers actually see once the holes are filled. An operator who
+ * has set nothing should not be looking at a form full of blanks and guessing.
+ */
 import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface LegalLink {
@@ -56,15 +76,17 @@ interface BrandForm {
 }
 
 const props = defineProps<{
-  brand: Record<string, string | null | boolean | LegalLink[]>
+  brandFields: Record<string, string | null | boolean | LegalLink[]>
   effective: { name: string; logoUrl: string | null; legalLinks: LegalLink[] }
   surfaces: SurfaceRow[]
   vendorMark: string
   can: { manage: boolean; removeVendorMark: boolean }
 }>()
 
+const { t } = useTranslations()
+
 function text(key: string): string {
-  const value = props.brand[key]
+  const value = props.brandFields[key]
 
   return typeof value === 'string' ? value : ''
 }
@@ -89,8 +111,8 @@ const form = useForm<BrandForm>({
   email_from_address: text('emailFromAddress'),
   email_footer: text('emailFooter'),
   invoice_footer: text('invoiceFooter'),
-  legal_links: Array.isArray(props.brand.legalLinks) ? [...props.brand.legalLinks] : [],
-  hide_vendor_mark: props.brand.hideVendorMark === true,
+  legal_links: Array.isArray(props.brandFields.legalLinks) ? [...props.brandFields.legalLinks] : [],
+  hide_vendor_mark: props.brandFields.hideVendorMark === true,
 })
 
 const themeForm = useForm({ surface: '', theme: '' })
@@ -120,36 +142,45 @@ function removeLink(index: number): void {
 </script>
 
 <template>
-  <Head title="Settings" />
+  <Head :title="t('ui.settings.title')" />
 
-  <AdminLayout
-    heading="Settings"
-    description="What this installation calls itself, and what it looks like."
-  >
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
-        <AppCard
-          title="Identity"
-          description="The name customers see, and the one a court sees. They differ often enough that an invoice needs both."
+  <AdminLayout :heading="t('ui.settings.title')">
+    <template #header>
+      <PageHeader :title="t('ui.settings.title')" :description="t('ui.settings.intro')" />
+    </template>
+
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+      <form class="flex min-w-0 flex-col gap-8" @submit.prevent="save">
+        <DetailSection
+          :title="t('ui.settings.identity')"
+          :description="t('ui.settings.identity_intro')"
         >
           <div class="grid gap-4 sm:grid-cols-2">
             <AppInput
               v-model="form.trading_name"
-              label="Trading name"
+              :label="t('ui.settings.trading_name')"
               :error="form.errors.trading_name"
             />
             <AppInput
               v-model="form.legal_name"
-              label="Legal name"
-              hint="Printed on invoices. Falls back to the trading name."
+              :label="t('ui.settings.legal_name')"
+              :hint="t('ui.settings.legal_name_hint')"
               :error="form.errors.legal_name"
             />
-            <AppInput v-model="form.tax_id" label="Tax number" :error="form.errors.tax_id" />
-            <AppInput v-model="form.country" label="Country" :error="form.errors.country" />
+            <AppInput
+              v-model="form.tax_id"
+              :label="t('ui.settings.tax_id')"
+              :error="form.errors.tax_id"
+            />
+            <AppInput
+              v-model="form.country"
+              :label="t('ui.settings.country')"
+              :error="form.errors.country"
+            />
             <AppInput
               v-model="form.portal_name"
-              label="Portal name"
-              hint="What the customer area calls itself, if not the trading name."
+              :label="t('ui.settings.portal_name')"
+              :hint="t('ui.settings.portal_name_hint')"
               :error="form.errors.portal_name"
             />
           </div>
@@ -157,92 +188,100 @@ function removeLink(index: number): void {
           <div class="mt-4">
             <AppTextarea
               v-model="form.address"
-              label="Address"
+              :label="t('ui.settings.address')"
               :rows="3"
               :error="form.errors.address"
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard title="Contact" description="Shown in the storefront footer and on documents.">
+        <DetailSection
+          :title="t('ui.settings.contact')"
+          :description="t('ui.settings.contact_intro')"
+        >
           <div class="grid gap-4 sm:grid-cols-3">
             <AppInput
               v-model="form.support_email"
-              label="Support email"
+              :label="t('ui.settings.support_email')"
               :error="form.errors.support_email"
             />
             <AppInput
               v-model="form.support_phone"
-              label="Support phone"
+              :label="t('ui.settings.support_phone')"
               :error="form.errors.support_phone"
             />
-            <AppInput v-model="form.website_url" label="Website" :error="form.errors.website_url" />
+            <AppInput
+              v-model="form.website_url"
+              :label="t('ui.settings.website')"
+              :error="form.errors.website_url"
+            />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Appearance"
-          description="Colours override the design tokens everything else is built on, so one change reaches every button, badge and link."
+        <DetailSection
+          :title="t('ui.settings.appearance')"
+          :description="t('ui.settings.appearance_intro')"
         >
           <div class="grid gap-4 sm:grid-cols-3">
             <AppInput
               v-model="form.logo_url"
-              label="Logo"
-              hint="An HTTPS address."
+              :label="t('ui.settings.logo')"
+              :hint="t('ui.settings.logo_hint')"
               :error="form.errors.logo_url"
             />
             <AppInput
               v-model="form.logo_dark_url"
-              label="Logo for dark backgrounds"
+              :label="t('ui.settings.logo_dark')"
               :error="form.errors.logo_dark_url"
             />
-            <AppInput v-model="form.favicon_url" label="Favicon" :error="form.errors.favicon_url" />
+            <AppInput
+              v-model="form.favicon_url"
+              :label="t('ui.settings.favicon')"
+              :error="form.errors.favicon_url"
+            />
           </div>
 
           <div class="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
               <AppInput
                 v-model="form.accent_color"
-                label="Accent colour"
-                hint="Hex, such as #2563eb."
+                :label="t('ui.settings.accent')"
+                :hint="t('ui.settings.accent_hint')"
                 :error="form.errors.accent_color"
               />
               <!-- Shown beside the field rather than only on save: a colour
                    is the one setting nobody can check by reading. -->
               <div
                 v-if="form.accent_color"
-                class="border-line mt-2 h-6 rounded-sm border"
+                class="border-line mt-2 h-6 rounded-md border"
                 :style="{ background: form.accent_color }"
                 aria-hidden="true"
               />
             </div>
             <AppInput
               v-model="form.accent_contrast"
-              label="Text on the accent"
+              :label="t('ui.settings.accent_contrast')"
               :error="form.errors.accent_contrast"
             />
             <AppInput
               v-model="form.font_family"
-              label="Font stack"
-              hint="A CSS font stack. Loading a webfont is a theme's job."
+              :label="t('ui.settings.font')"
+              :hint="t('ui.settings.font_hint')"
               :error="form.errors.font_family"
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Email and invoices"
-          description="The identity messages go out under. The credentials that send them stay in configuration."
-        >
+        <DetailSection :title="t('ui.settings.email')" :description="t('ui.settings.email_intro')">
           <div class="grid gap-4 sm:grid-cols-2">
             <AppInput
               v-model="form.email_from_name"
-              label="From name"
+              :label="t('ui.settings.from_name')"
               :error="form.errors.email_from_name"
             />
             <AppInput
               v-model="form.email_from_address"
-              label="From address"
+              :label="t('ui.settings.from_address')"
               :error="form.errors.email_from_address"
             />
           </div>
@@ -250,68 +289,79 @@ function removeLink(index: number): void {
           <div class="mt-4 grid gap-4">
             <AppTextarea
               v-model="form.email_footer"
-              label="Email footer"
+              :label="t('ui.settings.email_footer')"
               :rows="2"
               :error="form.errors.email_footer"
             />
             <AppTextarea
               v-model="form.invoice_footer"
-              label="Invoice footer"
-              hint="Payment terms, a registration number, whatever your jurisdiction expects."
+              :label="t('ui.settings.invoice_footer')"
+              :hint="t('ui.settings.invoice_footer_hint')"
               :rows="2"
               :error="form.errors.invoice_footer"
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Legal links"
-          description="Shown in the storefront footer. Every jurisdiction wants a different set."
-        >
+        <DetailSection :title="t('ui.settings.legal')" :description="t('ui.settings.legal_intro')">
+          <template #actions>
+            <AppButton size="sm" variant="ghost" icon="add" @click="addLink">
+              {{ t('ui.settings.add_link') }}
+            </AppButton>
+          </template>
+
           <div v-if="form.legal_links.length > 0" class="flex flex-col gap-3">
             <div
               v-for="(link, index) in form.legal_links"
               :key="index"
               class="grid gap-3 sm:grid-cols-[1fr_2fr_auto] sm:items-end"
             >
-              <AppInput v-model="link.label" label="Label" />
-              <AppInput v-model="link.url" label="Address" />
-              <AppButton size="sm" variant="ghost" @click="removeLink(index)">Remove</AppButton>
+              <AppInput v-model="link.label" :label="t('ui.settings.link_label')" />
+              <AppInput v-model="link.url" :label="t('ui.settings.link_url')" />
+              <AppButton size="sm" variant="ghost" @click="removeLink(index)">
+                {{ t('ui.settings.remove_link') }}
+              </AppButton>
             </div>
           </div>
 
-          <p v-else class="text-content-muted text-body">No links yet.</p>
+          <EmptyState
+            v-else
+            variant="plain"
+            icon="document"
+            :title="t('ui.settings.no_links')"
+            :description="t('ui.settings.no_links_detail')"
+          />
+        </DetailSection>
 
-          <div class="mt-4">
-            <AppButton size="sm" variant="ghost" @click="addLink">Add a link</AppButton>
-          </div>
-        </AppCard>
-
-        <AppCard
-          title="Platform mark"
-          description="The line in the storefront footer that credits this platform."
-        >
+        <DetailSection :title="t('ui.settings.mark')" :description="t('ui.settings.mark_intro')">
           <AppCheckbox
             v-model="form.hide_vendor_mark"
-            :label="`Hide “${vendorMark}”`"
+            :label="t('ui.settings.hide_mark', { mark: vendorMark })"
             :disabled="!can.removeVendorMark"
           />
           <!-- Said in words rather than shown as a switch that silently does
                nothing. -->
           <p v-if="!can.removeVendorMark" class="text-content-subtle text-chrome mt-1 ml-7">
-            Removing the platform mark is not included in this licence.
+            {{ t('ui.settings.mark_not_licensed') }}
           </p>
-        </AppCard>
+        </DetailSection>
 
+        <!--
+          One save for one form, and it is a real submit so Enter in a field
+          works: a form with no submit button has no implicit submission, and
+          a header button cannot be one because the header is outside the form.
+        -->
         <div v-if="can.manage">
-          <AppButton variant="primary" :loading="form.processing" @click="save">Save</AppButton>
+          <AppButton type="submit" variant="primary" :loading="form.processing">
+            {{ t('ui.settings.save') }}
+          </AppButton>
         </div>
-      </div>
+      </form>
 
-      <div class="flex flex-col gap-6">
-        <AppCard
-          title="What customers see"
-          description="With anything you have not set filled in from the organization above you."
+      <aside class="flex min-w-0 flex-col gap-8">
+        <DetailSection
+          :title="t('ui.settings.preview')"
+          :description="t('ui.settings.preview_intro')"
         >
           <div class="flex items-center gap-3">
             <img
@@ -332,35 +382,39 @@ function removeLink(index: number): void {
               {{ link.label }}
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
-          title="Themes"
-          description="A theme is templates, assets and a manifest. Behaviour belongs in a module."
+        <DetailSection
+          :title="t('ui.settings.themes')"
+          :description="t('ui.settings.themes_intro')"
         >
           <AppAlert v-if="themeForm.errors.theme" tone="danger" class="mb-4">
             {{ themeForm.errors.theme }}
           </AppAlert>
 
-          <div v-for="surface in surfaces" :key="surface.value" class="mb-6 last:mb-0">
-            <p class="text-body font-medium">{{ surface.label }}</p>
+          <div v-for="surface in surfaces" :key="surface.value" class="mb-5 last:mb-0">
+            <p class="text-content-subtle text-label uppercase">{{ surface.label }}</p>
 
-            <ul class="mt-2 flex flex-col gap-2">
-              <li
-                v-for="theme in surface.themes"
-                :key="theme.value"
-                class="border-line rounded-sm border p-3"
-              >
+            <!-- A divided list rather than a box per theme: a framed row
+                 inside a framed panel is a card inside a card. -->
+            <!-- A surface with no packages says so. A heading with nothing
+                 under it reads as something that failed to load. -->
+            <p v-if="surface.themes.length === 0" class="text-content-muted text-chrome mt-1">
+              {{ t('ui.settings.no_themes') }}
+            </p>
+
+            <ul v-else class="divide-line-subtle mt-1 divide-y">
+              <li v-for="theme in surface.themes" :key="theme.value" class="py-2.5">
                 <div class="flex flex-wrap items-start justify-between gap-2">
                   <div class="min-w-0">
-                    <p class="text-body">
-                      {{ theme.label }}
-                      <AppBadge v-if="theme.value === surface.current" class="ml-2" tone="brand">
-                        In use
+                    <p class="text-body flex flex-wrap items-center gap-x-2">
+                      <span>{{ theme.label }}</span>
+                      <AppBadge v-if="theme.value === surface.current" tone="brand">
+                        {{ t('ui.settings.in_use') }}
                       </AppBadge>
                     </p>
                     <p v-if="theme.parent" class="text-content-muted text-chrome mt-0.5">
-                      Extends {{ theme.parent }}
+                      {{ t('ui.settings.extends', { parent: theme.parent }) }}
                     </p>
                   </div>
 
@@ -372,7 +426,7 @@ function removeLink(index: number): void {
                     variant="ghost"
                     @click="applyTheme(surface.value, theme.value)"
                   >
-                    Use this theme
+                    {{ t('ui.settings.use_theme') }}
                   </AppButton>
                 </div>
 
@@ -390,8 +444,8 @@ function removeLink(index: number): void {
               </li>
             </ul>
           </div>
-        </AppCard>
-      </div>
+        </DetailSection>
+      </aside>
     </div>
   </AdminLayout>
 </template>

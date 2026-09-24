@@ -11,6 +11,12 @@
  * A figure with an `href` is a way in: the count of failed runs opens the
  * failed runs. A `tone` colours the figure only when the figure *is* a
  * status (three critical alerts); revenue is never green.
+ *
+ * A slot named after a metric's `key` replaces its value, for the case this
+ * product has everywhere: **money is a list, not a number**. A reseller
+ * selling in lira and euros has two MRRs and there is no rate here to make
+ * them one, so the cell stacks them rather than printing a total that means
+ * nothing.
  */
 import { Link } from '@inertiajs/vue3'
 
@@ -60,7 +66,7 @@ const TONE: Partial<Record<StatusTone, string>> = {
         class="text-page font-semibold tabular-nums"
         :class="metric.tone ? TONE[metric.tone] : ''"
       >
-        {{ metric.value }}
+        <slot :name="metric.key" :metric="metric">{{ metric.value }}</slot>
       </span>
       <span v-if="metric.hint" class="text-content-subtle text-chrome truncate">
         {{ metric.hint }}

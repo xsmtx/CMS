@@ -1,16 +1,40 @@
 <script setup lang="ts">
-import { Head, router, useForm, usePage } from '@inertiajs/vue3'
+/**
+ * One service: where it lives, what it costs, and what has been done to it.
+ *
+ * Laid out as a resource page (enterprise-cms-ux, "Detail pages"):
+ *
+ * 1. **Identity** — the name, the status, and the everyday actions. Set up,
+ *    Suspend, Unsuspend and Sync are in the header band rather than in a
+ *    panel down the side: they are what an operator opens this screen to do.
+ * 2. **Where it is** — domain, package, server and account across the top, as
+ *    a `DescriptionList` grid. Four facts read across, not down.
+ * 3. **The record** — billing, the options that were bought, and every
+ *    provisioning attempt with its outcome.
+ * 4. **Danger zone** — termination, last on the page, behind a reason and the
+ *    service's own name typed out.
+ *
+ * Suspending asks for a reason and will not proceed without one. The server
+ * accepts an empty one; this screen does not, because the reason is what the
+ * customer reads when they ask why their site stopped answering.
+ */
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import DangerZone from '../../../Components/DangerZone.vue'
 import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
 
@@ -61,6 +85,7 @@ const props = defineProps<{
 }>()
 
 const page = usePage()
+const { t } = useTranslations()
 
 const suspending = ref(false)
 const terminating = ref(false)
@@ -78,6 +103,35 @@ const credentials = computed(
   () => page.props.flash.credentials as { username: string | null; password: string | null } | null,
 )
 
+/** Where the account lives, read across rather than down. */
+const hasAside = computed(
+  () =>
+    props.can.update && (props.service.username !== null || props.service.transitions.length > 0),
+)
+
+const location = computed<DescriptionItem[]>(() => [
+  { key: 'domain', label: t('ui.service.domain'), value: props.service.domain },
+  { key: 'package', label: t('ui.service.package'), value: props.service.package },
+  { key: 'server', label: t('ui.service.server'), value: props.service.server },
+  { key: 'account', label: t('ui.service.account'), value: props.service.externalId, mono: true },
+])
+
+const billing = computed<DescriptionItem[]>(() => [
+  { key: 'recurring', label: t('ui.service.recurring'), value: props.service.recurring },
+  {
+    key: 'next_due',
+    label: t('ui.service.next_due'),
+    value: formatDate(props.service.nextDueOn),
+  },
+  { key: 'order', label: t('ui.service.order'), value: props.service.orderNumber },
+  {
+    key: 'set_up',
+    label: t('ui.service.set_up'),
+    value: formatDateTime(props.service.provisionedAt),
+  },
+  { key: 'synced', label: t('ui.service.synced'), value: formatDateTime(props.service.syncedAt) },
+])
+
 function provision(): void {
   router.post(`/admin/services/${props.service.id}/provision`, {}, { preserveScroll: true })
 }
@@ -90,7 +144,8 @@ function act(operation: string): void {
   )
 }
 
-function suspend(): void {
+function suspend(reason: string | null): void {
+  suspendForm.reason = reason ?? ''
   suspendForm.post(`/admin/services/${props.service.id}/actions`, {
     preserveScroll: true,
     onSuccess: () => {
@@ -139,196 +194,205 @@ function changeStatus(): void {
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
+
+function formatDate(value: string | null): string {
+  return value === null ? '—' : new Date(value).toLocaleDateString()
+}
 </script>
 
 <template>
   <Head :title="service.name" />
 
-  <AdminLayout :heading="service.name" :description="service.customer ?? undefined">
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
-        <AppCard>
-          <div class="mb-4 flex flex-wrap items-center gap-3">
-            <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
-            <span v-if="service.module" class="text-content-muted text-chrome">
-              {{ service.module }}
-            </span>
-          </div>
+  <AdminLayout :heading="service.name">
+    <template #header>
+      <PageHeader :title="service.name">
+        <template #status>
+          <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
+        </template>
 
-          <AppAlert v-if="service.failureReason" tone="danger" class="mb-4">
-            {{ service.failureReason }}
-          </AppAlert>
-          <AppAlert v-else-if="service.suspensionReason" class="mb-4">
-            {{ service.suspensionReason }}
-          </AppAlert>
+        <template #meta>
+          <Link
+            v-if="service.customerId"
+            :href="`/admin/customers/${service.customerId}`"
+            class="hover:text-content underline underline-offset-4"
+          >
+            {{ service.customer }}
+          </Link>
+          <span v-else-if="service.customer">{{ service.customer }}</span>
+          <template v-if="service.module">
+            <span aria-hidden="true">·</span>
+            <span>{{ service.module }}</span>
+          </template>
+          <span aria-hidden="true">·</span>
+          <span class="tabular-nums">{{ service.recurring }}</span>
+        </template>
 
-          <dl class="divide-line text-body divide-y">
-            <div class="flex justify-between gap-4 py-2.5 first:pt-0">
-              <dt class="text-content-muted">Domain</dt>
-              <dd>{{ service.domain ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Package</dt>
-              <dd>{{ service.package ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Server</dt>
-              <dd>{{ service.server ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Account</dt>
-              <dd class="text-chrome font-mono">{{ service.externalId ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Recurring</dt>
-              <dd class="tabular-nums">{{ service.recurring }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Next due</dt>
-              <dd>{{ service.nextDueOn ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">Order</dt>
-              <dd>{{ service.orderNumber ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5 last:pb-0">
-              <dt class="text-content-muted">Set up</dt>
-              <dd>{{ formatDateTime(service.provisionedAt) }}</dd>
-            </div>
-          </dl>
-        </AppCard>
+        <!--
+          What an operator opens this screen to do. Terminate is deliberately
+          absent: it lives in the danger zone at the foot of the page, away
+          from the buttons that get pressed every day.
+        -->
+        <template #actions>
+          <AppButton v-if="can.sync" variant="ghost" icon="sync" @click="act('sync')">
+            {{ t('ui.service.sync') }}
+          </AppButton>
+          <AppButton
+            v-if="can.unsuspend && service.status === 'suspended'"
+            @click="act('unsuspend')"
+          >
+            {{ t('ui.service.unsuspend') }}
+          </AppButton>
+          <AppButton v-if="can.suspend && service.status === 'active'" @click="suspending = true">
+            {{ t('ui.service.suspend') }}
+          </AppButton>
+          <AppButton v-if="can.provision" variant="primary" icon="check" @click="provision">
+            {{ t('ui.service.provision') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
 
-        <AppCard v-if="service.options.length > 0" title="Configuration">
-          <dl class="divide-line text-body divide-y">
-            <div
-              v-for="option in service.options"
-              :key="option.group + option.label"
-              class="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
-            >
-              <dt class="text-content-muted">{{ option.group }}</dt>
-              <dd>{{ option.label }}</dd>
-            </div>
-          </dl>
-        </AppCard>
+    <div class="flex flex-col gap-8">
+      <AppAlert v-if="service.failureReason" tone="danger">
+        {{ service.failureReason }}
+      </AppAlert>
+      <AppAlert v-else-if="service.suspensionReason" tone="warning">
+        {{ service.suspensionReason }}
+      </AppAlert>
 
-        <AppCard title="Activity">
-          <ul v-if="service.events.length > 0" class="divide-line divide-y">
-            <li v-for="event in service.events" :key="event.id" class="py-3 first:pt-0 last:pb-0">
-              <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0">
-                  <p class="text-body font-medium">
-                    {{ event.operation }}
-                    <AppStatus
-                      class="ml-2"
-                      :tone="statusTone(event.outcome)"
-                      :label="event.outcomeLabel"
-                    />
-                  </p>
-                  <p
-                    v-if="event.message"
-                    class="text-content-muted text-chrome mt-1 leading-relaxed break-words"
-                  >
-                    {{ event.message }}
+      <!-- Where the account actually is. Four facts across the top, in the
+           order somebody looking for it would ask them. -->
+      <DescriptionList :items="location" layout="grid" :columns="4">
+        <template #account>
+          <AppCopy
+            v-if="service.externalId"
+            :value="service.externalId"
+            :noun="t('ui.service.account')"
+            mono
+          />
+          <span v-else>—</span>
+        </template>
+      </DescriptionList>
+
+      <div
+        class="grid gap-x-10 gap-y-8"
+        :class="hasAside ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]' : ''"
+      >
+        <div class="flex min-w-0 flex-col gap-8">
+          <DetailSection :title="t('ui.service.billing')">
+            <DescriptionList :items="billing" />
+          </DetailSection>
+
+          <DetailSection
+            :title="t('ui.service.activity')"
+            :description="t('ui.service.activity_intro')"
+          >
+            <ul v-if="service.events.length > 0" class="divide-line-subtle divide-y">
+              <li v-for="event in service.events" :key="event.id" class="py-3 first:pt-0 last:pb-0">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="text-body flex flex-wrap items-center gap-x-2 font-medium">
+                      <span>{{ event.operation }}</span>
+                      <AppStatus :tone="statusTone(event.outcome)" :label="event.outcomeLabel" />
+                    </p>
+                    <p
+                      v-if="event.message"
+                      class="text-content-muted text-chrome mt-1 leading-relaxed break-words"
+                    >
+                      {{ event.message }}
+                    </p>
+                    <p v-if="event.actor" class="text-content-subtle text-chrome mt-1">
+                      {{ event.actor }}
+                    </p>
+                  </div>
+                  <p class="text-content-subtle text-chrome shrink-0 whitespace-nowrap">
+                    {{ formatDateTime(event.occurredAt) }}
                   </p>
                 </div>
-                <p class="text-content-subtle text-chrome shrink-0 whitespace-nowrap">
-                  {{ formatDateTime(event.occurredAt) }}
-                </p>
-              </div>
-              <p v-if="event.actor" class="text-content-subtle text-chrome mt-1">
-                {{ event.actor }}
-              </p>
-            </li>
-          </ul>
-          <p v-else class="text-content-muted text-body">Nothing has been attempted yet.</p>
-        </AppCard>
-      </div>
-
-      <div class="flex flex-col gap-6">
-        <AppCard title="Actions">
-          <div class="flex flex-col gap-2">
-            <AppButton v-if="can.provision" variant="primary" @click="provision">
-              Set up now
-            </AppButton>
-
-            <template v-if="can.suspend && service.status === 'active'">
-              <template v-if="suspending">
-                <AppInput
-                  v-model="suspendForm.reason"
-                  label="Reason"
-                  :error="suspendForm.errors.reason"
-                  hint="Shown to the customer and kept on the record."
-                />
-                <div class="flex gap-2">
-                  <AppButton
-                    size="sm"
-                    variant="primary"
-                    :loading="suspendForm.processing"
-                    @click="suspend"
-                  >
-                    Suspend
-                  </AppButton>
-                  <AppButton size="sm" variant="ghost" @click="suspending = false"
-                    >Cancel</AppButton
-                  >
-                </div>
-              </template>
-              <AppButton v-else @click="suspending = true">Suspend</AppButton>
-            </template>
-
-            <AppButton
-              v-if="can.unsuspend && service.status === 'suspended'"
-              @click="act('unsuspend')"
-            >
-              Unsuspend
-            </AppButton>
-
-            <AppButton v-if="can.sync" variant="ghost" @click="act('sync')">
-              Sync from provider
-            </AppButton>
-
-            <!-- Terminate is not here. It is in the danger zone at the
-                 foot of the page (§8), away from the buttons an operator
-                 presses every day. -->
-          </div>
-        </AppCard>
-
-        <AppCard v-if="can.update && service.username" title="Credentials">
-          <p class="text-content-muted text-chrome mb-3 leading-relaxed">
-            Reading this is recorded in the audit log.
-          </p>
-
-          <dl v-if="credentials" class="text-body">
-            <dt class="text-content-muted text-chrome">Username</dt>
-            <dd class="text-chrome mb-2 font-mono">{{ credentials.username }}</dd>
-            <dt class="text-content-muted text-chrome">Password</dt>
-            <dd class="text-chrome font-mono break-all">{{ credentials.password ?? '—' }}</dd>
-          </dl>
-
-          <AppButton v-else size="sm" @click="revealCredentials">Reveal</AppButton>
-        </AppCard>
-
-        <AppCard v-if="can.update && service.transitions.length > 0" title="Change status">
-          <div class="flex flex-col gap-3">
-            <AppSelect
-              v-model="statusForm.status"
-              label="New status"
-              :options="service.transitions"
-              :error="statusForm.errors.status"
+              </li>
+            </ul>
+            <EmptyState
+              v-else
+              variant="plain"
+              icon="history"
+              :title="t('ui.service.no_activity')"
+              :description="t('ui.service.no_activity_detail')"
             />
-            <AppInput
-              v-model="statusForm.reason"
-              label="Reason"
-              :error="statusForm.errors.reason"
-              hint="Optional, and kept forever."
+          </DetailSection>
+
+          <DetailSection
+            v-if="service.options.length > 0"
+            :title="t('ui.service.configuration')"
+            :description="t('ui.service.configuration_intro')"
+          >
+            <DescriptionList
+              :items="
+                service.options.map((option) => ({
+                  key: option.group + option.label,
+                  label: option.group,
+                  value: option.label,
+                }))
+              "
             />
-            <div>
-              <AppButton size="sm" :loading="statusForm.processing" @click="changeStatus">
-                Apply
+          </DetailSection>
+        </div>
+
+        <aside v-if="hasAside" class="flex min-w-0 flex-col gap-8">
+          <DetailSection
+            v-if="can.update && service.username"
+            :title="t('ui.service.credentials')"
+            :description="t('ui.service.credentials_note')"
+          >
+            <DescriptionList
+              v-if="credentials"
+              :items="[
+                {
+                  key: 'username',
+                  label: t('ui.service.username'),
+                  value: credentials.username,
+                  mono: true,
+                },
+                {
+                  key: 'password',
+                  label: t('ui.service.password'),
+                  value: credentials.password,
+                  mono: true,
+                },
+              ]"
+            />
+            <div v-else>
+              <AppButton icon="security" @click="revealCredentials">
+                {{ t('ui.service.reveal') }}
               </AppButton>
             </div>
-          </div>
-        </AppCard>
+          </DetailSection>
+
+          <DetailSection
+            v-if="can.update && service.transitions.length > 0"
+            :title="t('ui.service.change_status')"
+            :description="t('ui.service.change_status_intro')"
+          >
+            <form class="flex flex-col gap-3" @submit.prevent="changeStatus">
+              <AppSelect
+                v-model="statusForm.status"
+                :label="t('ui.service.new_status')"
+                :options="service.transitions"
+                :error="statusForm.errors.status"
+              />
+              <AppInput
+                v-model="statusForm.reason"
+                :label="t('ui.service.reason')"
+                :error="statusForm.errors.reason"
+                :hint="t('ui.service.reason_hint')"
+              />
+              <div>
+                <AppButton type="submit" variant="primary" :loading="statusForm.processing">
+                  {{ t('ui.service.apply') }}
+                </AppButton>
+              </div>
+            </form>
+          </DetailSection>
+        </aside>
       </div>
     </div>
 
@@ -337,27 +401,40 @@ function formatDateTime(value: string | null): string {
       scroll past it, and a thing people scroll past is a thing they stop
       reading.
     -->
-    <DangerZone
-      v-if="can.terminate"
-      description="These cannot be undone from here, and some of them cannot be undone at all."
-    >
+    <DangerZone v-if="can.terminate" :description="t('ui.service.danger_intro')">
       <DangerZoneRow
-        title="Terminate this service"
-        description="The account is destroyed at the provider. Files, mailboxes and databases go with it, and nothing on this platform can bring them back. Billing stops."
+        :title="t('ui.service.terminate_title')"
+        :description="t('ui.service.terminate_detail')"
       >
-        <AppButton variant="danger" size="sm" @click="terminating = true">Terminate</AppButton>
+        <AppButton variant="danger-subtle" @click="terminating = true">
+          {{ t('ui.service.terminate_button') }}
+        </AppButton>
       </DangerZoneRow>
     </DangerZone>
 
     <AppConfirm
+      v-model:open="suspending"
+      level="high-risk"
+      :title="t('ui.service.suspend_title', { name: service.name })"
+      :description="t('ui.service.suspend_detail')"
+      :confirm-label="t('ui.service.suspend_confirm')"
+      :busy="suspendForm.processing"
+      @confirm="suspend"
+    />
+
+    <AppConfirm
       v-model:open="terminating"
       level="destructive"
-      :title="`Terminate ${service.name}?`"
-      description="The account is destroyed at the provider and cannot be recovered. The reason is written to the audit record."
+      :title="t('ui.service.terminate_confirm_title', { name: service.name })"
+      :description="t('ui.service.terminate_confirm_detail')"
       :phrase="service.name"
-      confirm-label="Terminate"
+      :confirm-label="t('ui.service.terminate_confirm')"
       :busy="terminatingBusy"
       @confirm="terminate"
     />
+
+    <p v-if="suspendForm.errors.reason" class="text-danger text-chrome mt-2" role="alert">
+      {{ suspendForm.errors.reason }}
+    </p>
   </AdminLayout>
 </template>

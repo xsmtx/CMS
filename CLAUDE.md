@@ -899,6 +899,63 @@ buttons said "How tax behaves" and "Billing terms". And an `AppButton` that is a
 direct child of a `flex flex-col` stretches to the full width of the panel — wrap
 it in a plain `<div>`.
 
+**A dialog's dismiss is called Cancel**, so an action that is itself called Cancel
+puts two buttons starting with the same word side by side — and the one that
+backs out and the one that goes through look alike at a glance. The invoice
+draft's action is `Discard draft…` for that reason. The Turkish never had the
+problem: `ui.confirm.cancel` is *Vazgeç*. Check the confirmation, not only the
+button that opens it.
+
+**A redesign reads the props, not the old template.** `Admin/Invoices/Show.vue`
+printed a payment's state as muted prose although the controller had been
+sending the raw `status` alongside the label the whole time — the TypeScript
+interface simply never declared it, so nothing said it was there. Driving it
+through `statusTone()` then found `partially_refunded` missing from
+`status.ts`, which had been drawing the unknown mark (○) on a real state. When
+converting a screen, diff its props interface against the controller's payload
+before deciding a fact cannot be shown properly.
+
+The order screen had the mirror image of it: `OrderController` sent the
+invoice's **translated label** where the page passed it to `statusTone()`,
+which matched `unpaid` only because that is what the English label lowercases
+to. In Turkish it fell through to `unknown` and drew ○ on a real state. A
+status crossing to the browser is **two fields** — `status` for the tone and
+`statusLabel` for the word — and anything sending one of them is either
+untranslated or untoned. Driving the same screens through `statusTone()` also
+found `allow`, `review` and `deny` missing from `status.ts`, which is where a
+risk decision's tone belongs rather than in an `AppBadge` on one page.
+
+**A page prop must not be named like a shared one.** `SettingsController` sent
+`brand` — the raw, uninherited row — and `HandleInertiaRequests` shares a prop
+of the same name that the shell reads. The page's one won, for that screen
+only, so `/admin/settings` printed a copyright line with no company in it and
+handed `useBranding()` an object full of nulls, which took the sidebar's brand
+mark with it. It is now `brandFields`. Nothing catches this: both props are
+valid, the page works, and the damage is in the chrome around it — which is
+another reason a screen is not finished until it has been looked at.
+
+**A hand-rolled strip of figures is a `MetricStrip` that was missing a slot.**
+The reports page had four cells at `text-[1.5rem]` — the arbitrary size the
+design system bans and the oversized KPI number it bans twice — because money
+here is a *list* and the component only took a value. It takes a slot named
+after each metric's key now, which is the shape `DescriptionList` already uses.
+Reach for the prop or the slot before the `div`.
+
+**The admin nav map is 94 hard-coded English labels, and the breadcrumb
+compares the page's heading against one of them.** The last crumb is dropped
+only when they match exactly, so translating a page heading brings the crumb
+back and the trail reads "Support > Open New Ticket > Open new ticket". In
+Turkish that will happen on every screen the map names, whatever the heading
+says. The page headings converted so far are spelled to match their nav label
+for that reason; the real fix is to translate the map, which also feeds the
+command palette and is asserted by `AdminLayout.test.ts`. Not done.
+
+**A date-only column rendered raw is the one ISO string among localised
+ones.** `2026-10-13` beside `24.09.2026 18:28` on the same panel. It has now
+been found on the service, domain and transaction screens — anything the
+server sends as `Y-m-d` needs `toLocaleDateString()` at the edge, exactly
+like a timestamp does.
+
 `__()` returning its own key is the designed symptom of missing wording, and it
 only works if somebody looks. Three screens were printing keys at an operator:
 `automation.tasks.webhooks.label`, `automation.tasks.licence.label`,

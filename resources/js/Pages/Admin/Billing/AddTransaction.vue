@@ -16,7 +16,7 @@
  * screen will eventually mistype one, and a payment against the wrong
  * invoice is a payment somebody unpicks by hand.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
@@ -26,6 +26,9 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
 
@@ -56,6 +59,8 @@ const props = defineProps<{
   chosen: { id: string; name: string; currency: string } | null
   openInvoices: OpenInvoice[]
 }>()
+
+const { t } = useTranslations()
 
 const form = useForm({
   customer_id: props.chosen?.id ?? '',
@@ -165,39 +170,60 @@ watch(
 function submit(): void {
   form.post('/admin/transactions', { preserveScroll: true })
 }
+
+/** A due date is a date, not an ISO string somebody has to parse by eye. */
+function formatDate(value: string | null): string {
+  return value === null ? '—' : new Date(value).toLocaleDateString()
+}
 </script>
 
 <template>
-  <Head title="Add transaction" />
+  <Head :title="t('ui.transaction.title')" />
 
-  <AdminLayout
-    heading="Add Transaction"
-    description="Money that moved outside the platform. Naming an invoice settles it the same way a gateway would; nothing here rewrites a row that already exists."
-  >
-    <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]" @submit.prevent="submit">
-      <div class="flex flex-col gap-6">
-        <AppCard title="Client" description="Whose money this is. Every ledger row belongs to one.">
-          <div v-if="chosen" class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="text-body font-medium">{{ chosen.name }}</p>
-              <p class="text-content-muted text-chrome">Currency {{ chosen.currency }}</p>
-            </div>
-            <AppButton type="button" variant="ghost" size="sm" @click="forget">Change</AppButton>
+  <AdminLayout :heading="t('ui.transaction.title')">
+    <template #header>
+      <PageHeader :title="t('ui.transaction.title')" :description="t('ui.transaction.intro')" />
+    </template>
+
+    <form
+      class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]"
+      @submit.prevent="submit"
+    >
+      <div class="flex min-w-0 flex-col gap-8">
+        <DetailSection
+          :title="t('ui.transaction.client')"
+          :description="t('ui.transaction.client_intro')"
+        >
+          <template v-if="chosen" #actions>
+            <AppButton type="button" variant="ghost" size="sm" @click="forget">
+              {{ t('ui.transaction.change') }}
+            </AppButton>
+          </template>
+
+          <div v-if="chosen">
+            <p class="text-body font-medium">{{ chosen.name }}</p>
+            <p class="text-content-muted text-chrome">
+              {{ t('ui.transaction.currency_is', { currency: chosen.currency }) }}
+            </p>
           </div>
 
           <div v-else class="flex flex-col gap-3">
             <div class="flex items-end gap-2">
               <div class="flex-1">
-                <AppInput v-model="term" label="Search clients" @keyup.enter="search" />
+                <AppInput
+                  v-model="term"
+                  :label="t('ui.transaction.search_clients')"
+                  @keyup.enter="search"
+                />
               </div>
-              <AppButton type="button" @click="search">Search</AppButton>
+              <AppButton type="button" @click="search">{{ t('ui.transaction.search') }}</AppButton>
             </div>
 
-            <ul v-if="candidates.length > 0" class="divide-line divide-y">
+            <ul v-if="candidates.length > 0" class="divide-line-subtle divide-y">
               <li v-for="candidate in candidates" :key="candidate.id">
                 <button
                   type="button"
-                  class="hover:bg-surface-secondary flex w-full items-center justify-between gap-3 rounded-sm px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
+                  class="pressable hover:bg-surface-hover flex w-full items-center justify-between gap-3 rounded-sm px-2 py-2.5 text-left transition-colors duration-(--duration-fast)"
                   @click="choose(candidate)"
                 >
                   <span>
@@ -212,54 +238,68 @@ function submit(): void {
             </ul>
 
             <p v-else-if="term !== ''" class="text-content-muted text-body">
-              Nobody matches that. A closed account still appears here — money arrives for those
-              too.
+              {{ t('ui.transaction.nobody') }}
             </p>
           </div>
 
-          <p v-if="form.errors.customer_id" class="text-danger text-chrome mt-2">
+          <p v-if="form.errors.customer_id" class="text-danger text-chrome mt-2" role="alert">
             {{ form.errors.customer_id }}
           </p>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard title="The movement" description="Fill in one direction. Not both.">
+        <DetailSection
+          :title="t('ui.transaction.movement')"
+          :description="t('ui.transaction.movement_intro')"
+        >
           <div class="grid gap-4 sm:grid-cols-2">
             <AppInput
               v-model="form.occurred_at"
-              label="Date"
+              :label="t('ui.transaction.date')"
               type="date"
               :error="form.errors.occurred_at"
             />
             <AppSelect
               v-model="form.currency_code"
-              label="Currency"
+              :label="t('ui.transaction.currency')"
               :options="currencies"
               :disabled="chosen !== null"
-              :hint="chosen ? 'Taken from the client.' : 'Chosen only when no client has one.'"
+              :hint="
+                chosen
+                  ? t('ui.transaction.currency_hint_client')
+                  : t('ui.transaction.currency_hint')
+              "
             />
-            <AppInput v-model="form.amount_in" label="Amount in" :error="form.errors.amount_in" />
+            <AppInput
+              v-model="form.amount_in"
+              :label="t('ui.transaction.amount_in')"
+              :error="form.errors.amount_in"
+            />
             <AppInput
               v-model="form.amount_out"
-              label="Amount out"
+              :label="t('ui.transaction.amount_out')"
               :error="form.errors.amount_out"
             />
             <AppInput
               v-model="form.fees"
-              label="Fees"
-              hint="What the gateway kept. Not subtracted from the amount."
+              :label="t('ui.transaction.fees')"
+              :hint="t('ui.transaction.fees_hint')"
               :error="form.errors.fees"
             />
             <AppInput
               v-model="form.reference"
-              label="Transaction ID"
-              hint="What the bank or the gateway calls it."
+              :label="t('ui.transaction.reference')"
+              :hint="t('ui.transaction.reference_hint')"
               :error="form.errors.reference"
             />
-            <AppSelect v-model="form.gateway" label="Payment method" :options="gateways" />
+            <AppSelect
+              v-model="form.gateway"
+              :label="t('ui.transaction.method')"
+              :options="gateways"
+            />
             <AppInput
               v-model="form.invoice_ids"
-              label="Invoice ID(s)"
-              hint="Comma separated. Applied in the order given."
+              :label="t('ui.transaction.invoice_ids')"
+              :hint="t('ui.transaction.invoice_ids_hint')"
               :error="form.errors.invoice_ids"
             />
           </div>
@@ -267,7 +307,7 @@ function submit(): void {
           <div class="mt-4">
             <AppTextarea
               v-model="form.description"
-              label="Description"
+              :label="t('ui.transaction.description')"
               :rows="2"
               :error="form.errors.description"
             />
@@ -276,76 +316,84 @@ function submit(): void {
           <div class="mt-4">
             <AppCheckbox
               v-model="form.to_credit"
-              label="Credit"
-              description="Anything left over goes on the client's credit balance."
+              :label="t('ui.transaction.credit')"
+              :description="t('ui.transaction.credit_hint')"
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           v-if="openInvoices.length > 0"
-          title="Open invoices"
-          description="Tick what this money is for rather than retyping a number."
+          :title="t('ui.transaction.open_invoices')"
+          :description="t('ui.transaction.open_invoices_intro')"
         >
-          <ul class="divide-line divide-y">
-            <li
-              v-for="invoice in openInvoices"
-              :key="invoice.id"
-              class="flex items-center justify-between gap-3 py-2.5"
-            >
-              <label class="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  class="border-line-strong accent-brand size-4 rounded-[4px] border"
-                  :checked="ticked.includes(invoice.number)"
-                  @change="toggleInvoice(invoice)"
-                />
-                <span>
-                  <span class="text-chrome block font-mono">{{ invoice.number }}</span>
-                  <span class="text-content-muted text-chrome block">
-                    <AppStatus
-                      :tone="statusTone(invoice.status)"
-                      class="mr-1.5"
-                      :label="invoice.statusLabel"
-                    />
-                    <span v-if="invoice.dueOn">due {{ invoice.dueOn }}</span>
+          <ul class="divide-line-subtle divide-y">
+            <li v-for="invoice in openInvoices" :key="invoice.id">
+              <label
+                class="hover:bg-surface-hover flex cursor-pointer items-center justify-between gap-3 px-2 py-2.5 transition-colors duration-(--duration-fast)"
+              >
+                <span class="flex min-w-0 items-center gap-3">
+                  <input
+                    type="checkbox"
+                    class="border-line-strong accent-brand size-4 shrink-0 rounded-sm border"
+                    :checked="ticked.includes(invoice.number)"
+                    @change="toggleInvoice(invoice)"
+                  />
+                  <span class="min-w-0">
+                    <span class="text-chrome block font-mono">{{ invoice.number }}</span>
+                    <span class="text-chrome mt-0.5 flex flex-wrap items-center gap-x-2">
+                      <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
+                      <span v-if="invoice.dueOn" class="text-content-muted">
+                        {{ t('ui.transaction.due', { date: formatDate(invoice.dueOn) }) }}
+                      </span>
+                    </span>
+                  </span>
+                </span>
+                <span class="text-chrome shrink-0 text-right tabular-nums">
+                  <span class="block">{{ invoice.balance }}</span>
+                  <span class="text-content-muted block">
+                    {{ t('ui.transaction.of_total', { total: invoice.total }) }}
                   </span>
                 </span>
               </label>
-              <span class="text-chrome text-right tabular-nums">
-                <span class="block">{{ invoice.balance }}</span>
-                <span class="text-content-muted block">of {{ invoice.total }}</span>
-              </span>
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
       </div>
 
-      <aside class="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-        <AppCard title="Before it is written">
+      <!--
+        The one framed surface on the page. It reads back what is about to be
+        written and carries the primary action, and it is sticky — so it has to
+        look like a thing that stays put while the form scrolls under it.
+      -->
+      <aside class="flex min-w-0 flex-col gap-8 lg:sticky lg:top-6 lg:self-start">
+        <AppCard :title="t('ui.transaction.before')">
           <dl class="text-body flex flex-col gap-2">
             <div class="flex justify-between gap-4">
-              <dt class="text-content-muted">Direction</dt>
-              <dd v-if="bothFilled" class="text-danger">Both filled</dd>
+              <dt class="text-content-muted">{{ t('ui.transaction.direction') }}</dt>
+              <dd v-if="bothFilled" class="text-danger">{{ t('ui.transaction.both') }}</dd>
               <dd v-else-if="neitherFilled" class="text-content-muted">—</dd>
-              <dd v-else>{{ positive(form.amount_in) ? 'In' : 'Out' }}</dd>
+              <dd v-else>
+                {{ positive(form.amount_in) ? t('ui.transaction.in') : t('ui.transaction.out') }}
+              </dd>
             </div>
             <div class="flex justify-between gap-4">
-              <dt class="text-content-muted">Invoices</dt>
+              <dt class="text-content-muted">{{ t('ui.transaction.invoices') }}</dt>
               <dd class="tabular-nums">{{ ticked.length }}</dd>
             </div>
             <div class="flex justify-between gap-4">
-              <dt class="text-content-muted">Leftover</dt>
-              <dd>{{ form.to_credit ? 'Credit balance' : 'Nowhere yet' }}</dd>
+              <dt class="text-content-muted">{{ t('ui.transaction.leftover') }}</dt>
+              <dd>
+                {{ form.to_credit ? t('ui.transaction.to_credit') : t('ui.transaction.nowhere') }}
+              </dd>
             </div>
           </dl>
 
-          <p v-if="bothFilled" class="text-danger text-chrome mt-4">
-            A transaction moves money one way. Fill in an amount in or an amount out, not both.
+          <p v-if="bothFilled" class="text-danger text-chrome mt-4" role="alert">
+            {{ t('ui.transaction.both_message') }}
           </p>
-          <p v-else-if="nowhereToPutIt" class="text-warning text-chrome mt-4">
-            Money that arrived has to go somewhere: tick an invoice, or add it to the client's
-            credit balance.
+          <p v-else-if="nowhereToPutIt" class="text-warning text-chrome mt-4" role="alert">
+            {{ t('ui.transaction.nowhere_message') }}
           </p>
 
           <div class="mt-5 flex gap-2">
@@ -355,11 +403,11 @@ function submit(): void {
               :disabled="blocked"
               :loading="form.processing"
             >
-              Add Transaction
+              {{ t('ui.transaction.add') }}
             </AppButton>
-            <Link href="/admin/transactions">
-              <AppButton type="button" variant="ghost">Cancel</AppButton>
-            </Link>
+            <AppButton type="button" variant="ghost" href="/admin/transactions">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
           </div>
         </AppCard>
       </aside>

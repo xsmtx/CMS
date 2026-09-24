@@ -60,7 +60,14 @@ final class SettingsController extends Controller
         $setting = $this->settingFor($organizationId);
 
         return Inertia::render('Admin/Settings/Index', [
-            'brand' => [
+            /*
+             * Not `brand`. `HandleInertiaRequests` shares a prop of that name
+             * and the shell reads it — a page prop of the same name shadows it
+             * for this screen only, which left the footer printing a copyright
+             * line with no company in it and `useBranding()` handing the
+             * sidebar an object full of nulls.
+             */
+            'brandFields' => [
                 'tradingName' => $setting?->trading_name,
                 'legalName' => $setting?->legal_name,
                 'taxId' => $setting?->tax_id,

@@ -17,6 +17,8 @@
  */
 import { computed } from 'vue'
 
+import { useTranslations } from '../composables/useTranslations'
+
 interface Row {
   label: string
   value: number
@@ -55,6 +57,8 @@ const props = withDefaults(
 const max = computed(() =>
   Math.max(1, ...props.rows.map((row) => row.value), ...(props.compare ?? []).map((r) => r.value)),
 )
+
+const { t } = useTranslations()
 
 const total = computed(() => props.rows.reduce((sum, row) => sum + row.value, 0))
 const compareTotal = computed(() => (props.compare ?? []).reduce((sum, row) => sum + row.value, 0))
@@ -103,7 +107,7 @@ const columns = computed(() =>
     </div>
 
     <p v-if="total === 0 && compareTotal === 0" class="text-content-muted text-body">
-      Nothing in this period.
+      {{ t('ui.common.nothing_in_period', {}, 'Nothing in this period.') }}
     </p>
 
     <!-- Horizontal: a row per label, the bar as a width. -->

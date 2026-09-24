@@ -11,7 +11,8 @@
  * **Every money figure is a list, not a number.** A reseller selling in lira and
  * euros has two MRRs and there is no rate in this product to make them one.
  * Adding them would put a figure on the page that means nothing, and it would be
- * the figure somebody quotes.
+ * the figure somebody quotes. That is why the headline figures are a
+ * `MetricStrip` with a slot per key rather than four numbers.
  *
  * **MRR and ARR are labelled as what they are.** ARR is twelve times the month,
  * not a year of collected revenue. Both are legitimate and they answer different
@@ -22,11 +23,15 @@ import { computed, reactive } from 'vue'
 
 import AppBarChart from '../../../Components/AppBarChart.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTable from '../../../Components/AppTable.vue'
-import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import MetricStrip, { type Metric } from '../../../Components/MetricStrip.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
+import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface MoneyRow {
   currency: string
@@ -106,6 +111,40 @@ const netMovement = computed(() => {
   return [...byCurrency.entries()].map(([currency, minor]) => ({ currency, minor }))
 })
 
+/**
+ * The four headline figures, in one strip.
+ *
+ * `value` is only the fallback: MRR, ARR and movement all render through their
+ * slot, because each of them is a list. Active services is the one honest
+ * single number on the page.
+ */
+const figures = computed<Metric[]>(() => [
+  {
+    key: 'mrr',
+    label: t('ui.reports.mrr'),
+    value: '—',
+    hint: t('ui.reports.mrr_hint'),
+  },
+  {
+    key: 'arr',
+    label: t('ui.reports.arr'),
+    value: '—',
+    hint: t('ui.reports.arr_hint'),
+  },
+  {
+    key: 'active',
+    label: t('ui.reports.active'),
+    value: props.revenue.active,
+    hint: t('ui.reports.suspended', { count: props.revenue.suspended }),
+    href: '/admin/services?status=active',
+  },
+  {
+    key: 'movement',
+    label: t('ui.reports.movement'),
+    value: '—',
+  },
+])
+
 const AGING_ORDER = ['current', '1_30', '31_60', '61_90', 'over_90', 'no_due_date'] as const
 
 const agingRows = computed(() =>
@@ -117,101 +156,90 @@ const agingRows = computed(() =>
   })).filter((row) => row.count > 0 || row.bucket === 'current'),
 )
 
+const renewalColumns: TableColumn[] = [
+  { key: 'window', label: t('ui.reports.window') },
+  { key: 'services', label: t('ui.reports.services'), numeric: true },
+  { key: 'value', label: t('ui.reports.value'), numeric: true },
+]
+
+const productColumns: TableColumn[] = [
+  { key: 'product', label: t('ui.reports.product') },
+  { key: 'services', label: t('ui.reports.services'), numeric: true },
+  { key: 'recurring', label: t('ui.reports.recurring_month'), numeric: true },
+]
+
+const gatewayColumns: TableColumn[] = [
+  { key: 'gateway', label: t('ui.reports.gateway') },
+  { key: 'payments', label: t('ui.reports.payments'), numeric: true },
+  { key: 'net', label: t('ui.reports.net'), numeric: true },
+  { key: 'refunded', label: t('ui.reports.refunded'), numeric: true },
+]
+
 function formatMinor(minor: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(minor / 100)
 }
 </script>
 
 <template>
-  <Head title="Reports" />
+  <Head :title="t('ui.reports.title')" />
 
-  <AdminLayout
-    heading="Reports"
-    description="The monthly review: what recurs, what is owed, what is coming, and where it came from."
-  >
-    <div class="flex flex-col gap-5">
-      <form class="flex flex-wrap items-end gap-2" @submit.prevent="apply">
-        <AppInput v-model="period.from" label="From" type="date" />
-        <AppInput v-model="period.to" label="To" type="date" />
-        <AppButton type="submit">Apply</AppButton>
+  <AdminLayout :heading="t('ui.reports.title')" :description="t('ui.reports.intro')">
+    <div class="flex flex-col gap-8">
+      <form class="flex flex-wrap items-end gap-3" @submit.prevent="apply">
+        <AppInput v-model="period.from" type="date" :label="t('ui.reports.from')" />
+        <AppInput v-model="period.to" type="date" :label="t('ui.reports.to')" />
+        <AppButton type="submit">{{ t('ui.reports.apply') }}</AppButton>
       </form>
 
-      <!-- Recurring revenue, and what it is. A figure called MRR that is
-           actually an average of the period is the commonest reporting lie. -->
-      <div
-        class="border-line bg-surface-primary [&>*]:border-line grid divide-y rounded-lg border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 sm:[&>*+*]:border-l"
-      >
-        <div class="flex flex-col gap-1 px-5 py-4">
-          <span class="text-content-subtle text-label uppercase">Recurring, per month</span>
-          <span
-            v-for="row in revenue.mrr"
-            :key="row.currency"
-            class="text-[1.5rem] leading-none font-semibold tabular-nums"
-          >
-            {{ row.amount }}
-          </span>
-          <span v-if="revenue.mrr.length === 0" class="text-content-subtle text-[1.5rem]">—</span>
-          <span class="text-content-subtle text-chrome">
-            Every active service, divided down to a month
-          </span>
-        </div>
+      <!--
+        Recurring revenue, and what it is. A figure called MRR that is actually
+        an average of the period is the commonest reporting lie, so both cells
+        say in their hint which arithmetic produced them.
+      -->
+      <MetricStrip :items="figures">
+        <template #mrr>
+          <span v-for="row in revenue.mrr" :key="row.currency" class="block">{{ row.amount }}</span>
+          <span v-if="revenue.mrr.length === 0" class="text-content-subtle">—</span>
+        </template>
 
-        <div class="flex flex-col gap-1 px-5 py-4">
-          <span class="text-content-subtle text-label uppercase">Annualised</span>
-          <span
-            v-for="row in revenue.arr"
-            :key="row.currency"
-            class="text-[1.5rem] leading-none font-semibold tabular-nums"
-          >
-            {{ row.amount }}
-          </span>
-          <span v-if="revenue.arr.length === 0" class="text-content-subtle text-[1.5rem]">—</span>
-          <!-- Said out loud: this is arithmetic on the figure to the left, not a
-               year of collected revenue. -->
-          <span class="text-content-subtle text-chrome"
-            >Twelve times the month, not a year read</span
-          >
-        </div>
+        <template #arr>
+          <span v-for="row in revenue.arr" :key="row.currency" class="block">{{ row.amount }}</span>
+          <span v-if="revenue.arr.length === 0" class="text-content-subtle">—</span>
+        </template>
 
-        <Link
-          href="/admin/services?status=active"
-          class="hover:bg-surface-hover flex flex-col gap-1 px-5 py-4"
-        >
-          <span class="text-content-subtle text-label uppercase">Active services</span>
-          <span class="text-[1.5rem] leading-none font-semibold tabular-nums">
-            {{ revenue.active }}
-          </span>
-          <span class="text-content-subtle text-chrome"> {{ revenue.suspended }} suspended </span>
-        </Link>
-
-        <div class="flex flex-col gap-1 px-5 py-4">
-          <span class="text-content-subtle text-label uppercase">Movement in the period</span>
-          <span class="text-[1.5rem] leading-none font-semibold tabular-nums">
-            +{{ revenue.added }} / −{{ revenue.lost }}
-          </span>
+        <template #movement>
+          <span>+{{ revenue.added }} / −{{ revenue.lost }}</span>
           <span
             v-for="row in netMovement"
             :key="row.currency"
-            class="text-chrome tabular-nums"
+            class="text-chrome block font-normal"
             :class="row.minor < 0 ? 'text-danger' : 'text-success'"
           >
-            {{ row.minor >= 0 ? '+' : '' }}{{ formatMinor(row.minor, row.currency) }} a month
+            {{
+              t('ui.reports.a_month', {
+                amount: `${row.minor >= 0 ? '+' : ''}${formatMinor(row.minor, row.currency)}`,
+              })
+            }}
           </span>
-        </div>
-      </div>
+        </template>
+      </MetricStrip>
 
-      <div class="grid gap-5 lg:grid-cols-3">
-        <AppCard
-          class="lg:col-span-2"
-          title="Money in, by month"
-          :description="`From the ledger, in ${collected.currency}. An invoice's date is when it was issued, not when it was paid.`"
+      <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <DetailSection
+          :title="t('ui.reports.money_in')"
+          :description="t('ui.reports.money_in_intro', { currency: collected.currency })"
         >
-          <AppBarChart title="Money in, by month" :rows="collected.months" :format="chartFormat" />
-        </AppCard>
+          <AppBarChart
+            :title="t('ui.reports.money_in')"
+            :rows="collected.months"
+            :format="chartFormat"
+            hide-title
+          />
+        </DetailSection>
 
-        <AppCard
-          title="What is owed"
-          :description="`As at ${aging.asOf}, measured from the due date rather than the issue date.`"
+        <DetailSection
+          :title="t('ui.reports.owed')"
+          :description="t('ui.reports.owed_intro', { date: aging.asOf })"
         >
           <ul class="flex flex-col gap-2">
             <li
@@ -241,7 +269,7 @@ function formatMinor(minor: number, currency: string): string {
 
           <div v-if="aging.total.length > 0" class="border-line mt-3 border-t pt-2">
             <div class="flex items-baseline justify-between gap-4">
-              <span class="text-body font-medium">Outstanding</span>
+              <span class="text-body font-medium">{{ t('ui.reports.outstanding') }}</span>
               <span class="text-right">
                 <span
                   v-for="money in aging.total"
@@ -253,46 +281,50 @@ function formatMinor(minor: number, currency: string): string {
               </span>
             </div>
           </div>
-        </AppCard>
+        </DetailSection>
       </div>
 
-      <AppCard
-        title="What is coming"
-        description="Active services due to renew, counted from today. The figure is the whole term, which is what will be billed."
+      <DetailSection
+        :title="t('ui.reports.coming')"
+        :description="t('ui.reports.coming_intro')"
+        :divided="false"
       >
-        <AppTable :headers="['Window', 'Services', 'Value']" :numeric="[1, 2]">
-          <tr v-for="window in renewals" :key="window.days">
-            <td class="px-4 py-2.5">Next {{ window.days }} days</td>
-            <td class="numeric px-4 py-2.5">{{ window.services }}</td>
-            <td class="numeric px-4 py-2.5">
+        <AppTable name="reports-renewals" :columns="renewalColumns">
+          <AppTableRow v-for="window in renewals" :key="window.days">
+            <td data-col="window">{{ t('ui.reports.next_days', { days: window.days }) }}</td>
+            <td data-col="services" class="numeric">{{ window.services }}</td>
+            <td data-col="value" class="numeric">
               <span v-for="money in window.value" :key="money.currency" class="block tabular-nums">
                 {{ money.amount }}
               </span>
               <span v-if="window.value.length === 0" class="text-content-subtle">—</span>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
-      </AppCard>
+      </DetailSection>
 
-      <div class="grid gap-5 lg:grid-cols-2">
-        <AppCard
-          title="By product"
-          description="What recurs, per month, per product. From the services — an invoice line copies a description, which cannot be grouped."
+      <div class="grid gap-x-10 gap-y-8 lg:grid-cols-2">
+        <DetailSection
+          :title="t('ui.reports.by_product')"
+          :description="t('ui.reports.by_product_intro')"
+          :divided="breakdown.products.length === 0"
         >
           <AppTable
             v-if="breakdown.products.length > 0"
-            :headers="['Product', 'Services', 'Recurring / month']"
-            :numeric="[1, 2]"
+            name="reports-products"
+            :columns="productColumns"
           >
-            <tr v-for="product in breakdown.products" :key="product.id ?? 'unassigned'">
-              <td class="px-4 py-2.5">
+            <AppTableRow v-for="product in breakdown.products" :key="product.id ?? 'unassigned'">
+              <td data-col="product">
                 <!-- Not dropped: a report whose total does not match the MRR
                      figure above it is a report nobody trusts. -->
                 <span v-if="product.name">{{ product.name }}</span>
-                <span v-else class="text-content-muted italic">No product attached</span>
+                <span v-else class="text-content-muted italic">
+                  {{ t('ui.reports.no_product') }}
+                </span>
               </td>
-              <td class="numeric px-4 py-2.5">{{ product.services }}</td>
-              <td class="numeric px-4 py-2.5">
+              <td data-col="services" class="numeric">{{ product.services }}</td>
+              <td data-col="recurring" class="numeric">
                 <span
                   v-for="money in product.recurring"
                   :key="money.currency"
@@ -301,30 +333,37 @@ function formatMinor(minor: number, currency: string): string {
                   {{ money.amount }}
                 </span>
               </td>
-            </tr>
+            </AppTableRow>
           </AppTable>
 
-          <p v-else class="text-content-muted text-body">No active services yet.</p>
-        </AppCard>
+          <EmptyState
+            v-else
+            variant="plain"
+            icon="services"
+            :title="t('ui.reports.no_services')"
+            :description="t('ui.reports.no_services_detail')"
+          />
+        </DetailSection>
 
-        <AppCard
-          title="By gateway"
-          description="What each gateway collected in the period, net of what it gave back."
+        <DetailSection
+          :title="t('ui.reports.by_gateway')"
+          :description="t('ui.reports.by_gateway_intro')"
+          :divided="breakdown.gateways.length === 0"
         >
           <AppTable
             v-if="breakdown.gateways.length > 0"
-            :headers="['Gateway', 'Payments', 'Net', 'Refunded']"
-            :numeric="[1, 2, 3]"
+            name="reports-gateways"
+            :columns="gatewayColumns"
           >
-            <tr v-for="gateway in breakdown.gateways" :key="gateway.gateway">
-              <td class="px-4 py-2.5">{{ gateway.label }}</td>
-              <td class="numeric px-4 py-2.5">{{ gateway.payments }}</td>
-              <td class="numeric px-4 py-2.5">
+            <AppTableRow v-for="gateway in breakdown.gateways" :key="gateway.gateway">
+              <td data-col="gateway">{{ gateway.label }}</td>
+              <td data-col="payments" class="numeric">{{ gateway.payments }}</td>
+              <td data-col="net" class="numeric">
                 <span v-for="money in gateway.net" :key="money.currency" class="block tabular-nums">
                   {{ money.amount }}
                 </span>
               </td>
-              <td class="numeric text-content-muted px-4 py-2.5">
+              <td data-col="refunded" class="numeric text-content-muted">
                 <span
                   v-for="money in gateway.refunded"
                   :key="money.currency"
@@ -334,21 +373,26 @@ function formatMinor(minor: number, currency: string): string {
                 </span>
                 <span v-if="gateway.refunded.length === 0">—</span>
               </td>
-            </tr>
+            </AppTableRow>
           </AppTable>
 
-          <p v-else class="text-content-muted text-body">Nothing was collected in this period.</p>
-        </AppCard>
+          <EmptyState
+            v-else
+            variant="plain"
+            icon="billing"
+            :title="t('ui.reports.no_collection')"
+            :description="t('ui.reports.no_collection_detail')"
+          />
+        </DetailSection>
       </div>
 
-      <p class="text-content-subtle text-label">
-        Support metrics are on the
+      <p class="text-content-subtle text-chrome">
+        {{ t('ui.reports.elsewhere') }}
         <Link href="/admin/support/overview" class="underline underline-offset-4">
-          support overview
-        </Link>
-        ; what each reseller sold is on
+          {{ t('ui.reports.support_overview') }}</Link
+        >{{ t('ui.reports.elsewhere_and') }}
         <Link href="/admin/reports/resellers" class="underline underline-offset-4">
-          reseller performance </Link
+          {{ t('ui.reports.reseller_performance') }}</Link
         >.
       </p>
     </div>
