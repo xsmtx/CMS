@@ -1,0 +1,43 @@
+{
+    "slug": "provisioning-vsphere",
+    "name": "VMware vSphere / ESXi",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Clones a template into a VM through vCenter, and powers and deletes it.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningVSphere",
+    "entrypoint": "VSphereModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "template",
+            "label": "Template VM",
+            "type": "text",
+            "required": true,
+            "hint": "The name of the template to clone. A VM is never built from nothing here."
+        },
+        {
+            "key": "folder",
+            "label": "Folder",
+            "type": "text",
+            "required": false,
+            "hint": "Where clones are placed. Empty means the template's own folder."
+        },
+        {
+            "key": "datastore",
+            "label": "Datastore",
+            "type": "text",
+            "required": false
+        },
+        {
+            "key": "resource_pool",
+            "label": "Resource pool",
+            "type": "text",
+            "required": false
+        }
+    ]
+}

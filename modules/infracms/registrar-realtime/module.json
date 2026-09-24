@@ -1,0 +1,37 @@
+{
+    "slug": "registrar-realtime",
+    "name": "Realtime Register",
+    "type": "registrar",
+    "version": "1.0.0",
+    "description": "Registers, transfers and renews domains through Realtime Register.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\RegistrarRealtime",
+    "entrypoint": "RealtimeModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "customer",
+            "label": "Customer handle",
+            "type": "text",
+            "required": true,
+            "hint": "The reseller handle Realtime Register issued, which owns every domain this installation registers."
+        },
+        {
+            "key": "api_key",
+            "label": "API key",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "sandbox",
+            "label": "Sandbox (OT&E)",
+            "type": "boolean",
+            "required": false,
+            "default": false
+        }
+    ]
+}
