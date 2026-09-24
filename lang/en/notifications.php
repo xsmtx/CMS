@@ -29,6 +29,8 @@ return [
         'mail' => 'Email',
         'database' => 'In-app',
         'webhook' => 'Webhook',
+        'sms' => 'Text message',
+        'chat' => 'Chat room',
     ],
 
     'delivery_statuses' => [

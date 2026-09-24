@@ -15,11 +15,17 @@ namespace App\Domain\Modules;
  *
  * The rule for changing it: **adding** a method to `Module` with a default
  * in `BaseModule`, or adding a member to an enum modules only read, is a
- * minor bump. Changing or removing anything a module implements or calls is
+ * minor bump.
+ *
+ * 1.3 is such a bump: `NotificationChannel` gained `Sms` and `Chat`, and
+ * `NotificationRecipient` gained a phone number with a default. Nothing a
+ * module implements changed — `DeliversNotifications` is untouched, which is
+ * why two chat providers coexist through a registry key derived from the
+ * implementation rather than through a method the interface had to grow. Changing or removing anything a module implements or calls is
  * a major one. A major bump is a decision, not a consequence — it makes
  * every existing module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.2';
+    public const string VERSION = '1.3';
 }

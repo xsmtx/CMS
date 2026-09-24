@@ -24,10 +24,41 @@ final readonly class NotificationRecipient
         public ?string $subjectId = null,
         public bool $isStaff = false,
         public bool $acceptsCategory = true,
+        /**
+         * For SMS. Added with a default rather than in place of the email,
+         * because a person has both and a channel picks the one it needs.
+         */
+        public ?string $phone = null,
     ) {}
 
+    /**
+     * Whether this channel can reach this person at all.
+     *
+     * Per channel, not per recipient: an email address does not make somebody
+     * reachable by text, and a number does not make them reachable by mail. A
+     * single `email !== null` check answered the wrong question the moment a
+     * second addressed channel existed.
+     */
     public function isAddressable(NotificationChannel $channel): bool
     {
-        return ! $channel->needsAddress() || ($this->email !== null && $this->email !== '');
+        if (! $channel->needsAddress()) {
+            return true;
+        }
+
+        $address = $channel === NotificationChannel::Sms ? $this->phone : $this->email;
+
+        return $address !== null && trim($address) !== '';
+    }
+
+    /**
+     * The address this channel would use, or null when it needs none.
+     */
+    public function addressFor(NotificationChannel $channel): ?string
+    {
+        return match ($channel) {
+            NotificationChannel::Mail => $this->email,
+            NotificationChannel::Sms => $this->phone,
+            default => null,
+        };
     }
 }

@@ -1,0 +1,45 @@
+{
+    "slug": "notifications-netgsm",
+    "name": "Netgsm SMS",
+    "type": "notification-channel",
+    "version": "1.0.0",
+    "description": "Sends this installation's notifications as text messages through Netgsm.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.3",
+    "platform": "*",
+    "namespace": "InfraCMS\\NotificationsNetgsm",
+    "entrypoint": "NetgsmModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "username",
+            "label": "Netgsm number",
+            "type": "text",
+            "required": true,
+            "hint": "The subscriber number Netgsm issued, used as the API username."
+        },
+        {
+            "key": "password",
+            "label": "API password",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "header",
+            "label": "Sender header",
+            "type": "text",
+            "required": true,
+            "hint": "The registered header messages are sent from. Netgsm rejects anything unregistered."
+        },
+        {
+            "key": "country_code",
+            "label": "Default country code",
+            "type": "text",
+            "required": false,
+            "default": "90",
+            "hint": "Used when a stored number has no international prefix."
+        }
+    ]
+}

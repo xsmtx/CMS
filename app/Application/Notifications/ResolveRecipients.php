@@ -60,6 +60,10 @@ final readonly class ResolveRecipients
             // A transactional message goes out regardless. It is part of
             // the service, not marketing.
             acceptsCategory: $wants || $event->isTransactional(),
+            // Carried whether or not anything sends text messages: a channel
+            // asks for the address it needs, and a recipient assembled without
+            // one is a recipient no SMS provider could ever reach.
+            phone: $contact->phone,
         );
     }
 
@@ -76,6 +80,9 @@ final readonly class ResolveRecipients
             subjectType: $staff::class,
             subjectId: $staff->id,
             isStaff: true,
+            // Staff have no number on their record, so nothing can text them.
+            // Left null rather than invented: a channel asks `isAddressable`
+            // and gets an honest no.
         );
     }
 

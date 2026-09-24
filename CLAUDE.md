@@ -985,3 +985,32 @@ its directory exists. It exists because the mistake these packages will really
 make is not a wrong request shape but **declaring something and wiring
 nothing** — and it earned its place immediately, catching a manifest whose
 namespace had a doubled backslash.
+
+**SDK 1.3**: `NotificationChannel` gained `Sms` and `Chat`, and
+`NotificationRecipient` gained a phone. Minor, because nothing a module
+implements changed.
+
+`ChannelRegistry` keys on **the channel plus the implementation's class name**,
+not on the channel alone. Keying on the channel meant one provider per channel,
+so Discord, Slack and Mattermost each overwrote the last — and would have taken
+core's own `WebhookChannel` with them had they registered as webhooks. The class
+name is *derived* rather than asked for: adding a `key()` to
+`DeliversNotifications` would have been a change to something a module
+implements, a major bump, and every module refusing until its author looked
+(ADR 0039) — for a value already in hand.
+
+`Notifier` delivers through **every** provider registered for a channel, each
+writing its own `notification_deliveries` row, and one failing never stops the
+others. That is what an operator wants for chat (the Slack room *and* the Discord
+room); for SMS they register one, and registering two is visibly asking to pay
+twice.
+
+`NotificationRecipient::isAddressable()` asks **per channel**. An email address
+does not make somebody reachable by text and a number does not make them
+reachable by mail; the single `email !== null` check answered the wrong question
+the moment a second addressed channel existed. Staff carry no number, so nothing
+can text them, and that is left honest rather than invented.
+
+An SMS module truncates the **subject**, never the URL: half a link is a message
+that cost money and did nothing. And a number that normalises to something
+implausible is refused before it is sent rather than paid for.

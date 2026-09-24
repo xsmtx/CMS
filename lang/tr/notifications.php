@@ -29,6 +29,8 @@ return [
         'mail' => 'E-posta',
         'database' => 'Uygulama içi',
         'webhook' => 'Webhook',
+        'sms' => 'SMS',
+        'chat' => 'Sohbet odası',
     ],
 
     'delivery_statuses' => [

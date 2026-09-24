@@ -48,7 +48,7 @@ That is what makes this column easy.
 
 ## 2. Blocked — and precisely on what
 
-### 2.1 The notification channel vocabulary is closed
+### 2.1 The notification channel vocabulary was closed — **done, SDK 1.3**
 
 `NotificationChannel` is an enum with three members — mail, database, webhook —
 and `ChannelRegistry` keys on `channel()->value`. Two consequences, both fatal to
@@ -77,6 +77,20 @@ What it needs, and this is an SDK change:
 4. Per-channel opt-out already exists and needs nothing.
 
 Affected: **Netgsm SMS**, **Discord**, **Slack**, **Mattermost**.
+
+**This was done, and one of the four steps turned out to be unnecessary.**
+`NotificationChannel` gained `Sms` and `Chat`, `NotificationRecipient` gained a
+phone with `addressFor()` and a per-channel `isAddressable()`, and `Notifier`
+delivers through **every** provider registered for a channel rather than one —
+which is what an operator wants for chat and what makes each delivery write its
+own row.
+
+The step that was not needed: `DeliversNotifications` did **not** have to grow a
+`key()`. The registry keys on the channel plus the implementation's class name,
+derived rather than declared. Asking the interface for it would have been a major
+SDK bump and every module refusing until its author looked (ADR 0039), for a
+value that was already there. SDK 1.3 is a minor bump because nothing a module
+implements changed.
 
 ### 2.2 Seams that do not exist at all
 

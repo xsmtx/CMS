@@ -119,14 +119,31 @@ final readonly class Notifier
             return;
         }
 
-        $driver = $this->channels->find($channel);
+        $drivers = $this->channels->allFor($channel);
 
-        if (! $driver instanceof DeliversNotifications) {
+        if ($drivers === []) {
             // Not configured on this installation. Not an error: it is the
             // operator's choice, and the row says the message existed.
             return;
         }
 
+        // Every provider registered for this channel, each writing its own
+        // delivery row. Chat is the case that needs it — a message goes to the
+        // Slack room *and* the Discord room — and one failing must not stop the
+        // others, exactly as one channel failing never stops the rest.
+        foreach ($drivers as $driver) {
+            $this->deliverThrough($driver, $event, $channel, $recipient, $message, $organizationId);
+        }
+    }
+
+    private function deliverThrough(
+        DeliversNotifications $driver,
+        NotificationEvent $event,
+        NotificationChannel $channel,
+        NotificationRecipient $recipient,
+        RenderedMessage $message,
+        ?string $organizationId,
+    ): void {
         try {
             $outcome = $driver->deliver($recipient, $message);
         } catch (Throwable $exception) {
