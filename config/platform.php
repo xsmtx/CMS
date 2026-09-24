@@ -139,8 +139,16 @@ return [
     ],
 
     'tax' => [
-        // 'none' or 'flat'. A module registers its own implementation.
-        'driver' => env('TAX_DRIVER', 'none'),
+        /*
+         * 'rules', 'flat' or 'none'. A module registers its own implementation.
+         *
+         * `rules` is the default and means the rows an operator maintains on
+         * Setup → Tax (ADR 0045). With no rows it charges nothing, so a fresh
+         * installation behaves exactly as it did when the only option was a
+         * flat rate in this file. `flat` is kept for an installation that
+         * already set it here.
+         */
+        'driver' => env('TAX_DRIVER', 'rules'),
 
         'flat' => [
             // A decimal string, never a float.

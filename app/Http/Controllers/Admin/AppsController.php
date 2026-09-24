@@ -15,6 +15,7 @@ use App\Infrastructure\Modules\Models\ModuleRecord;
 use App\Infrastructure\Notifications\Models\NotificationTemplate;
 use App\Infrastructure\Promotions\Models\Promotion;
 use App\Infrastructure\Provisioning\Models\Server;
+use App\Infrastructure\Tax\Models\TaxRule;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use Inertia\Inertia;
@@ -144,6 +145,12 @@ final class AppsController extends Controller
              * opening a customer's panel is day-to-day work, and the tile
              * sitting beside Modules said the opposite.
              */
+            /*
+             * Tax is here rather than behind a permission because a wrong rate
+             * misstates a legal document for every customer at once, and an
+             * Administrator holds every staff permission by design (ADR 0045).
+             */
+            $this->area('tax', '/admin/tax', null, TaxRule::query()->count()),
             $this->area('licence', '/admin/licence'),
             $this->area('import', '/admin/import'),
         ];

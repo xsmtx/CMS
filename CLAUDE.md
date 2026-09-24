@@ -737,3 +737,29 @@ more bugs that rendering never would:
 
 When adding a screen, drive its buttons. Rendering it proves the props; only a
 request proves the payload the form sends is the payload the controller wants.
+
+Tax is rows an operator edits, not a country in the code (ADR 0045). Core ships
+no rates, names no jurisdiction and charges nothing until a rule exists — the
+empty state says so. A rate is `rate_ppm`, **parts per million**: Quebec's QST is
+9.975%, which basis points cannot express and `(int) (9.975 * 10000)` renders as
+99749. The percentage an operator typed becomes that integer **once**, in
+`TaxRuleRequest`, validated as a string against a regex rather than as `numeric`,
+which would accept `1e2`. Matching is most-specific-place-wins and **one rule per
+level**, or a state rate and a national rate both fire and the customer pays
+twice. Two levels with a `compound` flag, because Quebec's QST is charged on the
+amount plus GST while British Columbia's PST is not, and one level cannot say
+both. Rules belong to the **seller** via `ResolveSeller`. The screen is
+owner-only, on `/admin/apps`: `tax.manage` could never work, since an
+Administrator holds every staff permission by design and would set their own VAT
+rate. Its Try it panel calls `app(TaxCalculator::class)` rather than
+reimplementing the arithmetic — a preview that agreed with a second
+implementation and disagreed with the invoice is worse than none. Changing a rate
+never touches an issued invoice, and a test asserts it.
+
+A `*/` inside a `/* … */` block comment closes it. `FrontEndTranslations` gained
+a comment mentioning `lang/*/tax.php`, the rest of the sentence became PHP, and
+the class stopped parsing — which 500'd **every rendered page in the product**.
+Six of the seven new screen tests passed while it was broken, because nothing
+that does not render a document touches that class. A test that renders any page
+is a guard on the document chrome, so `assertOk()` on a real render belongs in a
+new screen test before anything about the screen's own data.

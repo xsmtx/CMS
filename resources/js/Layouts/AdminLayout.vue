@@ -468,6 +468,7 @@ const groups: NavGroup[] = [
         permission: 'notifications.view',
       },
       { label: 'Apps & Integrations', href: '/admin/apps', superAdmin: true },
+      { label: 'Tax', href: '/admin/tax', superAdmin: true },
       { label: 'Connect', href: '/admin/apps/connect', superAdmin: true },
       { label: 'Licence', href: '/admin/licence', superAdmin: true },
       { label: 'Import', href: '/admin/import', superAdmin: true },

@@ -10,6 +10,7 @@ use App\Domain\Tax\Contracts\TaxCalculator;
 use App\Infrastructure\Domains\NullDomainPricing;
 use App\Infrastructure\Risk\AllowAllRiskEvaluator;
 use App\Infrastructure\Risk\RuleBasedRiskEvaluator;
+use App\Infrastructure\Tax\ConfigurableTaxCalculator;
 use App\Infrastructure\Tax\FlatRateTaxCalculator;
 use App\Infrastructure\Tax\NoTaxCalculator;
 use Illuminate\Support\ServiceProvider;
@@ -26,17 +27,27 @@ final class OrderingServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(TaxCalculator::class, function (): TaxCalculator {
-            if (config('platform.tax.driver') !== 'flat') {
-                return new NoTaxCalculator;
-            }
-
-            return new FlatRateTaxCalculator(
+        /*
+         * Tax, in three drivers and one default.
+         *
+         * `rules` is the default and reads the rows an operator wrote on the Tax
+         * screen (ADR 0045). With no rows it charges nothing, which is exactly
+         * what an installation that has never opened that screen did before the
+         * table existed — so the default changing breaks nobody.
+         *
+         * `flat` stays for an installation that had it in `.env` and has not
+         * moved yet, and `none` stays because "definitely no tax" should be
+         * statable without deleting rows. A module still binds over all three.
+         */
+        $this->app->bind(TaxCalculator::class, fn (): TaxCalculator => match (config('platform.tax.driver', 'rules')) {
+            'none' => new NoTaxCalculator,
+            'flat' => new FlatRateTaxCalculator(
                 rate: (string) config('platform.tax.flat.rate', '0'),
                 name: (string) config('platform.tax.flat.name', 'VAT'),
                 countryCode: config('platform.tax.flat.country'),
                 exemptBusinessesAbroad: (bool) config('platform.tax.flat.exempt_businesses_abroad', false),
-            );
+            ),
+            default => $this->app->make(ConfigurableTaxCalculator::class),
         });
 
         $this->app->bind(RiskEvaluator::class, function (): RiskEvaluator {

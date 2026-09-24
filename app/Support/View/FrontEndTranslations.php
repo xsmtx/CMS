@@ -88,6 +88,13 @@ final class FrontEndTranslations
         'infrastructure.adapters',
         'infrastructure.telemetry',
 
+        /*
+         * The tax screen's own vocabulary. Operator words only, and it names no
+         * jurisdiction — there is no list of countries in either language's
+         * `tax.php` and there must not be one (ADR 0045).
+         */
+        'tax',
+
         'ordering.cart',
         'ordering.orders',
         'ordering.portal',

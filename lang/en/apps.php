@@ -41,6 +41,11 @@ return [
             'description' => 'The machines accounts are created on, and the credentials that reach them.',
             'unit' => 'configured',
         ],
+        'tax' => [
+            'label' => 'Tax',
+            'description' => 'What to charge, where. No rates are shipped: these are yours to state.',
+            'unit' => 'rules',
+        ],
         'licence' => [
             'label' => 'Licence',
             'description' => 'What this installation is licensed to do, and when it last spoke to the vendor.',

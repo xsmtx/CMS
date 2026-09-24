@@ -33,6 +33,11 @@ return [
             'description' => 'Hesapların açıldığı makineler ve onlara ulaşan kimlik bilgileri.',
             'unit' => 'tanımlı',
         ],
+        'tax' => [
+            'label' => 'Vergi',
+            'description' => 'Nerede ne tahsil edileceği. Hiçbir oran hazır gelmez, kuralları siz yazarsınız.',
+            'unit' => 'kural',
+        ],
         'licence' => [
             'label' => 'Lisans',
             'description' => 'Bu kurulumun neye lisanslı olduğu ve sağlayıcıyla en son ne zaman konuştuğu.',

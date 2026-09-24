@@ -32,6 +32,16 @@ final readonly class TaxableSupply
 
         /** Where the seller is established. */
         public ?string $supplierCountryCode = null,
+
+        /**
+         * Which kind of line this is, so a rule can be narrower than "all".
+         *
+         * Several countries tax a domain registration and a hosting account at
+         * different rates, or exempt one of them. Added with a default so that
+         * a caller which does not care — and an adapter written against the
+         * older shape — is unaffected.
+         */
+        public TaxAppliesTo $appliesTo = TaxAppliesTo::All,
     ) {}
 
     public function currencyCode(): string

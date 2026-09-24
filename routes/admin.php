@@ -48,6 +48,7 @@ use App\Http\Controllers\Admin\ServiceAddonController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\Admin\TelemetryController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
@@ -494,6 +495,21 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('transactions.store');
     Route::get('billing/gateway-log', [GatewayLogController::class, 'index'])
         ->name('billing.gateway-log');
+
+    /*
+     * Tax. The owner's screen and nobody else's (ADR 0045): a wrong rate
+     * misstates a legal document for every customer at once, and an
+     * Administrator holds every staff permission by design — so no permission
+     * could ever mean "the person who answers to the tax authority".
+     */
+    Route::middleware('owner')->group(function (): void {
+        Route::get('tax', [TaxController::class, 'index'])->name('tax');
+        Route::post('tax/rules', [TaxController::class, 'store'])->name('tax.rules.store');
+        Route::put('tax/rules/{rule}', [TaxController::class, 'update'])->name('tax.rules.update');
+        Route::delete('tax/rules/{rule}', [TaxController::class, 'destroy'])
+            ->name('tax.rules.destroy');
+        Route::put('tax/settings', [TaxController::class, 'settings'])->name('tax.settings');
+    });
 
     /*
      * Modules. Owner only, for the same reason and in the same order:

@@ -52,3 +52,4 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0042](0042-an-import-writes-rows-and-dispatches-nothing.md) | An import writes rows and dispatches nothing | accepted |
 | [0043](0043-the-resource-graph-is-edges-not-facts.md) | The Resource Graph is edges, not facts | accepted |
 | [0044](0044-mobile-is-react-native-and-a-separate-artefact.md) | Mobile is React Native, and a separate artefact | accepted |
+| [0045](0045-tax-is-rows-an-operator-edits.md) | Tax is rows an operator edits, not a country in the code | accepted |
