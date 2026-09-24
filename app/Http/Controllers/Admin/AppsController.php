@@ -138,7 +138,12 @@ final class AppsController extends Controller
                 ModuleRecord::query()->where('state', ModuleState::Enabled->value)->count(),
             ),
             $this->area('servers', '/admin/apps/infrastructure', null, Server::query()->count()),
-            $this->area('connect', '/admin/apps/connect'),
+            /*
+             * Connect is **not** here. It moved back to Utilities and became a
+             * permission rather than the owner-only gate: a support agent
+             * opening a customer's panel is day-to-day work, and the tile
+             * sitting beside Modules said the opposite.
+             */
             $this->area('licence', '/admin/licence'),
             $this->area('import', '/admin/import'),
         ];

@@ -272,6 +272,10 @@ return [
             'label' => 'Add and edit servers',
             'description' => 'Register a server and hold its credentials.',
         ],
+        'infrastructure.connect' => [
+            'label' => 'Open a server panel',
+            'description' => 'Sign in to the control panel of a server without being given its password. Every session is short-lived and audited.',
+        ],
         'domains.view' => [
             'label' => 'See domains',
             'description' => 'Read the domain list and each name\'s status.',

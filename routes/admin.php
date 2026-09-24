@@ -253,23 +253,35 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::post('services/{service}/credentials', [ServiceController::class, 'credentials'])
         ->name('services.credentials');
 
-    Route::get('apps/infrastructure', [InfrastructureController::class, 'index'])->name('infrastructure');
-    Route::post('apps/infrastructure/groups', [InfrastructureController::class, 'storeGroup'])
-        ->name('infrastructure.groups.store');
-    Route::put('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'updateGroup'])
-        ->name('infrastructure.groups.update');
-    Route::delete('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'destroyGroup'])
-        ->name('infrastructure.groups.destroy');
-    Route::post('apps/infrastructure/servers', [InfrastructureController::class, 'storeServer'])
-        ->name('infrastructure.servers.store');
-    Route::put('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
-        ->name('infrastructure.servers.update');
-    // A server row holds credentials to somebody else's machine.
-    Route::delete('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
-        ->middleware('auth.recent')
-        ->name('infrastructure.servers.destroy');
-    Route::post('apps/infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
-        ->name('infrastructure.servers.test');
+    /*
+     * The fleet. Owner only, and `owner` is on the group so that it runs
+     * **before** the password challenge below: with the check inside the
+     * controller, a staff member who may not touch these screens was asked to
+     * confirm their password and only then refused — rude, and a small oracle
+     * (the lesson Phase 17 learned on the Licence screen).
+     */
+    Route::middleware('owner')->group(function (): void {
+        Route::get('apps/infrastructure', [InfrastructureController::class, 'index'])
+            ->name('infrastructure');
+        Route::post('apps/infrastructure/groups', [InfrastructureController::class, 'storeGroup'])
+            ->name('infrastructure.groups.store');
+        Route::put('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'updateGroup'])
+            ->name('infrastructure.groups.update');
+        Route::delete('apps/infrastructure/groups/{group}', [InfrastructureController::class, 'destroyGroup'])
+            ->name('infrastructure.groups.destroy');
+        Route::post('apps/infrastructure/servers', [InfrastructureController::class, 'storeServer'])
+            ->name('infrastructure.servers.store');
+        Route::put('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'updateServer'])
+            ->name('infrastructure.servers.update');
+
+        // A server row holds credentials to somebody else's machine.
+        Route::delete('apps/infrastructure/servers/{server}', [InfrastructureController::class, 'destroyServer'])
+            ->middleware('auth.recent')
+            ->name('infrastructure.servers.destroy');
+
+        Route::post('apps/infrastructure/servers/{server}/test', [InfrastructureController::class, 'test'])
+            ->name('infrastructure.servers.test');
+    });
 
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     // Before the `{invoice}` route: `bulk` would otherwise be read as an
@@ -483,20 +495,28 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('billing/gateway-log', [GatewayLogController::class, 'index'])
         ->name('billing.gateway-log');
 
-    Route::get('apps/modules', [ModuleController::class, 'index'])->name('modules.index');
-    Route::post('apps/modules', [ModuleController::class, 'install'])->name('modules.install');
-    Route::post('apps/modules/{module}/enable', [ModuleController::class, 'enable'])
-        ->name('modules.enable');
-    Route::post('apps/modules/{module}/disable', [ModuleController::class, 'disable'])
-        ->name('modules.disable');
-    Route::post('apps/modules/{module}/upgrade', [ModuleController::class, 'upgrade'])
-        ->name('modules.upgrade');
-    Route::put('apps/modules/{module}/config', [ModuleController::class, 'configure'])
-        ->name('modules.configure');
-    // Uninstalling runs the package's own migrations down.
-    Route::delete('apps/modules/{module}', [ModuleController::class, 'uninstall'])
-        ->middleware('auth.recent')
-        ->name('modules.uninstall');
+    /*
+     * Modules. Owner only, for the same reason and in the same order:
+     * enabling one runs code this repository does not contain, and being
+     * refused should not cost somebody their password first.
+     */
+    Route::middleware('owner')->group(function (): void {
+        Route::get('apps/modules', [ModuleController::class, 'index'])->name('modules.index');
+        Route::post('apps/modules', [ModuleController::class, 'install'])->name('modules.install');
+        Route::post('apps/modules/{module}/enable', [ModuleController::class, 'enable'])
+            ->name('modules.enable');
+        Route::post('apps/modules/{module}/disable', [ModuleController::class, 'disable'])
+            ->name('modules.disable');
+        Route::post('apps/modules/{module}/upgrade', [ModuleController::class, 'upgrade'])
+            ->name('modules.upgrade');
+        Route::put('apps/modules/{module}/config', [ModuleController::class, 'configure'])
+            ->name('modules.configure');
+
+        // Uninstalling runs the package's own migrations down.
+        Route::delete('apps/modules/{module}', [ModuleController::class, 'uninstall'])
+            ->middleware('auth.recent')
+            ->name('modules.uninstall');
+    });
 
     Route::get('settings', [SettingsController::class, 'index'])->name('settings');
     Route::put('settings/brand', [SettingsController::class, 'updateBrand'])

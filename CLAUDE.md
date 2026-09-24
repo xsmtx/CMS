@@ -683,10 +683,34 @@ A new extension point has to be added to `InspectModule::declared()` as well as 
 `ExtensionPoint`, or the module's row says it registered nothing — and uninstall
 then cannot refuse without loading the package it is being asked to remove.
 
-Setup is a page, not a dropdown (`/admin/apps`), and every owner-only screen is on
-it: Modules, Servers, Connect, Licence, Import. The page itself opens to any staff
-member who holds one of the setup permissions; the owner-only section is simply
-absent for everyone else, because the gate is on the five controllers behind it
-rather than on the hub. The Setup rows stay in the nav map although the dropdown is
-gone — the command palette is built from that map, and `hidden` on a group is what
-keeps rows out of the rail and in ⌘K.
+Setup is a page, not a dropdown (`/admin/apps`), and it is **not in the rail** —
+it hangs off the spanner in the topbar, with the things somebody configures once
+rather than works in. The owner-only screens are a section on it: Modules,
+Servers, Licence, Import. The page itself opens to any staff member holding one
+of the setup permissions; the owner-only section is simply absent for everyone
+else, because the gate is on the controllers behind it rather than on the hub.
+The Setup rows stay in the nav map although nothing draws them — the command
+palette is built from that map, and `hidden` on a group is what keeps rows out
+of the rail and in ⌘K.
+
+**Connect is a permission, not the owner-only gate.** `infrastructure.connect`,
+held by Support, and it lives in Utilities. The whole point of the screen is that
+a support agent gets a short-lived session the panel issued instead of being
+handed a root password or an API key — which only works if the people who need it
+can reach it. The token never leaves the server, and `ConnectScreenTest` asserts
+it reaches neither the page nor the props.
+
+**`owner` goes on the route group, above `auth.recent`.** Phase 17 learned it on
+the Licence screen and the fleet and module routes had the same gap: with the
+check only inside the controller, somebody who may not touch the screen was asked
+to confirm their password and *then* refused. Rude, and a small oracle.
+
+**A path a page names is a promise, and `AdminActionRoutesTest` is what checks
+them.** The fleet screen moved behind the Apps door and went on posting to
+`/admin/infrastructure/…` for several phases: adding a server, editing one,
+deleting one, adding a group and testing a connection all answered 404 and looked
+like nothing happening. Nothing caught it, because the screen had a test and the
+test *rendered* the screen. Phase 9's rule was "a screen with no test that renders
+it has not been tested"; this is the one after it — **a screen whose actions no
+test performs has not been tested either**, so `ServerFleetTest` and
+`ModuleScreenTest` press the buttons over HTTP.

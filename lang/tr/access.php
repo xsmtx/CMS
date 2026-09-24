@@ -271,6 +271,10 @@ return [
             'label' => 'Sunucu ekle ve düzenle',
             'description' => 'Sunucu kaydeder ve kimlik bilgilerini tutar.',
         ],
+        'infrastructure.connect' => [
+            'label' => 'Sunucu paneli aç',
+            'description' => 'Parolası verilmeden sunucunun yönetim paneline girer. Her oturum kısa ömürlüdür ve denetim kaydına yazılır.',
+        ],
         'domains.view' => [
             'label' => 'Alan adlarını gör',
             'description' => 'Alan adı listesini ve her adın durumunu okur.',

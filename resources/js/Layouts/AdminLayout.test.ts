@@ -21,10 +21,15 @@ import { ref } from 'vue'
 const navigateHandlers: Array<() => void> = []
 
 /**
- * Apps and Integrations is the one area gated by who somebody is rather
- * than by what they may do, so the mock has to be able to say both.
+ * Modules, Servers, Licence and Import are gated by who somebody is rather
+ * than by what they may do, so the mock has to be able to say both — and
+ * `can` has to be able to say no, because the spanner is drawn from
+ * permissions now rather than from being the owner.
  */
-const permissionState = { superAdmin: true }
+const permissionState = {
+  superAdmin: true,
+  can: (slug: string) => slug.length > 0,
+}
 
 vi.mock('@inertiajs/vue3', () => ({
   Link: {
@@ -78,7 +83,7 @@ vi.mock('../composables/usePermissions', () => ({
   // leaves a plain object alone, so `v-if="isSuperAdmin"` on the latter is
   // always truthy — which is how this mock passed while hiding nothing.
   usePermissions: () => ({
-    can: () => true,
+    can: (slug: string) => permissionState.can(slug),
     isSuperAdmin: ref(permissionState.superAdmin),
   }),
 }))
@@ -127,6 +132,7 @@ describe('AdminLayout navigation', () => {
   beforeEach(() => {
     navigateHandlers.length = 0
     permissionState.superAdmin = true
+    permissionState.can = () => true
     window.localStorage.clear()
   })
 
@@ -144,9 +150,10 @@ describe('AdminLayout navigation', () => {
       'Utilities',
     ])
 
-    // Setup is the one group that is a destination rather than a dropdown:
-    // everything that was in it lives on one page now, so it has no trigger.
-    expect(groupsOf(wrapper).map((row) => row.text().trim())).toContain('Setup')
+    // Setup is not in the rail at all: everything that was in it lives on one
+    // page, and that page hangs off the spanner with the other things somebody
+    // configures once. The rail is for the screens an operator works in.
+    expect(groupsOf(wrapper).map((row) => row.text().trim())).not.toContain('Setup')
 
     // The handoff's categories are the headings those groups sit under, which
     // is how WHMCS's words and §3's structure can both be true.
@@ -269,20 +276,46 @@ describe('AdminLayout navigation', () => {
   })
 
   /**
-   * Setup used to be eight links in a dropdown. They are tiles on one page
-   * now, so the rail row goes straight there — and pressing it must not open
-   * a panel, because there is nothing left in it to open.
+   * Setup used to be eight links in a dropdown, then one row in the rail. It
+   * is neither now: it is a page, reached from the spanner, and the rail does
+   * not mention it.
    */
-  it('sends Setup straight to its page instead of opening a menu', async () => {
+  it('keeps Setup out of the rail and on the spanner', async () => {
     const wrapper = render()
 
-    const setup = wrapper.find('[data-admin-nav] nav a[href="/admin/apps"]')
+    expect(wrapper.find('[data-admin-nav] nav a[href="/admin/apps"]').exists()).toBe(false)
 
-    expect(setup.exists()).toBe(true)
+    await wrapper.find('button[aria-label="Tools"]').trigger('click')
 
-    await setup.trigger('click')
+    expect(document.querySelector('a[href="/admin/apps"]')).not.toBeNull()
+  })
 
-    expect(flyout()).toBeNull()
+  /**
+   * Connect came back to Utilities, and it is a permission rather than the
+   * owner-only gate: a support agent fixing a mailbox has to get into the
+   * panel, and the alternative is emailing them a root password.
+   */
+  it('offers Connect from Utilities to anybody holding the permission', async () => {
+    permissionState.superAdmin = false
+
+    const wrapper = render()
+    const utilities = groupTriggers(wrapper).find((button) => button.text().trim() === 'Utilities')
+
+    await utilities?.trigger('click')
+
+    expect(flyoutLink('/admin/apps/connect')).not.toBeNull()
+  })
+
+  it('leaves Connect out for somebody without the permission', async () => {
+    permissionState.superAdmin = false
+    permissionState.can = (slug) => slug !== 'infrastructure.connect'
+
+    const wrapper = render()
+    const utilities = groupTriggers(wrapper).find((button) => button.text().trim() === 'Utilities')
+
+    await utilities?.trigger('click')
+
+    expect(flyoutLink('/admin/apps/connect')).toBeNull()
   })
 
   /**
@@ -411,13 +444,19 @@ describe('AdminLayout navigation', () => {
    * permission by design, so "only the owner of this installation" cannot be
    * expressed as one.
    */
-  it('hides the spanner from anybody but the owner', () => {
+  /**
+   * The spanner used to be owner-only as a whole. Setup and Connect are
+   * permissions now, so it is drawn when it has something on it and not
+   * before — a menu that opens on nothing is worse than no menu.
+   */
+  it('hides the spanner from somebody with nothing on it', () => {
     permissionState.superAdmin = false
+    permissionState.can = () => false
 
     expect(render().find('button[aria-label="Tools"]').exists()).toBe(false)
   })
 
-  it('shows the owner the spanner', () => {
+  it('shows the spanner to anybody who can reach something on it', () => {
     expect(render().find('button[aria-label="Tools"]').exists()).toBe(true)
   })
 

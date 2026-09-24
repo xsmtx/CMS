@@ -96,11 +96,14 @@ function editGroup(group: GroupRow): void {
 
 function saveGroup(): void {
   if (editingGroup.value === null) {
-    groupForm.post('/admin/infrastructure/groups', { preserveScroll: true, onSuccess: resetGroup })
+    groupForm.post('/admin/apps/infrastructure/groups', {
+      preserveScroll: true,
+      onSuccess: resetGroup,
+    })
     return
   }
 
-  groupForm.put(`/admin/infrastructure/groups/${editingGroup.value}`, {
+  groupForm.put(`/admin/apps/infrastructure/groups/${editingGroup.value}`, {
     preserveScroll: true,
     onSuccess: resetGroup,
   })
@@ -133,14 +136,14 @@ function editServer(server: ServerRow): void {
 
 function saveServer(): void {
   if (editingServer.value === null) {
-    serverForm.post('/admin/infrastructure/servers', {
+    serverForm.post('/admin/apps/infrastructure/servers', {
       preserveScroll: true,
       onSuccess: resetServer,
     })
     return
   }
 
-  serverForm.put(`/admin/infrastructure/servers/${editingServer.value}`, {
+  serverForm.put(`/admin/apps/infrastructure/servers/${editingServer.value}`, {
     preserveScroll: true,
     onSuccess: resetServer,
   })
@@ -152,15 +155,15 @@ function resetServer(): void {
 }
 
 function removeServer(server: ServerRow): void {
-  router.delete(`/admin/infrastructure/servers/${server.id}`, { preserveScroll: true })
+  router.delete(`/admin/apps/infrastructure/servers/${server.id}`, { preserveScroll: true })
 }
 
 function removeGroup(group: GroupRow): void {
-  router.delete(`/admin/infrastructure/groups/${group.id}`, { preserveScroll: true })
+  router.delete(`/admin/apps/infrastructure/groups/${group.id}`, { preserveScroll: true })
 }
 
 function test(server: ServerRow): void {
-  router.post(`/admin/infrastructure/servers/${server.id}/test`, {}, { preserveScroll: true })
+  router.post(`/admin/apps/infrastructure/servers/${server.id}/test`, {}, { preserveScroll: true })
 }
 
 function healthTone(health: string): 'neutral' | 'success' | 'danger' {

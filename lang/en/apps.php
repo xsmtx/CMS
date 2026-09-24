@@ -41,11 +41,6 @@ return [
             'description' => 'The machines accounts are created on, and the credentials that reach them.',
             'unit' => 'configured',
         ],
-        'connect' => [
-            'label' => 'Connect',
-            'description' => 'The passwordless way into a panel this installation already holds credentials for.',
-            'unit' => '',
-        ],
         'licence' => [
             'label' => 'Licence',
             'description' => 'What this installation is licensed to do, and when it last spoke to the vendor.',

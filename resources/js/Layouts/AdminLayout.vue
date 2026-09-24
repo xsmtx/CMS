@@ -145,11 +145,12 @@ interface NavGroup {
   /** A group with an href is a link rather than a dropdown. */
   href?: string
   /**
-   * Keep the rows out of the rail, but leave them in the palette.
+   * Keep the group out of the rail entirely, but leave it in the palette and
+   * on the topbar.
    *
    * One group uses this: Setup, whose screens all live on one page now. The
    * rows are still destinations somebody can search for by name — a menu that
-   * moved should not make ⌘K forget where things are.
+   * moved should not make the palette forget where things are.
    */
   hidden?: boolean
   permission?: string
@@ -399,11 +400,19 @@ const groups: NavGroup[] = [
     icon: 'utilities',
     items: [
       /*
-       * Connect, Licence and Import used to be here. They are on the Setup
-       * page now, under its owner-only section: all three are about who
-       * somebody *is* rather than what they may do, and a day-to-day
-       * administrator met them here by accident.
+       * The passwordless way into a server's panel, and a **permission**
+       * rather than the owner-only gate.
+       *
+       * A support agent fixing somebody's mailbox has to get into the panel.
+       * The alternative to letting them is emailing them a root password or an
+       * API key, which is the thing this platform exists not to do — so the
+       * credential stays on the server, the panel issues a short-lived session,
+       * and the audit record says who went where.
+       *
+       * Licence and Import are not here: those two really are about who
+       * somebody is, and they live in Setup's owner-only section.
        */
+      { label: 'Connect', href: '/admin/apps/connect', permission: 'infrastructure.connect' },
       // WHMCS calls this the Module Queue. It is the same thing: every
       // background operation, what it was for, and what went wrong.
       { label: 'Module Queue', href: '/admin/operations', permission: 'operations.view' },
@@ -420,19 +429,21 @@ const groups: NavGroup[] = [
   },
   {
     /*
-     * Setup is a page, not a dropdown.
+     * Setup is a page, and it is not in the rail at all.
      *
      * A menu of eight undifferentiated links tells an operator the names of
      * eight screens; the page tells them what each is for and how much is in
      * it. Everything that was in this dropdown is a tile there, plus the
-     * owner-only screens — Modules, Servers, Connect, Licence, Import — which
-     * were scattered between here and Utilities.
+     * owner-only screens — Modules, Servers, Licence, Import.
      *
-     * The rows stay in this map even though the dropdown is gone, because the
+     * It hangs off the spanner in the topbar instead, with the other things
+     * somebody configures once and then forgets. The rail is for the screens
+     * an operator works in all day, and Setup is not one of them.
+     *
+     * The rows stay in this map even though nothing draws them, because the
      * command palette is built from it: somebody who knows they want Roles
-     * should be able to press ⌘K and type it rather than learning where it
-     * moved. `href` on the group is what makes it a link rather than a
-     * dropdown, and `hidden` keeps the rows out of the rail.
+     * should be able to press Cmd-K and type it rather than learning where it
+     * moved. `hidden` is what keeps them out of the rail and in the palette.
      */
     label: 'Setup',
     href: '/admin/apps',
@@ -583,9 +594,45 @@ const SECTIONS: NavSection[] = ['Business', 'Operations', 'Support', 'System', '
 const railSections = computed(() =>
   SECTIONS.map((section) => ({
     section,
-    groups: visibleGroups.value.filter((group) => group.section === section),
+    groups: visibleGroups.value.filter(
+      (group) => group.section === section && group.hidden !== true,
+    ),
   })).filter((entry) => entry.groups.length > 0),
 )
+
+/**
+ * Setup, for the topbar, and only for somebody who can open something on it.
+ *
+ * The group carries no permission of its own — its rows do — so "can they
+ * reach it" is "is there a row left after filtering". A link to a page that
+ * answers 403 is worse than no link.
+ */
+const setupDestination = computed(
+  () =>
+    visibleGroups.value.find((group) => group.hidden === true && group.items.length > 0) ?? null,
+)
+
+/**
+ * What hangs off the spanner: the things configured once rather than worked
+ * in. Each row carries its own answer to "may they", so the menu is drawn only
+ * when it has something on it — it used to be owner-only as a whole, which is
+ * no longer true of either Setup or Connect.
+ */
+const tools = computed(() => {
+  const items: { label: string; href: string }[] = []
+
+  if (setupDestination.value !== null) items.push({ label: 'Setup', href: '/admin/apps' })
+
+  if (can('infrastructure.connect')) {
+    items.push({ label: 'Connect', href: '/admin/apps/connect' })
+  }
+
+  if (can('platform.audit.view')) {
+    items.push({ label: 'System logs', href: '/admin/api/activity' })
+  }
+
+  return items
+})
 
 /**
  * Where you are, as words.
@@ -845,32 +892,7 @@ onBeforeUnmount(() => {
 
           <ul class="space-y-0.5">
             <li v-for="group in entry.groups" :key="group.label" class="relative">
-              <!--
-                Setup is one destination rather than a dropdown: its screens
-                all live on that page now. It still carries its rows, for the
-                command palette, which is why the list below is skipped rather
-                than empty.
-              -->
-              <Link
-                v-if="group.hidden && group.href"
-                :href="group.href"
-                :aria-current="isCurrentGroup(group) ? 'page' : undefined"
-                class="pressable text-body flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
-                :class="[
-                  isCurrentGroup(group)
-                    ? 'bg-surface-selected text-content'
-                    : 'text-content-muted hover:bg-surface-hover hover:text-content',
-                  railOpen ? '' : 'justify-center',
-                ]"
-                :title="railOpen ? undefined : group.label"
-              >
-                <AppIcon :name="group.icon" :size="17" />
-                <span v-if="railOpen" class="flex-1 truncate text-left">{{ group.label }}</span>
-                <span v-else class="sr-only">{{ group.label }}</span>
-              </Link>
-
               <button
-                v-else
                 type="button"
                 class="pressable text-body flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
                 :class="[
@@ -899,7 +921,7 @@ onBeforeUnmount(() => {
               <!-- Expanded: in place. The rows sit under their group, indented
                    past the glyph so the column of labels is one column. -->
               <ul
-                v-if="railOpen && !group.hidden && openGroup === group.label"
+                v-if="railOpen && openGroup === group.label"
                 class="border-line-subtle mt-0.5 mb-1 ml-4 space-y-0.5 border-l pl-2"
               >
                 <li v-for="item in group.items" :key="item.label">
@@ -1037,29 +1059,18 @@ onBeforeUnmount(() => {
 
           <ThemeSwitch />
 
-          <!-- The spanner: what an installation is wired to, and what it
-               wrote down. Shut to everybody but the owner. -->
-          <AppMenu v-if="isSuperAdmin" label="Tools" align="end" width="15rem" icon="utilities">
+          <!-- The spanner: what an installation is configured to be, rather
+               than what somebody works in. Drawn only when there is something
+               on it, because each row now answers for itself. -->
+          <AppMenu v-if="tools.length > 0" label="Tools" align="end" width="15rem" icon="utilities">
             <Link
-              href="/admin/apps"
+              v-for="tool in tools"
+              :key="tool.href"
+              :href="tool.href"
               class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
               role="menuitem"
             >
-              Apps &amp; Integrations
-            </Link>
-            <Link
-              href="/admin/apps/connect"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
-              role="menuitem"
-            >
-              Connect
-            </Link>
-            <Link
-              href="/admin/api/activity"
-              class="pressable hover:bg-surface-secondary block rounded-[var(--radius-sm)] px-2 py-1.5 text-sm"
-              role="menuitem"
-            >
-              System logs
+              {{ tool.label }}
             </Link>
           </AppMenu>
 

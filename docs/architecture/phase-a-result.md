@@ -151,10 +151,48 @@ day-to-day administrator met them by accident.
 **The page's gate moved to the doors, and the doors already had it.** The hub used
 to be super-admin only; an administrator now reaches it for Products and Roles and
 simply does not see the owner-only section. Nothing was relaxed:
-`ModuleController`, `InfrastructureController`, `ConnectController`,
-`LicenceController` and `ImportController` each refuse on their own — which is why
-`assertSuperAdminFor` is a static method they all call rather than a middleware
-somebody could forget to list, and why opening the hub was safe.
+`ModuleController`, `InfrastructureController`, `LicenceController` and
+`ImportController` each refuse on their own — which is why `assertSuperAdminFor`
+is a static method they all call rather than a middleware somebody could forget to
+list, and why opening the hub was safe. The fleet and module route groups also
+gained the `owner` middleware, so that authorization runs **before** the password
+challenge on their two irreversible actions; that ordering was the Licence
+screen's bug in Phase 17 and these two had the same gap.
+
+**Setup is not in the rail**, on a second look: it hangs off the spanner in the
+topbar with the other things configured once rather than worked in. The rail is
+for screens an operator is in all day.
+
+**Connect left the owner-only section and became a permission.**
+`infrastructure.connect`, held by Support, back where it was under Utilities. The
+screen exists so that nobody is handed a root password or an API key — which is
+only true if the people who need to get into a panel can, so gating it on *who
+somebody is* was the wrong axis. The credential still never leaves the server and
+`ConnectScreenTest` asserts it reaches neither the page nor its props.
+
+## 4a. A class of bug the tests could not see
+
+Fixing the Setup page turned up something older and worse. The fleet screen moved
+behind the Apps door in an earlier phase; its routes became
+`/admin/apps/infrastructure/…` and the page went on posting to
+`/admin/infrastructure/…`. **Adding a server, editing one, deleting one, adding a
+group and testing a connection had all been answering 404** — and a button that
+does nothing looks exactly like a slow network.
+
+Nothing caught it, and the reason is worth keeping: the screen *had* a feature
+test, and the test rendered the screen. Phase 9's lesson was that a screen with no
+test that renders it has not been tested. This is the next one along — **a screen
+whose actions no test performs has not been tested either.**
+
+Three things came out of it:
+
+- `ServerFleetTest` and `ModuleScreenTest` press every button over HTTP, on real
+  records and the real example package.
+- `AdminActionRoutesTest` checks every `/admin/…` path any Vue page names against
+  the router — 161 of them today — with a guard asserting it is still finding
+  paths, because a scanner that stops matching passes by examining nothing.
+- The two irreversible actions behind those screens got `owner` above
+  `auth.recent`, which is how the ordering bug above was found.
 
 **The rows stayed in the nav map although the dropdown went**, because the command
 palette is built from that map. Somebody who knows they want Roles presses ⌘K and
@@ -197,4 +235,4 @@ them out of the rail and in the palette, and a Vitest case asserts both.
 
 Pint, Rector, PHPStan level 8, Pest on MariaDB, ESLint, Prettier, vue-tsc,
 Vitest, Vite build, `platform:openapi --check` — all green.
-**1316 Pest tests, 83 Vitest tests.**
+**1497 Pest tests, 85 Vitest tests.**

@@ -94,6 +94,7 @@ return [
     ],
 
     'servers' => [
+        'connect_not_permitted' => 'Sunucu paneli açma izniniz yok.',
         'no_session' => 'Bu sunucunun paneli oturum veremiyor ya da kimlik bilgisi buna izin vermiyor.',
         'title' => 'Sunucular',
         'subtitle' => 'Hizmetlerin yerleştirildiği düğümler.',

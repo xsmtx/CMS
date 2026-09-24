@@ -94,6 +94,7 @@ return [
     ],
 
     'servers' => [
+        'connect_not_permitted' => 'You do not have permission to open a server panel.',
         'no_session' => 'This server cannot issue a panel session, or the stored credential does not allow it.',
         'title' => 'Servers',
         'subtitle' => 'The nodes services are placed on.',

@@ -98,6 +98,11 @@ it('answers every destination in the admin menu', function (string $path): void 
     '/admin/notifications/log',
     '/admin/api/activity',
 
+    // Infrastructure
+    '/admin/resources',
+    '/admin/resources/telemetry',
+    '/admin/resources/adapters',
+
     // Setup
     '/admin/catalog/products',
     '/admin/catalog/groups',

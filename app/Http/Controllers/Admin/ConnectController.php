@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use App\Support\Branding\CurrentBrand;
+use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -36,7 +37,15 @@ use Inertia\Response;
  * operator who asked. Revealing a stored root password would be none of
  * those things, and this platform does not do it.
  *
- * Super administrators only, like everything behind the Apps door.
+ * **It is a permission, not the owner-only gate**, and that is the whole
+ * point of the screen. A support agent fixing somebody's mailbox has to get
+ * into the panel; the alternative to letting them is emailing them a root
+ * password or an API key, which is exactly what this exists to stop. So
+ * `infrastructure.connect` is granted to the people who need it, the
+ * credential stays on this server, and the audit record says who went where.
+ *
+ * The list is bounded like every other query here, so a reseller's operator
+ * sees the servers their own organization owns and no others.
  */
 final class ConnectController extends Controller
 {
@@ -47,7 +56,7 @@ final class ConnectController extends Controller
 
     public function index(Entitlements $entitlements, CurrentBrand $brand): Response
     {
-        AppsController::assertSuperAdminFor($this->actor);
+        $this->authorizeConnect();
 
         return Inertia::render('Admin/Apps/Connect', [
             'brand' => $brand->current()->name,
@@ -96,7 +105,7 @@ final class ConnectController extends Controller
      */
     public function openSession(string $server, OpenServerSession $sessions): RedirectResponse
     {
-        AppsController::assertSuperAdminFor($this->actor);
+        $this->authorizeConnect();
 
         $record = Server::query()->whereKey($server)->first();
 
@@ -113,6 +122,20 @@ final class ConnectController extends Controller
         // Never stored, never logged, never rendered — handed straight to
         // the redirect and forgotten.
         return redirect()->away($session->url);
+    }
+
+    /**
+     * Asked on both endpoints rather than once on the group.
+     *
+     * The list and the way in are the same decision, and a route added later
+     * without the middleware would otherwise be an open one — two cheap checks
+     * are worth less than one forgotten.
+     */
+    private function authorizeConnect(): void
+    {
+        if (! $this->actor->can('infrastructure.connect')) {
+            throw new ForbiddenException(__('provisioning.servers.connect_not_permitted'));
+        }
     }
 
     private function canOpenSession(Server $server): bool

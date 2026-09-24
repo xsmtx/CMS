@@ -33,11 +33,6 @@ return [
             'description' => 'Hesapların açıldığı makineler ve onlara ulaşan kimlik bilgileri.',
             'unit' => 'tanımlı',
         ],
-        'connect' => [
-            'label' => 'Bağlan',
-            'description' => 'Kimlik bilgisi zaten sizde olan bir panele parolasız giriş.',
-            'unit' => '',
-        ],
         'licence' => [
             'label' => 'Lisans',
             'description' => 'Bu kurulumun neye lisanslı olduğu ve sağlayıcıyla en son ne zaman konuştuğu.',

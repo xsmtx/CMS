@@ -221,6 +221,25 @@ final class CorePermissions
             new PermissionDefinition('infrastructure.view', 'infrastructure', RoleScope::Staff),
             // Holds the credentials for somebody's production fleet.
             new PermissionDefinition('infrastructure.manage', 'infrastructure', RoleScope::Staff, highRisk: true),
+
+            /*
+             * A way into a server's panel without a password.
+             *
+             * A permission rather than the owner-only gate, because it is a
+             * thing somebody *does* rather than who they are: a support agent
+             * fixing an account needs to get into the panel, and the honest
+             * alternative — handing them the root password or the API key — is
+             * the thing this platform exists not to do. The token never leaves
+             * the server, the session the panel issues is short-lived, and
+             * every one is audited against the person who asked.
+             *
+             * High risk, which is about *granting* it: the roles screen asks
+             * for confirmation and records a reason. Using it is not
+             * challenged, because an agent who met a password prompt on every
+             * account they opened would keep a password in a text file
+             * instead.
+             */
+            new PermissionDefinition('infrastructure.connect', 'infrastructure', RoleScope::Staff, highRisk: true),
         ];
     }
 
