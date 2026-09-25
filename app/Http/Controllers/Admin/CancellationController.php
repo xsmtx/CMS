@@ -47,6 +47,7 @@ final class CancellationController extends Controller
                 'currentPage' => $requests->currentPage(),
                 'lastPage' => $requests->lastPage(),
                 'total' => $requests->total(),
+                'links' => $requests->linkCollection()->all(),
             ],
             'filters' => $criteria,
             'types' => array_values(array_map(

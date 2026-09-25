@@ -85,6 +85,17 @@ return [
     ],
 
     'invoices' => [
+        'noun' => 'invoice',
+        'outstanding' => 'Outstanding',
+        'invoice_count' => ':count invoices',
+        'last_capture' => 'Last capture attempt',
+        'payment_method' => 'Payment method',
+        'owed' => ':amount owed',
+        'open' => 'Open',
+        'last_payment' => 'Last payment',
+        'empty_description' => 'An invoice is raised from an order, or by hand. Once issued it keeps its own copy of the customer details and every amount.',
+        'gone' => 'Nothing to show',
+        'gone_description' => 'This invoice is no longer here, or it was never yours to see.',
         'description' => 'Description',
         'all' => 'All',
         'raised' => 'Invoice :number has been raised for this order.',

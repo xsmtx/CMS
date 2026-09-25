@@ -59,6 +59,7 @@ final class TelemetryController extends Controller
                 'currentPage' => $metrics->currentPage(),
                 'lastPage' => $metrics->lastPage(),
                 'total' => $metrics->total(),
+                'links' => $metrics->linkCollection()->all(),
             ],
             'filters' => [
                 'source' => $source === '' ? null : $source,

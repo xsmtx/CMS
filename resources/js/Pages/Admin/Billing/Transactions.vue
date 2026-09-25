@@ -13,6 +13,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppBarChart from '../../../Components/AppBarChart.vue'
 import AppButton from '../../../Components/AppButton.vue'
@@ -59,7 +60,13 @@ interface Criteria {
 type Option = { value: string; label: string }
 
 const props = defineProps<{
-  transactions: { data: TransactionRow[]; currentPage: number; lastPage: number; total: number }
+  transactions: {
+    data: TransactionRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   flow: {
     in: { label: string; value: number }[]
     out: { label: string; value: number }[]
@@ -295,9 +302,6 @@ function withBlank(options: Option[], label = 'All'): Option[] {
       description="A row appears here the moment money moves — a payment, a refund, a credit."
     />
 
-    <p v-if="transactions.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ transactions.currentPage }} of {{ transactions.lastPage }} —
-      {{ transactions.total }} transactions
-    </p>
+    <AppPagination :links="transactions.links" :total="transactions.total" />
   </AdminLayout>
 </template>

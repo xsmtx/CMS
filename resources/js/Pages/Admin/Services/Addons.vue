@@ -13,6 +13,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -69,7 +70,13 @@ interface Criteria {
 }
 
 const props = defineProps<{
-  addons: { data: AddonRow[]; currentPage: number; lastPage: number; total: number }
+  addons: {
+    data: AddonRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria> & { inactive: boolean }
   schema: {
     productTypes: Option[]
@@ -363,8 +370,6 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       description="An addon appears here when an order containing one is paid for."
     />
 
-    <p v-if="addons.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ addons.currentPage }} of {{ addons.lastPage }} — {{ addons.total }} addons
-    </p>
+    <AppPagination :links="addons.links" :total="addons.total" />
   </AdminLayout>
 </template>

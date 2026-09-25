@@ -85,6 +85,17 @@ return [
     ],
 
     'invoices' => [
+        'noun' => 'fatura',
+        'outstanding' => 'Ödenmemiş',
+        'invoice_count' => ':count fatura',
+        'last_capture' => 'Son tahsilat denemesi',
+        'payment_method' => 'Ödeme yöntemi',
+        'owed' => ':amount kalan',
+        'open' => 'Aç',
+        'last_payment' => 'Son ödeme',
+        'empty_description' => 'Fatura bir siparişten ya da elle oluşturulur. Düzenlendiği anda müşteri bilgilerinin ve her tutarın kendi kopyasını saklar.',
+        'gone' => 'Gösterilecek bir şey yok',
+        'gone_description' => 'Bu fatura artık burada değil ya da hiçbir zaman size ait olmadı.',
         'description' => 'Açıklama',
         'all' => 'Tümü',
         'raised' => 'Bu sipariş için :number numaralı fatura oluşturuldu.',

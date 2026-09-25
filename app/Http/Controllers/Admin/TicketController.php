@@ -68,6 +68,7 @@ final class TicketController extends Controller
                 'currentPage' => $tickets->currentPage(),
                 'lastPage' => $tickets->lastPage(),
                 'total' => $tickets->total(),
+                'links' => $tickets->linkCollection()->all(),
             ],
             'filters' => [
                 ...$criteria,

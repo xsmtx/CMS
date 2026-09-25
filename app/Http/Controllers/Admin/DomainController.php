@@ -60,6 +60,7 @@ final class DomainController extends Controller
                 'currentPage' => $domains->currentPage(),
                 'lastPage' => $domains->lastPage(),
                 'total' => $domains->total(),
+                'links' => $domains->linkCollection()->all(),
             ],
             'filters' => $criteria,
             'statuses' => $this->statuses(),

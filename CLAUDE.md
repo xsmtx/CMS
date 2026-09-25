@@ -1308,3 +1308,19 @@ three rendered is to be the customer, which means their password. They are
 covered by feature tests and by the static gates, and that is the honest
 ceiling. Confirming the 403 in the browser is itself worth doing: the message
 says exactly why.
+
+**Seventeen screens paginated server-side and offered no way to turn the
+page** — fourteen in the admin area, three in the portal. Each printed "Page 1
+of 3 — 47 invoices" as plain text. Nothing caught it: every one of those
+screens rendered, every prop was asserted, and a paginator nobody links to
+still paginates correctly. The rule is checked now at the two places it can be
+stated — `tests/Feature/PaginationTest.php` asserts that a controller which
+paginates sends `linkCollection()`, and that a screen given a `lastPage` draws
+an `AppPagination`. The Resource Graph's two screens are exempt **by name**,
+because they roll their own previous/next pair; an exemption that matches a
+shape is an exemption everything eventually matches.
+
+`AppPagination` itself had no test although it was about to be wired into
+twelve screens at once. It has three now: it links to the other pages, it
+renders Laravel's `&laquo; Previous` as a word rather than an entity, and it
+draws nothing at all when there is one page.

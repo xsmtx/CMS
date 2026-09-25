@@ -11,6 +11,7 @@
 import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
@@ -31,7 +32,13 @@ interface EventRow {
 }
 
 const props = defineProps<{
-  events: { data: EventRow[]; currentPage: number; lastPage: number; total: number }
+  events: {
+    data: EventRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: { gateway: string | null }
   gateways: { value: string; label: string }[]
 }>()
@@ -95,8 +102,6 @@ function formatDateTime(value: string | null): string {
       description="A row appears here the moment a gateway calls this installation's webhook."
     />
 
-    <p v-if="events.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ events.currentPage }} of {{ events.lastPage }} — {{ events.total }} events
-    </p>
+    <AppPagination :links="events.links" :total="events.total" />
   </AdminLayout>
 </template>

@@ -13,6 +13,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -56,7 +57,13 @@ interface Criteria {
 type Option = { value: string; label: string }
 
 const props = defineProps<{
-  tickets: { data: TicketRow[]; currentPage: number; lastPage: number; total: number }
+  tickets: {
+    data: TicketRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria> & { status: string[]; breaching?: string | boolean }
   statuses: Option[]
   priorities: Option[]
@@ -337,8 +344,6 @@ function formatDate(value: string | null): string {
       description="Tickets customers open appear here, sorted by what is closest to its deadline."
     />
 
-    <p v-if="tickets.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ tickets.currentPage }} of {{ tickets.lastPage }} — {{ tickets.total }} tickets
-    </p>
+    <AppPagination :links="tickets.links" :total="tickets.total" />
   </AdminLayout>
 </template>

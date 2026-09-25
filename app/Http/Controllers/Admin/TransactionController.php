@@ -61,6 +61,7 @@ final class TransactionController extends Controller
                 'currentPage' => $transactions->currentPage(),
                 'lastPage' => $transactions->lastPage(),
                 'total' => $transactions->total(),
+                'links' => $transactions->linkCollection()->all(),
             ],
             'flow' => $this->presentFlow($this->search->flow($criteria)),
             'filters' => $criteria,

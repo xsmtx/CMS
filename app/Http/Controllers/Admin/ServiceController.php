@@ -74,6 +74,7 @@ final class ServiceController extends Controller
                 'currentPage' => $services->currentPage(),
                 'lastPage' => $services->lastPage(),
                 'total' => $services->total(),
+                'links' => $services->linkCollection()->all(),
             ],
             'filters' => [...$criteria, 'inactive' => $includeInactive],
             'schema' => $search->schema(),

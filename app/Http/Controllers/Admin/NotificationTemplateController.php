@@ -199,6 +199,7 @@ final class NotificationTemplateController extends Controller
                 'currentPage' => $deliveries->currentPage(),
                 'lastPage' => $deliveries->lastPage(),
                 'total' => $deliveries->total(),
+                'links' => $deliveries->linkCollection()->all(),
             ],
             'filters' => ['event' => $event === '' ? null : $event],
             'events' => array_values(array_map(

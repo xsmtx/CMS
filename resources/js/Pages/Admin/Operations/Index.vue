@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
@@ -30,7 +31,13 @@ interface OperationRow {
 }
 
 defineProps<{
-  operations: { data: OperationRow[]; currentPage: number; lastPage: number; total: number }
+  operations: {
+    data: OperationRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: { state: string | null; type: string | null }
   states: { value: string; label: string }[]
   types: { value: string; label: string }[]
@@ -162,8 +169,6 @@ function formatDateTime(value: string | null): string {
       description="Provisioning, registrations, transfers and renewals appear here as they happen."
     />
 
-    <p v-if="operations.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ operations.currentPage }} of {{ operations.lastPage }} — {{ operations.total }}
-    </p>
+    <AppPagination :links="operations.links" :total="operations.total" />
   </AdminLayout>
 </template>

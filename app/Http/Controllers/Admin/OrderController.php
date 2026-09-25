@@ -153,6 +153,7 @@ final class OrderController extends Controller
                 'currentPage' => $orders->currentPage(),
                 'lastPage' => $orders->lastPage(),
                 'total' => $orders->total(),
+                'links' => $orders->linkCollection()->all(),
             ],
             'filters' => $criteria,
             'statuses' => self::statuses(),

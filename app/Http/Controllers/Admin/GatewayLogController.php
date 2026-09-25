@@ -50,6 +50,7 @@ final class GatewayLogController extends Controller
                 'currentPage' => $events->currentPage(),
                 'lastPage' => $events->lastPage(),
                 'total' => $events->total(),
+                'links' => $events->linkCollection()->all(),
             ],
             'filters' => ['gateway' => $gateway === '' ? null : $gateway],
             'gateways' => array_values(GatewayEventRecord::query()

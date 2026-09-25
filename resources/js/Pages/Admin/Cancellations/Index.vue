@@ -10,6 +10,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -47,7 +48,13 @@ interface Criteria {
 }
 
 const props = defineProps<{
-  requests: { data: RequestRow[]; currentPage: number; lastPage: number; total: number }
+  requests: {
+    data: RequestRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria>
   types: { value: string; label: string }[]
   statuses: { value: string; label: string }[]
@@ -191,8 +198,6 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
       description="A request appears here when a customer asks to stop, whether they asked in the portal or told somebody on the telephone."
     />
 
-    <p v-if="requests.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ requests.currentPage }} of {{ requests.lastPage }} — {{ requests.total }} requests
-    </p>
+    <AppPagination :links="requests.links" :total="requests.total" />
   </AdminLayout>
 </template>

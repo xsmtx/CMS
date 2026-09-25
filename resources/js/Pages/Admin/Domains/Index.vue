@@ -11,6 +11,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -57,7 +58,13 @@ interface Criteria {
 }
 
 const props = defineProps<{
-  domains: { data: DomainRow[]; currentPage: number; lastPage: number; total: number }
+  domains: {
+    data: DomainRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria>
   statuses: { value: string; label: string }[]
   registrars: { value: string; label: string }[]
@@ -294,8 +301,6 @@ function addonsOf(detail: DomainDetail): string {
       description="A domain appears here when an order containing one is paid for."
     />
 
-    <p v-if="domains.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ domains.currentPage }} of {{ domains.lastPage }} — {{ domains.total }} domains
-    </p>
+    <AppPagination :links="domains.links" :total="domains.total" />
   </AdminLayout>
 </template>

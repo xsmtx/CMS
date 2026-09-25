@@ -50,6 +50,7 @@ final class ServiceAddonController extends Controller
                 'currentPage' => $addons->currentPage(),
                 'lastPage' => $addons->lastPage(),
                 'total' => $addons->total(),
+                'links' => $addons->linkCollection()->all(),
             ],
             'filters' => [...$criteria, 'inactive' => $includeInactive],
             'schema' => $search->schema(),

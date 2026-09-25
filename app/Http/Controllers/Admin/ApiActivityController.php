@@ -63,6 +63,7 @@ final class ApiActivityController extends Controller
                 'currentPage' => $records->currentPage(),
                 'lastPage' => $records->lastPage(),
                 'total' => $records->total(),
+                'links' => $records->linkCollection()->all(),
             ],
             'filters' => ['refused' => $refusedOnly],
         ]);

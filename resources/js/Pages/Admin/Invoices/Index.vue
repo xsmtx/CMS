@@ -10,7 +10,7 @@
  *   off until asked for.
  * - **Selection and bulk actions.** Issuing forty drafts one at a time is
  *   forty page loads. Cancelling is a *reason* away, because the audit record
- *   is the only thing that can answer "what happened to this invoice" later.
+ *   is the only thing that can answer"what happened to this invoice" later.
  * - **Row actions on hover.** Always-visible actions turn a list into a wall
  *   of buttons and the eye stops reading the data.
  * - **A skeleton, not a spinner.** Filtering re-fetches, and a table that
@@ -22,6 +22,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCopy from '../../../Components/AppCopy.vue'
@@ -32,6 +33,7 @@ import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import AppTableSkeleton from '../../../Components/AppTableSkeleton.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import MetricStrip, { type Metric } from '../../../Components/MetricStrip.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
@@ -71,7 +73,13 @@ interface BulkAction {
 }
 
 const props = defineProps<{
-  invoices: { data: InvoiceRow[]; currentPage: number; lastPage: number; total: number }
+  invoices: {
+    data: InvoiceRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: { status: string | null }
   statuses: { value: string; label: string }[]
   bulkActions: BulkAction[]
@@ -96,16 +104,39 @@ const active = computed(() => props.filters.status)
  * be hidden is rows of numbers belonging to nothing.
  */
 const COLUMNS: TableColumn[] = [
-  { key: 'number', label: 'Invoice #' },
-  { key: 'client', label: 'Client name' },
-  { key: 'issued', label: 'Invoice date', optional: true },
-  { key: 'due', label: 'Due date' },
-  { key: 'capture', label: 'Last capture attempt', optional: true, offByDefault: true },
-  { key: 'total', label: 'Total', numeric: true },
-  { key: 'method', label: 'Payment method', optional: true, offByDefault: true },
-  { key: 'status', label: 'Status' },
+  { key: 'number', label: t('billing.invoices.number') },
+  { key: 'client', label: t('billing.invoices.customer') },
+  { key: 'issued', label: t('billing.invoices.issued'), optional: true },
+  { key: 'due', label: t('billing.invoices.due') },
+  {
+    key: 'capture',
+    label: t('billing.invoices.last_capture'),
+    optional: true,
+    offByDefault: true,
+  },
+  { key: 'total', label: t('billing.invoices.total'), numeric: true },
+  {
+    key: 'method',
+    label: t('billing.invoices.payment_method'),
+    optional: true,
+    offByDefault: true,
+  },
+  { key: 'status', label: t('billing.invoices.status') },
   { key: 'actions', label: '' },
 ]
+
+/**
+ * Outstanding per currency, never summed: adding euros to lira is the mistake
+ * this platform refuses everywhere else.
+ */
+const owed = computed<Metric[]>(() =>
+  props.owed.map((row) => ({
+    key: row.currency,
+    label: `${t('billing.invoices.outstanding')} · ${row.currency}`,
+    value: row.amount,
+    hint: t('billing.invoices.invoice_count', { count: row.count }),
+  })),
+)
 
 const selected = ref<string[]>([])
 
@@ -202,21 +233,10 @@ function formatDate(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Invoices" />
+  <Head :title="t('billing.invoices.title')" />
 
-  <AdminLayout
-    heading="Invoices"
-    description="Once issued, an invoice never changes. Corrections are credit notes."
-  >
-    <!-- Outstanding is grouped by currency, never summed: adding euros to
-         lira is the mistake this platform refuses everywhere else. -->
-    <div v-if="owed.length > 0" class="mb-6 flex flex-wrap gap-6">
-      <div v-for="row in owed" :key="row.currency">
-        <p class="text-content-muted text-chrome">Outstanding ({{ row.currency }})</p>
-        <p class="text-xl font-semibold tabular-nums">{{ row.amount }}</p>
-        <p class="text-content-subtle text-chrome">{{ row.count }} invoice(s)</p>
-      </div>
-    </div>
+  <AdminLayout :heading="t('billing.invoices.title')" :description="t('billing.invoices.subtitle')">
+    <MetricStrip v-if="owed.length > 0" class="mb-6" :items="owed" />
 
     <AppTableSkeleton v-if="loading" :columns="COLUMNS" selectable :rows="8" />
 
@@ -226,7 +246,7 @@ function formatDate(value: string | null): string {
       name="invoices"
       :columns="COLUMNS"
       selectable
-      noun="invoice"
+      :noun="t('billing.invoices.noun')"
       :row-ids="rowIds"
     >
       <!-- The filters go on the table's own strip, beside the columns
@@ -245,7 +265,7 @@ function formatDate(value: string | null): string {
             "
             @click="filterBy(null)"
           >
-            All
+            {{ t('billing.invoices.all') }}
           </button>
           <button
             v-for="status in statuses"
@@ -265,7 +285,7 @@ function formatDate(value: string | null): string {
       </template>
 
       <template #bulk="{ count, clear }">
-        <AppSelectionBar :count="count" noun="invoice" @clear="clear">
+        <AppSelectionBar :count="count" :noun="t('billing.invoices.noun')" @clear="clear">
           <AppButton
             v-for="action in bulkActions"
             :key="action.value"
@@ -282,9 +302,9 @@ function formatDate(value: string | null): string {
         v-for="invoice in invoices.data"
         :id="invoice.id"
         :key="invoice.id"
-        :label="`invoice ${invoice.number}`"
+        :label="`${t('billing.invoices.noun')} ${invoice.number}`"
       >
-        <td data-col="number" class="px-4 py-2.5">
+        <td data-col="number">
           <!--
             The number opens the drawer, and it is a button rather than the
             whole row: a row-wide click target fights the checkbox in front
@@ -302,10 +322,10 @@ function formatDate(value: string | null): string {
             >
               {{ invoice.number }}
             </button>
-            <AppCopy :value="invoice.number" label="" noun="invoice number" />
+            <AppCopy :value="invoice.number" label="" :noun="t('billing.invoices.number')" />
           </span>
         </td>
-        <td data-col="client" class="px-4 py-2.5">
+        <td data-col="client">
           <Link
             v-if="invoice.customerId"
             :href="`/admin/customers/${invoice.customerId}`"
@@ -315,7 +335,7 @@ function formatDate(value: string | null): string {
           </Link>
           <span v-else>—</span>
         </td>
-        <td data-col="issued" class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="issued" class="text-content-muted whitespace-nowrap">
           {{ formatDate(invoice.issuedOn) }}
         </td>
         <td
@@ -325,28 +345,28 @@ function formatDate(value: string | null): string {
         >
           {{ formatDate(invoice.dueOn) }}
         </td>
-        <td data-col="capture" class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="capture" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(invoice.lastCaptureAt) }}
           <span v-if="invoice.lastCaptureOutcome" class="text-chrome block">
             {{ invoice.lastCaptureOutcome }}
           </span>
         </td>
-        <td data-col="total" class="numeric px-4 py-2.5">
+        <td data-col="total" class="numeric">
           {{ invoice.total }}
           <span
             v-if="invoice.balanceMinor > 0"
             class="text-content-muted text-chrome block tabular-nums"
           >
-            {{ invoice.balance }} owed
+            {{ t('billing.invoices.owed', { amount: invoice.balance }) }}
           </span>
         </td>
-        <td data-col="method" class="text-content-muted px-4 py-2.5">
+        <td data-col="method" class="text-content-muted">
           {{ invoice.paymentMethod ?? '—' }}
         </td>
-        <td data-col="status" class="px-4 py-2.5">
+        <td data-col="status">
           <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
         </td>
-        <td data-col="actions" class="px-4 py-2.5 text-right">
+        <td data-col="actions" class="text-right">
           <!-- `row-actions`: shown on hover, on focus, and on a touch screen
                that has no hover. A control nobody can reveal does not
                exist. -->
@@ -354,7 +374,7 @@ function formatDate(value: string | null): string {
             :href="`/admin/invoices/${invoice.id}`"
             class="row-actions text-content-muted hover:text-content text-chrome underline underline-offset-4"
           >
-            Open
+            {{ t('billing.invoices.open') }}
           </Link>
         </td>
       </AppTableRow>
@@ -362,13 +382,12 @@ function formatDate(value: string | null): string {
 
     <EmptyState
       v-else
-      title="No invoices yet"
-      description="An invoice is raised from an order, or by hand. Once issued it keeps its own copy of the customer's details and every amount."
+      icon="invoice"
+      :title="t('billing.invoices.empty')"
+      :description="t('billing.invoices.empty_description')"
     />
 
-    <p v-if="invoices.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ invoices.currentPage }} of {{ invoices.lastPage }} — {{ invoices.total }} invoices
-    </p>
+    <AppPagination :links="invoices.links" :total="invoices.total" />
 
     <!--
       The context drawer (§8). Inspection only — every decision it could offer
@@ -376,7 +395,7 @@ function formatDate(value: string | null): string {
     -->
     <AppDrawer
       v-model:open="peeking"
-      :title="peek?.number ?? 'Invoice'"
+      :title="peek?.number ?? t('billing.invoices.number')"
       :subtitle="peek?.customer ?? undefined"
       :href="peek ? `/admin/invoices/${peek.id}` : undefined"
       :loading="peekLoading"
@@ -391,7 +410,7 @@ function formatDate(value: string | null): string {
 
         <dl class="text-body flex flex-col gap-2">
           <div class="flex items-baseline justify-between gap-4">
-            <dt class="text-content-muted">Invoice date</dt>
+            <dt class="text-content-muted">{{ t('billing.invoices.issued') }}</dt>
             <dd>{{ formatDate(peek.issuedOn) }}</dd>
           </div>
           <div class="flex items-baseline justify-between gap-4">
@@ -428,7 +447,9 @@ function formatDate(value: string | null): string {
         </div>
 
         <div v-if="peek.lastPayment">
-          <p class="text-content-subtle text-label mb-1.5 uppercase">Last payment</p>
+          <p class="text-content-subtle text-label mb-1.5 uppercase">
+            {{ t('billing.invoices.last_payment') }}
+          </p>
           <p class="text-body">
             {{ peek.lastPayment.amount }} · {{ peek.lastPayment.gateway }}
             <span v-if="peek.lastPayment.receivedAt" class="text-content-muted">
@@ -443,15 +464,15 @@ function formatDate(value: string | null): string {
            exist as far as this screen is concerned. -->
       <EmptyState
         v-else-if="!peekLoading"
-        title="Nothing to show"
-        description="This invoice is no longer here, or it was never yours to see."
+        :title="t('billing.invoices.gone')"
+        :description="t('billing.invoices.gone_description')"
       />
     </AppDrawer>
 
     <!--
       One dialog for both actions. Which level it is comes from the action:
       issuing is consequential and asks once, cancelling is high-risk and
-      asks why — and the "why" is the thing the audit record keeps.
+      asks why — and the"why" is the thing the audit record keeps.
     -->
     <AppConfirm
       :open="pending !== null"

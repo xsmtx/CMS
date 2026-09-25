@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
@@ -22,7 +23,13 @@ interface DeliveryRow {
 }
 
 const props = defineProps<{
-  deliveries: { data: DeliveryRow[]; currentPage: number; lastPage: number; total: number }
+  deliveries: {
+    data: DeliveryRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: { event: string | null }
   events: { value: string; label: string }[]
 }>()
@@ -115,8 +122,6 @@ function formatDateTime(value: string): string {
       description="Every message this platform sends is recorded here, including the ones it decided not to send."
     />
 
-    <p v-if="deliveries.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ deliveries.currentPage }} of {{ deliveries.lastPage }} — {{ deliveries.total }}
-    </p>
+    <AppPagination :links="deliveries.links" :total="deliveries.total" />
   </AdminLayout>
 </template>

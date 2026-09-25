@@ -5,6 +5,7 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { httpTone, statusTone } from '../status'
 import AppInput from './AppInput.vue'
+import AppPagination from './AppPagination.vue'
 import AppSelect from './AppSelect.vue'
 import AppTable from './AppTable.vue'
 import AppTabs from './AppTabs.vue'
@@ -231,5 +232,59 @@ describe('a field in error looks like one', () => {
 
     expect(control(refused)).toContain('border-danger')
     expect(control(refused)).not.toContain('border-line')
+  })
+})
+
+describe('a list that paginates can be paged', () => {
+  /*
+   * Fourteen admin screens and three portal screens printed "Page 1 of 3" as
+   * plain text and rendered no control at all, so the rows past the first page
+   * were unreachable. They all use this component now; these are the three
+   * things it has to get right for that to be true.
+   */
+  const links = (): { url: string | null; label: string; active: boolean }[] => [
+    { url: null, label: '&laquo; Previous', active: false },
+    { url: '/admin/invoices?page=1', label: '1', active: true },
+    { url: '/admin/invoices?page=2', label: '2', active: false },
+    { url: '/admin/invoices?page=2', label: 'Next &raquo;', active: false },
+  ]
+
+  it('links to the other pages and says which one it is on', () => {
+    const wrapper = mount(AppPagination, {
+      props: { links: links(), total: 47 },
+      global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
+    })
+
+    const hrefs = wrapper.findAll('a').map((link) => link.attributes('href'))
+
+    expect(hrefs).toContain('/admin/invoices?page=2')
+    expect(wrapper.find('[aria-current="page"]').text()).toBe('1')
+  })
+
+  it('renders the arrow labels as words rather than HTML entities', () => {
+    const wrapper = mount(AppPagination, {
+      props: { links: links(), total: 47 },
+      global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
+    })
+
+    // Laravel ships `&laquo; Previous`; rendering that with v-html to get an
+    // arrow would be an injection sink on every paginated page.
+    expect(wrapper.text()).toContain('Previous')
+    expect(wrapper.text()).not.toContain('laquo')
+  })
+
+  it('stays out of the way when there is one page', () => {
+    const wrapper = mount(AppPagination, {
+      props: {
+        links: [
+          { url: null, label: '&laquo; Previous', active: false },
+          { url: '/admin/invoices?page=1', label: '1', active: true },
+          { url: null, label: 'Next &raquo;', active: false },
+        ],
+        total: 3,
+      },
+    })
+
+    expect(wrapper.find('nav').exists()).toBe(false)
   })
 })

@@ -66,6 +66,7 @@ final class OperationController extends Controller
                 'currentPage' => $operations->currentPage(),
                 'lastPage' => $operations->lastPage(),
                 'total' => $operations->total(),
+                'links' => $operations->linkCollection()->all(),
             ],
             'filters' => [
                 'state' => $state?->value,

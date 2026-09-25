@@ -15,6 +15,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -74,7 +75,13 @@ interface Criteria {
 }
 
 const props = defineProps<{
-  services: { data: ServiceRow[]; currentPage: number; lastPage: number; total: number }
+  services: {
+    data: ServiceRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria> & { inactive: boolean }
   schema: {
     productTypes: Option[]
@@ -438,8 +445,6 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       description="A service appears here as soon as an order that needs setting up is paid for."
     />
 
-    <p v-if="services.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ services.currentPage }} of {{ services.lastPage }} — {{ services.total }} services
-    </p>
+    <AppPagination :links="services.links" :total="services.total" />
   </AdminLayout>
 </template>

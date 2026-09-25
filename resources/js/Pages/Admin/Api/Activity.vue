@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
@@ -22,7 +23,13 @@ interface RequestRow {
 }
 
 defineProps<{
-  requests: { data: RequestRow[]; currentPage: number; lastPage: number; total: number }
+  requests: {
+    data: RequestRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: { refused: boolean }
 }>()
 
@@ -106,8 +113,6 @@ function formatDateTime(value: string | null): string {
       description="Requests appear here as soon as an integration starts."
     />
 
-    <p v-if="requests.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ requests.currentPage }} of {{ requests.lastPage }} — {{ requests.total }}
-    </p>
+    <AppPagination :links="requests.links" :total="requests.total" />
   </AdminLayout>
 </template>

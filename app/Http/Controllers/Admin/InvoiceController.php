@@ -60,6 +60,7 @@ final class InvoiceController extends Controller
                 'currentPage' => $invoices->currentPage(),
                 'lastPage' => $invoices->lastPage(),
                 'total' => $invoices->total(),
+                'links' => $invoices->linkCollection()->all(),
             ],
             'filters' => ['status' => $status === '' ? null : $status],
             'statuses' => self::statuses(),

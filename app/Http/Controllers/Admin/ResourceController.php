@@ -63,6 +63,7 @@ final class ResourceController extends Controller
                 'currentPage' => $nodes->currentPage(),
                 'lastPage' => $nodes->lastPage(),
                 'total' => $nodes->total(),
+                'links' => $nodes->linkCollection()->all(),
             ],
             'filters' => [
                 'kind' => $kind === '' ? null : $kind,

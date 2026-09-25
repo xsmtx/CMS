@@ -10,6 +10,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -47,7 +48,13 @@ interface Criteria {
 }
 
 const props = defineProps<{
-  orders: { data: OrderRow[]; currentPage: number; lastPage: number; total: number }
+  orders: {
+    data: OrderRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+    links: { url: string | null; label: string; active: boolean }[]
+  }
   filters: Partial<Criteria>
   statuses: { value: string; label: string }[]
   gateways: { value: string; label: string }[]
@@ -263,8 +270,6 @@ function withBlank(options: { value: string; label: string }[]) {
       description="Orders appear here as soon as a customer checks out. Each one keeps its own copy of what it cost."
     />
 
-    <p v-if="orders.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      Page {{ orders.currentPage }} of {{ orders.lastPage }} — {{ orders.total }} orders
-    </p>
+    <AppPagination :links="orders.links" :total="orders.total" />
   </AdminLayout>
 </template>

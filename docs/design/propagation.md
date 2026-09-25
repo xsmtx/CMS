@@ -71,7 +71,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
 | [ ] | `Admin/Automation/Index.vue` | list | 1 | 8 |  |  |  |
 | [ ] | `Admin/Billing/Transactions.vue` | list | 1 | 7 |  |  |  |
-| [ ] | `Admin/Invoices/Index.vue` | list |  | 9 |  | 1 | yes |
+| [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
 | [ ] | `Admin/Services/Addons.vue` | list |  | 8 |  | 1 |  |
 | [ ] | `Admin/Services/Index.vue` | list |  | 8 |  | 1 |  |
