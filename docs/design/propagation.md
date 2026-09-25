@@ -45,7 +45,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Content/Articles.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Customers/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Support/Show.vue` | detail |  |  |  |  | yes |
-| [ ] | `Admin/Tax/Index.vue` | list | 3 | 9 |  |  | yes |
+| [x] | `Admin/Tax/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Catalog/Options/Form.vue` | form | 2 |  |  | 1 |  |
 | [ ] | `Admin/Contacts/Form.vue` | form | 3 |  |  |  |  |
 | [ ] | `Admin/Health/Index.vue` | list | 3 |  |  |  |  |

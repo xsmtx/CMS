@@ -114,11 +114,15 @@ final class TaxController extends Controller
         return back()->with('status', __('tax.rules.saved'));
     }
 
-    public function destroy(TaxRule $rule, DeleteTaxRule $delete): RedirectResponse
+    public function destroy(Request $request, TaxRule $rule, DeleteTaxRule $delete): RedirectResponse
     {
         $this->assertOwner();
 
-        $delete->handle($rule, $this->actor->model());
+        $reason = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ])['reason'] ?? null;
+
+        $delete->handle($rule, $this->actor->model(), $reason);
 
         return back()->with('status', __('tax.rules.deleted'));
     }

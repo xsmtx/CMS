@@ -17,12 +17,21 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class DeleteTaxRule
 {
-    public function handle(TaxRule $rule, ?Model $actor = null): void
+    /**
+     * The reason is not paperwork.
+     *
+     * A rule that stops existing stops being charged, and nothing about the
+     * invoices already raised changes — so the first sign anybody has is a
+     * document that came out wrong weeks later. The person reading this row
+     * then is trying to work out why.
+     */
+    public function handle(TaxRule $rule, ?Model $actor = null, ?string $reason = null): void
     {
         Audit::action('tax.rule.deleted')
             ->by($actor)
             ->on($rule)
             ->forOrganization($rule->organization_id)
+            ->because($reason)
             ->withMetadata(['rate' => $rule->percentage(), 'country' => $rule->country_code])
             ->write();
 
