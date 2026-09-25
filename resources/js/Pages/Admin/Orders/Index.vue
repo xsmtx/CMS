@@ -16,6 +16,9 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -60,6 +63,20 @@ const props = defineProps<{
   gateways: { value: string; label: string }[]
   reviewCount: number
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'id', label: t('ordering.orders.id'), optional: true, offByDefault: true },
+  { key: 'number', label: t('ordering.orders.number'), sticky: true },
+  { key: 'date', label: t('ordering.orders.placed') },
+  { key: 'client', label: t('ordering.orders.customer') },
+  { key: 'method', label: t('ordering.orders.payment_method'), optional: true },
+  { key: 'total', label: t('ordering.orders.total'), numeric: true },
+  { key: 'payment', label: t('ordering.orders.payment_status') },
+  { key: 'status', label: t('ordering.orders.status') },
+  { key: 'actions', label: '' },
+]
 
 const EMPTY: Criteria = {
   status: '',
@@ -107,11 +124,16 @@ function filterBy(status: string): void {
   apply()
 }
 
+/*
+ * The payment statuses, named by the same file the rest of the product names
+ * them in. A page that maps a status to a word is a second vocabulary, and
+ * the one nobody remembers to translate.
+ */
 const PAYMENT_LABELS: Record<string, string> = {
-  unbilled: 'Not invoiced',
-  unpaid: 'Unpaid',
-  overdue: 'Overdue',
-  paid: 'Paid',
+  unbilled: t('ordering.orders.unbilled'),
+  unpaid: t('billing.statuses.unpaid'),
+  overdue: t('billing.statuses.overdue'),
+  paid: t('billing.statuses.paid'),
 }
 
 function formatDate(value: string | null): string {
@@ -119,17 +141,14 @@ function formatDate(value: string | null): string {
 }
 
 function withBlank(options: { value: string; label: string }[]) {
-  return [{ value: '', label: 'Any' }, ...options]
+  return [{ value: '', label: t('ordering.orders.any') }, ...options]
 }
 </script>
 
 <template>
-  <Head title="Orders" />
+  <Head :title="t('ordering.orders.title')" />
 
-  <AdminLayout
-    heading="Orders"
-    description="What customers have agreed to buy. Every line records the price as it was at the moment of ordering."
-  >
+  <AdminLayout :heading="t('ordering.orders.title')" :description="t('ordering.orders.subtitle')">
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex flex-wrap gap-1.5">
         <button
@@ -142,7 +161,7 @@ function withBlank(options: { value: string; label: string }[]) {
           "
           @click="filterBy('')"
         >
-          All
+          {{ t('ordering.orders.all') }}
         </button>
         <button
           v-for="status in statuses"
@@ -162,10 +181,10 @@ function withBlank(options: { value: string; label: string }[]) {
 
       <div class="flex flex-wrap items-center gap-2.5">
         <AppButton size="sm" :aria-expanded="open" @click="open = !open">
-          {{ open ? 'Hide search' : 'Search / filter' }}
+          {{ open ? t('ordering.orders.hide_search') : t('ordering.orders.search_filter') }}
         </AppButton>
         <AppButton v-if="reviewCount > 0" href="/admin/orders/review" size="sm">
-          Review queue ({{ reviewCount }})
+          {{ t('ordering.orders.review_queue_count', { count: reviewCount }) }}
         </AppButton>
       </div>
     </div>
@@ -174,53 +193,50 @@ function withBlank(options: { value: string; label: string }[]) {
       <div
         class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <AppInput v-model="form.number" label="Order # or ID" />
-        <AppInput v-model="form.client" label="Client" />
+        <AppInput v-model="form.number" :label="t('ordering.orders.number_search')" />
+        <AppInput v-model="form.client" :label="t('ordering.orders.customer')" />
         <AppSelect
           v-model="form.payment"
-          label="Payment method"
+          :label="t('ordering.orders.payment_method')"
           :options="withBlank(gateways)"
-          hint="What actually took the money."
+          :hint="t('ordering.orders.payment_method_hint')"
         />
-        <AppSelect v-model="form.status" label="Status" :options="withBlank(statuses)" />
-        <AppInput v-model="form.from" type="date" label="Placed from" />
-        <AppInput v-model="form.to" type="date" label="Placed to" />
-        <AppInput v-model="form.amount" label="Amount" hint="Exact total, as typed on the order." />
-        <AppInput v-model="form.ip" label="IP address" />
+        <AppSelect
+          v-model="form.status"
+          :label="t('ordering.orders.status')"
+          :options="withBlank(statuses)"
+        />
+        <AppInput v-model="form.from" type="date" :label="t('ordering.orders.placed_from')" />
+        <AppInput v-model="form.to" type="date" :label="t('ordering.orders.placed_to')" />
+        <AppInput
+          v-model="form.amount"
+          :label="t('ordering.orders.amount')"
+          :hint="t('ordering.orders.amount_hint')"
+        />
+        <AppInput v-model="form.ip" :label="t('ordering.orders.ip')" />
       </div>
 
       <div class="mt-3 flex gap-2">
-        <AppButton type="submit" variant="primary">Search</AppButton>
-        <AppButton type="button" variant="ghost" @click="clear">Clear</AppButton>
+        <AppButton type="submit" variant="primary">{{ t('ordering.orders.search') }}</AppButton>
+        <AppButton type="button" variant="ghost" @click="clear">{{
+          t('ordering.orders.clear')
+        }}</AppButton>
         <span v-if="hasFilters" class="text-content-muted text-chrome self-center">
-          {{ orders.total }} match
+          {{ t('ordering.orders.matches', { count: orders.total }) }}
         </span>
       </div>
     </form>
 
-    <AppTable
-      v-if="orders.data.length > 0"
-      :headers="[
-        'ID',
-        'Order #',
-        'Date',
-        'Client name',
-        'Payment method',
-        'Total',
-        'Payment status',
-        'Status',
-        '',
-      ]"
-    >
-      <tr v-for="order in orders.data" :key="order.id">
-        <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+    <AppTable v-if="orders.data.length > 0" name="admin-orders" :columns="COLUMNS">
+      <AppTableRow v-for="order in orders.data" :key="order.id">
+        <td data-col="id" class="text-content-subtle text-chrome font-mono">
           {{ order.id.slice(-8) }}
         </td>
-        <td class="text-chrome px-4 py-2.5 font-mono">{{ order.number }}</td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="number" class="text-chrome font-mono">{{ order.number }}</td>
+        <td data-col="date" class="text-content-muted whitespace-nowrap">
           {{ formatDate(order.placedAt) }}
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="client">
           <Link
             v-if="order.customerId"
             :href="`/admin/customers/${order.customerId}`"
@@ -233,41 +249,45 @@ function withBlank(options: { value: string; label: string }[]) {
             {{ order.ipAddress }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ order.paymentMethod ?? '—' }}</td>
-        <td class="px-4 py-2.5 tabular-nums">{{ order.total }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="method" class="text-content-muted">{{ order.paymentMethod ?? '—' }}</td>
+        <td data-col="total" class="numeric tabular-nums">{{ order.total }}</td>
+        <td data-col="payment">
           <AppStatus
             :tone="statusTone(order.paymentStatus)"
             :label="PAYMENT_LABELS[order.paymentStatus] ?? order.paymentStatus"
           />
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="status">
           <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
-          <span v-if="order.riskDecision === 'review'" class="text-warning text-chrome ml-2"
-            >Held</span
-          >
+          <span v-if="order.riskDecision === 'review'" class="text-warning text-chrome ml-2">
+            {{ t('ordering.orders.held') }}
+          </span>
         </td>
-        <td class="px-4 py-2.5 text-right">
-          <Link
-            :href="`/admin/orders/${order.id}`"
-            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
-          >
-            Open
-          </Link>
+        <td data-col="actions" class="text-right">
+          <span class="row-actions">
+            <Link
+              :href="`/admin/orders/${order.id}`"
+              class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
+            >
+              {{ t('ordering.orders.open') }}
+            </Link>
+          </span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else-if="hasFilters"
-      title="No order matches"
-      description="Every criterion here runs against a real column: an order number, a client, a gateway that took money, an address."
+      icon="orders"
+      :title="t('ordering.orders.no_match')"
+      :description="t('ordering.orders.no_match_description')"
     />
 
     <EmptyState
       v-else
-      title="No orders yet"
-      description="Orders appear here as soon as a customer checks out. Each one keeps its own copy of what it cost."
+      icon="orders"
+      :title="t('ordering.orders.empty')"
+      :description="t('ordering.orders.empty_description')"
     />
 
     <AppPagination :links="orders.links" :total="orders.total" />

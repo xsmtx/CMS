@@ -22,6 +22,9 @@ import AppSelect from '../../../Components/AppSelect.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -95,6 +98,20 @@ const props = defineProps<{
   types: { value: string; label: string; total: number }[]
   counts: { pending: number; failed: number; suspended: number }
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'expand', label: '' },
+  { key: 'id', label: t('provisioning.services.id'), optional: true },
+  { key: 'name', label: t('provisioning.services.name'), sticky: true },
+  { key: 'domain', label: t('provisioning.services.domain') },
+  { key: 'client', label: t('provisioning.services.customer') },
+  { key: 'price', label: t('provisioning.services.price'), numeric: true },
+  { key: 'cycle', label: t('provisioning.services.billing_cycle'), optional: true },
+  { key: 'due', label: t('provisioning.services.next_due') },
+  { key: 'status', label: t('provisioning.services.status') },
+]
 
 const EMPTY: Criteria = {
   product_type: '',
@@ -171,35 +188,43 @@ function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
 }
 
-function withBlank(options: Option[], label = 'Any'): Option[] {
+function withBlank(options: Option[], label = t('provisioning.services.any')): Option[] {
   return [{ value: '', label }, ...options]
 }
 </script>
 
 <template>
-  <Head title="Products and services" />
+  <Head :title="t('ui.nav.products_services')" />
 
-  <AdminLayout heading="Products and services" description="Everything customers are running.">
+  <!--
+    The heading is the nav map's own words on purpose: the breadcrumb drops
+    its last crumb when the two match, and "Clients › Products/Services ›
+    Services" is a trail that names the same screen twice.
+  -->
+  <AdminLayout
+    :heading="t('ui.nav.products_services')"
+    :description="t('provisioning.services.subtitle')"
+  >
     <!--
       Three counts, because they are the three questions an operator opens
       this screen to answer: what is stuck, what broke, what is off.
     -->
     <div class="mb-7 flex flex-wrap gap-3">
       <AppStat
-        label="Pending setup"
+        :label="t('provisioning.services.pending_queue')"
         :value="counts.pending"
         :active="form.status === 'pending'"
         @select="filterByStatus('pending')"
       />
       <AppStat
-        label="Failed"
+        :label="t('provisioning.services.failed_queue')"
         :value="counts.failed"
         :tone="counts.failed > 0 ? 'danger' : 'neutral'"
         :active="form.status === 'failed'"
         @select="filterByStatus('failed')"
       />
       <AppStat
-        label="Suspended"
+        :label="t('provisioning.services.suspended_queue')"
         :value="counts.suspended"
         :tone="counts.suspended > 0 ? 'warning' : 'neutral'"
         :active="form.status === 'suspended'"
@@ -233,10 +258,12 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
 
     <div class="mb-5 flex flex-wrap items-center gap-2.5">
       <AppButton :aria-expanded="open" @click="open = !open">
-        {{ open ? 'Hide search' : 'Search / filter' }}
+        {{
+          open ? t('provisioning.services.hide_search') : t('provisioning.services.search_filter')
+        }}
         <span
           v-if="hasFilters"
-          class="bg-brand text-content-inverse -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+          class="bg-brand text-content-inverse text-label -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 tabular-nums"
         >
           {{ activeFilterCount }}
         </span>
@@ -260,11 +287,11 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             :class="!includeInactive ? 'translate-x-3.5' : 'translate-x-0.5'"
           />
         </span>
-        Hide inactive clients
+        {{ t('provisioning.services.hide_inactive') }}
       </button>
 
       <span v-if="hasFilters" class="text-content-muted text-chrome">
-        {{ services.total }} match
+        {{ t('provisioning.services.matches', { count: services.total }) }}
       </span>
     </div>
 
@@ -274,80 +301,87 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       >
         <AppSelect
           v-model="form.product_type"
-          label="Product type"
+          :label="t('provisioning.services.product_type')"
           :options="withBlank(schema.productTypes)"
         />
-        <AppSelect v-model="form.server" label="Server" :options="withBlank(schema.servers)" />
+        <AppSelect
+          v-model="form.server"
+          :label="t('provisioning.services.server')"
+          :options="withBlank(schema.servers)"
+        />
         <AppSelect
           v-model="form.product"
-          label="Product / service"
+          :label="t('provisioning.services.name')"
           :options="withBlank(schema.products)"
         />
         <AppSelect
           v-model="form.gateway"
-          label="Payment method"
-          hint="The card on the client's file."
+          :label="t('provisioning.services.payment_method')"
+          :hint="t('provisioning.services.payment_method_hint')"
           :options="withBlank(schema.gateways)"
         />
         <AppSelect
           v-model="form.billing_cycle"
-          label="Billing cycle"
+          :label="t('provisioning.services.billing_cycle')"
           :options="withBlank(schema.billingCycles)"
         />
-        <AppSelect v-model="form.status" label="Status" :options="withBlank(schema.statuses)" />
-        <AppInput v-model="form.domain" label="Domain" hint="Hostname counts too." />
+        <AppSelect
+          v-model="form.status"
+          :label="t('provisioning.services.status')"
+          :options="withBlank(schema.statuses)"
+        />
+        <AppInput
+          v-model="form.domain"
+          :label="t('provisioning.services.domain')"
+          :hint="t('provisioning.services.domain_hint')"
+        />
         <AppInput
           v-model="form.client"
-          label="Client name"
-          hint="A whole name works. % anchors: Zeyn% or %nep."
+          :label="t('provisioning.services.customer')"
+          :hint="t('provisioning.services.client_hint')"
         />
         <div class="grid gap-4 sm:grid-cols-2 lg:col-span-1">
           <AppSelect
             v-model="form.custom_field"
-            label="Custom field"
+            :label="t('provisioning.services.custom_field')"
             :options="withBlank(schema.customFields)"
           />
-          <AppInput v-model="form.custom_value" label="Custom field value" />
+          <AppInput v-model="form.custom_value" :label="t('provisioning.services.custom_value')" />
         </div>
       </div>
 
       <div class="mt-3 flex gap-2">
-        <AppButton type="submit" variant="primary">Search</AppButton>
-        <AppButton type="button" variant="ghost" @click="clear">Clear</AppButton>
+        <AppButton type="submit" variant="primary">{{
+          t('provisioning.services.search')
+        }}</AppButton>
+        <AppButton type="button" variant="ghost" @click="clear">
+          {{ t('provisioning.services.clear') }}
+        </AppButton>
       </div>
     </form>
 
-    <AppTable
-      v-if="services.data.length > 0"
-      :headers="[
-        '',
-        'ID',
-        'Product / service',
-        'Domain',
-        'Client name',
-        'Price',
-        'Billing cycle',
-        'Next due date',
-        'Status',
-      ]"
-    >
+    <AppTable v-if="services.data.length > 0" name="admin-services" :columns="COLUMNS">
       <template v-for="service in services.data" :key="service.id">
-        <tr>
-          <td class="py-3.5 pl-5">
+        <AppTableRow>
+          <td data-col="expand">
             <button
               type="button"
               class="pressable border-line text-content-muted hover:text-content text-chrome inline-flex size-5 items-center justify-center rounded-sm border font-mono leading-none"
               :aria-expanded="expanded === service.id"
-              :aria-label="expanded === service.id ? 'Hide details' : 'Show details'"
+              :aria-label="
+                expanded === service.id
+                  ? t('provisioning.services.hide_detail')
+                  : t('provisioning.services.show_detail')
+              "
               @click="toggleRow(service.id)"
             >
               {{ expanded === service.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+          <td data-col="id" class="text-content-subtle text-chrome font-mono">
             {{ service.id.slice(-8) }}
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="name">
             <Link
               :href="`/admin/services/${service.id}`"
               class="font-medium underline-offset-4 hover:underline"
@@ -355,8 +389,8 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
               {{ service.name }}
             </Link>
           </td>
-          <td class="text-content-muted px-4 py-2.5">{{ service.domain ?? '—' }}</td>
-          <td class="px-4 py-2.5">
+          <td data-col="domain" class="text-content-muted">{{ service.domain ?? '—' }}</td>
+          <td data-col="client">
             <Link
               v-if="service.customerId"
               :href="`/admin/customers/${service.customerId}`"
@@ -366,23 +400,23 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-4 py-2.5 tabular-nums">{{ service.recurring }}</td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
-            {{ service.billingCycleLabel ?? 'One time' }}
+          <td data-col="price" class="numeric tabular-nums">{{ service.recurring }}</td>
+          <td data-col="cycle" class="text-content-muted whitespace-nowrap">
+            {{ service.billingCycleLabel ?? t('provisioning.services.one_time') }}
           </td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+          <td data-col="due" class="text-content-muted whitespace-nowrap">
             {{ formatDate(service.nextDueOn) }}
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="status">
             <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
           </td>
-        </tr>
+        </AppTableRow>
 
         <tr v-if="expanded === service.id" class="bg-surface-secondary">
-          <td colspan="9" class="px-4 py-4">
+          <td :colspan="COLUMNS.length" class="px-4 py-4">
             <dl class="text-chrome grid gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
               <div>
-                <dt class="text-content-muted">Order #</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.order_number') }}</dt>
                 <dd class="mt-0.5">
                   <Link
                     v-if="service.detail.orderId"
@@ -395,31 +429,31 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
                 </dd>
               </div>
               <div>
-                <dt class="text-content-muted">Server</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.server') }}</dt>
                 <dd class="mt-0.5">{{ service.detail.server ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Payment method</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.payment_method') }}</dt>
                 <dd class="mt-0.5">{{ service.detail.paymentMethod ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Registration date</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.registered_on') }}</dt>
                 <dd class="mt-0.5">{{ formatDate(service.detail.registeredOn) }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Dedicated IP</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.dedicated_ip') }}</dt>
                 <dd class="mt-0.5 font-mono">{{ service.detail.dedicatedIp ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Username</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.username') }}</dt>
                 <dd class="mt-0.5 font-mono">{{ service.detail.username ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Promotion code</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.promotion_code') }}</dt>
                 <dd class="mt-0.5 font-mono">{{ service.detail.promotionCode ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Product</dt>
+                <dt class="text-content-muted">{{ t('provisioning.services.product') }}</dt>
                 <dd class="mt-0.5">
                   {{ service.detail.product ?? '—' }}
                   <span v-if="service.detail.productType" class="text-content-muted">
@@ -435,14 +469,16 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
 
     <EmptyState
       v-else-if="hasFilters"
-      title="No service matches"
-      description="Closed accounts are hidden unless the toggle above says otherwise."
+      icon="services"
+      :title="t('provisioning.services.no_match')"
+      :description="t('provisioning.services.no_match_description')"
     />
 
     <EmptyState
       v-else
-      title="No services yet"
-      description="A service appears here as soon as an order that needs setting up is paid for."
+      icon="services"
+      :title="t('provisioning.services.empty')"
+      :description="t('provisioning.services.empty_description')"
     />
 
     <AppPagination :links="services.links" :total="services.total" />

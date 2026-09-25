@@ -74,7 +74,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
 | [ ] | `Admin/Services/Addons.vue` | list |  | 8 |  | 1 |  |
-| [ ] | `Admin/Services/Index.vue` | list |  | 8 |  | 1 |  |
+| [x] | `Admin/Services/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Automation/Dunning.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Catalog/Groups/Form.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Catalog/Products/Pricing.vue` | form | 1 |  |  |  |  |
@@ -93,7 +93,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Domains/Index.vue` | list |  | 9 |  |  |  |
 | [ ] | `Admin/Notifications/Log.vue` | list |  | 5 |  |  |  |
 | [ ] | `Admin/Operations/Index.vue` | list |  | 6 |  |  |  |
-| [ ] | `Admin/Orders/Index.vue` | list |  | 9 |  |  |  |
+| [x] | `Admin/Orders/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Organizations/Index.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Promotions/Index.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Resellers/Index.vue` | list |  | 6 |  |  |  |
