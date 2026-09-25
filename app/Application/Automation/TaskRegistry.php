@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation;
 
+use App\Application\Automation\Runs\CheckAdapterHealth;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\GenerateRenewalInvoices;
@@ -45,6 +46,7 @@ final readonly class TaskRegistry
             AutomationTask::Cleanup => CleanUpExpiredRecords::class,
             AutomationTask::Resources => ProjectCoreResources::class,
             AutomationTask::Telemetry => CollectTelemetry::class,
+            AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });
     }

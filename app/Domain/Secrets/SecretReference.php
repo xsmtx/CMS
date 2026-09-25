@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Secrets;
 
 use App\Domain\Secrets\Exceptions\InvalidSecretReference;
+use Stringable;
 
 /**
  * Where a secret is, said in a way that is safe to store and to print.
@@ -24,7 +25,7 @@ use App\Domain\Secrets\Exceptions\InvalidSecretReference;
  * frequently assembled from something somebody else filled in, and a
  * reference with a slash in it is a key that collides with another one.
  */
-final readonly class SecretReference
+final readonly class SecretReference implements Stringable
 {
     public function __construct(
         public string $area,

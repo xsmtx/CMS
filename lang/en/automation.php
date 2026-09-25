@@ -7,6 +7,10 @@ return [
     'description' => 'What this platform does on its own, and what it did last time.',
 
     'tasks' => [
+        'adapter_health' => [
+            'label' => 'Adapter health',
+            'description' => 'Asks every enabled adapter whether the system on the other end is still answering, at the pace that adapter declares.',
+        ],
         'renewals' => [
             'label' => 'Renewal invoices',
             'description' => 'Raises the invoice for every service and domain about to renew.',

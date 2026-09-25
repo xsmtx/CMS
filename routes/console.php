@@ -105,6 +105,21 @@ Schedule::command('platform:run telemetry')
     ->onOneServer()
     ->runInBackground();
 
+/*
+ * The adapter health sweep.
+ *
+ * Alongside collection rather than inside it: a source that is answering
+ * slowly and a source that is gone are different facts, and an operator
+ * looking at a quiet graph needs to know which one they have. The run asks
+ * only the adapters whose own declared pace says they are due, so this is how
+ * often the platform *considers* asking.
+ */
+Schedule::command('platform:run adapter-health')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run cleanup')
     ->dailyAt('03:00')
     ->withoutOverlapping()

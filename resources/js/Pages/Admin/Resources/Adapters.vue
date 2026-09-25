@@ -21,6 +21,7 @@ import { ref } from 'vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppInput from '../../../Components/AppInput.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -52,6 +53,7 @@ interface AdapterRow {
   remoteVersion: string | null
   supported: boolean
   checkedAt: string | null
+  credential: { set: boolean; rotatedAt: string | null }
   limits: { perMinute: number; concurrency: number; batchSize: number }
 }
 
@@ -69,6 +71,44 @@ defineProps<{
 }>()
 
 const { t } = useTranslations()
+
+/**
+ * The adapter whose credential is being written, and the value being typed.
+ *
+ * Write-only, like the licence key: the field starts empty every time and
+ * the screen never learns what is stored. Clearing it is sending an empty
+ * value, which destroys the credential rather than storing an empty string —
+ * a blank credential fails authentication in a way nobody can read.
+ */
+const credentialFor = ref<AdapterRow | null>(null)
+const credentialValue = ref('')
+const savingCredential = ref(false)
+
+function askForCredential(adapter: AdapterRow): void {
+  credentialFor.value = adapter
+  credentialValue.value = ''
+}
+
+function saveCredential(): void {
+  const adapter = credentialFor.value
+
+  if (adapter === null) return
+
+  savingCredential.value = true
+
+  router.put(
+    `/admin/resources/adapters/${adapter.id}/credential`,
+    { value: credentialValue.value },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        savingCredential.value = false
+        credentialValue.value = ''
+        credentialFor.value = null
+      },
+    },
+  )
+}
 
 const confirming = ref<AdapterRow | null>(null)
 const confirmOpen = ref(false)
@@ -180,6 +220,19 @@ function when(value: string | null): string {
               <p v-if="adapter.healthMessage" class="text-content-muted text-chrome">
                 {{ adapter.healthMessage }}
               </p>
+
+              <!-- Whether there is one, and when it last changed. Never what
+                   it is: a secret a screen can print is a secret in a
+                   browser's history and in somebody's support screenshot. -->
+              <p class="text-content-muted text-chrome">
+                {{
+                  adapter.credential.set
+                    ? t('infrastructure.adapters.credential_set', {
+                        when: when(adapter.credential.rotatedAt),
+                      })
+                    : t('infrastructure.adapters.credential_unset')
+                }}
+              </p>
               <!-- Said out loud rather than folded into "degraded": an operator
                    debugging an adapter that returns nothing usually finds that
                    somebody upgraded the device. -->
@@ -221,6 +274,14 @@ function when(value: string | null): string {
                 <span v-else class="text-content-muted text-chrome">
                   {{ t('infrastructure.adapters.writes_none') }}
                 </span>
+
+                <AppButton variant="ghost" size="sm" @click="askForCredential(adapter)">
+                  {{
+                    adapter.credential.set
+                      ? t('infrastructure.adapters.rotate_credential')
+                      : t('infrastructure.adapters.set_credential')
+                  }}
+                </AppButton>
 
                 <AppButton variant="ghost" size="sm" @click="setEnabled(adapter, !adapter.enabled)">
                   {{
@@ -322,6 +383,28 @@ function when(value: string | null): string {
           </span>
         </li>
       </ul>
+    </AppConfirm>
+    <AppConfirm
+      :open="credentialFor !== null"
+      level="consequential"
+      :title="
+        credentialFor?.credential.set
+          ? t('infrastructure.adapters.rotate_credential')
+          : t('infrastructure.adapters.set_credential')
+      "
+      :description="t('infrastructure.adapters.credential_hint')"
+      :confirm-label="t('ui.common.save')"
+      :busy="savingCredential"
+      @update:open="(value: boolean) => (credentialFor = value ? credentialFor : null)"
+      @confirm="saveCredential"
+    >
+      <AppInput
+        v-model="credentialValue"
+        type="password"
+        autocomplete="off"
+        :label="t('infrastructure.adapters.credential')"
+        :hint="t('infrastructure.adapters.credential_clear_hint')"
+      />
     </AppConfirm>
   </AdminLayout>
 </template>

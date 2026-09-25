@@ -19,7 +19,7 @@ final class SecretRecordFactory extends Factory
     public function definition(): array
     {
         return [
-            'organization_id' => fn (): string => $this->owningOrganization(),
+            'organization_id' => $this->owningOrganization(...),
             'reference' => 'monitoring/token/'.fake()->unique()->lexify('????????'),
             'value' => fake()->sha256(),
             'last_rotated_at' => now(),

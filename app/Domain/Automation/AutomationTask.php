@@ -45,6 +45,18 @@ enum AutomationTask: string
     case Telemetry = 'telemetry';
 
     /**
+     * Asking every adapter whether the thing on the other end is still there.
+     *
+     * Separate from `Telemetry` because they answer different questions and
+     * fail differently: collection failing means a source is quiet, and
+     * health failing means it is gone. Phase A left this as a button and said
+     * why — a sweep polling twenty devices before anybody had configured a
+     * timeout is a denial of service against your own operator — so the
+     * pacing comes from the limits each adapter declares.
+     */
+    case AdapterHealth = 'adapter-health';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -92,6 +104,10 @@ enum AutomationTask: string
             // adapter declares its own rate limits and the run respects them, so
             // this is how often the platform *asks*, not how hard it pushes.
             self::Telemetry => 5,
+            // Five minutes as well, and for the same reason it is not one:
+            // health is not telemetry, and a device that went down forty
+            // seconds ago is found by whatever was talking to it.
+            self::AdapterHealth => 5,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

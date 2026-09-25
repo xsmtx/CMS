@@ -1577,3 +1577,37 @@ after it (that is the second time — the first was `FrontEndTranslations`), and
 and no `migrations` row, which then fails as "table already exists" on every
 later run. `db:wipe --env=testing` then `migrate --env=testing` is the way back,
 with nothing else running against that database.
+
+**Phase B has begun** (`advanced-operations-plan.md`). Three things of it are
+in: the credential vault, the first real monitoring adapter, and the health
+sweep Phase A deferred.
+
+`monitoring-prometheus` is the first adapter family that reads a real system.
+It asks four instant queries across every target rather than one query per
+host — a fleet of four hundred machines is four requests — and every target is
+`preg_quote`d into the matcher, because a node key is a hostname full of dots
+and an unquoted `db1.example.com` also matches `db1xexample.com`, which is a
+reading attached to the wrong machine that nothing would ever report. Its
+address is module configuration and its token is not: the token lives in the
+vault under `monitoring/token/prometheus`, read at the moment of the call so
+a rotation takes effect without restarting a queue.
+
+**An adapter's credential is written from the Adapters screen**, write-only,
+behind the password challenge, and the screen says only whether one is stored
+and when it last changed. `AdapterCredentialTest` asserts the value reaches
+neither the props nor the rendered page — the licence key's rule, for the same
+reason.
+
+**The health sweep asks a question about rows, not about the clock**: which
+adapters have not been checked recently enough, at the pace each adapter's own
+`RateLimits` declares. A check that found the same state is a skip rather than
+a change, because a sweep reporting twenty changes every five minutes makes
+the one adapter that actually changed impossible to see.
+
+Two testing notes from building it. **`Http::fake()` called twice adds a stub
+rather than replacing the first**, so a test that "changes the answer" changes
+nothing — hold the state in a static and register one stub. And **enabling a
+module loads its classes into the process for the rest of the run**, which
+broke `ExampleFileProbeTest`'s assertion that reading a manifest is not
+consent; a test that needs an enabled adapter should use a package no other
+test asserts is unloaded.

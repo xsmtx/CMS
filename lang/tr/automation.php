@@ -7,6 +7,10 @@ return [
     'description' => 'Bu platformun kendi başına yaptıkları ve en son ne yaptığı.',
 
     'tasks' => [
+        'adapter_health' => [
+            'label' => 'Adaptör sağlığı',
+            'description' => 'Etkin her adaptöre, karşı taraftaki sistemin hâlâ yanıt verip vermediğini adaptörün kendi bildirdiği hızda sorar.',
+        ],
         'renewals' => [
             'label' => 'Yenileme faturaları',
             'description' => 'Yenilenmek üzere olan her hizmet ve alan adı için fatura oluşturur.',

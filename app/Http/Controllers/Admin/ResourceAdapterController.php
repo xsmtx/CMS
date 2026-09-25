@@ -10,9 +10,12 @@ use App\Application\Infrastructure\RegisteredAdapter;
 use App\Application\Infrastructure\SetAdapterWrites;
 use App\Domain\Health\HealthState;
 use App\Domain\Infrastructure\Capability;
+use App\Domain\Secrets\Contracts\SecretStore;
+use App\Domain\Secrets\SecretReference;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Resources\Models\ResourceAdapter;
+use App\Infrastructure\Secrets\Models\SecretRecord;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use App\Support\Logging\SecretRedactor;
@@ -41,6 +44,7 @@ final class ResourceAdapterController extends Controller
         private readonly AdapterRegistry $registry,
         private readonly SetAdapterWrites $writes,
         private readonly CapabilityNames $names,
+        private readonly SecretStore $secrets,
     ) {}
 
     public function index(): Response
@@ -153,6 +157,63 @@ final class ResourceAdapterController extends Controller
     /**
      * @return array<string, mixed>
      */
+    /**
+     * Write or replace an adapter's credential.
+     *
+     * One field, write-only, and the same endpoint for both: a rotation is a
+     * write over what was there, which is exactly what the vault calls it.
+     * Sending an empty value destroys it rather than storing an empty string
+     * — "no credential" is a state an installation has while it is being set
+     * up, and an empty string is a credential that fails authentication in a
+     * way nobody can read.
+     */
+    public function credential(Request $request, ResourceAdapter $adapter): RedirectResponse
+    {
+        $this->authorizeFor('infrastructure.adapters.manage');
+
+        $validated = $request->validate([
+            'value' => ['nullable', 'string', 'max:4096'],
+        ]);
+
+        $reference = $this->referenceFor($adapter->adapter_key);
+        $value = trim((string) ($validated['value'] ?? ''));
+
+        if ($value === '') {
+            $this->secrets->forget($reference);
+
+            return back()->with('status', __('infrastructure.adapters.credential_cleared'));
+        }
+
+        $this->secrets->put($reference, $value);
+
+        return back()->with('status', __('infrastructure.adapters.credential_saved'));
+    }
+
+    /**
+     * One reference per adapter, in the area that owns it.
+     *
+     * The adapter's key rather than the row's id: an adapter is reconfigured,
+     * disabled and re-enabled over its life and the row survives all of it,
+     * but a reference built from a ULID is a credential nobody can place when
+     * they read it in an audit log.
+     */
+    private function referenceFor(string $adapterKey): SecretReference
+    {
+        return new SecretReference('monitoring', 'token', $adapterKey);
+    }
+
+    private function credentialRotatedAt(string $adapterKey): ?string
+    {
+        $record = SecretRecord::query()
+            ->where('reference', $this->referenceFor($adapterKey)->key())
+            ->first();
+
+        return $record?->last_rotated_at?->toIso8601String();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function row(RegisteredAdapter $registered): array
     {
         $descriptor = $registered->descriptor;
@@ -184,6 +245,17 @@ final class ResourceAdapterController extends Controller
             'remoteVersion' => $row->remote_version,
             'supported' => $row->supported,
             'checkedAt' => $row->health_checked_at?->toIso8601String(),
+            /*
+             * Whether a credential exists, and when it was last changed.
+             * Never the value, and never a prefix of it: this is the licence
+             * key's rule, for the same reason — a secret that a screen can
+             * print is a secret in a browser's history and a support
+             * screenshot.
+             */
+            'credential' => [
+                'set' => $this->secrets->has($this->referenceFor($descriptor->key)),
+                'rotatedAt' => $this->credentialRotatedAt($descriptor->key),
+            ],
             'limits' => [
                 'perMinute' => $descriptor->limits->perMinute,
                 'concurrency' => $descriptor->limits->concurrency,

@@ -166,6 +166,15 @@ return [
     ],
 
     'adapters' => [
+        'set_credential' => 'Set credential',
+        'rotate_credential' => 'Rotate credential',
+        'credential' => 'Credential',
+        'credential_set' => 'A credential is stored. Last changed :when.',
+        'credential_unset' => 'No credential stored.',
+        'credential_hint' => 'Written to the vault, encrypted, and never shown again. Anything already stored is replaced.',
+        'credential_clear_hint' => 'Leave it empty to destroy the stored credential.',
+        'credential_saved' => 'Credential stored.',
+        'credential_cleared' => 'Credential destroyed.',
         'title' => 'Adapters',
         'intro' => 'What this installation can read from, and what it is allowed to change.',
         'empty' => 'No module provides an adapter yet.',

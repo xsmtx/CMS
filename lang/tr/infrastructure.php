@@ -160,6 +160,15 @@ return [
     ],
 
     'adapters' => [
+        'set_credential' => 'Kimlik bilgisi belirle',
+        'rotate_credential' => 'Kimlik bilgisini değiştir',
+        'credential' => 'Kimlik bilgisi',
+        'credential_set' => 'Kayıtlı bir kimlik bilgisi var. Son değişiklik :when.',
+        'credential_unset' => 'Kayıtlı kimlik bilgisi yok.',
+        'credential_hint' => 'Kasaya şifrelenerek yazılır ve bir daha gösterilmez. Kayıtlı olan varsa değiştirilir.',
+        'credential_clear_hint' => 'Kayıtlı kimlik bilgisini silmek için boş bırakın.',
+        'credential_saved' => 'Kimlik bilgisi kaydedildi.',
+        'credential_cleared' => 'Kimlik bilgisi silindi.',
         'title' => 'Bağdaştırıcılar',
         'intro' => 'Bu kurulumun neyi okuyabildiği ve neyi değiştirmesine izin verildiği.',
         'empty' => 'Henüz hiçbir modül bağdaştırıcı sağlamıyor.',

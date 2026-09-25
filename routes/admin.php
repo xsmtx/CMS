@@ -359,6 +359,18 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::put('resources/adapters/{adapter}/writes', [ResourceAdapterController::class, 'writes'])
         ->middleware('auth.recent')
         ->name('resources.adapters.writes');
+
+    /*
+     * The adapter's credential, in the vault rather than in a column.
+     * Write-only: the screen says whether one is set and when it was last
+     * changed, and this is the only way in. Behind the password challenge
+     * like the writes switch, because a credential is how an installation
+     * reaches somebody else's system.
+     */
+    Route::put('resources/adapters/{adapter}/credential', [ResourceAdapterController::class, 'credential'])
+        ->middleware('auth.recent')
+        ->name('resources.adapters.credential');
+
     Route::put('resources/adapters/{adapter}', [ResourceAdapterController::class, 'update'])
         ->name('resources.adapters.update');
     Route::post('resources/adapters/{adapter}/check', [ResourceAdapterController::class, 'check'])
