@@ -22,6 +22,7 @@ import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface Balance {
@@ -43,6 +44,8 @@ interface ResellerRow {
 
 defineProps<{ resellers: ResellerRow[] }>()
 
+const { t } = useTranslations()
+
 const COLUMNS: TableColumn[] = [
   { key: 'name', label: 'Reseller' },
   { key: 'state', label: 'State' },
@@ -58,19 +61,26 @@ function formatDate(value: string): string {
 </script>
 
 <template>
-  <Head title="Resellers" />
+  <Head :title="t('organizations.resellers.title')" />
 
   <AdminLayout
-    heading="Resellers"
-    description="Who sells your products under their own name. A reseller owns its customers and sees nothing else."
+    :heading="t('organizations.resellers.title')"
+    :description="t('organizations.resellers.subtitle')"
   >
     <template #actions>
-      <AppButton href="/admin/resellers/create" variant="primary">Add reseller</AppButton>
+      <AppButton href="/admin/resellers/create" variant="primary">{{
+        t('organizations.resellers.add')
+      }}</AppButton>
     </template>
 
-    <AppTable v-if="resellers.length > 0" name="resellers" :columns="COLUMNS" noun="reseller">
+    <AppTable
+      v-if="resellers.length > 0"
+      name="resellers"
+      :columns="COLUMNS"
+      :noun="t('organizations.resellers.noun')"
+    >
       <AppTableRow v-for="reseller in resellers" :key="reseller.id">
-        <td data-col="name" class="px-4 py-2.5">
+        <td data-col="name">
           <Link
             :href="`/admin/resellers/${reseller.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -79,22 +89,26 @@ function formatDate(value: string): string {
           </Link>
           <span class="text-content-subtle text-chrome block font-mono">{{ reseller.slug }}</span>
         </td>
-        <td data-col="state" class="px-4 py-2.5">
+        <td data-col="state">
           <AppStatus
             :tone="reseller.isActive ? 'healthy' : 'unknown'"
-            :label="reseller.isActive ? 'Active' : 'Suspended'"
+            :label="
+              reseller.isActive
+                ? t('organizations.resellers.active')
+                : t('organizations.resellers.suspended')
+            "
             compact
           />
         </td>
-        <td data-col="customers" class="numeric px-4 py-2.5">{{ reseller.customers }}</td>
-        <td data-col="products" class="numeric px-4 py-2.5">
+        <td data-col="customers" class="numeric">{{ reseller.customers }}</td>
+        <td data-col="products" class="numeric">
           <span v-if="reseller.products > 0">{{ reseller.products }}</span>
           <!-- Absence is a refusal here, so zero is not a quiet default: it
                is a reseller who cannot sell anything, which is nearly always
                somebody who has not finished setting them up. -->
-          <AppStatus v-else tone="warning" label="Nothing" compact />
+          <AppStatus v-else tone="warning" :label="t('organizations.resellers.nothing')" compact />
         </td>
-        <td data-col="balance" class="numeric px-4 py-2.5">
+        <td data-col="balance" class="numeric">
           <span v-if="reseller.balances.length === 0" class="text-content-subtle">—</span>
           <span
             v-for="balance in reseller.balances"
@@ -105,7 +119,7 @@ function formatDate(value: string): string {
             {{ balance.amount }}
           </span>
         </td>
-        <td data-col="created" class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="created" class="text-content-muted whitespace-nowrap">
           {{ formatDate(reseller.createdAt) }}
         </td>
       </AppTableRow>
@@ -114,8 +128,8 @@ function formatDate(value: string): string {
     <EmptyState
       v-else
       icon="organizations"
-      title="No resellers yet"
-      description="A reseller sells your catalogue under their own brand, to their own customers, at their own prices. Creating one also creates the person who will run it."
+      :title="t('organizations.resellers.empty')"
+      :description="t('organizations.resellers.empty_description')"
     />
   </AdminLayout>
 </template>

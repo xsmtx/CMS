@@ -159,4 +159,17 @@ return [
         'base_currency_locked' => ':code is the base currency and cannot be removed.',
         'currency_in_use' => ':code is still used by :count price(s). Deactivate it instead.',
     ],
+    'promotions' => [
+        'title' => 'Promotions',
+        'subtitle' => 'Discount codes and the terms they carry. A code that has been redeemed is deactivated rather than deleted, so the record of what customers paid stays readable.',
+        'add' => 'New promotion',
+        'code' => 'Code',
+        'value' => 'Value',
+        'scope' => 'Scope',
+        'usage' => 'Usage',
+        'ends' => 'Ends',
+        'inactive' => 'Inactive',
+        'empty' => 'No promotions yet',
+        'empty_description' => 'A promotion is a code a customer types at checkout. It can take a percentage or a fixed amount off, for one payment or for every renewal.',
+    ],
 ];

@@ -409,4 +409,13 @@ return [
         'automation' => 'Automation',
         'portal' => 'Client portal',
     ],
+    'screen' => [
+        'title' => 'Roles',
+        'subtitle' => 'Capabilities are granted through roles. Staff roles and customer roles are kept apart.',
+        'add' => 'Add role',
+        'role' => 'Role',
+        'scope' => 'Scope',
+        'permissions' => 'Permissions',
+        'system' => 'System',
+    ],
 ];

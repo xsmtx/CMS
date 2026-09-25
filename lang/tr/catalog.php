@@ -154,4 +154,17 @@ return [
         'base_currency_locked' => ':code ana para birimi olduğu için silinemez.',
         'currency_in_use' => ':code hâlâ :count fiyatta kullanılıyor. Silmek yerine pasife alın.',
     ],
+    'promotions' => [
+        'title' => 'Promosyonlar',
+        'subtitle' => 'İndirim kodları ve taşıdıkları koşullar. Kullanılmış bir kod silinmez, pasifleştirilir; böylece müşterilerin ne ödediğinin kaydı okunabilir kalır.',
+        'add' => 'Yeni promosyon',
+        'code' => 'Kod',
+        'value' => 'Değer',
+        'scope' => 'Kapsam',
+        'usage' => 'Kullanım',
+        'ends' => 'Bitiş',
+        'inactive' => 'Pasif',
+        'empty' => 'Henüz promosyon yok',
+        'empty_description' => 'Promosyon, müşterinin ödeme adımında yazdığı bir koddur. Bir ödemede ya da her yenilemede yüzde ya da sabit tutar indirim sağlayabilir.',
+    ],
 ];

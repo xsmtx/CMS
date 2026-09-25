@@ -12,6 +12,11 @@ return [
     ],
 
     'resellers' => [
+        'noun' => 'reseller',
+        'active' => 'Active',
+        'suspended' => 'Suspended',
+        'nothing' => 'Nothing',
+        'empty_description' => 'A reseller sells your catalogue under their own brand, to their own customers, at their own prices. Creating one also creates the person who will run it.',
         'title' => 'Resellers',
         'subtitle' => 'Who sells your products under their own name. A reseller owns its customers and sees nothing else.',
         'add' => 'Add Reseller',
@@ -58,5 +63,17 @@ return [
         'provider' => 'Provider',
         'reseller' => 'Reseller',
         'customer' => 'Customer',
+    ],
+    'tree' => [
+        'is_active' => 'Active',
+        'is_inactive' => 'Inactive',
+        'title' => 'Organizations',
+        'subtitle' => 'Everything this installation owns, in the shape ownership actually has. A customer is an organization of its own.',
+        'name' => 'Name',
+        'type' => 'Type',
+        'slug' => 'Slug',
+        'below' => 'Below it',
+        'active' => 'Active',
+        'created' => 'Created',
     ],
 ];

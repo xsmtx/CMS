@@ -4,6 +4,9 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface RoleRow {
@@ -18,33 +21,41 @@ interface RoleRow {
 
 defineProps<{ roles: RoleRow[] }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'role', label: t('access.screen.role'), sticky: true },
+  { key: 'scope', label: t('access.screen.scope') },
+  { key: 'permissions', label: t('access.screen.permissions') },
+  { key: 'actions', label: '' },
+]
+
 function remove(role: RoleRow): void {
   router.delete(`/admin/roles/${role.id}`, { preserveScroll: true })
 }
 </script>
 
 <template>
-  <Head title="Roles" />
+  <Head :title="t('access.screen.title')" />
 
-  <AdminLayout
-    heading="Roles"
-    description="Capabilities are granted through roles. Staff roles and customer roles are kept apart."
-  >
+  <AdminLayout :heading="t('access.screen.title')" :description="t('access.screen.subtitle')">
     <div class="mb-5 flex justify-end">
-      <AppButton href="/admin/roles/create" variant="primary">Add role</AppButton>
+      <AppButton href="/admin/roles/create" variant="primary">{{
+        t('access.screen.add')
+      }}</AppButton>
     </div>
 
-    <AppTable :headers="['Role', 'Scope', 'Permissions', '']">
-      <tr v-for="role in roles" :key="role.id">
-        <td class="px-4 py-2.5">
+    <AppTable name="admin-roles" :columns="COLUMNS">
+      <AppTableRow v-for="role in roles" :key="role.id">
+        <td data-col="role">
           <p class="font-medium">
             {{ role.name }}
-            <AppBadge v-if="role.isSystem" class="ml-2">System</AppBadge>
+            <AppBadge v-if="role.isSystem" class="ml-2">{{ t('access.screen.system') }}</AppBadge>
           </p>
           <p class="text-content-muted text-chrome font-mono">{{ role.slug }}</p>
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ role.scope }}</td>
-        <td class="text-content-muted px-4 py-2.5">
+        <td data-col="scope" class="text-content-muted">{{ role.scope }}</td>
+        <td data-col="permissions" class="text-content-muted">
           <span v-if="role.isSuperAdmin">
             All, by bypass
             <span class="text-content-subtle text-chrome block">
@@ -53,7 +64,7 @@ function remove(role: RoleRow): void {
           </span>
           <span v-else>{{ role.permissionCount }}</span>
         </td>
-        <td class="px-4 py-2.5 text-right whitespace-nowrap">
+        <td data-col="actions" class="text-right whitespace-nowrap">
           <Link
             :href="`/admin/roles/${role.id}/edit`"
             class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
@@ -69,7 +80,7 @@ function remove(role: RoleRow): void {
             Delete
           </button>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
   </AdminLayout>
 </template>

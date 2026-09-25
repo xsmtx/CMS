@@ -119,6 +119,8 @@ return [
     ],
 
     'activity' => [
+        'from' => 'From',
+        'ms' => ':countms',
         'title' => 'API activity',
         'description' => 'Every request this installation was asked for. Never the body of one.',
         'none' => 'Nothing has called the API',

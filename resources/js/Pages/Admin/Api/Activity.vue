@@ -4,6 +4,9 @@ import { Head, router } from '@inertiajs/vue3'
 import AppPagination from '../../../Components/AppPagination.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { httpTone } from '../../../status'
@@ -33,6 +36,17 @@ defineProps<{
   filters: { refused: boolean }
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'request', label: t('api.activity.route'), sticky: true },
+  { key: 'token', label: t('api.activity.token') },
+  { key: 'status', label: t('api.activity.status') },
+  { key: 'took', label: t('api.activity.duration'), numeric: true },
+  { key: 'from', label: t('api.activity.from'), optional: true },
+  { key: 'when', label: t('api.activity.when') },
+]
+
 function filterBy(refused: boolean): void {
   router.get('/admin/api/activity', refused ? { refused: 1 } : {}, {
     preserveState: true,
@@ -46,10 +60,10 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-  <Head title="API activity" />
+  <Head :title="t('api.activity.title')" />
 
   <AdminLayout
-    heading="API activity"
+    :heading="t('api.activity.title')"
     description="Every request this installation was asked for. Never the body of one."
   >
     <div class="mb-4 flex flex-wrap gap-1.5">
@@ -63,7 +77,7 @@ function formatDateTime(value: string | null): string {
         "
         @click="filterBy(false)"
       >
-        All
+        {{ t('api.activity.all') }}
       </button>
       <button
         type="button"
@@ -75,42 +89,44 @@ function formatDateTime(value: string | null): string {
         "
         @click="filterBy(true)"
       >
-        Refused only
+        {{ t('api.activity.refused_only') }}
       </button>
     </div>
 
-    <AppTable
-      v-if="requests.data.length > 0"
-      :headers="['Request', 'Token', 'Status', 'Took', 'From', 'When']"
-    >
-      <tr v-for="item in requests.data" :key="item.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="requests.data.length > 0" name="api-activity" :columns="COLUMNS">
+      <AppTableRow v-for="item in requests.data" :key="item.id">
+        <td data-col="request">
           <span class="text-content-subtle text-chrome font-mono">{{ item.method }}</span>
           <span class="ml-2 font-medium">/{{ item.path }}</span>
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ item.token ?? '—' }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="token" class="text-content-muted">{{ item.token ?? '—' }}</td>
+        <td data-col="status">
           <AppStatus :tone="httpTone(item.status)" :label="String(item.status)" />
           <span v-if="item.errorCode" class="text-content-muted text-chrome block">
             {{ item.errorCode }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ item.durationMs }}ms</td>
-        <td class="text-content-muted text-chrome px-4 py-2.5 font-mono">{{ item.ip ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="took" class="text-content-muted tabular-nums">
+          {{ t('api.activity.ms', { count: item.durationMs }) }}
+        </td>
+        <td data-col="from" class="text-content-muted text-chrome font-mono">
+          {{ item.ip ?? '—' }}
+        </td>
+        <td data-col="when" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(item.createdAt) }}
           <!-- The way from a line here to the rest of the story. -->
           <span v-if="item.correlationId" class="text-content-subtle text-label block font-mono">
             {{ item.correlationId }}
           </span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing has called the API"
-      description="Requests appear here as soon as an integration starts."
+      icon="connection"
+      :title="t('api.activity.none')"
+      :description="t('api.activity.none_description')"
     />
 
     <AppPagination :links="requests.links" :total="requests.total" />

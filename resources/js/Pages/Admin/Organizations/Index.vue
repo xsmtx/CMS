@@ -14,7 +14,11 @@
 import { Head } from '@inertiajs/vue3'
 
 import AppBadge from '../../../Components/AppBadge.vue'
+import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface OrganizationRow {
@@ -31,6 +35,17 @@ interface OrganizationRow {
 
 defineProps<{ organizations: OrganizationRow[] }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'name', label: t('organizations.tree.name'), sticky: true },
+  { key: 'type', label: t('organizations.tree.type') },
+  { key: 'slug', label: t('organizations.tree.slug'), optional: true },
+  { key: 'below', label: t('organizations.tree.below'), numeric: true },
+  { key: 'active', label: t('organizations.tree.active') },
+  { key: 'created', label: t('organizations.tree.created') },
+]
+
 function tone(type: string): 'neutral' | 'brand' | 'success' {
   if (type === 'provider') return 'brand'
   if (type === 'reseller') return 'success'
@@ -43,37 +58,44 @@ function formatDate(value: string): string {
 </script>
 
 <template>
-  <Head title="Organizations" />
+  <Head :title="t('organizations.tree.title')" />
 
   <AdminLayout
-    heading="Organizations"
-    description="Everything this installation owns, in the shape ownership actually has. A customer is an organization of its own."
+    :heading="t('organizations.tree.title')"
+    :description="t('organizations.tree.subtitle')"
   >
-    <AppTable :headers="['Name', 'Type', 'Slug', 'Below it', 'Active', 'Created']">
-      <tr v-for="organization in organizations" :key="organization.id">
-        <td class="px-4 py-2.5">
+    <AppTable name="admin-organizations" :columns="COLUMNS">
+      <AppTableRow v-for="organization in organizations" :key="organization.id">
+        <td data-col="name">
           <span class="font-medium" :style="{ paddingLeft: `${organization.depth * 1.25}rem` }">
             <span v-if="organization.depth > 0" class="text-content-subtle" aria-hidden="true"
               >└ </span
             >{{ organization.name }}
           </span>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="type">
           <AppBadge :tone="tone(organization.type)">{{ organization.typeLabel }}</AppBadge>
         </td>
-        <td class="text-content-muted text-chrome px-4 py-2.5 font-mono">
+        <td data-col="slug" class="text-content-muted text-chrome font-mono">
           {{ organization.slug }}
         </td>
-        <td class="px-4 py-2.5 tabular-nums">{{ organization.children }}</td>
-        <td class="px-4 py-2.5">
-          <AppBadge :tone="organization.isActive ? 'success' : 'warning'">
-            {{ organization.isActive ? 'Active' : 'Inactive' }}
-          </AppBadge>
+        <td data-col="below" class="tabular-nums">{{ organization.children }}</td>
+        <td data-col="active">
+          <!-- A status, so it carries a shape: a green chip and an amber one
+               are the same chip to a reader who cannot tell them apart. -->
+          <AppStatus
+            :tone="organization.isActive ? 'healthy' : 'warning'"
+            :label="
+              organization.isActive
+                ? t('organizations.tree.is_active')
+                : t('organizations.tree.is_inactive')
+            "
+          />
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="created" class="text-content-muted whitespace-nowrap">
           {{ formatDate(organization.createdAt) }}
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
   </AdminLayout>
 </template>

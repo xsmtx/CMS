@@ -70,7 +70,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Support/Replies.vue` | list | 2 |  |  |  |  |
 | [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
 | [ ] | `Admin/Automation/Index.vue` | list | 1 | 8 |  |  |  |
-| [ ] | `Admin/Billing/Transactions.vue` | list | 1 | 7 |  |  |  |
+| [x] | `Admin/Billing/Transactions.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
 | [ ] | `Admin/Services/Addons.vue` | list |  | 8 |  | 1 |  |
@@ -82,8 +82,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Notifications/Templates.vue` | list | 1 |  |  |  |  |
 | [ ] | `Admin/Search/Index.vue` | list | 1 |  |  |  |  |
 | [ ] | `Admin/Todo/Index.vue` | list | 1 |  |  |  |  |
-| [ ] | `Admin/Api/Activity.vue` | list |  | 6 |  |  |  |
-| [ ] | `Admin/Billing/GatewayLog.vue` | form |  | 6 |  |  |  |
+| [x] | `Admin/Api/Activity.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Billing/GatewayLog.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Cancellations/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Addons/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Currencies/Index.vue` | list |  |  |  |  | yes |
@@ -91,14 +91,14 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Catalog/Options/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Products/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Domains/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Notifications/Log.vue` | list |  | 5 |  |  |  |
+| [x] | `Admin/Notifications/Log.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Operations/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Orders/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Organizations/Index.vue` | list |  | 6 |  |  |  |
-| [ ] | `Admin/Promotions/Index.vue` | list |  | 6 |  |  |  |
-| [ ] | `Admin/Resellers/Index.vue` | list |  | 6 |  |  |  |
+| [x] | `Admin/Organizations/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Promotions/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Resellers/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resellers/Report.vue` | detail |  | 7 |  |  |  |
-| [ ] | `Admin/Roles/Index.vue` | list |  | 4 |  |  |  |
+| [x] | `Admin/Roles/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Marketplace.vue` | list |  |  |  |  | yes |

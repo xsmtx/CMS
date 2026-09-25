@@ -48,6 +48,7 @@ final class FrontEndTranslations
         'billing.credit_notes',
         'billing.details_saved',
         'billing.gateways',
+        'billing.gateway_log',
         'billing.invoices',
         'billing.methods',
         'billing.payment_statuses',
@@ -69,6 +70,11 @@ final class FrontEndTranslations
         'automation.operations',
 
         'catalog.cycles',
+        'catalog.promotions',
+
+        'access.screen',
+        'organizations.tree',
+        'organizations.resellers',
 
         'crm.fields',
         'crm.save',
@@ -117,6 +123,7 @@ final class FrontEndTranslations
         'api.scopes',
         'api.webhooks',
         'api.deliveries',
+        'api.activity',
 
         /*
          * The Resource Graph screens (Phase A). Operator vocabulary only: the
@@ -147,6 +154,7 @@ final class FrontEndTranslations
         'ordering.statuses',
 
         'notifications.portal',
+        'notifications.admin',
 
         // The aging buckets, which are the one set of report labels a Vue
         // component draws. Everything else on the reports screen is a figure

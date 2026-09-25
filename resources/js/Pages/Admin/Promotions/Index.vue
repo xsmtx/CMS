@@ -4,6 +4,9 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
@@ -23,6 +26,17 @@ interface PromotionRow {
 
 defineProps<{ promotions: PromotionRow[]; canManage: boolean }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'code', label: t('catalog.promotions.code'), sticky: true },
+  { key: 'value', label: t('catalog.promotions.value'), numeric: true },
+  { key: 'scope', label: t('catalog.promotions.scope') },
+  { key: 'usage', label: t('catalog.promotions.usage'), numeric: true },
+  { key: 'ends', label: t('catalog.promotions.ends') },
+  { key: 'actions', label: '' },
+]
+
 function usage(promotion: PromotionRow): string {
   return promotion.usageLimit === null
     ? `${promotion.usageCount} used`
@@ -39,37 +53,38 @@ function formatDate(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Promotions" />
+  <Head :title="t('catalog.promotions.title')" />
 
   <AdminLayout
-    heading="Promotions"
-    description="Discount codes and the terms they carry. A code that has been redeemed is deactivated rather than deleted, so the record of what customers paid stays readable."
+    :heading="t('catalog.promotions.title')"
+    :description="t('catalog.promotions.subtitle')"
   >
     <div v-if="canManage && promotions.length > 0" class="mb-5 flex justify-end">
-      <AppButton href="/admin/promotions/create" variant="primary">New promotion</AppButton>
+      <AppButton href="/admin/promotions/create" variant="primary">{{
+        t('catalog.promotions.add')
+      }}</AppButton>
     </div>
 
-    <AppTable
-      v-if="promotions.length > 0"
-      :headers="['Code', 'Value', 'Scope', 'Usage', 'Ends', '']"
-    >
-      <tr v-for="promotion in promotions" :key="promotion.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="promotions.length > 0" name="admin-promotions" :columns="COLUMNS">
+      <AppTableRow v-for="promotion in promotions" :key="promotion.id">
+        <td data-col="code">
           <p class="text-body font-mono font-medium">
             {{ promotion.code }}
-            <AppBadge v-if="!promotion.isActive" class="ml-2">Inactive</AppBadge>
+            <AppBadge v-if="!promotion.isActive" class="ml-2">{{
+              t('catalog.promotions.inactive')
+            }}</AppBadge>
           </p>
           <p class="text-content-muted text-chrome">{{ promotion.name }}</p>
         </td>
-        <td class="px-4 py-2.5 tabular-nums">{{ promotion.value ?? '—' }}</td>
-        <td class="text-content-muted text-chrome px-4 py-2.5">{{ promotion.scope }}</td>
-        <td class="text-content-muted text-chrome px-4 py-2.5 tabular-nums">
+        <td data-col="value" class="tabular-nums">{{ promotion.value ?? '—' }}</td>
+        <td data-col="scope" class="text-content-muted text-chrome">{{ promotion.scope }}</td>
+        <td data-col="usage" class="text-content-muted text-chrome tabular-nums">
           {{ usage(promotion) }}
         </td>
-        <td class="text-content-muted text-chrome px-4 py-2.5">
+        <td data-col="ends" class="text-content-muted text-chrome">
           {{ formatDate(promotion.endsAt) }}
         </td>
-        <td class="px-4 py-2.5 text-right whitespace-nowrap">
+        <td data-col="actions" class="text-right whitespace-nowrap">
           <Link
             :href="`/admin/promotions/${promotion.id}/edit`"
             class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
@@ -85,13 +100,13 @@ function formatDate(value: string | null): string {
             Delete
           </button>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="No promotions yet"
-      description="A promotion is a code a customer types at checkout. It can take a percentage or a fixed amount off, for one payment or for every renewal."
+      :title="t('catalog.promotions.empty')"
+      :description="t('catalog.promotions.empty_description')"
     >
       <AppButton v-if="canManage" href="/admin/promotions/create" variant="primary">
         New promotion

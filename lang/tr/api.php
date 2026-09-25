@@ -119,6 +119,8 @@ return [
     ],
 
     'activity' => [
+        'from' => 'Kaynak',
+        'ms' => ':countms',
         'title' => 'API etkinliği',
         'description' => 'Bu kurulumdan istenen her istek. Hiçbirinin gövdesi değil.',
         'none' => 'API çağrısı yok',

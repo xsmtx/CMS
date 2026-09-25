@@ -5,6 +5,9 @@ import { computed } from 'vue'
 import AppPagination from '../../../Components/AppPagination.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -34,6 +37,16 @@ const props = defineProps<{
   events: { value: string; label: string }[]
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'message', label: t('notifications.admin.event'), sticky: true },
+  { key: 'recipient', label: t('notifications.admin.recipient') },
+  { key: 'channel', label: t('notifications.admin.channel') },
+  { key: 'status', label: t('notifications.admin.status') },
+  { key: 'sent', label: t('notifications.admin.sent_at') },
+]
+
 const active = computed(() => props.filters.event)
 
 function filterBy(event: string | null): void {
@@ -49,11 +62,11 @@ function formatDateTime(value: string): string {
 </script>
 
 <template>
-  <Head title="Delivery log" />
+  <Head :title="t('notifications.admin.log_title')" />
 
   <AdminLayout
-    heading="Delivery log"
-    description="Everything this platform has sent, and what became of it."
+    :heading="t('notifications.admin.log_title')"
+    :description="t('notifications.admin.log_subtitle')"
   >
     <div class="mb-4 flex flex-wrap gap-1.5">
       <button
@@ -84,25 +97,22 @@ function formatDateTime(value: string): string {
       </button>
     </div>
 
-    <AppTable
-      v-if="deliveries.data.length > 0"
-      :headers="['Message', 'Recipient', 'Channel', 'Status', 'Sent']"
-    >
-      <tr v-for="delivery in deliveries.data" :key="delivery.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="deliveries.data.length > 0" name="notification-log" :columns="COLUMNS">
+      <AppTableRow v-for="delivery in deliveries.data" :key="delivery.id">
+        <td data-col="message">
           <span class="font-medium">{{ delivery.event }}</span>
           <span v-if="delivery.subject" class="text-content-muted text-chrome block">
             {{ delivery.subject }}
           </span>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="recipient">
           {{ delivery.recipient ?? '—' }}
           <span v-if="delivery.address" class="text-content-muted text-chrome block">
             {{ delivery.address }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ delivery.channel }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="channel" class="text-content-muted">{{ delivery.channel }}</td>
+        <td data-col="status">
           <AppStatus :tone="statusTone(delivery.status)" :label="delivery.statusLabel" />
           <!-- "We did not send it because they asked us not to" and "we
                tried and it bounced" are different answers. -->
@@ -110,16 +120,17 @@ function formatDateTime(value: string): string {
             {{ delivery.error }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="sent" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(delivery.createdAt) }}
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing sent yet"
-      description="Every message this platform sends is recorded here, including the ones it decided not to send."
+      icon="mail"
+      :title="t('notifications.admin.log_empty')"
+      :description="t('notifications.admin.log_empty_description')"
     />
 
     <AppPagination :links="deliveries.links" :total="deliveries.total" />

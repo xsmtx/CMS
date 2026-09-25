@@ -45,6 +45,8 @@ return [
     ],
 
     'admin' => [
+        'log_empty' => 'Henüz bir şey gönderilmedi',
+        'log_empty_description' => 'Bu platformun gönderdiği her mesaj burada kaydedilir; göndermemeye karar verdikleri de dâhil.',
         'templates_title' => 'Bildirim şablonları',
         'templates_subtitle' => 'Her mesajın metni. Burada yaptığınız değişiklik tüm müşteriler için geçerlidir.',
         'log_title' => 'Gönderim kaydı',

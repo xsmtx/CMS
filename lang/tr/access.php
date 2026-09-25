@@ -408,4 +408,13 @@ return [
         'automation' => 'Otomasyon',
         'portal' => 'Müşteri paneli',
     ],
+    'screen' => [
+        'title' => 'Roller',
+        'subtitle' => 'Yetkiler roller üzerinden verilir. Personel rolleri ile müşteri rolleri ayrı tutulur.',
+        'add' => 'Rol ekle',
+        'role' => 'Rol',
+        'scope' => 'Kapsam',
+        'permissions' => 'İzinler',
+        'system' => 'Sistem',
+    ],
 ];

@@ -45,6 +45,8 @@ return [
     ],
 
     'admin' => [
+        'log_empty' => 'Nothing sent yet',
+        'log_empty_description' => 'Every message this platform sends is recorded here, including the ones it decided not to send.',
         'templates_title' => 'Notification templates',
         'templates_subtitle' => 'What each message says. Editing one here changes it for every customer.',
         'log_title' => 'Delivery log',

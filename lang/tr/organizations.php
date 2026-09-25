@@ -12,6 +12,11 @@ return [
     ],
 
     'resellers' => [
+        'noun' => 'bayi',
+        'active' => 'Etkin',
+        'suspended' => 'Askıda',
+        'nothing' => 'Hiçbiri',
+        'empty_description' => 'Bayi, kataloğunuzu kendi markasıyla, kendi müşterilerine, kendi fiyatlarıyla satar. Bir bayi oluşturmak onu yönetecek kişiyi de oluşturur.',
         'title' => 'Bayiler',
         'subtitle' => 'Ürünlerinizi kendi adıyla satanlar. Bir bayi kendi müşterilerinin sahibidir ve başka hiçbir şeyi görmez.',
         'add' => 'Bayi Ekle',
@@ -58,5 +63,17 @@ return [
         'provider' => 'Sağlayıcı',
         'reseller' => 'Bayi',
         'customer' => 'Müşteri',
+    ],
+    'tree' => [
+        'is_active' => 'Etkin',
+        'is_inactive' => 'Pasif',
+        'title' => 'Organizasyonlar',
+        'subtitle' => 'Bu kurulumun sahip olduğu her şey, sahipliğin gerçek şekliyle. Müşteri kendi başına bir organizasyondur.',
+        'name' => 'Ad',
+        'type' => 'Tür',
+        'slug' => 'Kısa ad',
+        'below' => 'Altındaki',
+        'active' => 'Etkin',
+        'created' => 'Oluşturuldu',
     ],
 ];
