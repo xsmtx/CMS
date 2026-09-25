@@ -42,9 +42,11 @@ trait PresentsCartTotals
             'taxName' => $totals->tax->components[0]->name ?? null,
             'total' => $totals->total->format($locale),
             'totalMinor' => $totals->total->minorUnits,
-            'recurringTotal' => $totals->recurringTotal->isZero()
+            // The gross, because this is a sentence to a customer about what
+            // they will be charged, not a figure an order row stores.
+            'recurringTotal' => $totals->recurringWithTax->isZero()
                 ? null
-                : $totals->recurringTotal->format($locale),
+                : $totals->recurringWithTax->format($locale),
             'promotionCode' => $totals->promotionCode,
             'promotionApplied' => $totals->promotionId !== null,
             'promotionRefusal' => $totals->promotionRefusal === null

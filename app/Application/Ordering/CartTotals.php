@@ -16,6 +16,12 @@ use App\Domain\Tax\TaxResult;
  * different statements, and a totals object with one `total` cannot make
  * the first one.
  *
+ * Both of those numbers carry tax, and that is why `recurringWithTax` exists
+ * beside `recurringTotal`. The first is what a customer is quoted; the
+ * second is the net that an order row stores and a renewal re-prices from.
+ * The storefront showed the gross for now and the net for later, which
+ * quoted a renewal a fifth cheaper than the invoice that follows it.
+ *
  * A refused promotion is carried here rather than thrown, because a cart
  * with a code that stopped applying is still a cart — the customer needs to
  * see the price and the reason, not an error page.
@@ -34,6 +40,7 @@ final readonly class CartTotals
         public TaxResult $tax,
         public Money $total,
         public Money $recurringTotal,
+        public Money $recurringWithTax,
         public ?string $promotionCode = null,
         public ?string $promotionId = null,
         public ?PromotionRefusal $promotionRefusal = null,

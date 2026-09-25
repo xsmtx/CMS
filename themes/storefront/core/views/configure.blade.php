@@ -182,10 +182,6 @@
                 >
                     {{ __('ordering.configure.add_to_cart') }}
                 </button>
-
-                <p class="mt-3 text-xs text-content-subtle">
-                    {{ __('catalog.pricing.subtitle') }}
-                </p>
             </div>
         </div>
     </form>

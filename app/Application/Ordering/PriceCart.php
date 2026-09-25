@@ -108,13 +108,34 @@ final class PriceCart
             ? TaxResult::none($zero)
             : $this->taxFor($lines, $supply, $zero);
 
+        $recurringLines = array_values(array_filter(
+            $lines,
+            static fn (PricedLine $line): bool => $line->isRecurring(),
+        ));
+
         $recurring = $this->sum(
-            array_map(
-                static fn (PricedLine $line): Money => $line->lineRecurring,
-                array_values(array_filter($lines, static fn (PricedLine $line): bool => $line->isRecurring())),
-            ),
+            array_map(static fn (PricedLine $line): Money => $line->lineRecurring, $recurringLines),
             $zero,
         );
+
+        /*
+         * What the renewal invoice will say, which is the only figure worth
+         * quoting as "then". A renewal is taxed exactly like the first
+         * invoice, so showing the net here told a customer their monthly
+         * price was a fifth lower than it is. An inclusive catalog needs no
+         * addition: the price already is the gross.
+         *
+         * Taxed on the recurring amount alone — a setup fee is charged once,
+         * so taxing it into the monthly figure overstates the renewal by the
+         * tax on a fee that will never be charged again.
+         */
+        $recurringTax = $supply === null || $recurringLines === []
+            ? TaxResult::none($zero)
+            : $this->taxFor($recurringLines, $supply, $zero, onRecurring: true);
+
+        $recurringWithTax = $recurringTax->included
+            ? $recurring
+            : $recurring->plus($recurringTax->total);
 
         /*
          * Nothing is added when the price already includes the tax. An inclusive
@@ -136,6 +157,7 @@ final class PriceCart
             tax: $tax,
             total: $tax->included ? $taxable : $taxable->plus($tax->total),
             recurringTotal: $recurring,
+            recurringWithTax: $recurringWithTax,
             promotionCode: $cart->promotion_code,
             promotionId: $discountResult->promotionId,
             promotionRefusal: $discountResult->refusal,
@@ -166,14 +188,21 @@ final class PriceCart
      *
      * @param  list<PricedLine>  $lines
      */
-    private function taxFor(array $lines, TaxableSupply $supply, Money $zero): TaxResult
-    {
+    private function taxFor(
+        array $lines,
+        TaxableSupply $supply,
+        Money $zero,
+        bool $onRecurring = false,
+    ): TaxResult {
         $parts = $this->taxSettings->roundsPerLine()
             ? array_map(
-                static fn (PricedLine $line): array => [TaxCategory::of($line->kind), $line->lineTotal],
+                static fn (PricedLine $line): array => [
+                    TaxCategory::of($line->kind),
+                    $onRecurring ? $line->lineRecurring : $line->lineTotal,
+                ],
                 $lines,
             )
-            : $this->byTreatment($lines, $zero);
+            : $this->byTreatment($lines, $zero, $onRecurring);
 
         $total = $zero;
         $components = [];
@@ -221,15 +250,16 @@ final class PriceCart
      * @param  list<PricedLine>  $lines
      * @return list<array{0: TaxAppliesTo, 1: Money}>
      */
-    private function byTreatment(array $lines, Money $zero): array
+    private function byTreatment(array $lines, Money $zero, bool $onRecurring = false): array
     {
         $totals = [];
 
         foreach ($lines as $line) {
             $category = TaxCategory::of($line->kind);
             $key = $category->value;
+            $amount = $onRecurring ? $line->lineRecurring : $line->lineTotal;
 
-            $totals[$key] = [$category, ($totals[$key][1] ?? $zero)->plus($line->lineTotal)];
+            $totals[$key] = [$category, ($totals[$key][1] ?? $zero)->plus($amount)];
         }
 
         return array_values($totals);

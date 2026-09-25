@@ -123,7 +123,7 @@
 
                 @if ($product['requiresDomain'])
                     <p class="mt-4 text-xs text-content-subtle">
-                        {{ __('catalog.products.requires_domain') }}
+                        {{ __('catalog.storefront.includes_domain') }}
                     </p>
                 @endif
 

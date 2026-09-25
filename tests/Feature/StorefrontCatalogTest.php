@@ -6,6 +6,9 @@ use App\Domain\Catalog\BillingCycle;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Catalog\Models\ProductGroup;
 use App\Infrastructure\Catalog\Models\ProductPrice;
+use App\Infrastructure\Crm\Models\Customer;
+use App\Infrastructure\Identity\Models\Contact;
+use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Shared\Models\CurrencyRecord;
 use Database\Seeders\ProviderOrganizationSeeder;
@@ -142,4 +145,57 @@ it('does not serve another organizations product', function (): void {
 
 it('returns 404 for a product that does not exist', function (): void {
     $this->get('/store/nothing-here')->assertNotFound();
+});
+
+/**
+ * A signed-in customer is not a shop.
+ *
+ * `ResolveOrganizationContext` gives every request the actor's own boundary,
+ * and a customer organization sells nothing — so the storefront served a
+ * customer their own empty catalog under their own name: "Customer is
+ * installed and running" on the shop of the company they buy from. The
+ * boundary narrows to whoever sells to them instead.
+ */
+it('shows a signed-in customer the catalog of whoever sells to them', function (): void {
+    listedProduct('Starter Hosting');
+
+    $customer = Customer::factory()->create();
+    $contact = Contact::factory()->forCustomer($customer)->create();
+
+    $this->actingAs($contact, 'client')
+        ->get('/store')
+        ->assertOk()
+        ->assertSee('Starter Hosting');
+});
+
+/**
+ * Staff keep their own, which is what a reseller's operator previewing their
+ * own storefront needs.
+ */
+it('shows a reseller operator their own catalog', function (): void {
+    listedProduct('Provider Plan');
+
+    $reseller = Organization::factory()->reseller($this->provider)->create();
+
+    // Currencies belong to an organization, so a reseller trades in its own.
+    CurrencyRecord::factory()->forOrganization($reseller->id)->base()->code('EUR', 'Euro')->create();
+
+    $group = ProductGroup::factory()->forOrganization($reseller->id)->create();
+    $theirs = Product::factory()->inGroup($group)->create(['name' => 'Reseller Plan']);
+    ProductPrice::factory()
+        ->forProduct($theirs)
+        ->cycle(BillingCycle::Monthly)
+        ->currency('EUR')
+        ->amounts(1999)
+        ->create();
+
+    // No role: the storefront asks nothing of a permission, only of a
+    // boundary.
+    $staff = StaffUser::factory()->create(['organization_id' => $reseller->id]);
+
+    $this->actingAs($staff, 'staff')
+        ->get('/store')
+        ->assertOk()
+        ->assertSee('Reseller Plan')
+        ->assertDontSee('Provider Plan');
 });

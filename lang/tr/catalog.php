@@ -204,6 +204,7 @@ return [
     ],
 
     'storefront' => [
+        'includes_domain' => 'Bu paketle birlikte bir alan adı kurulur.',
         'title' => 'Hosting paketleri',
         'subtitle' => 'Bir paket seçin. İstediğiniz zaman değiştirin.',
         'starting_at' => 'Başlangıç',

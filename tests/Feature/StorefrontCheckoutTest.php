@@ -14,6 +14,7 @@ use App\Infrastructure\Catalog\Models\OptionGroup;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Catalog\Models\ProductGroup;
 use App\Infrastructure\Catalog\Models\ProductPrice;
+use App\Infrastructure\Crm\Models\Address;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Notifications\Models\NotificationDelivery;
@@ -22,6 +23,7 @@ use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Promotions\Models\Promotion;
 use App\Infrastructure\Shared\Models\CurrencyRecord;
+use App\Infrastructure\Tax\Models\TaxRule;
 use App\Infrastructure\Tax\Models\TaxSetting;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Illuminate\Support\Facades\Hash;
@@ -460,4 +462,68 @@ it('does not carry that permission into a different browser', function (): void 
     $this->flushSession();
 
     $this->get("/invoices/{$invoice->number}")->assertNotFound();
+});
+
+/**
+ * "Then :amount" is a sentence about the next invoice, and the next invoice
+ * is taxed.
+ *
+ * The summary quoted the gross for what was due now and the net for what
+ * renews — for the same lines, on the same screen: "Total due now 179.88,
+ * then 149.90". A renewal is taxed exactly like the first invoice, so the
+ * monthly price a customer was shown was a fifth under what they would pay.
+ */
+it('quotes a renewal with the tax that will be charged on it', function (): void {
+    TaxRule::factory()
+        ->forOrganization($this->provider->id)
+        ->rate('KDV', 200_000)
+        ->in('TR')
+        ->create();
+
+    $customer = Customer::factory()->create();
+    Address::factory()->create([
+        'organization_id' => $customer->organization_id,
+        'addressable_type' => $customer->getMorphClass(),
+        'addressable_id' => $customer->id,
+        'country_code' => 'TR',
+    ]);
+
+    $contact = Contact::factory()->forCustomer($customer)->primary()->create();
+
+    $this->actingAs($contact, 'client');
+
+    addToCart();
+
+    // 9.99 a month plus 20% KDV: 11.99 due now, and 11.99 every month after
+    // it. The screen used to say 9.99 for the second one.
+    $this->get('/checkout')
+        ->assertOk()
+        ->assertSee(__('ordering.cart.recurring', ['amount' => '€11.99', 'suffix' => '']), false)
+        // And not the net, which is what it used to say.
+        ->assertDontSee(__('ordering.cart.recurring', ['amount' => '€9.99', 'suffix' => '']), false);
+});
+
+/**
+ * A signed-in customer's own basket.
+ *
+ * Every request carries the actor's organization boundary, and a cart on the
+ * public storefront belongs to the seller — so a customer who was signed in
+ * had their own boundary in force when the line was looked up, and pressing
+ * Remove answered 404 on their own basket. The storefront's narrowing has to
+ * happen before the line is bound, not after.
+ */
+it('lets a signed-in customer edit their own basket', function (): void {
+    $customer = Customer::factory()->create();
+    $contact = Contact::factory()->forCustomer($customer)->primary()->create();
+
+    $this->actingAs($contact, 'client');
+
+    addToCart();
+
+    $item = Cart::query()->withoutGlobalScope('organization')->sole()->allItems()->sole();
+
+    $this->put("/cart/items/{$item->id}", ['quantity' => 2])->assertRedirect();
+    $this->delete("/cart/items/{$item->id}")->assertRedirect();
+
+    expect(Cart::query()->withoutGlobalScope('organization')->sole()->allItems()->count())->toBe(0);
 });

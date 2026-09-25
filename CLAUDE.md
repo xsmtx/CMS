@@ -1499,3 +1499,39 @@ The shell had its own untranslated words — the skip link, four `aria-label`s,
 the account menu, the help links, "Select every :noun on this page". A
 primitive takes the three-argument `t(key, {}, 'English')` form, because it
 can be mounted where no translations block was rendered at all.
+
+**The shop belongs to the seller, not to whoever is looking at it.**
+`ResolveStorefrontOrganization` only set a boundary when there was none, so a
+signed-in customer browsed the storefront under *their own* organization: a
+customer organization sells nothing, so the shop was empty and branded with
+the customer's own name — "Customer is installed and running" on the page of
+the company they buy from. A client session now narrows to `ResolveSeller`'s
+answer; staff still keep their own, because a reseller's operator previewing
+their storefront is what that exception is for.
+
+**A cart line is reached through its cart, not through the router.** Implicit
+binding happens inside `SubstituteBindings`, which runs before a route
+middleware — so the line was looked up under the signed-in customer's
+boundary while the cart belongs to the shop, and Remove answered 404 on their
+own basket. `prependToPriorityList` does not fix it: the entry lands in the
+list and `SortedMiddleware` still leaves the route middleware where it is.
+Resolving the line from `ResolveCart::current()` is also the rule the code
+already claimed — a line is editable only by the browser holding the cart's
+token.
+
+**"Then :amount" is a sentence about the next invoice, and the next invoice is
+taxed.** The checkout quoted the gross for what was due now and the net for
+what renews, on the same screen, for the same lines: "Total due now 179.88,
+then 149.90". `CartTotals::$recurringWithTax` is what a customer is quoted;
+`recurringTotal` stays the net that an order row stores and a renewal
+re-prices from. The renewal's tax is worked out on the recurring amounts
+alone — a setup fee is charged once, and taxing it into the monthly figure
+overstates every month after the first.
+
+**The storefront is a shop, not a console.** `frontend-architecture` says so
+in as many words: the Blade themes are out of the design system's scope, so a
+hero at `text-5xl` there is not a violation. What *is* wrong on a public page
+is operator vocabulary — the admin price matrix's "One row per billing cycle,
+one column per currency." was printed under Add to cart, and a product's
+"Collects a domain at checkout" is a sentence about a setting rather than to
+a customer.

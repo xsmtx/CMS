@@ -72,20 +72,16 @@ final class StorefrontCartController extends Controller
         return to_route('storefront.cart')->with('status', __('ordering.cart.added'));
     }
 
-    public function update(Request $request, CartItem $item, UpdateCartItem $update): RedirectResponse
+    public function update(Request $request, string $item, UpdateCartItem $update): RedirectResponse
     {
-        $this->assertOwned($item);
-
-        $update->setQuantity($item, (int) $request->input('quantity', 1));
+        $update->setQuantity($this->lineFor($item), (int) $request->input('quantity', 1));
 
         return back()->with('status', __('ordering.cart.updated'));
     }
 
-    public function destroy(CartItem $item, UpdateCartItem $update): RedirectResponse
+    public function destroy(string $item, UpdateCartItem $update): RedirectResponse
     {
-        $this->assertOwned($item);
-
-        $update->remove($item);
+        $update->remove($this->lineFor($item));
 
         return back()->with('status', __('ordering.cart.item_removed'));
     }
@@ -130,15 +126,27 @@ final class StorefrontCartController extends Controller
     }
 
     /**
-     * A line is editable only by the browser holding its cart's token.
+     * A line of *this* browser's cart, or 404.
      *
-     * The organization scope already hides another installation's rows; this
-     * is what stops one visitor editing another's cart by id.
+     * Resolved through the cart rather than by route-model binding, and that
+     * is not a style preference. Implicit binding happens inside
+     * `SubstituteBindings`, which runs before the storefront narrows the
+     * boundary to the seller — so a signed-in customer's own organization was
+     * still in force, the line belongs to the shop, and Remove answered 404 on
+     * their own basket. Reading it through the cart is also the rule this code
+     * always claimed: a line is editable only by the browser holding the
+     * cart's token.
      */
-    private function assertOwned(CartItem $item): void
+    private function lineFor(string $itemId): CartItem
     {
         $cart = $this->carts->current();
 
-        abort_unless($cart instanceof Cart && $item->cart_id === $cart->id, 404);
+        $line = $cart instanceof Cart
+            ? $cart->allItems()->firstWhere('id', $itemId)
+            : null;
+
+        abort_unless($line instanceof CartItem, 404);
+
+        return $line;
     }
 }

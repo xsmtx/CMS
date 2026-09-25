@@ -209,6 +209,7 @@ return [
     ],
 
     'storefront' => [
+        'includes_domain' => 'A domain name is set up with this plan.',
         'title' => 'Hosting plans',
         'subtitle' => 'Pick a plan. Change it whenever you like.',
         'starting_at' => 'From',
