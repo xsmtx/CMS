@@ -3,13 +3,15 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import MoneyInput from '../../../Components/MoneyInput.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import type { CurrencyOption, CycleOption } from '../../../types/catalog'
 
 const props = defineProps<{
@@ -44,6 +46,8 @@ const props = defineProps<{
   currencies: CurrencyOption[]
   products: { value: string; label: string }[]
 }>()
+
+const { t } = useTranslations()
 
 const isEditing = computed(() => props.promotion !== null)
 
@@ -113,55 +117,83 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit promotion' : 'New promotion'" />
+  <Head
+    :title="
+      isEditing
+        ? t('ui.promotion_form.edit', { code: promotion?.code ?? '' })
+        : t('ui.promotion_form.add')
+    "
+  />
 
   <AdminLayout
-    :heading="isEditing ? `Edit ${promotion?.code}` : 'New promotion'"
-    description="A fixed amount is money and belongs to a currency; a percentage is a number and does not."
+    :heading="
+      isEditing
+        ? t('ui.promotion_form.edit', { code: promotion?.code ?? '' })
+        : t('ui.promotion_form.add')
+    "
   >
-    <form class="flex flex-col gap-6" @submit.prevent="submit">
-      <AppCard>
+    <template #header>
+      <PageHeader
+        :title="
+          isEditing
+            ? t('ui.promotion_form.edit', { code: promotion?.code ?? '' })
+            : t('ui.promotion_form.add')
+        "
+        :description="t('ui.promotion_form.intro')"
+      />
+    </template>
+
+    <form class="flex max-w-4xl flex-col gap-8" @submit.prevent="submit">
+      <DetailSection :title="t('ui.promotion_form.identity')">
         <div class="grid gap-5 sm:grid-cols-2">
           <AppInput
             v-model="form.code"
-            label="Code"
+            :label="t('ui.promotion_form.code')"
             :error="form.errors.code"
-            hint="What the customer types. Letters, digits, hyphens and underscores."
+            :hint="t('ui.promotion_form.code_hint')"
             required
           />
 
           <AppInput
             v-model="form.name"
-            label="Name"
+            :label="t('ui.promotion_form.name')"
             :error="form.errors.name"
-            hint="For your own reference. Customers never see it."
+            :hint="t('ui.promotion_form.name_hint')"
             required
           />
 
           <div class="sm:col-span-2">
             <AppTextarea
               v-model="form.description"
-              label="Description"
+              :label="t('ui.promotion_form.description')"
               :error="form.errors.description"
             />
           </div>
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard>
+      <DetailSection
+        :title="t('ui.promotion_form.discount')"
+        :description="t('ui.promotion_form.discount_intro')"
+      >
         <div class="grid gap-5 sm:grid-cols-2">
-          <AppSelect v-model="form.type" label="Type" :options="types" :error="form.errors.type" />
+          <AppSelect
+            v-model="form.type"
+            :label="t('ui.promotion_form.type')"
+            :options="types"
+            :error="form.errors.type"
+          />
 
           <div v-if="isFixed" class="grid grid-cols-[1fr_auto] gap-3">
             <MoneyInput
               v-model="form.amount_minor"
-              label="Amount off"
+              :label="t('ui.promotion_form.amount_off')"
               :exponent="exponent"
               :symbol="form.currency_code"
             />
             <AppSelect
               v-model="form.currency_code"
-              label="Currency"
+              :label="t('ui.promotion_form.currency')"
               :options="
                 currencies.map((currency) => ({ value: currency.code, label: currency.code }))
               "
@@ -172,30 +204,32 @@ function submit(): void {
           <AppInput
             v-else
             v-model="form.percentage"
-            label="Percentage off"
+            :label="t('ui.promotion_form.percentage')"
             :error="form.errors.percentage"
-            hint="Applied once, to the eligible subtotal."
+            :hint="t('ui.promotion_form.percentage_hint')"
           />
 
           <AppSelect
             v-model="form.scope"
-            label="Applies to"
+            :label="t('ui.promotion_form.scope')"
             :options="scopes"
             :error="form.errors.scope"
           />
 
           <AppSelect
             v-model="form.application"
-            label="Duration"
+            :label="t('ui.promotion_form.duration')"
             :options="applications"
             :error="form.errors.application"
-            hint="A recurring code rides along with the service and discounts every renewal."
+            :hint="t('ui.promotion_form.duration_hint')"
           />
         </div>
 
-        <fieldset v-if="needsProducts" class="border-line mt-5 border-t pt-5">
-          <legend class="sr-only">Products</legend>
-          <p class="text-body mb-3 font-medium">Products</p>
+        <fieldset v-if="needsProducts" class="border-line-subtle mt-5 border-t pt-5">
+          <legend class="sr-only">{{ t('ui.promotion_form.products') }}</legend>
+          <p class="text-content-subtle text-label mb-3 uppercase">
+            {{ t('ui.promotion_form.products') }}
+          </p>
 
           <div class="grid gap-2 sm:grid-cols-2">
             <AppCheckbox
@@ -208,11 +242,13 @@ function submit(): void {
           </div>
         </fieldset>
 
-        <fieldset class="border-line mt-5 border-t pt-5">
-          <legend class="sr-only">Billing cycles</legend>
-          <p class="text-body mb-1 font-medium">Billing cycles</p>
+        <fieldset class="border-line-subtle mt-5 border-t pt-5">
+          <legend class="sr-only">{{ t('ui.promotion_form.cycles') }}</legend>
+          <p class="text-content-subtle text-label mb-1 uppercase">
+            {{ t('ui.promotion_form.cycles') }}
+          </p>
           <p class="text-content-muted text-chrome mb-3">
-            Leave every box unticked to cover all of them.
+            {{ t('ui.promotion_form.cycles_hint') }}
           </p>
 
           <div class="grid gap-2 sm:grid-cols-3">
@@ -225,36 +261,44 @@ function submit(): void {
             />
           </div>
         </fieldset>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard>
+      <DetailSection
+        :title="t('ui.promotion_form.when')"
+        :description="t('ui.promotion_form.when_intro')"
+      >
         <div class="grid gap-5 sm:grid-cols-2">
           <AppInput
             v-model="form.starts_at"
-            label="Starts"
+            :label="t('ui.promotion_form.starts')"
             type="date"
             :error="form.errors.starts_at"
           />
-          <AppInput v-model="form.ends_at" label="Ends" type="date" :error="form.errors.ends_at" />
+          <AppInput
+            v-model="form.ends_at"
+            :label="t('ui.promotion_form.ends')"
+            type="date"
+            :error="form.errors.ends_at"
+          />
 
           <AppInput
             v-model="form.usage_limit"
-            label="Total redemptions"
+            :label="t('ui.promotion_form.total_limit')"
             type="number"
             :error="form.errors.usage_limit"
-            hint="Empty is unlimited."
+            :hint="t('ui.promotion_form.unlimited')"
           />
           <AppInput
             v-model="form.per_customer_limit"
-            label="Per customer"
+            :label="t('ui.promotion_form.per_customer')"
             type="number"
             :error="form.errors.per_customer_limit"
-            hint="Empty is unlimited."
+            :hint="t('ui.promotion_form.unlimited')"
           />
 
           <MoneyInput
             v-model="form.minimum_subtotal_minor"
-            label="Minimum order"
+            :label="t('ui.promotion_form.minimum')"
             :exponent="exponent"
             :symbol="form.currency_code"
           />
@@ -262,27 +306,28 @@ function submit(): void {
           <div class="flex flex-col justify-end gap-3 pb-1">
             <AppCheckbox
               v-model="form.new_customers_only"
-              label="New customers only"
-              description="Refused for anyone who has ordered before."
+              :label="t('ui.promotion_form.new_only')"
+              :description="t('ui.promotion_form.new_only_hint')"
             />
-            <AppCheckbox v-model="form.is_active" label="Active" />
+            <AppCheckbox v-model="form.is_active" :label="t('ui.promotion_form.active')" />
           </div>
         </div>
 
         <p
           v-if="promotion && promotion.redemptions > 0"
-          class="text-content-muted text-chrome mt-4"
+          class="text-content-muted text-chrome mt-4 leading-relaxed"
         >
-          Redeemed {{ promotion.redemptions }} time(s). The terms below apply to future orders only;
-          what past customers were charged does not change.
+          {{ t('ui.promotion_form.redeemed', { count: promotion.redemptions }) }}
         </p>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex items-center gap-3">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save promotion' : 'Create promotion' }}
+          {{ isEditing ? t('ui.promotion_form.save') : t('ui.promotion_form.create') }}
         </AppButton>
-        <AppButton href="/admin/promotions" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/promotions" variant="ghost">
+          {{ t('ui.confirm.cancel') }}
+        </AppButton>
       </div>
     </form>
   </AdminLayout>

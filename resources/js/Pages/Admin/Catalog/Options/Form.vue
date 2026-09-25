@@ -3,13 +3,15 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppButton from '../../../../Components/AppButton.vue'
-import AppCard from '../../../../Components/AppCard.vue'
 import AppCheckbox from '../../../../Components/AppCheckbox.vue'
 import AppInput from '../../../../Components/AppInput.vue'
 import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
 import PriceMatrix from '../../../../Components/PriceMatrix.vue'
+import DetailSection from '../../../../Components/DetailSection.vue'
+import PageHeader from '../../../../Components/PageHeader.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../../composables/useTranslations'
 import {
   toPricePayload,
   type CurrencyOption,
@@ -45,7 +47,13 @@ const props = defineProps<{
   currencies: CurrencyOption[]
 }>()
 
+const { t } = useTranslations()
+
 const isEditing = computed(() => props.group !== null)
+
+const heading = computed(() =>
+  isEditing.value ? t('ui.option_form.edit') : t('ui.option_form.add'),
+)
 
 const form = useForm<{
   name: string
@@ -145,30 +153,44 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit option group' : 'New option group'" />
+  <Head :title="heading" />
 
-  <AdminLayout
-    :heading="isEditing ? 'Edit option group' : 'New option group'"
-    :description="`A question asked at checkout for ${product.name}. Each answer adjusts the price up or down.`"
-  >
-    <form class="flex flex-col gap-6" @submit.prevent="submit">
-      <AppCard>
+  <AdminLayout :heading="heading">
+    <template #header>
+      <PageHeader
+        :title="heading"
+        :description="t('ui.option_form.intro', { product: product.name })"
+      />
+    </template>
+
+    <form class="flex max-w-4xl flex-col gap-8" @submit.prevent="submit">
+      <DetailSection :title="t('ui.option_form.question')">
         <div class="grid gap-5 sm:grid-cols-2">
-          <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
-
           <AppInput
-            v-model="form.key"
-            label="Key"
-            :error="form.errors.key"
-            hint="Lowercase, no spaces. Order lines and provisioning refer to this, so it does not change once orders exist."
+            v-model="form.name"
+            :label="t('ui.option_form.name')"
+            :error="form.errors.name"
             required
           />
 
-          <AppSelect v-model="form.type" label="Type" :options="types" :error="form.errors.type" />
+          <AppInput
+            v-model="form.key"
+            :label="t('ui.option_form.key')"
+            :error="form.errors.key"
+            :hint="t('ui.option_form.key_hint')"
+            required
+          />
+
+          <AppSelect
+            v-model="form.type"
+            :label="t('ui.option_form.type')"
+            :options="types"
+            :error="form.errors.type"
+          />
 
           <AppInput
             v-model="form.position"
-            label="Position"
+            :label="t('ui.option_form.position')"
             type="number"
             :error="form.errors.position"
           />
@@ -176,66 +198,71 @@ function submit(): void {
           <div class="sm:col-span-2">
             <AppTextarea
               v-model="form.description"
-              label="Description"
+              :label="t('ui.option_form.description')"
               :error="form.errors.description"
-              hint="Shown beside the question at checkout."
+              :hint="t('ui.option_form.description_hint')"
             />
           </div>
 
           <div class="flex items-center">
             <AppCheckbox
               v-model="form.is_required"
-              label="Required"
-              description="The customer has to answer before ordering."
+              :label="t('ui.option_form.required')"
+              :description="t('ui.option_form.required_hint')"
             />
           </div>
 
           <div v-if="isQuantity" class="grid grid-cols-2 gap-3">
             <AppInput
               v-model="form.min_quantity"
-              label="Minimum"
+              :label="t('ui.option_form.minimum')"
               type="number"
               :error="form.errors.min_quantity"
             />
             <AppInput
               v-model="form.max_quantity"
-              label="Maximum"
+              :label="t('ui.option_form.maximum')"
               type="number"
               :error="form.errors.max_quantity"
-              hint="Empty is unbounded."
+              :hint="t('ui.option_form.unbounded')"
             />
           </div>
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <section v-if="!isQuantity" class="flex flex-col gap-4">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <h2 class="text-base font-semibold tracking-tight">Choices</h2>
-            <p class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
-              Each choice carries its own price difference. A choice that makes the plan cheaper
-              takes a negative amount.
-            </p>
-          </div>
-          <AppButton type="button" size="sm" @click="addChoice">Add choice</AppButton>
-        </div>
+      <DetailSection
+        v-if="!isQuantity"
+        :title="t('ui.option_form.choices')"
+        :description="t('ui.option_form.choices_intro')"
+      >
+        <template #actions>
+          <AppButton type="button" size="sm" variant="ghost" icon="add" @click="addChoice">
+            {{ t('ui.option_form.add_choice') }}
+          </AppButton>
+        </template>
 
         <p v-if="form.options.length === 0" class="text-content-muted text-body">
-          No choices yet. A dropdown with nothing in it cannot be answered.
+          {{ t('ui.option_form.no_choices') }}
         </p>
 
-        <AppCard v-for="(choice, index) in form.options" :key="index">
+        <!-- A frame per choice: each is a row somebody edits as a unit, and
+             three fields in a grid run into the three below them. -->
+        <div
+          v-for="(choice, index) in form.options"
+          :key="index"
+          class="border-line mb-4 rounded-lg border p-4 last:mb-0"
+        >
           <div class="flex flex-col gap-4">
             <div class="grid gap-4 sm:grid-cols-[1fr_1fr_auto]">
               <AppInput
                 v-model="choice.label"
-                label="Label"
+                :label="t('ui.option_form.label')"
                 :error="form.errors[`options.${index}.label` as keyof typeof form.errors]"
                 @input="onLabelInput(index)"
               />
               <AppInput
                 v-model="choice.value"
-                label="Value"
+                :label="t('ui.option_form.value')"
                 :error="form.errors[`options.${index}.value` as keyof typeof form.errors]"
               />
               <div class="flex items-end gap-3 pb-1">
@@ -244,14 +271,18 @@ function submit(): void {
                   class="pressable text-content-muted hover:text-content text-chrome rounded-sm px-2 py-1 underline underline-offset-4"
                   @click="expanded = expanded === index ? null : index"
                 >
-                  {{ expanded === index ? 'Hide prices' : 'Prices' }}
+                  {{
+                    expanded === index
+                      ? t('ui.option_form.hide_prices')
+                      : t('ui.option_form.prices')
+                  }}
                 </button>
                 <button
                   type="button"
                   class="pressable text-danger text-chrome rounded-sm px-2 py-1 underline underline-offset-4"
                   @click="removeChoice(index)"
                 >
-                  Remove
+                  {{ t('ui.option_form.remove') }}
                 </button>
               </div>
             </div>
@@ -264,28 +295,28 @@ function submit(): void {
                 :name="`default-choice`"
                 @change="setDefault(index)"
               />
-              Default choice
+              {{ t('ui.option_form.default_choice') }}
             </label>
 
-            <div v-if="expanded === index" class="border-line border-t pt-4">
+            <div v-if="expanded === index" class="border-line-subtle border-t pt-4">
               <PriceMatrix
                 v-model="choice.prices"
                 :cycles="cycles"
                 :currencies="currencies"
                 allow-negative
-                description="These amounts are added to the product price. Use a negative number for a choice that costs less."
+                :description="t('ui.option_form.prices_hint')"
               />
             </div>
           </div>
-        </AppCard>
-      </section>
+        </div>
+      </DetailSection>
 
       <div class="flex items-center gap-3">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save option group' : 'Create option group' }}
+          {{ isEditing ? t('ui.option_form.save') : t('ui.option_form.create') }}
         </AppButton>
         <AppButton :href="`/admin/catalog/products/${product.id}/options`" variant="ghost">
-          Cancel
+          {{ t('ui.confirm.cancel') }}
         </AppButton>
       </div>
     </form>

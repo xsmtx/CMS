@@ -4,12 +4,16 @@ import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import DangerZone from '../../../Components/DangerZone.vue'
+import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 
 interface RoleOption {
   id: string
@@ -31,7 +35,11 @@ const props = defineProps<{
   statuses: { value: string; label: string }[]
 }>()
 
+const { t } = useTranslations()
+
 const isEditing = computed(() => props.member !== null)
+
+const heading = computed(() => (isEditing.value ? t('ui.staff_form.edit') : t('ui.staff_form.add')))
 
 const form = useForm({
   name: props.member?.name ?? '',
@@ -69,39 +77,47 @@ function disableTwoFactor(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit staff member' : 'Add staff member'" />
+  <Head :title="heading" />
 
-  <AdminLayout
-    :heading="isEditing ? 'Edit staff member' : 'Add staff member'"
-    :description="
-      isEditing
-        ? 'Changing the status to anything but active ends their current sessions.'
-        : 'The account is activated through a password reset link, so no password is shared.'
-    "
-  >
-    <form class="flex flex-col gap-5" @submit.prevent="submit">
-      <AppCard title="Account">
+  <AdminLayout :heading="heading">
+    <template #header>
+      <PageHeader
+        :title="heading"
+        :description="isEditing ? t('ui.staff_form.intro_edit') : t('ui.staff_form.intro_new')"
+      />
+    </template>
+
+    <form class="flex max-w-4xl flex-col gap-8" @submit.prevent="submit">
+      <DetailSection :title="t('ui.staff_form.account')">
         <div class="grid max-w-xl gap-5">
-          <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+          <AppInput
+            v-model="form.name"
+            :label="t('ui.staff_form.name')"
+            :error="form.errors.name"
+            required
+          />
           <AppInput
             v-model="form.email"
-            label="Email address"
+            :label="t('ui.client_new.email')"
             type="email"
             :error="form.errors.email"
             required
           />
           <AppSelect
             v-model="form.status"
-            label="Status"
+            :label="t('ui.client_new.status')"
             :options="statuses"
             :error="form.errors.status"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard title="Roles" description="Capabilities come from roles, never from the account.">
+      <DetailSection
+        :title="t('ui.staff_form.roles')"
+        :description="t('ui.staff_form.roles_intro')"
+      >
         <AppAlert v-if="roles.length === 0" tone="info">
-          No staff roles exist yet. Create one first.
+          {{ t('ui.staff_form.no_roles') }}
         </AppAlert>
 
         <div v-else class="grid gap-3 sm:grid-cols-2">
@@ -110,35 +126,41 @@ function disableTwoFactor(): void {
             :key="role.id"
             :model-value="form.role_ids.includes(role.id)"
             :label="role.name"
-            :description="role.isSystem ? 'System role' : undefined"
+            :description="role.isSystem ? t('ui.staff_form.system_role') : undefined"
             @update:model-value="(checked: boolean) => toggleRole(role.id, checked)"
           />
         </div>
-      </AppCard>
-
-      <AppCard
-        v-if="isEditing && member?.twoFactor"
-        title="Two-factor authentication"
-        description="Turn this off only when the person has lost their authenticator. The action is audited."
-      >
-        <AppButton variant="danger-subtle" type="button" @click="confirmingTwoFactor = true">
-          Turn off their two-factor
-        </AppButton>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex gap-2">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save changes' : 'Create staff member' }}
+          {{ isEditing ? t('ui.client_form.save') : t('ui.staff_form.create') }}
         </AppButton>
-        <AppButton href="/admin/staff" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/staff" variant="ghost">{{ t('ui.confirm.cancel') }}</AppButton>
       </div>
     </form>
+
+    <!--
+      Weakening somebody else's account belongs at the foot of the page and
+      not in the run of the form, where it sat between Roles and Save.
+    -->
+    <DangerZone v-if="isEditing && member?.twoFactor">
+      <DangerZoneRow
+        :title="t('ui.staff_form.two_factor_title')"
+        :description="t('ui.staff_form.two_factor_detail')"
+      >
+        <AppButton variant="danger-subtle" type="button" @click="confirmingTwoFactor = true">
+          {{ t('ui.staff_form.two_factor_button') }}
+        </AppButton>
+      </DangerZoneRow>
+    </DangerZone>
+
     <AppConfirm
       v-model:open="confirmingTwoFactor"
       level="consequential"
-      :title="`Turn off two-factor for ${member?.name ?? 'this person'}?`"
-      description="They will sign in with a password alone until they set it up again. The action is audited."
-      confirm-label="Turn off two-factor"
+      :title="t('ui.staff_form.two_factor_confirm_title', { name: member?.name ?? '' })"
+      :description="t('ui.staff_form.two_factor_confirm_detail')"
+      :confirm-label="t('ui.staff_form.two_factor_button')"
       @confirm="disableTwoFactor"
     />
   </AdminLayout>

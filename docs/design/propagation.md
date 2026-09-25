@@ -46,12 +46,12 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Customers/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Support/Show.vue` | detail |  |  |  |  | yes |
 | [x] | `Admin/Tax/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Catalog/Options/Form.vue` | form | 2 |  |  | 1 |  |
-| [ ] | `Admin/Contacts/Form.vue` | form | 3 |  |  |  |  |
+| [x] | `Admin/Catalog/Options/Form.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Contacts/Form.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Health/Index.vue` | list | 3 |  |  |  |  |
 | [ ] | `Admin/Modules/Index.vue` | list | 3 |  |  |  |  |
-| [ ] | `Admin/Promotions/Form.vue` | form | 3 |  |  |  |  |
-| [ ] | `Admin/Staff/Form.vue` | form | 3 |  |  |  |  |
+| [x] | `Admin/Promotions/Form.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Staff/Form.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Support/Overview.vue` | overview | 3 |  |  |  |  |
 | [ ] | `Admin/Import/Index.vue` | list | 2 | 8 |  |  |  |
 | [ ] | `Admin/Import/Show.vue` | detail | 2 | 9 |  |  |  |
