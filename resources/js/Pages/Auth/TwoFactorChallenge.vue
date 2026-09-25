@@ -4,9 +4,12 @@ import { computed, ref } from 'vue'
 
 import AppButton from '../../Components/AppButton.vue'
 import AppInput from '../../Components/AppInput.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AuthLayout from '../../Layouts/AuthLayout.vue'
 
 const props = defineProps<{ guard: string }>()
+
+const { t } = useTranslations()
 
 const useRecoveryCode = ref(false)
 
@@ -20,9 +23,7 @@ const action = computed(() =>
 )
 
 const subheading = computed(() =>
-  useRecoveryCode.value
-    ? 'Enter one of the recovery codes you saved when you turned this on.'
-    : 'Enter the six-digit code from your authenticator app.',
+  useRecoveryCode.value ? t('ui.auth.two_factor_recovery') : t('ui.auth.two_factor_app'),
 )
 
 function toggleMode(): void {
@@ -38,20 +39,21 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Two-factor authentication" />
+  <Head :title="t('ui.auth.two_factor_heading')" />
 
-  <AuthLayout heading="Two-factor authentication" :subheading="subheading">
+  <AuthLayout :heading="t('ui.auth.two_factor_heading')" :subheading="subheading">
     <form class="flex flex-col gap-5" @submit.prevent="submit">
       <AppInput
         v-model="form.code"
-        :label="useRecoveryCode ? 'Recovery code' : 'Authentication code'"
+        :label="useRecoveryCode ? t('ui.auth.recovery_code') : t('ui.auth.code')"
         autocomplete="one-time-code"
+        :inputmode="useRecoveryCode ? 'text' : 'numeric'"
         :error="form.errors.code"
         required
       />
 
       <AppButton type="submit" variant="primary" :loading="form.processing" class="w-full">
-        Continue
+        {{ t('ui.auth.continue') }}
       </AppButton>
     </form>
 
@@ -60,7 +62,7 @@ function submit(): void {
       class="text-content-muted hover:text-content text-body mt-6 underline underline-offset-4"
       @click="toggleMode"
     >
-      {{ useRecoveryCode ? 'Use an authenticator code instead' : 'Use a recovery code instead' }}
+      {{ useRecoveryCode ? t('ui.auth.use_app') : t('ui.auth.use_recovery') }}
     </button>
   </AuthLayout>
 </template>

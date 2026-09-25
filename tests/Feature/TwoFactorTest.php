@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Identity\TwoFactorAuthenticator;
 use App\Infrastructure\Identity\Models\LoginHistory;
 use App\Infrastructure\Identity\Models\StaffUser;
+use Inertia\Testing\AssertableInertia;
 use PragmaRX\Google2FA\Google2FA;
 
 beforeEach(function (): void {
@@ -107,6 +108,33 @@ it('will not complete a client sign-in on the admin challenge screen', function 
 
 it('sends someone with no pending sign-in back to the login page', function (): void {
     $this->get('/admin/two-factor-challenge')->assertRedirect('/admin/login');
+});
+
+/*
+ * The screen itself, rendered.
+ *
+ * It is the one auth screen a browser cannot be driven to without credentials
+ * — it exists only between a verified password and a granted session — so the
+ * render is asserted here instead, and it is the guard on the page's own
+ * chrome as well: anything that stops the document being built shows up as a
+ * 500 on this line.
+ */
+it('renders the challenge for a sign-in that is waiting on it', function (): void {
+    $this->staff->forceFill([
+        'two_factor_secret' => $this->secret,
+        'two_factor_confirmed_at' => now(),
+    ])->save();
+
+    $this->post('/admin/login', [
+        'email' => $this->staff->email,
+        'password' => 'correct-horse-battery-staple-1!',
+    ]);
+
+    $this->get('/admin/two-factor-challenge')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Auth/TwoFactorChallenge')
+            ->where('guard', 'staff'));
 });
 
 it('enrols in three steps and hands back recovery codes', function (): void {

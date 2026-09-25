@@ -12,19 +12,21 @@
  *
  * Deliberately narrow and deliberately plain — no navigation, no other actions.
  * This is the one screen in the product where the only correct thing to do is
- * the thing it is asking for.
+ * the thing it is asking for, which is what `AuthLayout` is: one column, the
+ * brand, and nothing else. It used to draw its own brand mark and its own
+ * raised card, which made it the only screen in the product with a shadow on
+ * something that is not floating.
  */
 import { Head, useForm } from '@inertiajs/vue3'
 
+import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
-import AppIcon from '../../Components/AppIcon.vue'
 import AppInput from '../../Components/AppInput.vue'
-import { useBranding } from '../../composables/useBranding'
 import { useTranslations } from '../../composables/useTranslations'
+import AuthLayout from '../../Layouts/AuthLayout.vue'
 
 const props = defineProps<{ guard: string; intended: string | null }>()
 
-const { brand } = useBranding()
 const { t } = useTranslations()
 
 const form = useForm({ password: '' })
@@ -43,51 +45,29 @@ function submit(): void {
 <template>
   <Head :title="t('identity.auth.confirm_title')" />
 
-  <div class="bg-background grid min-h-dvh place-items-center px-4 py-12">
-    <div class="w-full max-w-sm">
-      <div class="mb-6 flex items-center gap-2">
-        <span
-          class="bg-brand text-content-inverse text-chrome grid size-7 shrink-0 place-items-center rounded-[6px] font-bold"
-          aria-hidden="true"
-        >
-          {{ brand.name.slice(0, 1).toUpperCase() }}
-        </span>
-        <span class="text-title font-semibold">{{ brand.name }}</span>
-      </div>
+  <AuthLayout :heading="t('identity.auth.confirm_title')">
+    <!-- Why, and for how long. Both, before the field. -->
+    <AppAlert tone="warning" class="mb-6">
+      {{ t('identity.auth.confirm_body', { minutes: '15' }) }}
+    </AppAlert>
 
-      <div class="border-line bg-surface-primary rounded-lg border p-5 shadow-(--shadow-raised)">
-        <div class="mb-4 flex items-start gap-3">
-          <span class="text-warning mt-0.5 shrink-0" aria-hidden="true">
-            <AppIcon name="security" :size="18" />
-          </span>
-          <div>
-            <h1 class="text-title font-semibold">{{ t('identity.auth.confirm_title') }}</h1>
-            <!-- Why, and for how long. Both, before the field. -->
-            <p class="text-content-muted text-chrome mt-1 leading-relaxed">
-              {{ t('identity.auth.confirm_body', { minutes: '15' }) }}
-            </p>
-          </div>
-        </div>
+    <form class="flex flex-col gap-5" @submit.prevent="submit">
+      <AppInput
+        v-model="form.password"
+        :label="t('ui.auth.password')"
+        type="password"
+        autocomplete="current-password"
+        :error="form.errors.password"
+        required
+      />
 
-        <form class="flex flex-col gap-4" @submit.prevent="submit">
-          <AppInput
-            v-model="form.password"
-            label="Password"
-            type="password"
-            autocomplete="current-password"
-            :error="form.errors.password"
-            required
-          />
+      <AppButton type="submit" variant="primary" :loading="form.processing" class="w-full">
+        {{ t('ui.auth.confirm_submit') }}
+      </AppButton>
+    </form>
 
-          <AppButton type="submit" variant="primary" :loading="form.processing">
-            Confirm
-          </AppButton>
-        </form>
-      </div>
-
-      <p v-if="intended" class="text-content-subtle text-label mt-4 text-center">
-        You will be returned to where you were.
-      </p>
-    </div>
-  </div>
+    <p v-if="intended" class="text-content-muted text-chrome mt-6">
+      {{ t('ui.auth.confirm_return') }}
+    </p>
+  </AuthLayout>
 </template>

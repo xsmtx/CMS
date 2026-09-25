@@ -5,9 +5,12 @@ import { computed } from 'vue'
 import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
 import AppInput from '../../Components/AppInput.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AuthLayout from '../../Layouts/AuthLayout.vue'
 
 const props = defineProps<{ guard: string; status?: string | null }>()
+
+const { t } = useTranslations()
 
 const form = useForm({ email: '' })
 
@@ -18,18 +21,15 @@ const loginUrl = computed(() => (props.guard === 'staff' ? '/admin/login' : '/lo
 </script>
 
 <template>
-  <Head title="Reset your password" />
+  <Head :title="t('ui.auth.forgot_heading')" />
 
-  <AuthLayout
-    heading="Reset your password"
-    subheading="We will email you a link to choose a new one."
-  >
+  <AuthLayout :heading="t('ui.auth.forgot_heading')" :subheading="t('ui.auth.forgot_intro')">
     <AppAlert v-if="status" tone="success" class="mb-6">{{ status }}</AppAlert>
 
     <form class="flex flex-col gap-5" @submit.prevent="form.post(action)">
       <AppInput
         v-model="form.email"
-        label="Email address"
+        :label="t('ui.auth.email')"
         type="email"
         autocomplete="username"
         :error="form.errors.email"
@@ -37,7 +37,7 @@ const loginUrl = computed(() => (props.guard === 'staff' ? '/admin/login' : '/lo
       />
 
       <AppButton type="submit" variant="primary" :loading="form.processing" class="w-full">
-        Email me a link
+        {{ t('ui.auth.forgot_submit') }}
       </AppButton>
     </form>
 
@@ -45,7 +45,7 @@ const loginUrl = computed(() => (props.guard === 'staff' ? '/admin/login' : '/lo
       :href="loginUrl"
       class="text-content-muted hover:text-content text-body mt-6 inline-block underline underline-offset-4"
     >
-      Back to sign in
+      {{ t('ui.auth.back') }}
     </a>
   </AuthLayout>
 </template>

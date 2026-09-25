@@ -4,9 +4,12 @@ import { computed } from 'vue'
 
 import AppButton from '../../Components/AppButton.vue'
 import AppInput from '../../Components/AppInput.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AuthLayout from '../../Layouts/AuthLayout.vue'
 
 const props = defineProps<{ guard: string; token: string; email: string }>()
+
+const { t } = useTranslations()
 
 const form = useForm({
   token: props.token,
@@ -27,16 +30,13 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Choose a new password" />
+  <Head :title="t('ui.auth.reset_heading')" />
 
-  <AuthLayout
-    heading="Choose a new password"
-    subheading="Any other devices you are signed in on will be signed out."
-  >
+  <AuthLayout :heading="t('ui.auth.reset_heading')" :subheading="t('ui.auth.reset_intro')">
     <form class="flex flex-col gap-5" @submit.prevent="submit">
       <AppInput
         v-model="form.email"
-        label="Email address"
+        :label="t('ui.auth.email')"
         type="email"
         autocomplete="username"
         :error="form.errors.email"
@@ -45,24 +45,25 @@ function submit(): void {
 
       <AppInput
         v-model="form.password"
-        label="New password"
+        :label="t('ui.auth.new_password')"
         type="password"
         autocomplete="new-password"
-        hint="At least 12 characters, with letters, numbers and symbols."
+        :hint="t('ui.auth.new_password_hint')"
         :error="form.errors.password"
         required
       />
 
       <AppInput
         v-model="form.password_confirmation"
-        label="Confirm new password"
+        :label="t('ui.auth.new_password_again')"
         type="password"
         autocomplete="new-password"
+        :error="form.errors.password_confirmation"
         required
       />
 
       <AppButton type="submit" variant="primary" :loading="form.processing" class="w-full">
-        Set new password
+        {{ t('ui.auth.reset_submit') }}
       </AppButton>
     </form>
   </AuthLayout>

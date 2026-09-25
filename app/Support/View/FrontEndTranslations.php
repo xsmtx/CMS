@@ -81,6 +81,18 @@ final class FrontEndTranslations
         'domains.portal',
         'domains.statuses',
 
+        /*
+         * Two sentences, not the group. `identity.auth` holds the refusals the
+         * server prints — "those credentials do not match our records", the
+         * throttle wording — and publishing the lot would hand a browser the
+         * vocabulary of every way sign-in can fail. These two are the
+         * confirm-password screen's own heading and explanation, and it drew
+         * them as `identity.auth.confirm_title` at an operator until a test
+         * started asking.
+         */
+        'identity.auth.confirm_title',
+        'identity.auth.confirm_body',
+
         'identity.tokens',
         'api.tokens',
         'api.scopes',

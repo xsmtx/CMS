@@ -1136,3 +1136,32 @@ in one browser is exactly the case that is not true, and `CurrentCustomer` then
 refuses a `StaffUser` the only way it knows how. Nothing here is wrong on its
 own; it means a staff member testing the portal has to use a second profile or a
 private window. It is worth a decision before somebody debugs it a second time.
+
+**Every `t('…')` a component draws is now checked against what the document
+carries** (`tests/Feature/FrontEndTranslationsTest.php`). The allow-list rule
+has always been that adding `t('group.key')` means adding its path to
+`FrontEndTranslations`, and nothing enforced it: the confirm-password screen —
+the one screen whose whole job is to explain *why* before it asks — printed
+`identity.auth.confirm_title` as its own heading, because `identity.auth` was
+never published. The designed symptom worked perfectly and nobody looked. The
+test scans `resources/js` for literal calls, skips the ones that pass a
+fallback (that third argument is for primitives, which can be mounted where no
+translations were rendered at all), and asserts both locales. It found exactly
+two keys, which is also the evidence that the rest of the product was clean.
+
+Publish **leaf paths, not the group**, when a group mixes audiences.
+`identity.auth` holds every way sign-in can fail — the throttle wording, the
+deliberately vague refusal — and the browser needs two sentences out of it.
+
+The auth screens are one layout. `AuthLayout` takes `wide` for the registration
+form and nothing else varies; `ConfirmPassword` used to draw its own brand mark
+and its own raised card, which made it the only screen in the product with a
+shadow on something that is not floating, plus a `rounded-[6px]` and a
+`font-bold` the design system bans. The warning it carries is an `AppAlert`
+now.
+
+**The two-factor challenge cannot be driven in a browser**: it exists only
+between a verified password and a granted session, so reaching it means typing
+somebody's password. `TwoFactorTest` renders it instead and asserts the
+component and its props. A screen no browser can reach still needs the test
+that proves the document builds.

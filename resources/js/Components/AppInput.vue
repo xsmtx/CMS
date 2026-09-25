@@ -14,6 +14,11 @@ const props = withDefaults(
     error?: string
     hint?: string
     autocomplete?: string
+    /**
+     * The keyboard a phone offers. A six-digit code typed on a letter
+     * keyboard is a code typed twice.
+     */
+    inputmode?: 'text' | 'numeric' | 'tel' | 'email'
     required?: boolean
     disabled?: boolean
     placeholder?: string
@@ -23,6 +28,7 @@ const props = withDefaults(
     error: undefined,
     hint: undefined,
     autocomplete: undefined,
+    inputmode: undefined,
     required: false,
     disabled: false,
     placeholder: undefined,
@@ -58,6 +64,7 @@ const describedBy = computed(() => {
       v-model="model"
       :type="type"
       :autocomplete="autocomplete"
+      :inputmode="inputmode"
       :required="required"
       :disabled="disabled"
       :placeholder="placeholder"

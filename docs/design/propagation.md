@@ -135,9 +135,9 @@ Numbers generated 2026-09-24; re-count with the grep in
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [ ] | `Security/Index.vue` | list | 4 |  |  |  |  |
 | [ ] | `Security/TwoFactorSetup.vue` | form | 1 |  |  |  |  |
-| [ ] | `Auth/ConfirmPassword.vue` | auth |  |  |  |  | yes |
-| [ ] | `Auth/ForgotPassword.vue` | auth |  |  |  |  |  |
+| [x] | `Auth/ConfirmPassword.vue` | auth |  |  |  |  | yes |
+| [x] | `Auth/ForgotPassword.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/Login.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/Register.vue` | auth |  |  |  |  | yes |
-| [ ] | `Auth/ResetPassword.vue` | auth |  |  |  |  |  |
-| [ ] | `Auth/TwoFactorChallenge.vue` | auth |  |  |  |  |  |
+| [x] | `Auth/ResetPassword.vue` | auth |  |  |  |  | yes |
+| [x] | `Auth/TwoFactorChallenge.vue` | auth |  |  |  |  | yes |
