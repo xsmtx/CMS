@@ -20,6 +20,9 @@ import AppSelect from '../../../Components/AppSelect.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -72,6 +75,17 @@ const props = defineProps<{
   tags: Option[]
   counts: { awaiting: number; breaching: number; mine: number }
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'ticket', label: t('support.tickets.ticket'), sticky: true },
+  { key: 'customer', label: t('support.tickets.customer') },
+  { key: 'department', label: t('support.tickets.department') },
+  { key: 'status', label: t('support.tickets.status') },
+  { key: 'assigned', label: t('support.tickets.assigned') },
+  { key: 'due', label: t('support.tickets.due') },
+]
 
 const EMPTY: Criteria = {
   department: '',
@@ -206,8 +220,8 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
  */
 function due(ticket: TicketRow): string {
   if (ticket.dueAt === null) return '—'
-  if (ticket.hasBreached) return 'Overdue'
-  if (ticket.minutesUntilDue === null) return 'Answered'
+  if (ticket.hasBreached) return t('support.tickets.overdue')
+  if (ticket.minutesUntilDue === null) return t('support.tickets.answered')
 
   const hours = Math.floor(ticket.minutesUntilDue / 60)
 
@@ -220,19 +234,23 @@ function formatDate(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Tickets" />
+  <Head :title="t('support.tickets.title')" />
 
-  <AdminLayout heading="Tickets" description="Everything waiting for somebody.">
+  <AdminLayout :heading="t('support.tickets.title')" :description="t('support.tickets.subtitle')">
     <div class="mb-7 flex flex-wrap gap-3">
-      <AppStat label="Waiting for us" :value="counts.awaiting" @select="only({})" />
+      <AppStat :label="t('support.tickets.awaiting')" :value="counts.awaiting" @select="only({})" />
       <AppStat
-        label="Past its promise"
+        :label="t('support.tickets.breaching')"
         :value="counts.breaching"
         :tone="counts.breaching > 0 ? 'danger' : 'neutral'"
         :active="breaching"
         @select="only({ breaching: '1' })"
       />
-      <AppStat label="Mine" :value="counts.mine" @select="only({ assigned: 'mine' })" />
+      <AppStat
+        :label="t('support.tickets.mine')"
+        :value="counts.mine"
+        @select="only({ assigned: 'mine' })"
+      />
     </div>
 
     <!-- More than one at a time: "not answered and not closed" is the
@@ -257,11 +275,11 @@ function formatDate(value: string | null): string {
 
     <div class="mb-5 flex flex-wrap items-center gap-2.5">
       <AppButton size="sm" :aria-expanded="open" @click="open = !open">
-        {{ open ? 'Hide search' : 'Search / filter' }}
+        {{ open ? t('support.tickets.hide_search') : t('support.tickets.search_filter') }}
       </AppButton>
 
       <label class="text-content-muted text-chrome flex items-center gap-2">
-        Auto refresh
+        {{ t('support.tickets.auto_refresh') }}
         <select
           v-model="refreshChoice"
           class="border-line bg-surface-primary text-content text-chrome rounded-sm border px-2 py-1"
@@ -272,46 +290,57 @@ function formatDate(value: string | null): string {
         </select>
       </label>
 
-      <span v-if="hasFilters" class="text-content-muted text-chrome"
-        >{{ tickets.total }} match</span
-      >
+      <span v-if="hasFilters" class="text-content-muted text-chrome">{{
+        t('support.tickets.matches', { count: tickets.total })
+      }}</span>
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
         class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <AppInput v-model="form.client" label="Client" />
-        <AppSelect v-model="form.department" label="Department" :options="withBlank(departments)" />
-        <AppSelect v-model="form.priority" label="Priority" :options="withBlank(priorities)" />
+        <AppInput v-model="form.client" :label="t('support.tickets.client')" />
+        <AppSelect
+          v-model="form.department"
+          :label="t('support.tickets.department')"
+          :options="withBlank(departments)"
+        />
+        <AppSelect
+          v-model="form.priority"
+          :label="t('support.tickets.priority')"
+          :options="withBlank(priorities)"
+        />
         <AppSelect
           v-model="form.assigned"
-          label="Assigned to"
+          :label="t('support.tickets.assigned_to')"
           :options="[
-            { value: '', label: 'Anyone' },
-            { value: 'mine', label: 'Me' },
-            { value: 'unassigned', label: 'Nobody' },
+            { value: '', label: t('support.tickets.anyone') },
+            { value: 'mine', label: t('support.tickets.me') },
+            { value: 'unassigned', label: t('support.tickets.nobody') },
             ...staff,
           ]"
         />
-        <AppSelect v-model="form.tag" label="Tags" :options="withBlank(tags)" />
-        <AppInput v-model="form.text" label="Subject or message" />
-        <AppInput v-model="form.email" label="Email address" />
-        <AppInput v-model="form.number" label="Ticket ID or #" />
+        <AppSelect
+          v-model="form.tag"
+          :label="t('support.tickets.tags')"
+          :options="withBlank(tags)"
+        />
+        <AppInput v-model="form.text" :label="t('support.tickets.text_search')" />
+        <AppInput v-model="form.email" :label="t('support.tickets.email')" />
+        <AppInput v-model="form.number" :label="t('support.tickets.number_search')" />
       </div>
 
       <div class="mt-3 flex gap-2">
-        <AppButton type="submit" variant="primary">Search</AppButton>
-        <AppButton type="button" variant="ghost" @click="clear">Clear</AppButton>
+        <AppButton type="submit" variant="primary">{{ t('support.tickets.search') }}</AppButton>
+        <AppButton type="button" variant="ghost" @click="clear">{{
+          t('support.tickets.clear')
+        }}</AppButton>
       </div>
     </form>
 
-    <AppTable
-      v-if="tickets.data.length > 0"
-      :headers="['Ticket', 'Customer', 'Department', 'Status', 'Assigned', 'Due']"
-    >
-      <tr v-for="ticket in tickets.data" :key="ticket.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="tickets.data.length > 0" name="admin-tickets" :columns="COLUMNS">
+      <AppTableRow v-for="ticket in tickets.data" :key="ticket.id">
+        <td data-col="ticket">
           <Link
             :href="`/admin/support/${ticket.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -323,25 +352,32 @@ function formatDate(value: string | null): string {
             <span v-for="tag in ticket.tags" :key="tag" class="text-brand">· {{ tag }}</span>
           </span>
         </td>
-        <td class="px-4 py-2.5">{{ ticket.customer ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-2.5">{{ ticket.department ?? '—' }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="customer">{{ ticket.customer ?? '—' }}</td>
+        <td data-col="department" class="text-content-muted">{{ ticket.department ?? '—' }}</td>
+        <td data-col="status">
           <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ ticket.assignee ?? 'Unassigned' }}</td>
-        <td class="px-4 py-2.5 whitespace-nowrap" :class="ticket.hasBreached ? 'text-danger' : ''">
+        <td data-col="assigned" class="text-content-muted">
+          {{ ticket.assignee ?? t('support.tickets.unassigned') }}
+        </td>
+        <td
+          data-col="due"
+          class="px-4 py-2.5 whitespace-nowrap"
+          :class="ticket.hasBreached ? 'text-danger' : ''"
+        >
           {{ due(ticket) }}
           <span class="text-content-subtle text-chrome block">{{
             formatDate(ticket.lastReplyAt)
           }}</span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing waiting"
-      description="Tickets customers open appear here, sorted by what is closest to its deadline."
+      icon="ticket"
+      :title="t('support.tickets.nothing_waiting')"
+      :description="t('support.tickets.nothing_waiting_description')"
     />
 
     <AppPagination :links="tickets.links" :total="tickets.total" />

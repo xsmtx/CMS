@@ -15,8 +15,12 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -61,6 +65,19 @@ const props = defineProps<{
   can: { manage: boolean }
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'date', label: t('crm.cancellations.date') },
+  { key: 'service', label: t('crm.cancellations.service'), sticky: true },
+  { key: 'client', label: t('crm.cancellations.client') },
+  { key: 'reason', label: t('crm.cancellations.reason') },
+  { key: 'type', label: t('crm.cancellations.type') },
+  { key: 'ends', label: t('crm.cancellations.ends') },
+  { key: 'status', label: t('crm.cancellations.status') },
+  { key: 'actions', label: '' },
+]
+
 const EMPTY: Criteria = { reason: '', client: '', domain: '', type: '', service: '', status: '' }
 
 const form = ref<Criteria>({ ...EMPTY, ...props.filters })
@@ -85,67 +102,113 @@ function clear(): void {
   apply()
 }
 
-function act(row: RequestRow, action: 'complete' | 'withdraw'): void {
-  router.post(`/admin/cancellations/${row.id}/${action}`, {}, { preserveScroll: true })
+/*
+ * Completing an immediate request **terminates the service**, which used to
+ * happen on the first click of a solid primary button. It is level 4 now —
+ * the reason is recorded on the transition and the service's own name has to
+ * be typed — while an end-of-term request, which only marks the service to
+ * stop renewing, is level 2. Withdrawing puts a service back and asks once.
+ */
+const completing = ref<RequestRow | null>(null)
+const withdrawing = ref<RequestRow | null>(null)
+
+function complete(reason: string | null): void {
+  const row = completing.value
+
+  if (row === null) return
+
+  router.post(
+    `/admin/cancellations/${row.id}/complete`,
+    { reason },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        completing.value = null
+      },
+    },
+  )
+}
+
+function withdraw(): void {
+  const row = withdrawing.value
+
+  if (row === null) return
+
+  router.post(
+    `/admin/cancellations/${row.id}/withdraw`,
+    {},
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        withdrawing.value = null
+      },
+    },
+  )
 }
 
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
 }
 
-function withBlank(options: { value: string; label: string }[], label = 'Any') {
+function withBlank(
+  options: { value: string; label: string }[],
+  label = t('crm.cancellations.any'),
+) {
   return [{ value: '', label }, ...options]
 }
 </script>
 
 <template>
-  <Head title="Cancellation requests" />
+  <Head :title="t('ui.nav.cancellation_requests')" />
 
   <AdminLayout
-    heading="Cancellation Requests"
-    description="Who asked to stop, why, and whether they wanted it off today or at the end of the term they have paid for."
+    :heading="t('ui.nav.cancellation_requests')"
+    :description="t('crm.cancellations.subtitle')"
   >
     <div class="mb-5 flex flex-wrap items-center gap-2.5">
       <AppButton :aria-expanded="open" @click="open = !open">
-        {{ open ? 'Hide search' : 'Search / filter' }}
+        {{ open ? t('crm.cancellations.hide_search') : t('crm.cancellations.search_filter') }}
       </AppButton>
-      <span v-if="hasFilters" class="text-content-muted text-chrome"
-        >{{ requests.total }} match</span
-      >
+      <span v-if="hasFilters" class="text-content-muted text-chrome">{{
+        t('crm.cancellations.matches', { count: requests.total })
+      }}</span>
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
       <div
         class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
-        <AppInput v-model="form.reason" label="Reason" />
-        <AppInput v-model="form.client" label="Client" />
-        <AppInput v-model="form.domain" label="Domain" />
-        <AppSelect v-model="form.type" label="Type" :options="withBlank(types)" />
-        <AppInput v-model="form.service" label="Service ID" />
+        <AppInput v-model="form.reason" :label="t('crm.cancellations.reason')" />
+        <AppInput v-model="form.client" :label="t('crm.cancellations.client')" />
+        <AppInput v-model="form.domain" :label="t('crm.cancellations.domain')" />
+        <AppSelect
+          v-model="form.type"
+          :label="t('crm.cancellations.type')"
+          :options="withBlank(types)"
+        />
+        <AppInput v-model="form.service" :label="t('crm.cancellations.service_id')" />
         <AppSelect
           v-model="form.status"
-          label="Status"
-          hint="Outstanding requests only, unless you ask otherwise."
-          :options="withBlank(statuses, 'Pending')"
+          :label="t('crm.cancellations.status')"
+          :hint="t('crm.cancellations.status_hint')"
+          :options="withBlank(statuses, t('crm.cancellations.pending'))"
         />
       </div>
 
       <div class="mt-3 flex gap-2">
-        <AppButton type="submit" variant="primary">Search</AppButton>
-        <AppButton type="button" variant="ghost" @click="clear">Clear</AppButton>
+        <AppButton type="submit" variant="primary">{{ t('crm.cancellations.search') }}</AppButton>
+        <AppButton type="button" variant="ghost" @click="clear">{{
+          t('crm.cancellations.clear')
+        }}</AppButton>
       </div>
     </form>
 
-    <AppTable
-      v-if="requests.data.length > 0"
-      :headers="['Date', 'Product / service', 'Client', 'Reason', 'Type', 'Ends', 'Status', '']"
-    >
-      <tr v-for="row in requests.data" :key="row.id">
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+    <AppTable v-if="requests.data.length > 0" name="admin-cancellations" :columns="COLUMNS">
+      <AppTableRow v-for="row in requests.data" :key="row.id">
+        <td data-col="date" class="text-content-muted whitespace-nowrap">
           {{ formatDate(row.requestedAt) }}
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="service">
           <Link
             :href="`/admin/services/${row.serviceId}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -156,7 +219,7 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
             row.domain
           }}</span>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="client">
           <Link
             :href="`/admin/customers/${row.customerId}`"
             class="underline-offset-4 hover:underline"
@@ -164,40 +227,75 @@ function withBlank(options: { value: string; label: string }[], label = 'Any') {
             {{ row.customer ?? '—' }}
           </Link>
           <span v-if="row.requestedBy" class="text-content-muted text-chrome block">
-            asked by {{ row.requestedBy }}
+            {{ t('crm.cancellations.asked_by', { name: row.requestedBy }) }}
           </span>
         </td>
-        <td class="text-content-muted text-body max-w-[32ch] px-4 py-2.5">
+        <td data-col="reason" class="text-content-muted text-body max-w-[32ch]">
           {{ row.reason ?? '—' }}
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="type">
           <AppBadge :tone="row.type === 'immediate' ? 'danger' : 'neutral'">
             {{ row.typeLabel }}
           </AppBadge>
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
-          {{ row.type === 'immediate' ? 'Now' : formatDate(row.endsOn) }}
+        <td data-col="ends" class="text-content-muted whitespace-nowrap">
+          {{ row.type === 'immediate' ? t('crm.cancellations.now') : formatDate(row.endsOn) }}
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="status">
           <AppStatus :tone="statusTone(row.status)" :label="row.statusLabel" />
         </td>
-        <td class="px-4 py-2.5 text-right">
-          <div v-if="can.manage && row.status === 'pending'" class="flex justify-end gap-2">
-            <AppButton size="sm" variant="ghost" @click="act(row, 'withdraw')">Withdraw</AppButton>
-            <AppButton size="sm" variant="primary" @click="act(row, 'complete')"
-              >Complete</AppButton
+        <td data-col="actions" class="text-right">
+          <span
+            v-if="can.manage && row.status === 'pending'"
+            class="row-actions inline-flex justify-end gap-1"
+          >
+            <AppButton size="sm" variant="ghost" @click="withdrawing = row">
+              {{ t('crm.cancellations.withdraw') }}
+            </AppButton>
+            <AppButton
+              size="sm"
+              :variant="row.type === 'immediate' ? 'danger-subtle' : 'secondary'"
+              @click="completing = row"
             >
-          </div>
+              {{ t('crm.cancellations.complete') }}
+            </AppButton>
+          </span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing outstanding"
-      description="A request appears here when a customer asks to stop, whether they asked in the portal or told somebody on the telephone."
+      icon="services"
+      :title="t('crm.cancellations.empty')"
+      :description="t('crm.cancellations.empty_description')"
     />
 
     <AppPagination :links="requests.links" :total="requests.total" />
+
+    <AppConfirm
+      :open="completing !== null"
+      :level="completing?.type === 'immediate' ? 'destructive' : 'consequential'"
+      :title="t('crm.cancellations.complete_title', { service: completing?.service ?? '' })"
+      :description="
+        completing?.type === 'immediate'
+          ? t('crm.cancellations.complete_now_detail')
+          : t('crm.cancellations.complete_term_detail')
+      "
+      :phrase="completing?.type === 'immediate' ? (completing?.service ?? undefined) : undefined"
+      :confirm-label="t('crm.cancellations.complete')"
+      @update:open="(value: boolean) => (completing = value ? completing : null)"
+      @confirm="complete"
+    />
+
+    <AppConfirm
+      :open="withdrawing !== null"
+      level="consequential"
+      :title="t('crm.cancellations.withdraw_title', { service: withdrawing?.service ?? '' })"
+      :description="t('crm.cancellations.withdraw_detail')"
+      :confirm-label="t('crm.cancellations.withdraw')"
+      @update:open="(value: boolean) => (withdrawing = value ? withdrawing : null)"
+      @confirm="withdraw"
+    />
   </AdminLayout>
 </template>

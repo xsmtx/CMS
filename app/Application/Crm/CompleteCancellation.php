@@ -34,8 +34,19 @@ final readonly class CompleteCancellation
 {
     public function __construct(private TransitionService $services) {}
 
-    public function complete(CancellationRequest $request, ?Model $actor = null): CancellationRequest
-    {
+    /**
+     * @param  string|null  $note  Why the operator is completing it now, when
+     *                             that is more than the customer's own reason
+     *                             — "confirmed by telephone", usually. It goes
+     *                             onto the service transition, which is where
+     *                             somebody reading the service's history later
+     *                             will look for it.
+     */
+    public function complete(
+        CancellationRequest $request,
+        ?Model $actor = null,
+        ?string $note = null,
+    ): CancellationRequest {
         $service = $request->service;
 
         if ($service instanceof Service) {
@@ -47,7 +58,7 @@ final readonly class CompleteCancellation
             // the service by hand first has done the work, and the queue
             // item still needs closing.
             if ($service->status !== $next && $service->status->canTransitionTo($next)) {
-                $this->services->handle($service, $next, $actor, $request->reason);
+                $this->services->handle($service, $next, $actor, $note ?? $request->reason);
             }
         }
 

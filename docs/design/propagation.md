@@ -84,22 +84,22 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Todo/Index.vue` | list | 1 |  |  |  |  |
 | [ ] | `Admin/Api/Activity.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Billing/GatewayLog.vue` | form |  | 6 |  |  |  |
-| [ ] | `Admin/Cancellations/Index.vue` | list |  | 8 |  |  |  |
+| [x] | `Admin/Cancellations/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Addons/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Currencies/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Groups/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Options/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Products/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Domains/Index.vue` | list |  | 9 |  |  |  |
+| [x] | `Admin/Domains/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Notifications/Log.vue` | list |  | 5 |  |  |  |
-| [ ] | `Admin/Operations/Index.vue` | list |  | 6 |  |  |  |
+| [x] | `Admin/Operations/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Orders/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Organizations/Index.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Promotions/Index.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Resellers/Index.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Resellers/Report.vue` | detail |  | 7 |  |  |  |
 | [ ] | `Admin/Roles/Index.vue` | list |  | 4 |  |  |  |
-| [ ] | `Admin/Support/Index.vue` | list |  | 6 |  |  |  |
+| [x] | `Admin/Support/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Marketplace.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Modules/ModuleSettings.vue` | form |  |  |  |  |  |

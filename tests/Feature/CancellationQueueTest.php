@@ -8,6 +8,7 @@ use App\Domain\Access\SystemRole;
 use App\Domain\Crm\CancellationStatus;
 use App\Domain\Crm\CancellationType;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Infrastructure\Audit\Models\AuditLog;
 use App\Infrastructure\Crm\Models\CancellationRequest;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Provisioning\Models\Service;
@@ -81,6 +82,36 @@ it('terminates immediately when that is what was asked', function (): void {
     expect($service->fresh()?->status)->toBe(ServiceStatus::Terminated)
         // Through `TransitionService`, so the addons went with it.
         ->and($addon->fresh()?->status->value)->toBe('terminated');
+});
+
+/*
+ * The operator's own reason, recorded where somebody will look for it.
+ *
+ * Completing an immediate request terminates a service, which used to happen
+ * on the first click of a solid primary button. The screen asks for a reason
+ * now, and a reason a screen collects and an endpoint discards is a sentence
+ * nobody reads — so it goes onto the service transition, beside the customer's
+ * own words.
+ */
+it('records why the operator completed it, on the audit row', function (): void {
+    $service = Service::factory()->active()->create();
+    $request = CancellationRequest::factory()->on($service)->immediate()->create();
+
+    $this->actingAs($this->admin, 'staff')
+        ->post("/admin/cancellations/{$request->id}/complete", [
+            'reason' => 'Confirmed by telephone with the account owner.',
+        ])
+        ->assertRedirect();
+
+    // On the audit record, which is where `TransitionService` puts the reason
+    // it is given — the service row keeps no note of why it was terminated.
+    $audit = AuditLog::query()
+        ->withoutGlobalScope('organization')
+        ->where('action', 'provisioning.service.terminated')
+        ->where('target_id', $service->id)
+        ->first();
+
+    expect($audit?->reason)->toBe('Confirmed by telephone with the account owner.');
 });
 
 /**

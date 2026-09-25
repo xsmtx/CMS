@@ -61,6 +61,13 @@ final class FrontEndTranslations
         'billing.transaction_kinds',
         'billing.transactions',
 
+        /*
+         * The operations screen's own words. `automation.tasks` stays on the
+         * server: a task's name is printed onto a run record, and the browser
+         * has no use for the list of everything this installation can run.
+         */
+        'automation.operations',
+
         'catalog.cycles',
 
         'crm.fields',
@@ -69,6 +76,10 @@ final class FrontEndTranslations
         // page. The same words the server already prints on the list.
         'crm.statuses',
         'crm.address_types',
+
+        // The cancellation queue's own words, including the two sentences
+        // that say what completing a request actually does to a service.
+        'crm.cancellations',
 
         /*
          * The design-system primitives and the enterprise reference screens

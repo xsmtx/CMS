@@ -5,6 +5,9 @@ import AppPagination from '../../../Components/AppPagination.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -45,6 +48,17 @@ defineProps<{
   can: { manage: boolean }
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'subject', label: t('automation.operations.subject'), sticky: true },
+  { key: 'type', label: t('automation.operations.type') },
+  { key: 'error', label: t('automation.operations.error') },
+  { key: 'attempt', label: t('automation.operations.attempt'), numeric: true },
+  { key: 'started', label: t('automation.operations.started') },
+  { key: 'actions', label: '' },
+]
+
 function filterByState(state: string | null): void {
   router.get('/admin/operations', state === null ? {} : { state }, {
     preserveState: true,
@@ -66,11 +80,11 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Operations" />
+  <Head :title="t('automation.operations.title')" />
 
   <AdminLayout
-    heading="Operations"
-    description="Long-running work, while it is running and after it has stopped."
+    :heading="t('automation.operations.title')"
+    :description="t('automation.operations.subtitle')"
   >
     <div class="mb-4 flex flex-wrap gap-1.5">
       <button
@@ -83,7 +97,7 @@ function formatDateTime(value: string | null): string {
         "
         @click="filterByState(null)"
       >
-        Needs attention
+        {{ t('automation.operations.needs_attention') }}
         <span v-if="attention > 0" class="text-danger ml-1 tabular-nums">{{ attention }}</span>
       </button>
       <button
@@ -102,12 +116,9 @@ function formatDateTime(value: string | null): string {
       </button>
     </div>
 
-    <AppTable
-      v-if="operations.data.length > 0"
-      :headers="['Client / service', 'Module / action', 'Failure reason', 'Attempt', 'Started', '']"
-    >
-      <tr v-for="operation in operations.data" :key="operation.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="operations.data.length > 0" name="admin-operations" :columns="COLUMNS">
+      <AppTableRow v-for="operation in operations.data" :key="operation.id">
+        <td data-col="subject">
           <Link
             v-if="operation.subjectHref"
             :href="operation.subjectHref"
@@ -117,7 +128,7 @@ function formatDateTime(value: string | null): string {
           </Link>
           <span v-else class="font-medium">{{ operation.subject ?? '—' }}</span>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="type">
           {{ operation.typeLabel }}
           <AppStatus
             :tone="statusTone(operation.state)"
@@ -125,7 +136,7 @@ function formatDateTime(value: string | null): string {
             :label="operation.stateLabel"
           />
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="error">
           <!-- Already redacted on the way in. Shown because an operator
                cannot act on "something went wrong". -->
           <span v-if="operation.error" class="text-content-muted text-chrome block max-w-[46ch]">
@@ -133,23 +144,27 @@ function formatDateTime(value: string | null): string {
           </span>
           <span v-else class="text-content-muted text-chrome">—</span>
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap tabular-nums">
+        <td data-col="attempt" class="text-content-muted whitespace-nowrap tabular-nums">
           {{ operation.attempt }} / {{ operation.maxAttempts }}
           <span v-if="operation.nextAttemptAt" class="text-chrome block">
-            next {{ formatDateTime(operation.nextAttemptAt) }}
+            {{
+              t('automation.operations.next_attempt', {
+                when: formatDateTime(operation.nextAttemptAt),
+              })
+            }}
           </span>
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="started" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(operation.startedAt ?? operation.createdAt) }}
         </td>
-        <td class="px-4 py-2.5 text-right whitespace-nowrap">
+        <td data-col="actions" class="text-right whitespace-nowrap">
           <AppButton
             v-if="can.manage && operation.canRetry"
             size="sm"
             variant="ghost"
             @click="retry(operation)"
           >
-            Retry
+            {{ t('automation.operations.retry') }}
           </AppButton>
           <AppButton
             v-if="can.manage && operation.needsAttention"
@@ -157,16 +172,17 @@ function formatDateTime(value: string | null): string {
             variant="ghost"
             @click="resolve(operation)"
           >
-            Mark solved
+            {{ t('automation.operations.resolve') }}
           </AppButton>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing needs attention"
-      description="Provisioning, registrations, transfers and renewals appear here as they happen."
+      icon="automation"
+      :title="t('automation.operations.empty')"
+      :description="t('automation.operations.empty_description')"
     />
 
     <AppPagination :links="operations.links" :total="operations.total" />

@@ -1324,3 +1324,21 @@ shape is an exemption everything eventually matches.
 twelve screens at once. It has three now: it links to the other pages, it
 renders Laravel's `&laquo; Previous` as a word rather than an entity, and it
 draws nothing at all when there is one page.
+
+**Completing a cancellation request terminated a service on the first click**,
+from a solid primary button in a queue. It is the most destructive thing this
+product does, and the queue offered it with no confirmation, no reason and no
+sentence saying which of the two kinds of request this was. The dialog is level
+4 for an immediate request — reason plus the service's own name typed out — and
+level 2 for an end-of-term one, which only stops the renewal. The reason is
+**sent**: `CompleteCancellation::complete()` takes a note and puts it on the
+service transition, so it lands on the audit row beside the customer's own
+words. A reason a screen collects and an endpoint discards is a sentence nobody
+reads.
+
+A page heading that differs from its menu item by one word leaves the
+breadcrumb saying the same screen twice — "Clients › Products/Services ›
+Products and services". The trail drops its last crumb when the two match
+exactly, so a screen whose name *is* the menu item's takes the label from
+`ui.nav.*` rather than restating it. Where the two are genuinely different
+levels (Utilities › Module Queue › Operations) all three crumbs are right.

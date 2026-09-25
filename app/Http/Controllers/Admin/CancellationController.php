@@ -68,11 +68,26 @@ final class CancellationController extends Controller
         ]);
     }
 
-    public function complete(string $request, CompleteCancellation $cancellations): RedirectResponse
-    {
+    public function complete(
+        Request $http,
+        string $request,
+        CompleteCancellation $cancellations,
+    ): RedirectResponse {
         $this->authorizeFor('services.manage');
 
-        $cancellations->complete($this->find($request), $this->actor->model());
+        /*
+         * Completing an immediate request terminates a service, which is the
+         * most destructive thing this product does. The screen asks for a
+         * reason before it lets the button through; it is recorded on the
+         * transition rather than thrown away.
+         */
+        $data = $http->validate(['reason' => ['nullable', 'string', 'max:500']]);
+
+        $cancellations->complete(
+            $this->find($request),
+            $this->actor->model(),
+            $data['reason'] ?? null,
+        );
 
         return back()->with('status', __('crm.cancellations.completed'));
     }

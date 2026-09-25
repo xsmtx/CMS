@@ -18,6 +18,9 @@ import AppSelect from '../../../Components/AppSelect.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -70,6 +73,21 @@ const props = defineProps<{
   registrars: { value: string; label: string }[]
   counts: { expiring: number; failed: number; pending: number }
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'expand', label: '' },
+  { key: 'id', label: t('domains.domains.id'), optional: true },
+  { key: 'domain', label: t('domains.domains.name'), sticky: true },
+  { key: 'client', label: t('domains.domains.customer') },
+  { key: 'period', label: t('domains.domains.period'), optional: true },
+  { key: 'registrar', label: t('domains.domains.registrar') },
+  { key: 'price', label: t('domains.domains.renewal'), numeric: true },
+  { key: 'due', label: t('domains.domains.next_due') },
+  { key: 'expiry', label: t('domains.domains.expires') },
+  { key: 'status', label: t('domains.domains.status') },
+]
 
 const EMPTY: Criteria = { domain: '', status: '', registrar: '', client: '' }
 
@@ -127,28 +145,28 @@ function addonsOf(detail: DomainDetail): string {
 </script>
 
 <template>
-  <Head title="Domain registrations" />
+  <Head :title="t('ui.nav.domain_registrations')" />
 
   <AdminLayout
-    heading="Domain Registrations"
+    :heading="t('ui.nav.domain_registrations')"
     description="The names this installation holds. A registry that did not answer has not said a name is free."
   >
     <div class="mb-7 flex flex-wrap gap-3">
       <AppStat
-        label="Expiring in 45 days"
+        :label="t('domains.domains.expiring_soon')"
         :value="counts.expiring"
         :tone="counts.expiring > 0 ? 'warning' : 'neutral'"
         @select="filterByStatus('')"
       />
       <AppStat
-        label="Failed"
+        :label="t('domains.domains.failed')"
         :value="counts.failed"
         :tone="counts.failed > 0 ? 'danger' : 'neutral'"
         :active="form.status === 'failed'"
         @select="filterByStatus('failed')"
       />
       <AppStat
-        label="Pending"
+        :label="t('domains.domains.pending')"
         :value="counts.pending"
         :active="form.status === 'pending'"
         @select="filterByStatus('pending')"
@@ -168,10 +186,22 @@ function addonsOf(detail: DomainDetail): string {
       <div
         class="border-line bg-surface-primary grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <AppInput v-model="form.domain" label="Domain" hint="% anchors: kaya% or %.com.tr" />
-        <AppSelect v-model="form.status" label="Status" :options="withBlank(statuses)" />
-        <AppSelect v-model="form.registrar" label="Registrar" :options="withBlank(registrars)" />
-        <AppInput v-model="form.client" label="Client name" />
+        <AppInput
+          v-model="form.domain"
+          :label="t('domains.domains.name')"
+          :hint="t('domains.domains.name_hint')"
+        />
+        <AppSelect
+          v-model="form.status"
+          :label="t('domains.domains.status')"
+          :options="withBlank(statuses)"
+        />
+        <AppSelect
+          v-model="form.registrar"
+          :label="t('domains.domains.registrar')"
+          :options="withBlank(registrars)"
+        />
+        <AppInput v-model="form.client" :label="t('domains.domains.customer')" />
       </div>
 
       <div class="mt-3 flex gap-2">
@@ -180,38 +210,28 @@ function addonsOf(detail: DomainDetail): string {
       </div>
     </form>
 
-    <AppTable
-      v-if="domains.data.length > 0"
-      :headers="[
-        '',
-        'ID',
-        'Domain',
-        'Client name',
-        'Reg period',
-        'Registrar',
-        'Price',
-        'Next due date',
-        'Expiry date',
-        'Status',
-      ]"
-    >
+    <AppTable v-if="domains.data.length > 0" name="admin-domains" :columns="COLUMNS">
       <template v-for="domain in domains.data" :key="domain.id">
-        <tr>
-          <td class="py-3.5 pl-5">
+        <AppTableRow>
+          <td data-col="expand">
             <button
               type="button"
               class="pressable border-line text-content-muted hover:text-content text-chrome inline-flex size-5 items-center justify-center rounded-sm border font-mono leading-none"
               :aria-expanded="expanded === domain.id"
-              :aria-label="expanded === domain.id ? 'Hide details' : 'Show details'"
+              :aria-label="
+                expanded === domain.id
+                  ? t('domains.domains.hide_detail')
+                  : t('domains.domains.show_detail')
+              "
               @click="toggleRow(domain.id)"
             >
               {{ expanded === domain.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+          <td data-col="id" class="text-content-subtle text-chrome font-mono">
             {{ domain.id.slice(-8) }}
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="domain">
             <Link
               :href="`/admin/domains/${domain.id}`"
               class="font-medium underline-offset-4 hover:underline"
@@ -219,7 +239,7 @@ function addonsOf(detail: DomainDetail): string {
               {{ domain.name }}
             </Link>
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="client">
             <Link
               v-if="domain.customerId"
               :href="`/admin/customers/${domain.customerId}`"
@@ -229,33 +249,33 @@ function addonsOf(detail: DomainDetail): string {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
-            {{ domain.years }} {{ domain.years === 1 ? 'year' : 'years' }}
+          <td data-col="period" class="text-content-muted whitespace-nowrap">
+            {{ t('domains.domains.years', { count: domain.years }) }}
           </td>
-          <td class="text-content-muted px-4 py-2.5">{{ domain.registrar ?? '—' }}</td>
-          <td class="px-4 py-2.5 tabular-nums">{{ domain.renewal }}</td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+          <td data-col="registrar" class="text-content-muted">{{ domain.registrar ?? '—' }}</td>
+          <td data-col="price" class="numeric tabular-nums">{{ domain.renewal }}</td>
+          <td data-col="due" class="text-content-muted whitespace-nowrap">
             {{ formatDate(domain.nextDueOn) }}
           </td>
-          <td class="px-4 py-2.5 whitespace-nowrap">
+          <td data-col="expiry" class="whitespace-nowrap">
             {{ formatDate(domain.expiresOn) }}
             <span
               v-if="domain.daysUntilExpiry !== null && domain.daysUntilExpiry <= 45"
               class="text-warning text-chrome block"
             >
-              {{ domain.daysUntilExpiry }} days
+              {{ t('domains.domains.days_left', { count: domain.daysUntilExpiry }) }}
             </span>
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="status">
             <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
           </td>
-        </tr>
+        </AppTableRow>
 
         <tr v-if="expanded === domain.id" class="bg-surface-secondary">
-          <td colspan="10" class="px-5 py-4">
+          <td :colspan="COLUMNS.length" class="px-5 py-4">
             <dl class="text-chrome grid gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
               <div>
-                <dt class="text-content-muted">Order #</dt>
+                <dt class="text-content-muted">{{ t('domains.domains.order_number') }}</dt>
                 <dd class="mt-0.5">
                   <Link
                     v-if="domain.detail.orderId"
@@ -268,19 +288,19 @@ function addonsOf(detail: DomainDetail): string {
                 </dd>
               </div>
               <div>
-                <dt class="text-content-muted">Order type</dt>
+                <dt class="text-content-muted">{{ t('domains.domains.order_type') }}</dt>
                 <dd class="mt-0.5">{{ domain.detail.orderType }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Registration date</dt>
+                <dt class="text-content-muted">{{ t('domains.domains.registered_on') }}</dt>
                 <dd class="mt-0.5">{{ formatDate(domain.detail.registeredOn) }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Payment method</dt>
+                <dt class="text-content-muted">{{ t('domains.domains.payment_method') }}</dt>
                 <dd class="mt-0.5">{{ domain.detail.paymentMethod ?? '—' }}</dd>
               </div>
               <div class="sm:col-span-3 lg:col-span-4">
-                <dt class="text-content-muted">Addons</dt>
+                <dt class="text-content-muted">{{ t('domains.domains.addons') }}</dt>
                 <dd class="mt-0.5">{{ addonsOf(domain.detail) }}</dd>
               </div>
             </dl>
@@ -291,14 +311,16 @@ function addonsOf(detail: DomainDetail): string {
 
     <EmptyState
       v-else-if="hasFilters"
-      title="No domain matches"
-      description="Every criterion here runs against a real column: a name, a status, a registrar this installation has used."
+      icon="domains"
+      :title="t('domains.domains.no_match')"
+      :description="t('domains.domains.no_match_description')"
     />
 
     <EmptyState
       v-else
-      title="No domains yet"
-      description="A domain appears here when an order containing one is paid for."
+      icon="domains"
+      :title="t('domains.domains.empty')"
+      :description="t('domains.domains.empty_description')"
     />
 
     <AppPagination :links="domains.links" :total="domains.total" />
