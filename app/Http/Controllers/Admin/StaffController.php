@@ -57,7 +57,10 @@ final class StaffController extends Controller
                 'id' => $member->id,
                 'name' => $member->name,
                 'email' => $member->email,
+                // Two fields, because the screen tones one and prints the
+                // other: the value alone read as "active" in every language.
                 'status' => $member->status->value,
+                'statusLabel' => (string) __($member->status->labelKey()),
                 'twoFactor' => $member->hasTwoFactorEnabled(),
                 'lastLoginAt' => $member->last_login_at?->toIso8601String(),
                 'roles' => $member->roles->pluck('name')->all(),

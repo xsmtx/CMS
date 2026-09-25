@@ -19,6 +19,9 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -89,6 +92,20 @@ const props = defineProps<{
   }
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'expand', label: '' },
+  { key: 'id', label: t('provisioning.addons.id'), optional: true },
+  { key: 'addon', label: t('provisioning.addons.addon'), sticky: true },
+  { key: 'service', label: t('provisioning.addons.service') },
+  { key: 'client', label: t('provisioning.addons.customer') },
+  { key: 'cycle', label: t('provisioning.addons.billing_cycle'), optional: true },
+  { key: 'price', label: t('provisioning.addons.price'), numeric: true },
+  { key: 'due', label: t('provisioning.addons.next_due') },
+  { key: 'status', label: t('provisioning.addons.status') },
+]
+
 const EMPTY: Criteria = {
   product_type: '',
   server: '',
@@ -157,18 +174,18 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
 </script>
 
 <template>
-  <Head title="Service addons" />
+  <Head :title="t('provisioning.addons.title')" />
 
   <AdminLayout
-    heading="Service addons"
-    description="What customers pay for on top of what they bought. Sold with a product, never added here."
+    :heading="t('provisioning.addons.title')"
+    :description="t('provisioning.addons.subtitle')"
   >
     <div class="mb-5 flex flex-wrap items-center gap-2.5">
       <AppButton :aria-expanded="open" @click="open = !open">
-        {{ open ? 'Hide search' : 'Search / filter' }}
+        {{ open ? t('provisioning.addons.hide_search') : t('provisioning.addons.search_filter') }}
         <span
           v-if="hasFilters"
-          class="bg-brand text-content-inverse -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+          class="bg-brand text-content-inverse text-label -mr-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 tabular-nums"
         >
           {{ activeFilterCount }}
         </span>
@@ -190,10 +207,12 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             :class="!includeInactive ? 'translate-x-3.5' : 'translate-x-0.5'"
           />
         </span>
-        Hide inactive clients
+        {{ t('provisioning.addons.hide_inactive') }}
       </button>
 
-      <span v-if="hasFilters" class="text-content-muted text-chrome">{{ addons.total }} match</span>
+      <span v-if="hasFilters" class="text-content-muted text-chrome">{{
+        t('provisioning.addons.matches', { count: addons.total })
+      }}</span>
     </div>
 
     <form v-if="open" class="mb-6" @submit.prevent="apply">
@@ -245,38 +264,29 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
       </div>
     </form>
 
-    <AppTable
-      v-if="addons.data.length > 0"
-      :headers="[
-        '',
-        'ID',
-        'Addon',
-        'Product / service',
-        'Client name',
-        'Billing cycle',
-        'Price',
-        'Next due date',
-        'Status',
-      ]"
-    >
+    <AppTable v-if="addons.data.length > 0" name="admin-addons" :columns="COLUMNS">
       <template v-for="addon in addons.data" :key="addon.id">
-        <tr>
-          <td class="py-3.5 pl-5">
+        <AppTableRow>
+          <td data-col="expand">
             <button
               type="button"
               class="pressable border-line text-content-muted hover:text-content text-chrome inline-flex size-5 items-center justify-center rounded-sm border font-mono leading-none"
               :aria-expanded="expanded === addon.id"
-              :aria-label="expanded === addon.id ? 'Hide details' : 'Show details'"
+              :aria-label="
+                expanded === addon.id
+                  ? t('provisioning.addons.hide_detail')
+                  : t('provisioning.addons.show_detail')
+              "
               @click="toggleRow(addon.id)"
             >
               {{ expanded === addon.id ? '−' : '+' }}
             </button>
           </td>
-          <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+          <td data-col="id" class="text-content-subtle text-chrome font-mono">
             {{ addon.id.slice(-8) }}
           </td>
-          <td class="px-4 py-2.5 font-medium">{{ addon.name }}</td>
-          <td class="px-4 py-2.5">
+          <td data-col="addon" class="font-medium">{{ addon.name }}</td>
+          <td data-col="service">
             <Link
               v-if="addon.serviceId"
               :href="`/admin/services/${addon.serviceId}`"
@@ -286,7 +296,7 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="client">
             <Link
               v-if="addon.customerId"
               :href="`/admin/customers/${addon.customerId}`"
@@ -296,23 +306,23 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
             </Link>
             <span v-else>—</span>
           </td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
-            {{ addon.billingCycleLabel ?? 'One time' }}
+          <td data-col="cycle" class="text-content-muted whitespace-nowrap">
+            {{ addon.billingCycleLabel ?? t('provisioning.addons.one_time') }}
           </td>
-          <td class="px-4 py-2.5 tabular-nums">{{ addon.recurring }}</td>
-          <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+          <td data-col="price" class="numeric tabular-nums">{{ addon.recurring }}</td>
+          <td data-col="due" class="text-content-muted whitespace-nowrap">
             {{ formatDate(addon.nextDueOn) }}
           </td>
-          <td class="px-4 py-2.5">
+          <td data-col="status">
             <AppStatus :tone="statusTone(addon.status)" :label="addon.statusLabel" />
           </td>
-        </tr>
+        </AppTableRow>
 
         <tr v-if="expanded === addon.id" class="bg-surface-secondary">
-          <td colspan="9" class="px-4 py-4">
+          <td :colspan="COLUMNS.length" class="px-4 py-4">
             <dl class="text-chrome grid gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
               <div>
-                <dt class="text-content-muted">Order #</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.order_number') }}</dt>
                 <dd class="mt-0.5">
                   <Link
                     v-if="addon.detail.orderId"
@@ -325,32 +335,34 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
                 </dd>
               </div>
               <div>
-                <dt class="text-content-muted">Domain</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.domain') }}</dt>
                 <dd class="mt-0.5">{{ addon.detail.domain ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Server</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.server') }}</dt>
                 <dd class="mt-0.5">{{ addon.detail.server ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Payment method</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.payment_method') }}</dt>
                 <dd class="mt-0.5">{{ addon.detail.paymentMethod ?? '—' }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Registration date</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.registered_on') }}</dt>
                 <dd class="mt-0.5">{{ formatDate(addon.detail.registeredOn) }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Quantity</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.quantity') }}</dt>
                 <dd class="mt-0.5 tabular-nums">{{ addon.detail.quantity }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">Setup fee</dt>
+                <dt class="text-content-muted">{{ t('provisioning.addons.setup_fee') }}</dt>
                 <dd class="mt-0.5 tabular-nums">{{ addon.detail.setup }}</dd>
               </div>
               <div>
-                <dt class="text-content-muted">In the catalog as</dt>
-                <dd class="mt-0.5">{{ addon.detail.catalogName ?? 'Retired' }}</dd>
+                <dt class="text-content-muted">{{ t('provisioning.addons.catalog_name') }}</dt>
+                <dd class="mt-0.5">
+                  {{ addon.detail.catalogName ?? t('provisioning.addons.retired') }}
+                </dd>
               </div>
             </dl>
           </td>
@@ -360,14 +372,14 @@ function withBlank(options: Option[], label = 'Any'): Option[] {
 
     <EmptyState
       v-else-if="hasFilters"
-      title="No addon matches"
-      description="Closed accounts are hidden unless the toggle above says otherwise."
+      :title="t('provisioning.addons.no_match')"
+      :description="t('provisioning.addons.no_match_description')"
     />
 
     <EmptyState
       v-else
-      title="No addons yet"
-      description="An addon appears here when an order containing one is paid for."
+      :title="t('provisioning.addons.empty')"
+      :description="t('provisioning.addons.empty_description')"
     />
 
     <AppPagination :links="addons.links" :total="addons.total" />

@@ -118,6 +118,9 @@ final class FrontEndTranslations
         'identity.impersonation.active',
         'identity.impersonation.stop',
 
+        'identity.staff',
+        'identity.users',
+        'identity.statuses',
         'identity.tokens',
         'api.tokens',
         'api.scopes',
@@ -161,6 +164,7 @@ final class FrontEndTranslations
         // the server already formatted.
         'reports.aging',
 
+        'provisioning.addons',
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',
@@ -168,6 +172,7 @@ final class FrontEndTranslations
         'support.portal',
         'support.statuses',
         'support.tickets',
+        'support.replies',
     ];
 
     /**

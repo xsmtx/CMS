@@ -2,12 +2,14 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppPagination from '../../../Components/AppPagination.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -17,6 +19,7 @@ interface StaffRow {
   name: string
   email: string
   status: string
+  statusLabel: string
   twoFactor: boolean
   lastLoginAt: string | null
   roles: string[]
@@ -32,6 +35,17 @@ const props = defineProps<{
   can: { create: boolean }
 }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'name', label: t('identity.staff.name'), sticky: true },
+  { key: 'roles', label: t('identity.staff.roles') },
+  { key: 'status', label: t('identity.staff.status') },
+  { key: 'two_factor', label: t('identity.staff.two_factor') },
+  { key: 'login', label: t('identity.staff.last_login') },
+  { key: 'actions', label: '' },
+]
+
 const search = ref(props.filters.search)
 
 let timeout: ReturnType<typeof setTimeout> | undefined
@@ -45,14 +59,14 @@ watch(search, (value) => {
 })
 
 function formatTime(value: string | null): string {
-  return value ? new Date(value).toLocaleString() : 'Never'
+  return value ? new Date(value).toLocaleString() : t('identity.staff.never')
 }
 </script>
 
 <template>
-  <Head title="Staff" />
+  <Head :title="t('identity.staff.title')" />
 
-  <AdminLayout heading="Staff" description="People who can sign in to the admin area.">
+  <AdminLayout :heading="t('identity.staff.title')" :description="t('identity.staff.subtitle')">
     <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div class="w-full max-w-xs">
         <AppInput v-model="search" label="Search" placeholder="Name or email address" />
@@ -65,40 +79,43 @@ function formatTime(value: string | null): string {
 
     <EmptyState
       v-if="staff.data.length === 0"
-      title="No staff match this search"
-      description="Staff accounts are created here and activated through a password reset link, so no password is ever shared."
+      :title="t('identity.staff.empty')"
+      :description="t('identity.staff.empty_description')"
     />
 
     <template v-else>
-      <AppTable :headers="['Name', 'Roles', 'Status', 'Two-factor', 'Last sign-in', '']">
-        <tr v-for="member in staff.data" :key="member.id">
-          <td class="px-4 py-2.5">
+      <AppTable name="admin-staff" :columns="COLUMNS">
+        <AppTableRow v-for="member in staff.data" :key="member.id">
+          <td data-col="name">
             <p class="font-medium">{{ member.name }}</p>
             <p class="text-content-muted text-chrome">{{ member.email }}</p>
           </td>
-          <td class="text-content-muted px-4 py-2.5">
-            {{ member.roles.length > 0 ? member.roles.join(', ') : 'No roles' }}
+          <td data-col="roles" class="text-content-muted">
+            {{ member.roles.length > 0 ? member.roles.join(', ') : t('identity.staff.no_roles') }}
           </td>
-          <td class="px-4 py-2.5">
-            <AppStatus :tone="statusTone(member.status)" :label="member.status" />
+          <td data-col="status">
+            <AppStatus :tone="statusTone(member.status)" :label="member.statusLabel" />
           </td>
-          <td class="px-4 py-2.5">
-            <AppBadge :tone="member.twoFactor ? 'success' : 'neutral'">
-              {{ member.twoFactor ? 'On' : 'Off' }}
-            </AppBadge>
+          <td data-col="two_factor">
+            <!-- On or off is a state, so it carries a shape rather than a
+                 colour alone. -->
+            <AppStatus
+              :tone="member.twoFactor ? 'healthy' : 'neutral'"
+              :label="member.twoFactor ? t('identity.staff.on') : t('identity.staff.off')"
+            />
           </td>
-          <td class="text-content-muted text-chrome px-4 py-2.5">
+          <td data-col="login" class="text-content-muted text-chrome">
             {{ formatTime(member.lastLoginAt) }}
           </td>
-          <td class="px-4 py-2.5 text-right">
+          <td data-col="actions" class="text-right">
             <Link
               :href="`/admin/staff/${member.id}/edit`"
               class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
             >
-              Edit
+              {{ t('identity.staff.edit') }}
             </Link>
           </td>
-        </tr>
+        </AppTableRow>
       </AppTable>
 
       <AppPagination :links="staff.links" :total="staff.total" />

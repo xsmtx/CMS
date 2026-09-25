@@ -11,7 +11,8 @@ import { ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -33,6 +34,8 @@ defineProps<{
   departments: { value: string; label: string }[]
   can: { manage: boolean }
 }>()
+
+const { t } = useTranslations()
 
 const editing = ref<string | null>(null)
 
@@ -77,46 +80,63 @@ function remove(): void {
 </script>
 
 <template>
-  <Head title="Predefined replies" />
+  <Head :title="t('support.replies.title')" />
 
-  <AdminLayout
-    heading="Predefined Replies"
-    description="The answers a desk gives over and over. A reply tied to a department only appears in that queue."
-  >
+  <AdminLayout :heading="t('support.replies.title')" :description="t('support.replies.subtitle')">
     <div v-if="can.manage && editing === null" class="mb-6">
-      <AppButton variant="primary" @click="startNew">New reply</AppButton>
+      <AppButton variant="primary" @click="startNew">{{ t('support.replies.add') }}</AppButton>
     </div>
 
-    <AppCard
+    <DetailSection
       v-if="editing !== null"
       class="mb-6"
-      :title="editing === 'new' ? 'New reply' : 'Edit reply'"
+      :title="editing === 'new' ? t('support.replies.add') : t('support.replies.edit')"
     >
       <form class="grid max-w-2xl gap-5" @submit.prevent="submit">
-        <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+        <AppInput
+          v-model="form.name"
+          :label="t('support.replies.name')"
+          :error="form.errors.name"
+          required
+        />
         <AppSelect
           v-model="form.department_id"
-          label="Department"
-          hint="Leave blank to offer it in every queue."
-          :options="[{ value: '', label: 'Every department' }, ...departments]"
+          :label="t('support.replies.department')"
+          :hint="t('support.replies.department_hint')"
+          :options="[{ value: '', label: t('support.replies.every_department') }, ...departments]"
         />
-        <AppTextarea v-model="form.body" label="Reply" :rows="8" :error="form.errors.body" />
+        <AppTextarea
+          v-model="form.body"
+          :label="t('support.replies.body')"
+          :rows="8"
+          :error="form.errors.body"
+        />
 
         <div class="flex gap-2">
-          <AppButton type="submit" variant="primary" :loading="form.processing">Save</AppButton>
-          <AppButton type="button" variant="ghost" @click="editing = null">Cancel</AppButton>
+          <AppButton type="submit" variant="primary" :loading="form.processing">{{
+            t('support.replies.save')
+          }}</AppButton>
+          <AppButton type="button" variant="ghost" @click="editing = null">{{
+            t('ui.confirm.cancel')
+          }}</AppButton>
         </div>
       </form>
-    </AppCard>
+    </DetailSection>
 
     <div v-if="replies.length > 0" class="flex flex-col gap-4">
-      <AppCard v-for="reply in replies" :key="reply.id">
+      <div
+        v-for="reply in replies"
+        :key="reply.id"
+        class="border-line bg-surface-primary rounded-lg border p-4"
+      >
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
               <h2 class="text-title font-semibold tracking-tight">{{ reply.name }}</h2>
-              <AppBadge>{{ reply.department ?? 'Every department' }}</AppBadge>
-              <AppBadge tone="neutral">used {{ reply.usedCount }}×</AppBadge>
+              <AppBadge>{{ reply.department ?? t('support.replies.every_department') }}</AppBadge>
+              <AppBadge tone="neutral">{{
+                t('support.replies.used', { count: reply.usedCount })
+              }}</AppBadge>
             </div>
             <p
               class="text-content-muted text-body mt-2 max-w-[80ch] leading-relaxed whitespace-pre-line"
@@ -126,19 +146,22 @@ function remove(): void {
           </div>
 
           <div v-if="can.manage" class="flex gap-2">
-            <AppButton size="sm" @click="startEdit(reply)">Edit</AppButton>
-            <AppButton size="sm" variant="danger-subtle" @click="removing = reply"
-              >Delete</AppButton
-            >
+            <AppButton size="sm" @click="startEdit(reply)">{{
+              t('support.replies.edit_action')
+            }}</AppButton>
+            <AppButton size="sm" variant="danger-subtle" @click="removing = reply">{{
+              t('support.replies.delete')
+            }}</AppButton>
           </div>
         </div>
-      </AppCard>
+      </div>
     </div>
 
     <EmptyState
       v-else
-      title="No predefined replies"
-      description="Write the answer once here and the ticket screen offers it on every reply box."
+      icon="ticket"
+      :title="t('support.replies.empty')"
+      :description="t('support.replies.empty_description')"
     />
     <AppConfirm
       :open="removing !== null"

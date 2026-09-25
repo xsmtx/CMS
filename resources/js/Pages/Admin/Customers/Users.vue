@@ -7,6 +7,9 @@ import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppMenu from '../../../Components/AppMenu.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
@@ -26,6 +29,18 @@ const props = defineProps<{
   filters: { search: string }
   can: { manage: boolean }
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'id', label: t('identity.users.id'), optional: true, offByDefault: true },
+  { key: 'first', label: t('identity.users.first_name') },
+  { key: 'last', label: t('identity.users.last_name') },
+  { key: 'email', label: t('identity.users.email'), sticky: true },
+  { key: 'two_factor', label: t('identity.users.two_factor') },
+  { key: 'login', label: t('identity.users.last_login') },
+  { key: 'actions', label: '' },
+]
 
 const search = ref(props.filters.search)
 const changing = ref<UserRow | null>(null)
@@ -61,29 +76,28 @@ function savePassword(): void {
 }
 
 function formatDateTime(value: string | null): string {
-  return value === null ? 'Never' : new Date(value).toLocaleString()
+  return value === null ? t('identity.users.never') : new Date(value).toLocaleString()
 }
 </script>
 
 <template>
-  <Head title="Manage users" />
+  <Head :title="t('identity.users.title')" />
 
-  <AdminLayout
-    heading="Manage users"
-    description="Everyone who can sign into the customer area. This is the list you open when somebody cannot get in."
-  >
+  <AdminLayout :heading="t('identity.users.title')" :description="t('identity.users.description')">
     <form class="mb-5 max-w-lg" @submit.prevent="submitSearch">
       <div class="flex items-end gap-2">
         <div class="flex-1">
-          <AppInput v-model="search" label="User name or email address" />
+          <AppInput v-model="search" :label="t('identity.users.search')" />
         </div>
-        <AppButton type="submit" variant="primary">Search</AppButton>
+        <AppButton type="submit" variant="primary">{{
+          t('identity.users.search_action')
+        }}</AppButton>
       </div>
       <!-- Under the row rather than under the field: a hint inside the
            input's own column makes it taller than the button beside it,
            and `items-end` then aligns the button to the hint. -->
       <p class="text-content-muted text-chrome mt-2">
-        A full name works. % anchors: Zeyn% or %nep.
+        {{ t('identity.users.search_hint') }}
       </p>
     </form>
 
@@ -92,7 +106,7 @@ function formatDateTime(value: string | null): string {
          reason goes. -->
     <div v-if="changing" class="border-line bg-surface-primary mb-6 rounded-lg border p-4">
       <p class="text-body font-semibold">
-        Change the password for {{ changing.firstName }} {{ changing.lastName }}
+        {{ t('identity.users.change_for', { name: `${changing.firstName} ${changing.lastName}` }) }}
       </p>
       <p class="text-content-muted text-chrome mt-1">{{ changing.email }}</p>
 
@@ -126,21 +140,18 @@ function formatDateTime(value: string | null): string {
         <AppButton variant="primary" :loading="passwordForm.processing" @click="savePassword">
           Change it
         </AppButton>
-        <AppButton variant="ghost" @click="changing = null">Cancel</AppButton>
+        <AppButton variant="ghost" @click="changing = null">{{ t('ui.confirm.cancel') }}</AppButton>
       </div>
     </div>
 
-    <AppTable
-      v-if="users.data.length > 0"
-      :headers="['ID', 'First name', 'Last name', 'Email address', 'Two factor', 'Last login', '']"
-    >
-      <tr v-for="user in users.data" :key="user.id">
-        <td class="text-content-subtle text-chrome px-4 py-2.5 font-mono">
+    <AppTable v-if="users.data.length > 0" name="portal-users" :columns="COLUMNS">
+      <AppTableRow v-for="user in users.data" :key="user.id">
+        <td data-col="id" class="text-content-subtle text-chrome font-mono">
           {{ user.id.slice(-8) }}
         </td>
-        <td class="px-4 py-2.5">{{ user.firstName }}</td>
-        <td class="px-4 py-2.5">{{ user.lastName }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="first">{{ user.firstName }}</td>
+        <td data-col="last">{{ user.lastName }}</td>
+        <td data-col="email">
           <span class="font-medium">{{ user.email }}</span>
           <Link
             v-if="user.customer"
@@ -150,15 +161,15 @@ function formatDateTime(value: string | null): string {
             {{ user.customer }}
           </Link>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="two_factor" class="px-4 py-2.5">
           <AppBadge :tone="user.twoFactor ? 'success' : 'neutral'">
-            {{ user.twoFactor ? 'Enabled' : 'Disabled' }}
+            {{ user.twoFactor ? t('identity.users.enabled') : t('identity.users.disabled') }}
           </AppBadge>
         </td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+        <td data-col="login" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(user.lastLoginAt) }}
         </td>
-        <td class="px-4 py-2.5 text-right">
+        <td data-col="actions" class="text-right">
           <!-- The panel is teleported out of the table: an `absolute` one
                is clipped by the table's own horizontal scroll. -->
           <AppMenu v-if="can.manage" v-slot="{ close }" label="Manage user">
@@ -180,13 +191,13 @@ function formatDateTime(value: string | null): string {
             </button>
           </AppMenu>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="No users match"
-      description="Only contacts with portal access appear here — a person on a customer's record who was never given a login is not a user."
+      :title="t('identity.users.none')"
+      :description="t('identity.users.none_description')"
     />
 
     <p v-if="users.last_page > 1" class="text-content-muted text-chrome mt-4">

@@ -60,20 +60,20 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Catalog/Addons/Form.vue` | form | 2 |  |  |  |  |
 | [ ] | `Admin/Catalog/Currencies/Form.vue` | form | 1 |  |  | 1 |  |
 | [ ] | `Admin/Catalog/Products/Form.vue` | form | 2 |  |  |  |  |
-| [ ] | `Admin/Customers/Users.vue` | list |  | 7 |  |  |  |
+| [x] | `Admin/Customers/Users.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Orders/Review.vue` | form | 1 |  |  | 1 |  |
 | [ ] | `Admin/Resellers/Create.vue` | form | 2 |  |  |  |  |
 | [ ] | `Admin/Resources/Adapters.vue` | list | 2 |  |  |  | yes |
 | [ ] | `Admin/Resources/Explorer.vue` | list |  | 5 |  |  | yes |
 | [ ] | `Admin/Roles/Form.vue` | form | 2 |  |  |  |  |
-| [ ] | `Admin/Staff/Index.vue` | list |  | 6 |  |  |  |
-| [ ] | `Admin/Support/Replies.vue` | list | 2 |  |  |  |  |
+| [x] | `Admin/Staff/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Support/Replies.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
 | [ ] | `Admin/Automation/Index.vue` | list | 1 | 8 |  |  |  |
 | [x] | `Admin/Billing/Transactions.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
-| [ ] | `Admin/Services/Addons.vue` | list |  | 8 |  | 1 |  |
+| [x] | `Admin/Services/Addons.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Automation/Dunning.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Catalog/Groups/Form.vue` | form | 1 |  |  |  |  |
