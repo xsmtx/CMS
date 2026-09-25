@@ -5,13 +5,15 @@ import { computed } from 'vue'
 import type { CustomFieldDefinition } from '../../../Components/CustomFieldInput.vue'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import CustomFieldInput from '../../../Components/CustomFieldInput.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTaxIdentity } from '../../../composables/useTaxIdentity'
+import { useTranslations } from '../../../composables/useTranslations'
 
 const props = defineProps<{
   customer: {
@@ -37,7 +39,13 @@ const props = defineProps<{
 // world, and an operator entering a Turkish customer should read Vergi No.
 const { label: taxIdLabel } = useTaxIdentity()
 
+const { t } = useTranslations()
+
 const isEditing = computed(() => props.customer !== null)
+
+const heading = computed(() =>
+  isEditing.value ? t('ui.client_form.edit') : t('ui.client_form.add'),
+)
 
 interface CustomerForm {
   company_name: string
@@ -95,73 +103,87 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit customer' : 'Add customer'" />
+  <Head :title="heading" />
 
-  <AdminLayout
-    :heading="isEditing ? 'Edit customer' : 'Add customer'"
-    description="A company name or a legal name is enough; sole traders do not need both."
-  >
-    <form class="flex flex-col gap-5" @submit.prevent="submit">
-      <AppCard title="Profile">
+  <AdminLayout :heading="heading">
+    <template #header>
+      <PageHeader :title="heading" :description="t('ui.client_form.intro')" />
+    </template>
+
+    <form class="flex max-w-4xl flex-col gap-8" @submit.prevent="submit">
+      <DetailSection :title="t('ui.client_form.profile')">
         <div class="grid max-w-xl gap-5">
           <AppInput
             v-model="form.company_name"
-            label="Company name"
+            :label="t('ui.client_new.company_name')"
             :error="form.errors.company_name"
           />
-          <AppInput v-model="form.legal_name" label="Legal name" :error="form.errors.legal_name" />
+          <AppInput
+            v-model="form.legal_name"
+            :label="t('ui.client_new.legal_name')"
+            :error="form.errors.legal_name"
+          />
           <div class="grid gap-5 sm:grid-cols-2">
             <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
             <AppInput
               v-model="form.tax_id_type"
-              label="Tax id type"
-              hint="For example VAT or ABN."
+              :label="t('ui.client_new.tax_id_type')"
+              :hint="t('ui.client_new.tax_id_type_hint')"
             />
           </div>
           <div class="grid gap-5 sm:grid-cols-2">
             <AppSelect
               v-model="form.status"
-              label="Status"
+              :label="t('ui.client_new.status')"
               :options="statuses"
               :error="form.errors.status"
             />
             <AppInput
               v-model="form.currency_code"
-              label="Currency"
-              hint="Three-letter ISO code."
+              :label="t('ui.client_new.currency')"
+              :hint="t('ui.client_form.currency_hint')"
               :error="form.errors.currency_code"
               required
             />
           </div>
           <AppCheckbox
             v-model="form.marketing_opt_in"
-            label="Opted in to marketing email"
-            description="Transactional mail about services they pay for is always sent."
+            :label="t('ui.client_form.marketing')"
+            :description="t('ui.client_form.marketing_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard title="Billing preferences">
+      <!--
+        The same three settings the create screen states, reading the same
+        strings: two copies of a sentence about automatic suspension is two
+        places for it to drift.
+      -->
+      <DetailSection :title="t('ui.client_new.billing')">
         <div class="grid max-w-xl gap-4">
           <AppCheckbox
             v-model="form.send_overdue_notices"
-            label="Send overdue notices"
-            description="Turn this off for an account somebody chases by telephone. The dunning sequence still runs; it just says nothing."
+            :label="t('ui.client_new.overdue')"
+            :description="t('ui.client_new.overdue_hint')"
           />
           <AppCheckbox
             v-model="form.automatic_suspension"
-            label="Allow automatic suspension"
-            description="Whether dunning may suspend or terminate this customer's services when an invoice goes unpaid."
+            :label="t('ui.client_new.suspension')"
+            :description="t('ui.client_new.suspension_hint')"
           />
           <AppCheckbox
             v-model="form.separate_invoices"
-            label="Invoice each item separately"
-            description="Off means one invoice per currency for everything renewing together, which is what most customers want."
+            :label="t('ui.client_new.separate')"
+            :description="t('ui.client_new.separate_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard v-if="tags.length > 0" title="Tags">
+      <DetailSection
+        v-if="tags.length > 0"
+        :title="t('ui.client_form.tags')"
+        :description="t('ui.client_form.tags_intro')"
+      >
         <div class="grid gap-3 sm:grid-cols-3">
           <AppCheckbox
             v-for="tag in tags"
@@ -171,9 +193,13 @@ function submit(): void {
             @update:model-value="(checked: boolean) => toggleTag(tag.id, checked)"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard v-if="customFields.length > 0" title="Additional fields">
+      <DetailSection
+        v-if="customFields.length > 0"
+        :title="t('ui.client_new.additional')"
+        :description="t('ui.client_new.additional_intro')"
+      >
         <div class="grid max-w-xl gap-5">
           <CustomFieldInput
             v-for="field in customFields"
@@ -183,17 +209,17 @@ function submit(): void {
             :error="customFieldError(field.key)"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex gap-2">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save changes' : 'Create customer' }}
+          {{ isEditing ? t('ui.client_form.save') : t('ui.client_form.create') }}
         </AppButton>
         <AppButton
           :href="isEditing ? `/admin/customers/${customer?.id}` : '/admin/customers'"
           variant="ghost"
         >
-          Cancel
+          {{ t('ui.confirm.cancel') }}
         </AppButton>
       </div>
     </form>

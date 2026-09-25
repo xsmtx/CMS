@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
 
@@ -64,7 +67,26 @@ const props = defineProps<{
   can: { manage: boolean }
 }>()
 
+const { t } = useTranslations()
+
 const replyForm = useForm({ body: '', internal: false })
+
+/**
+ * The clock, which is the thing a support screen is actually about.
+ *
+ * `First response due` carries the breach rather than a badge in the header
+ * doing it: the deadline and the fact it was missed are the same fact, and
+ * separating them makes an operator look in two places.
+ */
+const clock = computed<DescriptionItem[]>(() => [
+  { key: 'opened', label: t('ui.ticket.opened'), value: formatDateTime(props.ticket.openedAt) },
+  { key: 'due', label: t('ui.ticket.due') },
+  {
+    key: 'answered',
+    label: t('ui.ticket.answered'),
+    value: formatDateTime(props.ticket.firstRespondedAt),
+  },
+])
 
 const settingsForm = useForm({
   department_id: props.ticket.departmentId ?? '',
@@ -104,12 +126,49 @@ function formatDateTime(value: string | null): string {
 <template>
   <Head :title="ticket.subject" />
 
-  <AdminLayout
-    :heading="ticket.subject"
-    :description="`${ticket.number} · ${ticket.customer ?? ''}`"
-  >
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
+  <AdminLayout :heading="ticket.subject">
+    <template #header>
+      <PageHeader :title="ticket.subject">
+        <template #status>
+          <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
+          <!-- Two marks, because they are two facts: what state the ticket is
+               in, and whether its clock has run out. -->
+          <AppStatus v-if="ticket.hasBreached" tone="critical" :label="t('ui.ticket.overdue')" />
+        </template>
+
+        <template #meta>
+          <span class="font-mono">{{ ticket.number }}</span>
+          <template v-if="ticket.customer">
+            <span aria-hidden="true">·</span>
+            <span>{{ ticket.customer }}</span>
+          </template>
+          <template v-if="ticket.department">
+            <span aria-hidden="true">·</span>
+            <span>{{ ticket.department }}</span>
+          </template>
+          <span aria-hidden="true">·</span>
+          <span>{{ ticket.assignee ?? t('ui.ticket.unassigned') }}</span>
+        </template>
+
+        <template v-if="can.manage && ticket.transitions.length > 0" #actions>
+          <AppButton
+            v-for="target in ticket.transitions"
+            :key="target.value"
+            @click="transition(target.value)"
+          >
+            {{ target.label }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
+
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      <div class="flex min-w-0 flex-col gap-8">
+        <!--
+          A frame per reply, because each one is a thing somebody wrote at a
+          time. An internal note is bordered differently on purpose: an agent
+          must never be in doubt about whether the customer can read it.
+        -->
         <ul class="flex flex-col gap-4">
           <li
             v-for="reply in ticket.replies"
@@ -122,11 +181,11 @@ function formatDateTime(value: string | null): string {
             "
           >
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p class="text-body font-medium">
-                {{ reply.author }}
-                <!-- Loud on purpose: an agent must never be in doubt about
-                     whether the customer can read what they wrote. -->
-                <AppBadge v-if="reply.isInternal" class="ml-2" tone="warning">Internal</AppBadge>
+              <p class="text-body flex flex-wrap items-center gap-x-2 font-medium">
+                <span>{{ reply.author }}</span>
+                <AppBadge v-if="reply.isInternal" tone="warning">
+                  {{ t('ui.ticket.internal') }}
+                </AppBadge>
               </p>
               <p class="text-content-subtle text-chrome">{{ formatDateTime(reply.createdAt) }}</p>
             </div>
@@ -141,7 +200,7 @@ function formatDateTime(value: string | null): string {
               <li v-for="file in reply.attachments" :key="file.id">
                 <a
                   :href="`/attachments/${file.id}`"
-                  class="border-line hover:bg-surface-secondary text-chrome inline-flex items-center gap-2 rounded-sm border px-2.5 py-1"
+                  class="border-line hover:bg-surface-hover text-chrome inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 transition-colors duration-(--duration-fast)"
                 >
                   {{ file.name }}
                   <span class="text-content-subtle">{{ file.size }}</span>
@@ -151,10 +210,16 @@ function formatDateTime(value: string | null): string {
           </li>
         </ul>
 
-        <AppCard v-if="can.manage" title="Reply">
+        <DetailSection v-if="can.manage" :title="t('ui.ticket.reply')">
+          <template v-if="options.canned.length > 0" #actions>
+            <AppButton size="sm" variant="ghost" @click="showCanned = !showCanned">
+              {{ t('ui.ticket.canned') }}
+            </AppButton>
+          </template>
+
           <AppTextarea
             v-model="replyForm.body"
-            label="Message"
+            :label="t('ui.ticket.message')"
             :error="replyForm.errors.body"
             :rows="6"
           />
@@ -162,135 +227,124 @@ function formatDateTime(value: string | null): string {
           <div class="mt-3">
             <AppCheckbox
               v-model="replyForm.internal"
-              label="Internal note"
-              description="Only staff see this, and it does not stop the customer's clock."
+              :label="t('ui.ticket.internal_note')"
+              :description="t('ui.ticket.internal_note_hint')"
             />
           </div>
 
-          <div class="mt-4 flex flex-wrap gap-2">
+          <div class="mt-4">
             <AppButton variant="primary" :loading="replyForm.processing" @click="send">
-              {{ replyForm.internal ? 'Add note' : 'Send reply' }}
-            </AppButton>
-            <AppButton
-              v-if="options.canned.length > 0"
-              variant="ghost"
-              @click="showCanned = !showCanned"
-            >
-              Canned responses
+              {{ replyForm.internal ? t('ui.ticket.add_note') : t('ui.ticket.send') }}
             </AppButton>
           </div>
 
-          <ul v-if="showCanned" class="divide-line border-line mt-4 divide-y rounded-sm border">
+          <ul
+            v-if="showCanned"
+            class="divide-line-subtle border-line mt-4 divide-y rounded-lg border"
+          >
             <li
               v-for="canned in options.canned"
               :key="canned.id"
               class="flex items-center justify-between gap-3 px-3 py-2"
             >
               <span class="text-body">{{ canned.name }}</span>
-              <AppButton size="sm" variant="ghost" @click="insert(canned.body)">Insert</AppButton>
+              <AppButton size="sm" variant="ghost" @click="insert(canned.body)">
+                {{ t('ui.ticket.insert') }}
+              </AppButton>
             </li>
           </ul>
-        </AppCard>
+        </DetailSection>
       </div>
 
-      <div class="flex flex-col gap-6">
-        <AppCard title="Status">
-          <div class="flex flex-wrap items-center gap-2">
-            <AppStatus :tone="statusTone(ticket.status)" :label="ticket.statusLabel" />
-            <AppBadge v-if="ticket.hasBreached" tone="danger">Overdue</AppBadge>
-          </div>
+      <aside class="flex min-w-0 flex-col gap-8">
+        <DetailSection :title="t('ui.ticket.clock')" :description="t('ui.ticket.clock_intro')">
+          <DescriptionList :items="clock">
+            <template #due>
+              <span class="flex flex-wrap items-center gap-x-2">
+                <span :class="ticket.hasBreached ? 'text-danger' : ''">
+                  {{ formatDateTime(ticket.dueAt) }}
+                </span>
+                <AppStatus
+                  v-if="ticket.hasBreached"
+                  tone="critical"
+                  :label="t('ui.ticket.missed')"
+                />
+              </span>
+            </template>
+          </DescriptionList>
+        </DetailSection>
 
-          <dl class="divide-line text-body mt-4 divide-y">
-            <div class="flex justify-between gap-4 py-2 first:pt-0">
-              <dt class="text-content-muted">Opened</dt>
-              <dd>{{ formatDateTime(ticket.openedAt) }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2">
-              <dt class="text-content-muted">First response due</dt>
-              <dd>{{ formatDateTime(ticket.dueAt) }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2 last:pb-0">
-              <dt class="text-content-muted">First answered</dt>
-              <dd>{{ formatDateTime(ticket.firstRespondedAt) }}</dd>
-            </div>
-          </dl>
-
-          <div v-if="can.manage" class="mt-4 flex flex-wrap gap-2">
-            <AppButton
-              v-for="target in ticket.transitions"
-              :key="target.value"
-              size="sm"
-              variant="ghost"
-              @click="transition(target.value)"
-            >
-              {{ target.label }}
-            </AppButton>
-          </div>
-        </AppCard>
-
-        <AppCard v-if="can.manage" title="Assignment">
-          <div class="flex flex-col gap-3">
+        <DetailSection
+          v-if="can.manage"
+          :title="t('ui.ticket.assignment')"
+          :description="t('ui.ticket.assignment_intro')"
+        >
+          <form class="flex flex-col gap-3" @submit.prevent="saveSettings">
             <AppSelect
               v-model="settingsForm.department_id"
-              label="Department"
+              :label="t('ui.ticket.department')"
               :options="options.departments"
             />
             <AppSelect
               v-model="settingsForm.assigned_to"
-              label="Assigned to"
-              :options="[{ value: '', label: 'Unassigned' }, ...options.agents]"
+              :label="t('ui.ticket.assigned_to')"
+              :options="[{ value: '', label: t('ui.ticket.unassigned') }, ...options.agents]"
             />
             <AppSelect
               v-model="settingsForm.priority"
-              label="Priority"
+              :label="t('ui.ticket.priority')"
               :options="options.priorities"
             />
             <div>
-              <AppButton size="sm" :loading="settingsForm.processing" @click="saveSettings">
-                Save
+              <AppButton type="submit" variant="primary" :loading="settingsForm.processing">
+                {{ t('ui.ticket.save') }}
               </AppButton>
             </div>
-          </div>
-        </AppCard>
+          </form>
+        </DetailSection>
 
-        <AppCard v-if="ticket.service || ticket.domain || ticket.invoice" title="Related">
-          <dl class="divide-line text-body divide-y">
+        <DetailSection
+          v-if="ticket.service || ticket.domain || ticket.invoice"
+          :title="t('ui.ticket.related')"
+          :description="t('ui.ticket.related_intro')"
+        >
+          <dl class="divide-line-subtle text-body divide-y">
             <div v-if="ticket.service" class="flex justify-between gap-4 py-2 first:pt-0">
-              <dt class="text-content-muted">Service</dt>
+              <dt class="text-content-muted">{{ t('ui.ticket.service') }}</dt>
               <dd>
-                <a
+                <Link
                   :href="`/admin/services/${ticket.serviceId}`"
                   class="underline-offset-4 hover:underline"
                 >
                   {{ ticket.service }}
-                </a>
+                </Link>
               </dd>
             </div>
             <div v-if="ticket.domain" class="flex justify-between gap-4 py-2">
-              <dt class="text-content-muted">Domain</dt>
+              <dt class="text-content-muted">{{ t('ui.ticket.domain') }}</dt>
               <dd>
-                <a
+                <Link
                   :href="`/admin/domains/${ticket.domainId}`"
                   class="underline-offset-4 hover:underline"
                 >
                   {{ ticket.domain }}
-                </a>
+                </Link>
               </dd>
             </div>
             <div v-if="ticket.invoice" class="flex justify-between gap-4 py-2 last:pb-0">
-              <dt class="text-content-muted">Invoice</dt>
+              <dt class="text-content-muted">{{ t('ui.ticket.invoice') }}</dt>
               <dd>
-                <a
+                <Link
                   :href="`/admin/invoices/${ticket.invoiceId}`"
                   class="underline-offset-4 hover:underline"
                 >
                   {{ ticket.invoice }}
-                </a>
+                </Link>
               </dd>
             </div>
           </dl>
-        </AppCard>
-      </div>
+        </DetailSection>
+      </aside>
     </div>
   </AdminLayout>
 </template>
