@@ -20,11 +20,15 @@ import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 
 interface Source {
   key: string
@@ -58,6 +62,19 @@ const props = defineProps<{
   runs: Run[]
 }>()
 
+const { t } = useTranslations()
+
+const RUN_COLUMNS: TableColumn[] = [
+  { key: 'when', label: t('ui.import.when') },
+  { key: 'mode', label: t('ui.import.mode') },
+  { key: 'state', label: t('ui.import.state') },
+  { key: 'imported', label: t('ui.import.imported'), numeric: true },
+  { key: 'skipped', label: t('ui.import.skipped'), numeric: true },
+  { key: 'failed', label: t('ui.import.not_imported'), numeric: true },
+  { key: 'who', label: t('ui.import.who'), optional: true },
+  { key: 'report', label: '' },
+]
+
 const source = computed(() => props.sources[0] ?? null)
 
 const ready = computed(() => source.value !== null && source.value.problems.length === 0)
@@ -89,22 +106,23 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Import" />
+  <Head :title="t('ui.import.title')" />
 
-  <AdminLayout
-    heading="Import"
-    description="Bring a previous system across. Nothing is written until you ask for a live run."
-  >
-    <div class="flex flex-col gap-5">
-      <AppCard
+  <AdminLayout :heading="t('ui.import.title')">
+    <template #header>
+      <PageHeader :title="t('ui.import.title')" :description="t('ui.import.intro')" />
+    </template>
+
+    <div class="flex flex-col gap-8">
+      <DetailSection
         v-if="source"
-        :title="`From ${source.label}`"
-        :description="`Read over the [${source.connection}] database connection. The importer issues nothing but select.`"
+        :title="t('ui.import.from', { source: source.label })"
+        :description="t('ui.import.from_intro', { connection: source.connection })"
       >
         <!-- All of them at once. Finding them one attempt at a time is how a
              migration takes a week. -->
         <AppAlert v-if="source.problems.length > 0" tone="warning">
-          <p class="font-medium">This source is not ready yet:</p>
+          <p class="font-medium">{{ t('ui.import.not_ready') }}</p>
           <ul class="mt-1.5 list-inside list-disc">
             <li v-for="problem in source.problems" :key="problem">{{ problem }}</li>
           </ul>
@@ -112,18 +130,20 @@ function formatDateTime(value: string | null): string {
 
         <div v-else class="flex flex-col gap-4">
           <div>
-            <p class="text-content-subtle text-label mb-2 uppercase">What to bring across</p>
+            <p class="text-content-subtle text-label mb-2 uppercase">
+              {{ t('ui.import.what') }}
+            </p>
 
             <ul class="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
               <li v-for="domain in domains" :key="domain.value">
                 <label
-                  class="hover:bg-surface-hover flex items-center gap-2.5 rounded-sm px-2 py-1.5"
+                  class="hover:bg-surface-hover flex items-center gap-2.5 rounded-sm px-2 py-1.5 transition-colors duration-(--duration-fast)"
                 >
                   <input
                     v-model="form.domains"
                     type="checkbox"
                     :value="domain.value"
-                    class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
+                    class="border-line-strong accent-brand size-3.5 rounded-sm border"
                   />
                   <span class="text-body flex-1">{{ domain.label }}</span>
                   <span class="text-content-subtle text-label tabular-nums">
@@ -133,7 +153,7 @@ function formatDateTime(value: string | null): string {
               </li>
             </ul>
 
-            <p v-if="form.errors.domains" class="text-danger text-chrome mt-2">
+            <p v-if="form.errors.domains" class="text-danger text-chrome mt-2" role="alert">
               {{ form.errors.domains }}
             </p>
           </div>
@@ -146,67 +166,69 @@ function formatDateTime(value: string | null): string {
           -->
           <div class="flex flex-wrap items-center gap-2">
             <AppButton variant="primary" :loading="form.processing" @click="submit('dry_run')">
-              Dry run
+              {{ t('ui.import.dry_run') }}
             </AppButton>
             <AppButton variant="secondary" :loading="form.processing" @click="submit('live')">
-              Import for real
+              {{ t('ui.import.live') }}
             </AppButton>
           </div>
 
-          <p class="text-content-subtle text-label">
-            A dry run reads everything and writes nothing. A live run can be repeated safely: rows
-            that already came across are skipped rather than duplicated.
+          <p class="text-content-subtle text-chrome leading-relaxed">
+            {{ t('ui.import.repeatable') }}
           </p>
         </div>
-      </AppCard>
+      </DetailSection>
 
       <EmptyState
         v-else
         icon="database"
-        title="No import source is configured"
-        description="Set IMPORT_WHMCS_CONNECTION to a read-only database connection holding the previous system."
+        :title="t('ui.import.no_source')"
+        :description="t('ui.import.no_source_detail', { name: 'IMPORT_WHMCS_CONNECTION' })"
       />
 
-      <AppCard title="Runs" description="Every attempt, dry or live, with what it did.">
-        <AppTable
-          v-if="runs.length > 0"
-          :headers="['When', 'Mode', 'State', 'Imported', 'Skipped', 'Not imported', 'Who', '']"
-          :numeric="[3, 4, 5]"
-        >
-          <tr v-for="run in runs" :key="run.id">
-            <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+      <DetailSection
+        :title="t('ui.import.runs')"
+        :description="t('ui.import.runs_intro')"
+        :divided="runs.length === 0"
+      >
+        <AppTable v-if="runs.length > 0" name="import-runs" :columns="RUN_COLUMNS">
+          <AppTableRow v-for="run in runs" :key="run.id">
+            <td data-col="when" class="text-content-muted whitespace-nowrap">
               {{ formatDateTime(run.createdAt) }}
             </td>
-            <td class="px-4 py-2.5">{{ run.modeLabel }}</td>
-            <td class="px-4 py-2.5">
-              <AppStatus :tone="toneOf(run.status)" :label="run.statusLabel" compact />
+            <td data-col="mode">{{ run.modeLabel }}</td>
+            <td data-col="state">
+              <AppStatus :tone="toneOf(run.status)" :label="run.statusLabel" />
             </td>
-            <td class="numeric px-4 py-2.5">{{ run.created }}</td>
-            <td class="numeric px-4 py-2.5">{{ run.skipped }}</td>
+            <td data-col="imported" class="numeric">{{ run.created }}</td>
+            <td data-col="skipped" class="numeric">{{ run.skipped }}</td>
             <!-- The number an operator opens the report for. -->
-            <td class="numeric px-4 py-2.5" :class="run.failed > 0 ? 'text-danger' : ''">
+            <td data-col="failed" class="numeric" :class="run.failed > 0 ? 'text-danger' : ''">
               {{ run.failed }}
             </td>
-            <td class="text-content-muted px-4 py-2.5">{{ run.startedBy ?? '—' }}</td>
-            <td class="px-4 py-2.5 text-right">
+            <td data-col="who" class="text-content-muted">{{ run.startedBy ?? '—' }}</td>
+            <td data-col="report" class="text-right">
               <Link
                 :href="`/admin/import/${run.id}`"
                 class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
               >
-                Report
+                {{ t('ui.import.report') }}
               </Link>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
 
-        <p v-else class="text-content-muted text-body">Nothing has been imported yet.</p>
-      </AppCard>
+        <EmptyState
+          v-else
+          variant="plain"
+          icon="history"
+          :title="t('ui.import.no_runs')"
+          :description="t('ui.import.no_runs_detail')"
+        />
+      </DetailSection>
 
       <AppAlert v-if="ready" tone="info">
-        An import is a copy of history. It writes rows and sends nothing: no customer is emailed, no
-        service is provisioned, and no invoice is renumbered. Imported products arrive
-        <strong>unpriced and hidden</strong>, because a legacy price of zero means free here — price
-        them before you sell them.
+        {{ t('ui.import.note') }}
       </AppAlert>
     </div>
   </AdminLayout>

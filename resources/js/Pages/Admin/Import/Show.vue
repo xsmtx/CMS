@@ -11,14 +11,18 @@
  * "4,182 of 4,190" is readable. Without the denominator a report cannot say
  * whether anything was missed.
  */
-import { Head, Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 
 interface Run {
   id: string
@@ -62,6 +66,23 @@ const rows = computed(() =>
   })),
 )
 
+const { t } = useTranslations()
+
+const DOMAIN_COLUMNS: TableColumn[] = [
+  { key: 'domain', label: t('ui.import.domain') },
+  { key: 'expected', label: t('ui.import.in_source'), numeric: true },
+  { key: 'created', label: t('ui.import.imported'), numeric: true },
+  { key: 'skipped', label: t('ui.import.already_there'), numeric: true },
+  { key: 'failed', label: t('ui.import.not_imported'), numeric: true },
+]
+
+const FAILURE_COLUMNS: TableColumn[] = [
+  { key: 'domain', label: t('ui.import.domain') },
+  { key: 'external', label: t('ui.import.in_source') },
+  { key: 'label', label: t('ui.import.what_it_was') },
+  { key: 'why', label: t('ui.import.why_not') },
+]
+
 const tone = computed<StatusTone>(() => {
   if (props.run.status === 'failed') return 'critical'
   if (props.run.status === 'completed') return props.run.failed > 0 ? 'warning' : 'healthy'
@@ -76,78 +97,79 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-  <Head title="Import report" />
+  <Head :title="t('ui.import.report_title')" />
 
-  <AdminLayout
-    heading="Import report"
-    :description="`${run.modeLabel} from ${run.source}, ${formatDateTime(run.createdAt)}.`"
-  >
-    <div class="flex flex-col gap-5">
-      <div class="flex flex-wrap items-center gap-3">
-        <AppStatus :tone="tone" :label="run.statusLabel" />
-        <span v-if="run.startedBy" class="text-content-muted text-chrome">
-          started by {{ run.startedBy }}
-        </span>
-        <Link
-          href="/admin/import"
-          class="text-content-muted hover:text-content text-chrome ml-auto underline-offset-4 hover:underline"
-        >
-          Back to import
-        </Link>
-      </div>
+  <AdminLayout :heading="t('ui.import.report_title')">
+    <template #header>
+      <PageHeader :title="t('ui.import.report_title')">
+        <template #status>
+          <AppStatus :tone="tone" :label="run.statusLabel" />
+        </template>
 
+        <template #meta>
+          <span>{{ run.modeLabel }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ run.source }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ formatDateTime(run.createdAt) }}</span>
+          <template v-if="run.startedBy">
+            <span aria-hidden="true">·</span>
+            <span>{{ t('ui.import.started_by', { name: run.startedBy }) }}</span>
+          </template>
+        </template>
+      </PageHeader>
+    </template>
+
+    <div class="flex flex-col gap-8">
       <!-- A run that could not proceed at all, which is a different thing from a
            run with failures in it. -->
       <AppAlert v-if="run.error" tone="danger">{{ run.error }}</AppAlert>
 
       <AppAlert v-else-if="run.mode === 'dry_run'" tone="info">
-        This was a dry run: nothing was written and nothing was mapped. The numbers below are what a
-        live run would do.
+        {{ t('ui.import.was_dry_run') }}
       </AppAlert>
 
-      <AppCard
-        title="By domain"
-        description="What the previous system held, and what happened to it."
+      <DetailSection
+        :title="t('ui.import.by_domain')"
+        :description="t('ui.import.by_domain_intro')"
+        :divided="false"
       >
-        <AppTable
-          :headers="['Domain', 'In the source', 'Imported', 'Already there', 'Not imported']"
-          :numeric="[1, 2, 3, 4]"
-        >
-          <tr v-for="row in rows" :key="row.domain">
-            <td class="px-4 py-2.5">{{ row.domain }}</td>
+        <AppTable name="import-domains" :columns="DOMAIN_COLUMNS">
+          <AppTableRow v-for="row in rows" :key="row.domain">
+            <td data-col="domain">{{ row.domain }}</td>
             <!-- The denominator. Without it the report cannot say whether
                  anything was missed. -->
-            <td class="numeric text-content-muted px-4 py-2.5">{{ row.expected }}</td>
-            <td class="numeric px-4 py-2.5">{{ row.created }}</td>
-            <td class="numeric text-content-muted px-4 py-2.5">{{ row.skipped }}</td>
-            <td class="numeric px-4 py-2.5" :class="row.failed > 0 ? 'text-danger' : ''">
+            <td data-col="expected" class="numeric text-content-muted">{{ row.expected }}</td>
+            <td data-col="created" class="numeric">{{ row.created }}</td>
+            <td data-col="skipped" class="numeric text-content-muted">{{ row.skipped }}</td>
+            <td data-col="failed" class="numeric" :class="row.failed > 0 ? 'text-danger' : ''">
               {{ row.failed }}
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
+      <DetailSection
         v-if="failures.length > 0"
-        title="What did not come across"
-        description="Each of these is a row somebody has to decide about. Nothing was lost silently."
+        :title="t('ui.import.failures')"
+        :description="t('ui.import.failures_intro')"
+        :divided="false"
       >
-        <AppTable :headers="['Domain', 'In the source', 'What it was', 'Why not']">
-          <tr v-for="failure in failures" :key="failure.id">
-            <td class="text-content-muted px-4 py-2.5">{{ failure.domain }}</td>
-            <td class="text-chrome px-4 py-2.5 font-mono">{{ failure.externalId }}</td>
+        <AppTable name="import-failures" :columns="FAILURE_COLUMNS">
+          <AppTableRow v-for="failure in failures" :key="failure.id">
+            <td data-col="domain" class="text-content-muted">{{ failure.domain }}</td>
+            <td data-col="external" class="text-chrome font-mono">{{ failure.externalId }}</td>
             <!-- A name somebody recognises. "Client 4182" is not a customer they
                  can telephone about. -->
-            <td class="px-4 py-2.5">{{ failure.label ?? '—' }}</td>
-            <td class="text-danger px-4 py-2.5">{{ failure.message ?? '—' }}</td>
-          </tr>
+            <td data-col="label">{{ failure.label ?? '—' }}</td>
+            <td data-col="why" class="text-danger">{{ failure.message ?? '—' }}</td>
+          </AppTableRow>
         </AppTable>
 
-        <p class="text-content-subtle text-label mt-3">
-          Fixing the cause and running the import again brings only these across: everything that
-          already came over is skipped.
+        <p class="text-content-subtle text-chrome mt-3 leading-relaxed">
+          {{ t('ui.import.rerun') }}
         </p>
-      </AppCard>
+      </DetailSection>
     </div>
   </AdminLayout>
 </template>

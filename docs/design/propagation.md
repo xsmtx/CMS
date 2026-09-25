@@ -53,8 +53,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Promotions/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Staff/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Support/Overview.vue` | overview |  |  |  |  | yes |
-| [ ] | `Admin/Import/Index.vue` | list | 2 | 8 |  |  |  |
-| [ ] | `Admin/Import/Show.vue` | detail | 2 | 9 |  |  |  |
+| [x] | `Admin/Import/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Import/Show.vue` | detail |  |  |  |  | yes |
 | [ ] | `Admin/Infrastructure/Index.vue` | list | 2 | 12 |  |  |  |
 | [ ] | `Admin/Tlds/Index.vue` | list | 2 | 6 |  |  |  |
 | [ ] | `Admin/Catalog/Addons/Form.vue` | form | 2 |  |  |  |  |
