@@ -7,12 +7,14 @@ namespace App\Providers;
 use App\Application\Licensing\LicencePublicKey;
 use App\Domain\Licensing\Contracts\Entitlements;
 use App\Domain\Licensing\Contracts\LicenceClient;
+use App\Domain\Secrets\Contracts\SecretStore;
 use App\Http\Middleware\AssignCorrelationId;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Licensing\HttpLicenceClient;
 use App\Infrastructure\Licensing\LicensedEntitlements;
 use App\Infrastructure\Licensing\UnconfiguredLicenceClient;
 use App\Infrastructure\Licensing\UnrestrictedEntitlements;
+use App\Infrastructure\Secrets\EncryptedDatabaseSecrets;
 use App\Support\Audit\Contracts\AuditRecorder;
 use App\Support\Branding\StorefrontComposer;
 use App\Support\Correlation\CorrelationContext;
@@ -36,6 +38,14 @@ final class PlatformServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        /*
+         * The credential vault (`advanced-operations-plan.md` §7). Bound to
+         * the contract so a `vault-hashicorp` module can answer instead
+         * without anything above it knowing, and a singleton because the
+         * boundary it reads is per request.
+         */
+        $this->app->singleton(SecretStore::class, EncryptedDatabaseSecrets::class);
+
         $this->app->singleton(SecretRedactor::class, function (): SecretRedactor {
             /** @var list<string> $keys */
             $keys = config('platform.redaction.keys', []);
