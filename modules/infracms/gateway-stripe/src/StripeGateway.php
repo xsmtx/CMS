@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Billing\Gateways;
+namespace InfraCMS\GatewayStripe;
 
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Billing\GatewayCapabilities;

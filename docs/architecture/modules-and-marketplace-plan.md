@@ -135,9 +135,16 @@ when it is false, and `FetchPackage` refuses before it opens a socket.
 
 1. The marketplace itself, proven end to end against a fake vendor, with the
    existing `status-board` example served through it. *This lands first, because
-   the three adapter moves below need somewhere to be delivered.*
+   the three adapter moves below need somewhere to be delivered.* **Done.**
 2. `gateway-stripe`, `provisioning-cpanel`, `registrar-namecheap` extracted from
-   core, with the upgrade path in §2.
+   core, with the upgrade path in §2. **Done, 2026-09-26.** The three packages
+   are in `modules/infracms/`; the three service providers register the manual
+   adapters and nothing else; `2026_10_09_000100_move_core_adapters_into_modules`
+   carries a configured installation across and `AdapterMoveTest` drives every
+   case of it, including the one where half a Stripe is configured and nothing
+   should be carried at all. The old config keys stay in `config/platform.php`
+   as the upgrade source, because `env()` in a migration answers null wherever
+   the config is cached.
 3. Handoff #2's families, in their own phases, delivered through the
    marketplace rather than copied into `modules/`.
 

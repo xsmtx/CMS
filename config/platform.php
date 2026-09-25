@@ -182,6 +182,10 @@ return [
         // service is left in `failed` for a human.
         'job_tries' => (int) env('PROVISIONING_JOB_TRIES', 3),
 
+        /*
+         * cPanel is a package now (`provisioning-cpanel`). Kept as the
+         * upgrade source, like Stripe's keys.
+         */
         'modules' => [
             'cpanel' => [
                 'enabled' => (bool) env('PROVISIONING_CPANEL_ENABLED', true),
@@ -218,6 +222,10 @@ return [
             explode(',', (string) env('DOMAINS_DEFAULT_NAMESERVERS', '')),
         )),
 
+        /*
+         * Namecheap is a package now (`registrar-namecheap`). Kept as the
+         * upgrade source, like Stripe's keys above.
+         */
         'registrars' => [
             'namecheap' => [
                 'username' => env('NAMECHEAP_USERNAME'),
@@ -601,8 +609,14 @@ return [
                 'instructions' => env('GATEWAY_MANUAL_INSTRUCTIONS', ''),
             ],
 
+            /*
+             * Stripe is a package now (`gateway-stripe`). These keys are
+             * kept as the upgrade source: the migration that moves the
+             * adapter out of core reads them to configure the package, and
+             * `env()` in a migration answers null on any deployment that has
+             * cached its config. Nothing else reads them.
+             */
             'stripe' => [
-                // Registered only when both keys are present.
                 'secret' => env('STRIPE_SECRET'),
                 'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
                 'api_base' => env('STRIPE_API_BASE', 'https://api.stripe.com'),

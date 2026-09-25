@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Provisioning\Modules;
+namespace InfraCMS\ProvisioningCpanel;
 
 use App\Domain\Provisioning\ConnectionResult;
 use App\Domain\Provisioning\Contracts\OpensPanelSessions;
@@ -49,7 +49,7 @@ use Throwable;
  * idempotency are tested against faked HTTP, which proves the code and not
  * the integration.
  */
-final readonly class CpanelModule implements OpensPanelSessions, ProvisioningModule
+final readonly class CpanelProvisioner implements OpensPanelSessions, ProvisioningModule
 {
     public function __construct(
         private int $timeout = 30,

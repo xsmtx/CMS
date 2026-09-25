@@ -1,0 +1,44 @@
+{
+    "slug": "registrar-namecheap",
+    "name": "Namecheap",
+    "type": "registrar",
+    "version": "1.0.0",
+    "description": "Registers, transfers and renews domains through the Namecheap API.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\RegistrarNamecheap",
+    "entrypoint": "NamecheapModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "username",
+            "label": "API user",
+            "type": "text",
+            "required": true
+        },
+        {
+            "key": "api_key",
+            "label": "API key",
+            "type": "secret",
+            "required": true
+        },
+        {
+            "key": "client_ip",
+            "label": "Whitelisted IP",
+            "type": "text",
+            "required": false,
+            "hint": "The address Namecheap has on its API allow-list. Empty sends the server's own."
+        },
+        {
+            "key": "sandbox",
+            "label": "Sandbox",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "hint": "Uses api.sandbox.namecheap.com, where nothing is really registered."
+        }
+    ]
+}

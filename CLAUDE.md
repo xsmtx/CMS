@@ -1548,3 +1548,32 @@ What a visitor still cannot do on the shop is choose a language: `SetLocale`
 follows the signed-in person, and an anonymous visitor gets the
 installation's. A public language switch is a cookie decision nobody has made
 yet.
+
+**Stripe, cPanel and Namecheap are packages now** (`modules/infracms/`), and
+core registers only the manual three. The rule is the one the plan states: an
+adapter this repository has never proven against the thing it adapts should
+not be in the distribution every installation runs — the day Stripe changes a
+field, a core release is the wrong unit of shipping.
+
+**It is a migration, not a deletion.** An installation whose settings already
+configured one of them gets the package installed, configured from those same
+values and enabled, by
+`2026_10_09_000100_move_core_adapters_into_modules`. A release that silently
+stopped taking payments would be the worst upgrade this product could ship.
+The migration reads `config()`, not `env()` — PHPStan says why, and the reason
+matters: `env()` outside the config directory answers null wherever the config
+is cached, which is every production deployment. So the three old config
+blocks stay in `config/platform.php`, marked as the upgrade source and read by
+nothing else.
+
+`loadModuleClasses($slug)` in `tests/Pest.php` puts one package's classes on
+the autoloader without installing or enabling it — a test of an adapter has no
+reason to enable a module, and a module's `src` is not on Composer's map
+(`ModuleLoader` registers its own, prepended, when a module is enabled).
+
+Two lessons from doing it: a `/*` block comment left unterminated eats the code
+after it (that is the second time — the first was `FrontEndTranslations`), and a
+`php artisan migrate` interrupted mid-run leaves the test database with tables
+and no `migrations` row, which then fails as "table already exists" on every
+later run. `db:wipe --env=testing` then `migrate --env=testing` is the way back,
+with nothing else running against that database.

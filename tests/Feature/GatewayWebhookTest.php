@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Billing\PaymentStatus;
 use App\Infrastructure\Billing\GatewayRegistry;
-use App\Infrastructure\Billing\Gateways\StripeGateway;
 use App\Infrastructure\Billing\Models\GatewayEventRecord;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\Payment;
@@ -13,8 +12,13 @@ use App\Infrastructure\Billing\Models\Transaction;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Organizations\Models\Organization;
 use Illuminate\Testing\TestResponse;
+use InfraCMS\GatewayStripe\StripeGateway;
 
 beforeEach(function (): void {
+    // The adapter lives in a package now; this puts its classes on the
+    // autoloader without installing or enabling anything.
+    loadModuleClasses('gateway-stripe');
+
     $this->secret = 'whsec_test_secret';
 
     // A registry holding a real Stripe adapter pointed at a faked API, so

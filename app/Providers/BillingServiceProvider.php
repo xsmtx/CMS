@@ -6,7 +6,6 @@ namespace App\Providers;
 
 use App\Infrastructure\Billing\GatewayRegistry;
 use App\Infrastructure\Billing\Gateways\ManualGateway;
-use App\Infrastructure\Billing\Gateways\StripeGateway;
 use App\Infrastructure\Modules\ActiveModules;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -31,22 +30,17 @@ final class BillingServiceProvider extends ServiceProvider
                 ));
             }
 
-            $secret = config('platform.billing.gateways.stripe.secret');
-            $webhookSecret = config('platform.billing.gateways.stripe.webhook_secret');
-
-            // Both keys or neither: a Stripe without a webhook secret can
-            // take money it can never confirm.
-            if (is_string($secret) && $secret !== '' && is_string($webhookSecret) && $webhookSecret !== '') {
-                $registry->register(new StripeGateway(
-                    secret: $secret,
-                    webhookSecret: $webhookSecret,
-                    apiBase: (string) config('platform.billing.gateways.stripe.api_base', 'https://api.stripe.com'),
-                ));
-            }
-
-            // And whatever the enabled modules add. Asked last, so a module
-            // cannot displace an adapter this installation ships with: a
-            // registry keys by name, and core has already claimed its own.
+            /*
+             * Stripe is a package now (`gateway-stripe`), and so are cPanel
+             * and Namecheap. Core keeps the manual three forever, because
+             * "an operator does it by hand" must always be a real answer —
+             * and ships no adapter it has never proven against the thing it
+             * adapts.
+             *
+             * Whatever the enabled modules add is asked last, so a module
+             * cannot displace an adapter this installation ships with: a
+             * registry keys by name, and core has already claimed its own.
+             */
             foreach ($app->make(ActiveModules::class)->gateways() as $gateway) {
                 $registry->register($gateway);
             }

@@ -6,7 +6,6 @@ use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Billing\PaymentStatus;
 use App\Infrastructure\Billing\GatewayRegistry;
 use App\Infrastructure\Billing\Gateways\ManualGateway;
-use App\Infrastructure\Billing\Gateways\StripeGateway;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\InvoiceItem;
 use App\Infrastructure\Billing\Models\Payment;
@@ -15,8 +14,13 @@ use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Organizations\Models\Organization;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Illuminate\Support\Facades\Http;
+use InfraCMS\GatewayStripe\StripeGateway;
 
 beforeEach(function (): void {
+    // The adapter lives in a package now; this puts its classes on the
+    // autoloader without installing or enabling anything.
+    loadModuleClasses('gateway-stripe');
+
     $this->withoutVite();
 
     $this->seed(ProviderOrganizationSeeder::class);

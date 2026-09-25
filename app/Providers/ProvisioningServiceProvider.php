@@ -8,7 +8,6 @@ use App\Application\Provisioning\Listeners\StartFulfilment;
 use App\Domain\Ordering\Events\OrderPaid;
 use App\Infrastructure\Modules\ActiveModules;
 use App\Infrastructure\Provisioning\ModuleRegistry;
-use App\Infrastructure\Provisioning\Modules\CpanelModule;
 use App\Infrastructure\Provisioning\Modules\ManualModule;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
@@ -34,14 +33,11 @@ final class ProvisioningServiceProvider extends ServiceProvider
 
             $registry->register(new ManualModule);
 
-            if ((bool) config('platform.provisioning.modules.cpanel.enabled', true)) {
-                $registry->register(new CpanelModule(
-                    timeout: (int) config('platform.provisioning.timeout', 30),
-                    retries: (int) config('platform.provisioning.retries', 2),
-                ));
-            }
-
-            // And whatever the enabled modules add. Asked last, so a module
+            // cPanel is a package now (`provisioning-cpanel`). Manual stays
+            // here forever: "an operator does it by hand" must always be a
+            // real answer.
+            //
+            // Whatever the enabled modules add is asked last, so a module
             // cannot displace an adapter this installation ships with: a
             // registry keys by name, and core has already claimed its own.
             foreach ($app->make(ActiveModules::class)->provisioningModules() as $module) {

@@ -8,15 +8,19 @@ use App\Domain\Provisioning\ProvisioningRequest;
 use App\Domain\Provisioning\ServerConnection;
 use App\Domain\Provisioning\ServiceReference;
 use App\Domain\Provisioning\ServiceStatus;
-use App\Infrastructure\Provisioning\Modules\CpanelModule;
 use Illuminate\Support\Facades\Http;
+use InfraCMS\ProvisioningCpanel\CpanelProvisioner;
 
 /**
  * Tested against faked HTTP, which proves the code and not the
  * integration. It has never talked to a real WHM.
  */
 beforeEach(function (): void {
-    $this->module = new CpanelModule(timeout: 5, retries: 0);
+    // The adapter lives in a package now; this puts its classes on the
+    // autoloader without installing or enabling anything.
+    loadModuleClasses('provisioning-cpanel');
+
+    $this->module = new CpanelProvisioner(timeout: 5, retries: 0);
 
     $this->server = new ServerConnection(
         id: 'srv_1',

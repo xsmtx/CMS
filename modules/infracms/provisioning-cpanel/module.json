@@ -1,0 +1,33 @@
+{
+    "slug": "provisioning-cpanel",
+    "name": "cPanel / WHM",
+    "type": "provisioning",
+    "version": "1.0.0",
+    "description": "Creates, suspends and terminates cPanel accounts on a WHM server you add to the fleet, and opens a panel session without a password.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\ProvisioningCpanel",
+    "entrypoint": "CpanelModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "30",
+            "hint": "How long to wait for WHM before giving up on a call."
+        },
+        {
+            "key": "retries",
+            "label": "Retries",
+            "type": "text",
+            "required": false,
+            "default": "2",
+            "hint": "Bounded retries with backoff. Creating an account twice is safe: WHM's \"account already exists\" is read as success."
+        }
+    ]
+}

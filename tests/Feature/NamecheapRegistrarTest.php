@@ -9,14 +9,18 @@ use App\Domain\Domains\RegistrantDetails;
 use App\Domain\Domains\RegistrarAccount;
 use App\Domain\Domains\RegistrationRequest;
 use App\Domain\Provisioning\OperationOutcome;
-use App\Infrastructure\Domains\Registrars\NamecheapRegistrar;
 use Illuminate\Support\Facades\Http;
+use InfraCMS\RegistrarNamecheap\NamecheapRegistrar;
 
 /**
  * Tested against faked HTTP, which proves the code and not the
  * integration. It has never talked to Namecheap.
  */
 beforeEach(function (): void {
+    // The adapter lives in a package now; this puts its classes on the
+    // autoloader without installing or enabling anything.
+    loadModuleClasses('registrar-namecheap');
+
     $this->registrar = new NamecheapRegistrar(
         account: new RegistrarAccount(
             username: 'reseller',

@@ -1,0 +1,39 @@
+{
+    "slug": "gateway-stripe",
+    "name": "Stripe",
+    "type": "payment-gateway",
+    "version": "1.0.0",
+    "description": "Takes card payments through Stripe Checkout and confirms them from a signed webhook.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.2",
+    "platform": "*",
+    "namespace": "InfraCMS\\GatewayStripe",
+    "entrypoint": "StripeModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "secret",
+            "label": "Secret key",
+            "type": "secret",
+            "required": true,
+            "hint": "The sk_live or sk_test key. Never the publishable one."
+        },
+        {
+            "key": "webhook_secret",
+            "label": "Webhook signing secret",
+            "type": "secret",
+            "required": true,
+            "hint": "The whsec_ value Stripe shows when the endpoint is created. Without it a payment can be taken and never confirmed."
+        },
+        {
+            "key": "api_base",
+            "label": "API base",
+            "type": "text",
+            "required": false,
+            "default": "https://api.stripe.com",
+            "hint": "Left alone unless a test harness stands in for Stripe."
+        }
+    ]
+}

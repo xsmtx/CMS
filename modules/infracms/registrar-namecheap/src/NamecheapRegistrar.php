@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Domains\Registrars;
+namespace InfraCMS\RegistrarNamecheap;
 
 use App\Domain\Domains\AvailabilityResult;
 use App\Domain\Domains\Contracts\DomainRegistrar;
