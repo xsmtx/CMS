@@ -5,9 +5,14 @@ import { ref } from 'vue'
 import AppAlert from '../../Components/AppAlert.vue'
 import AppBadge from '../../Components/AppBadge.vue'
 import AppButton from '../../Components/AppButton.vue'
-import AppCard from '../../Components/AppCard.vue'
 import AppCheckbox from '../../Components/AppCheckbox.vue'
+import AppConfirm from '../../Components/AppConfirm.vue'
 import AppInput from '../../Components/AppInput.vue'
+import AppTable from '../../Components/AppTable.vue'
+import AppTableRow from '../../Components/AppTableRow.vue'
+import DetailSection from '../../Components/DetailSection.vue'
+import { type TableColumn } from '../../Components/tableContext'
+import { useTranslations } from '../../composables/useTranslations'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 
 interface ContactRow {
@@ -28,8 +33,24 @@ defineProps<{
 }>()
 
 const page = usePage()
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'name', label: t('portal.contacts.name'), sticky: true },
+  { key: 'access', label: t('portal.contacts.access') },
+  { key: 'actions', label: '' },
+]
 
 const adding = ref(false)
+
+/**
+ * Removing somebody used to happen on the first click, from a red word.
+ *
+ * What goes is a person's access to the account, which is why the sentence
+ * says that and what survives it — level 2, because nothing they wrote is
+ * lost with them.
+ */
+const removing = ref<ContactRow | null>(null)
 
 const form = useForm({
   first_name: '',
@@ -53,80 +74,90 @@ function add(): void {
   })
 }
 
-function remove(contact: ContactRow): void {
-  router.delete(`/client/contacts/${contact.id}`, { preserveScroll: true })
+function remove(): void {
+  const contact = removing.value
+
+  if (contact === null) return
+
+  router.delete(`/client/contacts/${contact.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      removing.value = null
+    },
+  })
 }
 </script>
 
 <template>
-  <Head title="Contacts" />
+  <Head :title="t('portal.contacts.title')" />
 
-  <ClientLayout heading="Contacts" description="The people on this account and who can sign in.">
-    <div class="flex flex-col gap-5">
+  <ClientLayout
+    :heading="t('portal.contacts.title')"
+    :description="t('portal.contacts.description')"
+  >
+    <template v-if="can.manage" #actions>
+      <AppButton :icon="adding ? undefined : 'add'" @click="adding = !adding">
+        {{ adding ? t('ui.confirm.cancel') : t('portal.contacts.add') }}
+      </AppButton>
+    </template>
+
+    <div class="flex flex-col gap-8">
       <AppAlert v-if="page.props.flash?.status" tone="success">
         {{ page.props.flash.status }}
       </AppAlert>
 
       <AppAlert v-if="!can.manage" tone="info">
-        Only the account owner can add or remove contacts. You can still update your own details on
-        the profile page.
+        {{ t('portal.contacts.owner_only') }}
       </AppAlert>
 
-      <AppCard title="People on this account">
-        <template v-if="can.manage" #actions>
-          <AppButton size="sm" @click="adding = !adding">
-            {{ adding ? 'Cancel' : 'Add contact' }}
-          </AppButton>
-        </template>
+      <DetailSection :title="t('portal.contacts.people')" :divided="false">
+        <AppTable name="portal-contacts" :columns="COLUMNS">
+          <AppTableRow v-for="contact in contacts" :key="contact.id">
+            <td data-col="name">
+              <span class="font-medium">{{ contact.name }}</span>
+              <AppBadge v-if="contact.isPrimary" tone="brand" class="ml-2">
+                {{ t('portal.contacts.account_owner') }}
+              </AppBadge>
+              <AppBadge v-if="contact.isMe" class="ml-2">{{ t('portal.contacts.you') }}</AppBadge>
+              <span class="text-content-muted text-chrome block">{{ contact.email }}</span>
+            </td>
+            <td data-col="access" class="text-content-muted">
+              {{
+                contact.portalAccess
+                  ? t('portal.contacts.signs_in')
+                  : t('portal.contacts.cannot_sign_in')
+              }}
+            </td>
+            <td data-col="actions" class="text-right">
+              <span
+                v-if="can.manage && !contact.isPrimary && !contact.isMe"
+                class="row-actions inline-flex"
+              >
+                <AppButton size="sm" variant="danger-subtle" @click="removing = contact">
+                  {{ t('portal.contacts.remove') }}
+                </AppButton>
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
 
-        <ul class="divide-line divide-y">
-          <li
-            v-for="contact in contacts"
-            :key="contact.id"
-            class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-          >
-            <div>
-              <p class="text-body font-medium">
-                {{ contact.name }}
-                <AppBadge v-if="contact.isPrimary" tone="brand" class="ml-2">
-                  Account owner
-                </AppBadge>
-                <AppBadge v-if="contact.isMe" class="ml-2">You</AppBadge>
-              </p>
-              <p class="text-content-muted text-chrome mt-0.5">
-                {{ contact.email }}
-                <span v-if="!contact.portalAccess"> · cannot sign in</span>
-              </p>
-            </div>
-
-            <button
-              v-if="can.manage && !contact.isPrimary && !contact.isMe"
-              type="button"
-              class="text-danger text-chrome underline underline-offset-4"
-              @click="remove(contact)"
-            >
-              Remove
-            </button>
-          </li>
-        </ul>
-      </AppCard>
-
-      <AppCard
+      <DetailSection
         v-if="adding && can.manage"
-        title="Add a contact"
-        description="Giving someone access sends them a link to choose their own password. You never set one for them."
+        :title="t('portal.contacts.add_title')"
+        :description="t('portal.contacts.add_hint')"
       >
         <form class="grid max-w-xl gap-5" @submit.prevent="add">
           <div class="grid gap-5 sm:grid-cols-2">
             <AppInput
               v-model="form.first_name"
-              label="First name"
+              :label="t('portal.contacts.first_name')"
               :error="form.errors.first_name"
               required
             />
             <AppInput
               v-model="form.last_name"
-              label="Last name"
+              :label="t('portal.contacts.last_name')"
               :error="form.errors.last_name"
               required
             />
@@ -134,26 +165,40 @@ function remove(contact: ContactRow): void {
 
           <AppInput
             v-model="form.email"
-            label="Email address"
+            :label="t('portal.contacts.email')"
             type="email"
             :error="form.errors.email"
             required
           />
-          <AppInput v-model="form.phone" label="Phone" :error="form.errors.phone" />
+          <AppInput
+            v-model="form.phone"
+            :label="t('portal.contacts.phone')"
+            :error="form.errors.phone"
+          />
 
           <AppCheckbox
             v-model="form.portal_access"
-            label="Can sign in to this account"
-            description="They will be able to see services, invoices and support requests."
+            :label="t('portal.contacts.can_sign_in')"
+            :description="t('portal.contacts.can_sign_in_hint')"
           />
 
           <div>
             <AppButton type="submit" variant="primary" :loading="form.processing">
-              Add contact
+              {{ t('portal.contacts.add') }}
             </AppButton>
           </div>
         </form>
-      </AppCard>
+      </DetailSection>
     </div>
+
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="t('portal.contacts.remove_title', { name: removing?.name ?? '' })"
+      :description="t('portal.contacts.remove_detail')"
+      :confirm-label="t('portal.contacts.remove')"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
+    />
   </ClientLayout>
 </template>

@@ -7,6 +7,8 @@ return [
     'description' => 'Tokens, webhooks and what this installation has been asked for.',
 
     'tokens' => [
+        'revoke_title' => 'Revoke :name?',
+        'revoke_detail' => 'Anything using this token stops working the moment it goes, and a token cannot be brought back. Issue a new one and change it over first if something depends on it.',
         'title' => 'API tokens',
         'description' => 'A token is a password that never gets typed. Give each integration its own, and only the scopes it needs.',
         'name' => 'What is it for',
@@ -77,6 +79,8 @@ return [
     ],
 
     'webhooks' => [
+        'delete_title' => 'Delete this endpoint?',
+        'delete_detail' => 'Deliveries stop reaching :url immediately. Anything already delivered stays in the log, and you can add the address again later.',
         'title' => 'Webhooks',
         'description' => 'Where this platform posts events as they happen.',
         'url' => 'Endpoint URL',
@@ -102,6 +106,10 @@ return [
     ],
 
     'deliveries' => [
+        'event' => 'Event',
+        'status' => 'Status',
+        'attempt' => 'Attempt',
+        'when' => 'When',
         'states' => [
             'pending' => 'Waiting',
             'delivered' => 'Delivered',

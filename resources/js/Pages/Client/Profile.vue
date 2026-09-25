@@ -3,9 +3,11 @@ import { Head, useForm, usePage } from '@inertiajs/vue3'
 
 import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
-import AppCard from '../../Components/AppCard.vue'
 import AppCheckbox from '../../Components/AppCheckbox.vue'
 import AppInput from '../../Components/AppInput.vue'
+import DetailSection from '../../Components/DetailSection.vue'
+import { useTaxIdentity } from '../../composables/useTaxIdentity'
+import { useTranslations } from '../../composables/useTranslations'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 
 const props = defineProps<{
@@ -32,6 +34,12 @@ const props = defineProps<{
 }>()
 
 const page = usePage()
+const { t } = useTranslations()
+
+// The seller's own word for it. The billing details screen already asks the
+// same question with the same vocabulary; two names for one field on two
+// screens of the same portal is how a customer starts doubting both.
+const { label: taxIdLabel } = useTaxIdentity()
 
 const meForm = useForm({
   first_name: props.me.firstName,
@@ -52,15 +60,15 @@ const customerForm = useForm({
 </script>
 
 <template>
-  <Head title="Profile" />
+  <Head :title="t('portal.profile.title')" />
 
-  <ClientLayout heading="Profile" description="Your details and how we contact you.">
-    <div class="flex flex-col gap-5">
+  <ClientLayout :heading="t('portal.profile.title')" :description="t('portal.profile.description')">
+    <div class="flex flex-col gap-8">
       <AppAlert v-if="page.props.flash?.status" tone="success">
         {{ page.props.flash.status }}
       </AppAlert>
 
-      <AppCard title="You">
+      <DetailSection :title="t('portal.profile.you')">
         <form
           class="grid max-w-xl gap-5"
           @submit.prevent="meForm.put('/client/profile', { preserveScroll: true })"
@@ -68,13 +76,13 @@ const customerForm = useForm({
           <div class="grid gap-5 sm:grid-cols-2">
             <AppInput
               v-model="meForm.first_name"
-              label="First name"
+              :label="t('portal.contacts.first_name')"
               :error="meForm.errors.first_name"
               required
             />
             <AppInput
               v-model="meForm.last_name"
-              label="Last name"
+              :label="t('portal.contacts.last_name')"
               :error="meForm.errors.last_name"
               required
             />
@@ -82,39 +90,55 @@ const customerForm = useForm({
 
           <AppInput
             :model-value="me.email"
-            label="Email address"
-            hint="Contact support to change the address you sign in with."
+            :label="t('portal.contacts.email')"
+            :hint="t('portal.profile.email_hint')"
             disabled
             @update:model-value="() => {}"
           />
 
-          <AppInput v-model="meForm.phone" label="Phone" :error="meForm.errors.phone" />
+          <AppInput
+            v-model="meForm.phone"
+            :label="t('portal.contacts.phone')"
+            :error="meForm.errors.phone"
+          />
 
           <fieldset class="flex flex-col gap-3">
-            <legend class="text-body mb-1 font-medium">Email preferences</legend>
-            <p class="text-content-muted text-chrome -mt-1 mb-2">
-              Invoices and service notices about what you pay for are always sent.
+            <legend class="text-body mb-1 font-medium">
+              {{ t('portal.profile.preferences') }}
+            </legend>
+            <p class="text-content-muted text-chrome -mt-1 mb-2 max-w-[60ch] leading-relaxed">
+              {{ t('portal.profile.preferences_hint') }}
             </p>
-            <AppCheckbox v-model="meForm.notify_invoices" label="Invoices and receipts" />
-            <AppCheckbox v-model="meForm.notify_support" label="Support replies" />
-            <AppCheckbox v-model="meForm.notify_product" label="Product announcements" />
-            <AppCheckbox v-model="meForm.notify_marketing" label="Offers and marketing" />
+            <AppCheckbox
+              v-model="meForm.notify_invoices"
+              :label="t('portal.profile.notify_invoices')"
+            />
+            <AppCheckbox
+              v-model="meForm.notify_support"
+              :label="t('portal.profile.notify_support')"
+            />
+            <AppCheckbox
+              v-model="meForm.notify_product"
+              :label="t('portal.profile.notify_product')"
+            />
+            <AppCheckbox
+              v-model="meForm.notify_marketing"
+              :label="t('portal.profile.notify_marketing')"
+            />
           </fieldset>
 
           <div>
             <AppButton type="submit" variant="primary" :loading="meForm.processing">
-              Save my details
+              {{ t('portal.profile.save_me') }}
             </AppButton>
           </div>
         </form>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
-        title="Company"
+      <DetailSection
+        :title="t('portal.profile.company')"
         :description="
-          can.manage
-            ? 'Shown on your invoices.'
-            : 'Only the account owner can change these. Contact them or our support team.'
+          can.manage ? t('portal.profile.company_shown') : t('portal.profile.company_owner_only')
         "
       >
         <form
@@ -123,30 +147,30 @@ const customerForm = useForm({
         >
           <AppInput
             v-model="customerForm.company_name"
-            label="Company name"
+            :label="t('crm.fields.company_name')"
             :disabled="!can.manage"
             :error="customerForm.errors.company_name"
           />
           <AppInput
             v-model="customerForm.legal_name"
-            label="Legal name"
+            :label="t('crm.fields.legal_name')"
             :disabled="!can.manage"
             :error="customerForm.errors.legal_name"
           />
           <AppInput
             v-model="customerForm.tax_id"
-            label="Tax id"
+            :label="taxIdLabel"
             :disabled="!can.manage"
             :error="customerForm.errors.tax_id"
           />
 
           <div v-if="can.manage">
             <AppButton type="submit" variant="primary" :loading="customerForm.processing">
-              Save company details
+              {{ t('portal.profile.save_company') }}
             </AppButton>
           </div>
         </form>
-      </AppCard>
+      </DetailSection>
     </div>
   </ClientLayout>
 </template>

@@ -7,6 +7,8 @@ return [
     'description' => 'Tokenlar, webhooklar ve bu kurulumdan neler istendiği.',
 
     'tokens' => [
+        'revoke_title' => ':name iptal edilsin mi?',
+        'revoke_detail' => 'Bu belirteci kullanan her şey, o gittiği anda çalışmayı bırakır ve bir belirteç geri getirilemez. Bir şey buna bağlıysa önce yeni bir belirteç oluşturup geçişi yapın.',
         'title' => 'API tokenları',
         'description' => 'Token, hiç yazılmayan bir paroladır. Her entegrasyona kendi tokenını ve yalnızca ihtiyaç duyduğu yetkileri verin.',
         'name' => 'Ne için',
@@ -77,6 +79,8 @@ return [
     ],
 
     'webhooks' => [
+        'delete_title' => 'Bu uç nokta silinsin mi?',
+        'delete_detail' => ':url adresine gönderimler anında durur. Daha önce gönderilenler kayıtta kalır ve adresi sonra yeniden ekleyebilirsiniz.',
         'title' => 'Webhooklar',
         'description' => 'Bu platformun olayları gerçekleştikçe nereye göndereceği.',
         'url' => 'Uç nokta adresi',
@@ -102,6 +106,10 @@ return [
     ],
 
     'deliveries' => [
+        'event' => 'Olay',
+        'status' => 'Durum',
+        'attempt' => 'Deneme',
+        'when' => 'Ne zaman',
         'states' => [
             'pending' => 'Bekliyor',
             'delivered' => 'Gönderildi',

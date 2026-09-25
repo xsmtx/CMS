@@ -1272,3 +1272,39 @@ converting a page.
 
 Orders was the third portal list paginating server-side with no control to turn
 the page.
+
+**The client area is converted, all twenty screens.** Two of them —
+`Client/Contacts` and `Client/Profile` — were still entirely hard-coded
+English, which is how a portal ends up half Turkish; `portal.contacts` and
+`portal.profile` hold their vocabulary now. Profile was also asking for a tax
+id under the label "Tax id" while the billing screen two clicks away asked for
+the same field under the seller's own word. Two names for one field in one
+portal is how a customer starts doubting both; it uses `useTaxIdentity()` like
+everything else.
+
+**Three more first-click destructive actions, all in the customer's own area:**
+removing a contact (a person's access, from a bare red word), revoking an API
+token (which stops a running integration), and deleting a webhook endpoint.
+Thirteen found in this pass now. The pattern is always the same — a
+`router.delete` wired straight to a click — so it is worth grepping for
+`@click="remove` and `@click="revoke` on any screen before calling it
+converted.
+
+**A checkbox that cannot change anything is disabled.** The notification
+preferences drew four switches, and the two the platform always sends moved,
+saved and did nothing, with a sentence underneath explaining that they did
+nothing. A control that lies is worse than a control that is absent.
+
+**A secret shown once should be copyable.** The API token and the webhook
+signing secret both appeared in a `<code>` block to be selected by hand — the
+one moment either value is readable at all, since the table keeps a hash.
+`AppCopy` on both.
+
+**Contacts, tokens and webhooks cannot be driven in a browser.** They sit
+behind `impersonation.blocked`, which is right — a token is a credential that
+outlives the session that made it, and whatever an operator is impersonating a
+customer to fix, it is not to walk out with one. So the only way to see those
+three rendered is to be the customer, which means their password. They are
+covered by feature tests and by the static gates, and that is the honest
+ceiling. Confirming the 403 in the browser is itself worth doing: the message
+says exactly why.

@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
+import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 
 interface TokenRow {
   id: string
@@ -68,8 +73,33 @@ function create(): void {
   })
 }
 
-function revoke(id: string): void {
-  router.delete(`/client/developer/tokens/${id}`, { preserveScroll: true })
+const COLUMNS: TableColumn[] = [
+  { key: 'name', label: t('api.tokens.name'), sticky: true },
+  { key: 'used', label: t('api.tokens.last_used') },
+  { key: 'expires', label: t('api.tokens.expires') },
+  { key: 'actions', label: '' },
+]
+
+/**
+ * Revoking used to happen on the first click.
+ *
+ * A token is what somebody's integration authenticates with, so revoking one
+ * stops a running program rather than removing a record — and nothing that
+ * reads this screen can tell which program.
+ */
+const revoking = ref<TokenRow | null>(null)
+
+function revoke(): void {
+  const token = revoking.value
+
+  if (token === null) return
+
+  router.delete(`/client/developer/tokens/${token.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      revoking.value = null
+    },
+  })
 }
 
 function formatDate(value: string | null): string {
@@ -88,14 +118,14 @@ function formatDate(value: string | null): string {
       -->
       <AppAlert v-if="issued" tone="success">
         {{ t('api.tokens.created') }}
-        <code
-          class="border-line bg-surface-secondary text-chrome mt-2 block overflow-x-auto rounded-sm border px-3 py-2 font-mono break-all"
-        >
-          {{ issued }}
-        </code>
+        <!-- The one moment this value exists in a readable form: the table
+             keeps a hash. Copyable, rather than something to select by hand. -->
+        <span class="mt-2 block">
+          <AppCopy :value="issued" :noun="t('api.tokens.name')" mono />
+        </span>
       </AppAlert>
 
-      <AppCard :title="t('api.tokens.create')">
+      <DetailSection :title="t('api.tokens.create')">
         <div class="grid gap-4 sm:grid-cols-2">
           <AppInput v-model="form.name" :label="t('api.tokens.name')" :error="form.errors.name" />
           <AppInput
@@ -148,52 +178,62 @@ function formatDate(value: string | null): string {
             {{ t('api.tokens.create') }}
           </AppButton>
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard :title="t('identity.tokens.title')">
-        <ul v-if="tokens.length > 0" class="divide-line divide-y">
-          <li v-for="token in tokens" :key="token.id" class="py-3 first:pt-0 last:pb-0">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="min-w-0">
-                <p class="text-body truncate font-medium">{{ token.name }}</p>
-                <p class="text-content-muted text-chrome mt-0.5">
-                  {{
-                    token.lastUsedAt
-                      ? `${t('api.tokens.last_used')} ${formatDate(token.lastUsedAt)}`
-                      : t('api.tokens.never_used')
-                  }}
-                  ·
-                  {{
-                    token.expiresAt
-                      ? `${t('api.tokens.expires')} ${formatDate(token.expiresAt)}`
-                      : t('identity.tokens.no_expiry')
-                  }}
-                </p>
-              </div>
-
-              <AppButton size="sm" variant="ghost" @click="revoke(token.id)">
-                {{ t('api.tokens.revoke') }}
-              </AppButton>
-            </div>
-
-            <div v-if="token.scopes.length > 0" class="mt-2 flex flex-wrap gap-1.5">
-              <AppBadge v-for="scope in token.scopes" :key="scope">{{ scope }}</AppBadge>
-            </div>
-            <!-- A token issued before scopes existed carries nothing now,
-                 and saying so is kinder than letting somebody believe it
-                 still works. -->
-            <p v-else class="text-content-subtle text-chrome mt-2">
-              {{ t('api.tokens.no_scopes') }}
-            </p>
-          </li>
-        </ul>
+      <DetailSection :title="t('identity.tokens.title')" :divided="tokens.length === 0">
+        <AppTable v-if="tokens.length > 0" name="portal-tokens" :columns="COLUMNS">
+          <AppTableRow v-for="token in tokens" :key="token.id">
+            <td data-col="name">
+              <span class="font-medium">{{ token.name }}</span>
+              <span v-if="token.scopes.length > 0" class="mt-1 flex flex-wrap gap-1.5">
+                <AppBadge v-for="scope in token.scopes" :key="scope">{{ scope }}</AppBadge>
+              </span>
+              <!-- A token issued before scopes existed carries nothing now,
+                   and saying so is kinder than letting somebody believe it
+                   still works. -->
+              <span v-else class="text-content-subtle text-chrome block">
+                {{ t('api.tokens.no_scopes') }}
+              </span>
+            </td>
+            <td data-col="used" class="text-content-muted">
+              {{ token.lastUsedAt ? formatDate(token.lastUsedAt) : t('api.tokens.never_used') }}
+            </td>
+            <td data-col="expires" class="text-content-muted">
+              {{ token.expiresAt ? formatDate(token.expiresAt) : t('identity.tokens.no_expiry') }}
+            </td>
+            <td data-col="actions" class="text-right">
+              <span class="row-actions inline-flex">
+                <AppButton size="sm" variant="danger-subtle" @click="revoking = token">
+                  {{ t('api.tokens.revoke') }}
+                </AppButton>
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
 
         <EmptyState
           v-else
+          variant="plain"
+          icon="connection"
           :title="t('api.tokens.none')"
           :description="t('api.tokens.none_description')"
         />
-      </AppCard>
+      </DetailSection>
     </div>
+
+    <!--
+      Level 2, not 3: the endpoint takes no reason and writes no audit row on
+      the customer's side, and a dialog that asks for one would be collecting
+      a sentence nobody reads.
+    -->
+    <AppConfirm
+      :open="revoking !== null"
+      level="consequential"
+      :title="t('api.tokens.revoke_title', { name: revoking?.name ?? '' })"
+      :description="t('api.tokens.revoke_detail')"
+      :confirm-label="t('api.tokens.revoke')"
+      @update:open="(value: boolean) => (revoking = value ? revoking : null)"
+      @confirm="revoke"
+    />
   </ClientLayout>
 </template>

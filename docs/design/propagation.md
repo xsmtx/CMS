@@ -113,16 +113,16 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Client/Billing/Invoice.vue` | detail | 1 |  |  |  | yes |
 | [x] | `Client/Billing/Invoices.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Billing/Transactions.vue` | list |  |  |  |  | yes |
-| [ ] | `Client/Contacts.vue` | list | 2 |  |  |  |  |
+| [x] | `Client/Contacts.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Dashboard.vue` | overview |  |  |  |  | yes |
-| [ ] | `Client/Developer/Tokens.vue` | list | 2 |  |  |  | yes |
-| [ ] | `Client/Developer/Webhooks.vue` | list | 3 | 5 |  |  | yes |
+| [x] | `Client/Developer/Tokens.vue` | list |  |  |  |  | yes |
+| [x] | `Client/Developer/Webhooks.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Domains/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Domains/Show.vue` | detail |  |  |  |  | yes |
-| [ ] | `Client/Notifications/Index.vue` | list | 1 |  |  |  | yes |
+| [x] | `Client/Notifications/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Orders/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Orders/Show.vue` | detail | 1 |  |  |  | yes |
-| [ ] | `Client/Profile.vue` | form | 2 |  |  |  |  |
+| [x] | `Client/Profile.vue` | form |  |  |  |  | yes |
 | [x] | `Client/Services/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Services/Show.vue` | detail | 1 |  |  |  | yes |
 | [x] | `Client/Support/Create.vue` | form |  |  |  |  | yes |

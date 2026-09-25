@@ -2,11 +2,11 @@
 import { Head, router, useForm } from '@inertiajs/vue3'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 
 interface NotificationRow {
   id: string
@@ -44,6 +44,10 @@ const form = useForm({
   marketing: enabled('marketing'),
 })
 
+type Category = 'invoices' | 'support' | 'product' | 'marketing'
+
+const CATEGORIES: Category[] = ['invoices', 'support', 'product', 'marketing']
+
 function find(category: string): Preference | undefined {
   return props.preferences.find((preference) => preference.value === category)
 }
@@ -73,8 +77,8 @@ function formatDateTime(value: string): string {
   <Head :title="t('notifications.portal.title')" />
 
   <ClientLayout :heading="t('notifications.portal.title')">
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="lg:col-span-2">
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+      <div>
         <div v-if="notifications.length > 0" class="mb-4">
           <AppButton size="sm" variant="ghost" @click="markRead">
             {{ t('notifications.portal.mark_read') }}
@@ -121,33 +125,23 @@ function formatDateTime(value: string): string {
       </div>
 
       <div>
-        <AppCard
+        <DetailSection
           :title="t('notifications.portal.preferences')"
           :description="t('notifications.portal.preferences_hint')"
         >
           <div class="flex flex-col gap-3">
-            <div>
-              <AppCheckbox v-model="form.invoices" :label="labelFor('invoices')" />
-              <!-- Said, rather than shown as a switch that does nothing. -->
-              <p v-if="alwaysSent('invoices')" class="text-content-subtle text-chrome mt-1 ml-7">
-                {{ t('notifications.portal.always_sent') }}
-              </p>
-            </div>
-            <div>
-              <AppCheckbox v-model="form.support" :label="labelFor('support')" />
-              <p v-if="alwaysSent('support')" class="text-content-subtle text-chrome mt-1 ml-7">
-                {{ t('notifications.portal.always_sent') }}
-              </p>
-            </div>
-            <div>
-              <AppCheckbox v-model="form.product" :label="labelFor('product')" />
-              <p v-if="alwaysSent('product')" class="text-content-subtle text-chrome mt-1 ml-7">
-                {{ t('notifications.portal.always_sent') }}
-              </p>
-            </div>
-            <div>
-              <AppCheckbox v-model="form.marketing" :label="labelFor('marketing')" />
-              <p v-if="alwaysSent('marketing')" class="text-content-subtle text-chrome mt-1 ml-7">
+            <div v-for="category in CATEGORIES" :key="category">
+              <!--
+                Disabled when it is always sent, rather than a switch that
+                moves and changes nothing: a control that lies is worse than
+                a control that is absent, and the sentence under it says why.
+              -->
+              <AppCheckbox
+                v-model="form[category]"
+                :label="labelFor(category)"
+                :disabled="alwaysSent(category)"
+              />
+              <p v-if="alwaysSent(category)" class="text-content-subtle text-chrome mt-1 ml-7">
                 {{ t('notifications.portal.always_sent') }}
               </p>
             </div>
@@ -158,7 +152,7 @@ function formatDateTime(value: string): string {
               {{ t('crm.save') }}
             </AppButton>
           </div>
-        </AppCard>
+        </DetailSection>
       </div>
     </div>
   </ClientLayout>
