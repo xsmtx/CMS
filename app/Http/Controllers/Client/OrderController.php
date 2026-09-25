@@ -54,6 +54,9 @@ final class OrderController extends Controller
                 'currentPage' => $orders->currentPage(),
                 'lastPage' => $orders->lastPage(),
                 'total' => $orders->total(),
+                // The third portal list that printed a page number and gave
+                // nobody a way to turn the page.
+                'links' => $orders->linkCollection()->all(),
             ],
         ]);
     }
@@ -96,7 +99,11 @@ final class OrderController extends Controller
             ],
             'invoice' => $invoice === null ? null : [
                 'number' => $invoice->number,
-                'status' => (string) __($invoice->status->labelKey()),
+                // Two fields: the screen tones the status and prints the
+                // label, and a label alone tones as unknown in every language
+                // whose word for "unpaid" is not "unpaid".
+                'status' => $invoice->status->value,
+                'statusLabel' => (string) __($invoice->status->labelKey()),
                 'balance' => $invoice->balance()->format(app()->getLocale()),
                 'isOwed' => $invoice->status->isOwed(),
             ],

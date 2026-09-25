@@ -4,8 +4,9 @@ import { Head, Link } from '@inertiajs/vue3'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
 
 interface OrderOption {
@@ -39,7 +40,13 @@ defineProps<{
     promotionCode: string | null
     items: OrderLine[]
   }
-  invoice: { number: string; status: string; balance: string; isOwed: boolean } | null
+  invoice: {
+    number: string
+    status: string
+    statusLabel: string
+    balance: string
+    isOwed: boolean
+  } | null
 }>()
 
 const { t } = useTranslations()
@@ -56,9 +63,13 @@ function formatDate(value: string | null): string {
     :heading="order.number"
     :description="t('ordering.portal.placed', { date: formatDate(order.placedAt) })"
   >
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="lg:col-span-2">
-        <AppCard :title="t('ordering.portal.what_you_ordered')">
+    <template #actions>
+      <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
+    </template>
+
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+      <div>
+        <DetailSection :title="t('ordering.portal.what_you_ordered')">
           <!--
             The copy the order froze when it was placed, not what the
             catalog says today (ADR 0021). That is the point of reading an
@@ -135,14 +146,15 @@ function formatDate(value: string | null): string {
               <dd class="text-content-muted tabular-nums">{{ order.recurringTotal }}</dd>
             </div>
           </dl>
-        </AppCard>
+        </DetailSection>
       </div>
 
-      <div class="flex flex-col gap-6">
-        <AppCard :title="t('ordering.orders.status')">
-          <AppStatus :tone="statusTone(order.status)" :label="order.statusLabel" />
-        </AppCard>
-
+      <!--
+        Framed, and only when there is one: the invoice is where money leaves
+        the customer, which is a different kind of thing from a copy of what
+        they ordered.
+      -->
+      <div>
         <AppCard v-if="invoice" :title="t('ordering.portal.invoice')">
           <div class="flex items-baseline justify-between gap-3">
             <Link
@@ -151,7 +163,7 @@ function formatDate(value: string | null): string {
             >
               {{ invoice.number }}
             </Link>
-            <AppStatus :tone="statusTone(invoice.status)" :label="invoice.status" />
+            <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
           </div>
 
           <p v-if="invoice.isOwed" class="text-content-muted text-chrome mt-2">

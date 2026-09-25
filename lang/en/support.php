@@ -141,6 +141,11 @@ return [
     ],
 
     'portal' => [
+        'no_departments' => 'There is nowhere to send this yet.',
+        'no_departments_hint' => 'This installation has no support departments configured, so a ticket cannot be opened. Please get in touch the way you usually do.',
+        'awaiting_us' => 'With us',
+        'awaiting_us_hint' => 'Waiting on our reply.',
+        'service' => 'Service',
         'title' => 'Support',
         'description' => 'Ask us anything. We answer in the order things arrive.',
         'none' => 'No tickets yet.',

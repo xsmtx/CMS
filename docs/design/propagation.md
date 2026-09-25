@@ -120,14 +120,14 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Client/Domains/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Domains/Show.vue` | detail |  |  |  |  | yes |
 | [ ] | `Client/Notifications/Index.vue` | list | 1 |  |  |  | yes |
-| [ ] | `Client/Orders/Index.vue` | list |  | 5 |  |  | yes |
-| [ ] | `Client/Orders/Show.vue` | detail | 3 |  |  |  | yes |
+| [x] | `Client/Orders/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Client/Orders/Show.vue` | detail | 1 |  |  |  | yes |
 | [ ] | `Client/Profile.vue` | form | 2 |  |  |  |  |
 | [x] | `Client/Services/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Client/Services/Show.vue` | detail | 1 |  |  |  | yes |
-| [ ] | `Client/Support/Create.vue` | form | 1 |  |  |  | yes |
-| [ ] | `Client/Support/Index.vue` | list |  | 4 |  |  | yes |
-| [ ] | `Client/Support/Show.vue` | detail | 1 |  |  |  | yes |
+| [x] | `Client/Support/Create.vue` | form |  |  |  |  | yes |
+| [x] | `Client/Support/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Client/Support/Show.vue` | detail |  |  |  |  | yes |
 
 ## Account & auth
 

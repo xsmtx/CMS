@@ -141,6 +141,11 @@ return [
     ],
 
     'portal' => [
+        'no_departments' => 'Bunu gönderebileceğimiz bir yer henüz yok.',
+        'no_departments_hint' => 'Bu kurulumda tanımlı bir destek birimi olmadığı için talep açılamıyor. Lütfen her zamanki yolla bize ulaşın.',
+        'awaiting_us' => 'Bizde',
+        'awaiting_us_hint' => 'Yanıtımız bekleniyor.',
+        'service' => 'Hizmet',
         'title' => 'Destek',
         'description' => 'Bize her şeyi sorabilirsiniz. Talepleri geliş sırasına göre yanıtlıyoruz.',
         'none' => 'Henüz destek talebi yok.',

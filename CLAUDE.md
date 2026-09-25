@@ -1247,3 +1247,28 @@ The invoice detail headed its document "Invoices" and the billing form headed
 itself "Billing details" under a page called Billing details. Neither needed a
 heading at all: the page heading and the status beside it already say what the
 screen is.
+
+**Three facts the portal was sent and never drew.** `awaitingUs` on the ticket
+list — whose turn it is, which is the one question a customer opens that list
+to answer; `service` on the ticket detail — which of their three hosting
+accounts the conversation is about; and the department's `description` on the
+new-ticket form — the sentence an operator wrote to stop tickets landing in the
+wrong queue. All three had been in the payload since the screens were written.
+When converting a screen, read the props interface against the template and ask
+what is in one and not the other: a fact the server bothered to send is a fact
+somebody meant to show.
+
+**A form that cannot be submitted is worse than no form.** With no support
+departments configured, the new-ticket screen offered an empty required
+dropdown and a Send button, and the server refused on a field whose list was
+empty. It says so now instead.
+
+`Client/Orders/Show` passed the invoice's **translated label** to
+`statusTone()` and printed the **raw value** as the word — both halves of the
+two-fields rule broken on one line, which is why it read "unpaid" in English
+and toned as unknown in Turkish. That makes four screens that have made this
+mistake; it is always worth grepping for `statusTone(` beside a label when
+converting a page.
+
+Orders was the third portal list paginating server-side with no control to turn
+the page.
