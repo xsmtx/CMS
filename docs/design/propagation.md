@@ -85,11 +85,11 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Api/Activity.vue` | list |  | 6 |  |  |  |
 | [ ] | `Admin/Billing/GatewayLog.vue` | form |  | 6 |  |  |  |
 | [ ] | `Admin/Cancellations/Index.vue` | list |  | 8 |  |  |  |
-| [ ] | `Admin/Catalog/Addons/Index.vue` | list |  | 4 |  |  |  |
-| [ ] | `Admin/Catalog/Currencies/Index.vue` | list |  | 4 |  |  |  |
-| [ ] | `Admin/Catalog/Groups/Index.vue` | list |  | 4 |  |  |  |
-| [ ] | `Admin/Catalog/Options/Index.vue` | list |  | 4 |  |  |  |
-| [ ] | `Admin/Catalog/Products/Index.vue` | list |  | 5 |  |  |  |
+| [x] | `Admin/Catalog/Addons/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Catalog/Currencies/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Catalog/Groups/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Catalog/Options/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Catalog/Products/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Domains/Index.vue` | list |  | 9 |  |  |  |
 | [ ] | `Admin/Notifications/Log.vue` | list |  | 5 |  |  |  |
 | [ ] | `Admin/Operations/Index.vue` | list |  | 6 |  |  |  |

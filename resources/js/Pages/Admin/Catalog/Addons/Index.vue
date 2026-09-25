@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 
 import AppButton from '../../../../Components/AppButton.vue'
+import AppConfirm from '../../../../Components/AppConfirm.vue'
+import AppTableRow from '../../../../Components/AppTableRow.vue'
+import PageHeader from '../../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../../Components/tableContext'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppStatus from '../../../../Components/AppStatus.vue'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
@@ -28,78 +34,113 @@ function statusLabel(value: string): string {
   return props.statuses.find((status) => status.value === value)?.label ?? value
 }
 
-function remove(addon: AddonRow): void {
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'addon', label: t('ui.catalog.addons.column') },
+  { key: 'status', label: t('ui.catalog.status') },
+  { key: 'prices', label: t('ui.catalog.prices'), numeric: true },
+  { key: 'actions', label: '' },
+]
+
+const removing = ref<AddonRow | null>(null)
+
+function remove(): void {
+  const addon = removing.value
+
+  if (addon === null) return
+
   router.delete(`/admin/catalog/products/${props.product.id}/addons/${addon.id}`, {
     preserveScroll: true,
+    onFinish: () => {
+      removing.value = null
+    },
   })
 }
 </script>
 
 <template>
-  <Head :title="`Addons — ${product.name}`" />
+  <Head :title="t('ui.catalog.addons.title', { product: product.name })" />
 
-  <AdminLayout
-    :heading="`Addons — ${product.name}`"
-    description="Separate lines a customer can add or drop later, each with its own price."
-  >
-    <div v-if="canManage && addons.length > 0" class="mb-5 flex justify-end">
-      <AppButton :href="`/admin/catalog/products/${product.id}/addons/create`" variant="primary">
-        New addon
-      </AppButton>
-    </div>
+  <AdminLayout :heading="t('ui.catalog.addons.title', { product: product.name })">
+    <template #header>
+      <PageHeader
+        :title="t('ui.catalog.addons.title', { product: product.name })"
+        :description="t('ui.catalog.addons.intro')"
+      >
+        <template #actions>
+          <AppButton :href="`/admin/catalog/products/${product.id}/edit`" variant="ghost">
+            {{ t('ui.catalog.back_to_product') }}
+          </AppButton>
+          <AppButton
+            v-if="canManage && addons.length > 0"
+            :href="`/admin/catalog/products/${product.id}/addons/create`"
+            variant="primary"
+            icon="add"
+          >
+            {{ t('ui.catalog.addons.new') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
 
-    <AppTable v-if="addons.length > 0" :headers="['Addon', 'Status', 'Prices', '']">
-      <tr v-for="addon in addons" :key="addon.id">
-        <td class="px-4 py-2.5">
+    <AppTable v-if="addons.length > 0" name="catalog-addons" :columns="COLUMNS">
+      <AppTableRow v-for="addon in addons" :key="addon.id">
+        <td data-col="addon">
           <p class="font-medium">{{ addon.name }}</p>
           <p class="text-content-muted text-chrome font-mono">{{ addon.slug }}</p>
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="status">
           <AppStatus :tone="statusTone(addon.status)" :label="statusLabel(addon.status)" />
         </td>
         <td
-          class="px-4 py-2.5 tabular-nums"
+          data-col="prices"
+          class="numeric tabular-nums"
           :class="addon.priceCount === 0 ? 'text-danger' : 'text-content-muted'"
         >
-          {{ addon.priceCount === 0 ? 'None' : addon.priceCount }}
+          {{ addon.priceCount === 0 ? t('ui.catalog.none') : addon.priceCount }}
         </td>
-        <td class="px-4 py-2.5 text-right whitespace-nowrap">
-          <Link
-            :href="`/admin/catalog/products/${product.id}/addons/${addon.id}/edit`"
-            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
-          >
-            Edit
-          </Link>
-          <button
-            v-if="canManage"
-            type="button"
-            class="text-danger text-chrome ml-3 underline underline-offset-4"
-            @click="remove(addon)"
-          >
-            Delete
-          </button>
+        <td data-col="actions" class="text-right whitespace-nowrap">
+          <span class="row-actions inline-flex gap-1">
+            <AppButton
+              size="sm"
+              variant="ghost"
+              :href="`/admin/catalog/products/${product.id}/addons/${addon.id}/edit`"
+            >
+              {{ t('ui.catalog.edit') }}
+            </AppButton>
+            <AppButton v-if="canManage" size="sm" variant="danger-subtle" @click="removing = addon">
+              {{ t('ui.catalog.delete') }}
+            </AppButton>
+          </span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="No addons yet"
-      description="An addon is bought alongside the plan and billed on its own line: a dedicated IP, extra backups, a licence."
+      icon="catalog"
+      :title="t('ui.catalog.addons.empty')"
+      :description="t('ui.catalog.addons.empty_detail')"
     >
       <AppButton
         v-if="canManage"
         :href="`/admin/catalog/products/${product.id}/addons/create`"
         variant="primary"
+        icon="add"
       >
-        New addon
+        {{ t('ui.catalog.addons.new') }}
       </AppButton>
     </EmptyState>
 
-    <div class="mt-6">
-      <AppButton :href="`/admin/catalog/products/${product.id}/edit`" variant="ghost">
-        Back to product
-      </AppButton>
-    </div>
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="t('ui.catalog.addons.delete_title', { name: removing?.name ?? '' })"
+      :description="t('ui.catalog.addons.delete_detail')"
+      :confirm-label="t('ui.catalog.addons.delete_confirm')"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
+    />
   </AdminLayout>
 </template>

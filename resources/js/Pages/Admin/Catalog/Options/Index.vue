@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 
 import AppBadge from '../../../../Components/AppBadge.vue'
 import AppButton from '../../../../Components/AppButton.vue'
+import AppConfirm from '../../../../Components/AppConfirm.vue'
+import AppTableRow from '../../../../Components/AppTableRow.vue'
+import PageHeader from '../../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../../Components/tableContext'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
@@ -24,74 +30,110 @@ const props = defineProps<{
   canManage: boolean
 }>()
 
-function remove(group: OptionGroupRow): void {
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'group', label: t('ui.catalog.options.column') },
+  { key: 'type', label: t('ui.catalog.type') },
+  { key: 'choices', label: t('ui.catalog.options.choices'), numeric: true },
+  { key: 'actions', label: '' },
+]
+
+const removing = ref<OptionGroupRow | null>(null)
+
+function remove(): void {
+  const group = removing.value
+
+  if (group === null) return
+
   router.delete(`/admin/catalog/products/${props.product.id}/options/${group.id}`, {
     preserveScroll: true,
+    onFinish: () => {
+      removing.value = null
+    },
   })
 }
 </script>
 
 <template>
-  <Head :title="`Options — ${product.name}`" />
+  <Head :title="t('ui.catalog.options.head', { product: product.name })" />
 
-  <AdminLayout
-    :heading="`Configurable options — ${product.name}`"
-    description="Choices that change what the product is. Each choice is priced as a difference from the product price, so a cheaper choice is a negative number."
-  >
-    <div v-if="canManage && groups.length > 0" class="mb-5 flex justify-end">
-      <AppButton :href="`/admin/catalog/products/${product.id}/options/create`" variant="primary">
-        New option group
-      </AppButton>
-    </div>
+  <AdminLayout :heading="t('ui.catalog.options.title', { product: product.name })">
+    <template #header>
+      <PageHeader
+        :title="t('ui.catalog.options.title', { product: product.name })"
+        :description="t('ui.catalog.options.intro')"
+      >
+        <template #actions>
+          <AppButton :href="`/admin/catalog/products/${product.id}/edit`" variant="ghost">
+            {{ t('ui.catalog.back_to_product') }}
+          </AppButton>
+          <AppButton
+            v-if="canManage && groups.length > 0"
+            :href="`/admin/catalog/products/${product.id}/options/create`"
+            variant="primary"
+            icon="add"
+          >
+            {{ t('ui.catalog.options.new') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
 
-    <AppTable v-if="groups.length > 0" :headers="['Group', 'Type', 'Choices', '']">
-      <tr v-for="group in groups" :key="group.id">
-        <td class="px-4 py-2.5">
-          <p class="font-medium">
-            {{ group.name }}
-            <AppBadge v-if="group.isRequired" class="ml-2">Required</AppBadge>
+    <AppTable v-if="groups.length > 0" name="catalog-options" :columns="COLUMNS">
+      <AppTableRow v-for="group in groups" :key="group.id">
+        <td data-col="group">
+          <p class="flex flex-wrap items-center gap-x-2 font-medium">
+            <span>{{ group.name }}</span>
+            <AppBadge v-if="group.isRequired">{{ t('ui.catalog.options.required') }}</AppBadge>
           </p>
           <p class="text-content-muted text-chrome font-mono">{{ group.key }}</p>
         </td>
-        <td class="text-content-muted px-4 py-2.5">{{ group.typeLabel }}</td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ group.choices }}</td>
-        <td class="px-4 py-2.5 text-right whitespace-nowrap">
-          <Link
-            :href="`/admin/catalog/products/${product.id}/options/${group.id}/edit`"
-            class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
-          >
-            Edit
-          </Link>
-          <button
-            v-if="canManage"
-            type="button"
-            class="text-danger text-chrome ml-3 underline underline-offset-4"
-            @click="remove(group)"
-          >
-            Delete
-          </button>
+        <td data-col="type" class="text-content-muted">{{ group.typeLabel }}</td>
+        <td data-col="choices" class="numeric text-content-muted tabular-nums">
+          {{ group.choices }}
         </td>
-      </tr>
+        <td data-col="actions" class="text-right whitespace-nowrap">
+          <span class="row-actions inline-flex gap-1">
+            <AppButton
+              size="sm"
+              variant="ghost"
+              :href="`/admin/catalog/products/${product.id}/options/${group.id}/edit`"
+            >
+              {{ t('ui.catalog.edit') }}
+            </AppButton>
+            <AppButton v-if="canManage" size="sm" variant="danger-subtle" @click="removing = group">
+              {{ t('ui.catalog.delete') }}
+            </AppButton>
+          </span>
+        </td>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="No configurable options yet"
-      description="An option group is a question at checkout: control panel, backup frequency, extra IPs. Each answer can raise or lower the price."
+      icon="catalog"
+      :title="t('ui.catalog.options.empty')"
+      :description="t('ui.catalog.options.empty_detail')"
     >
       <AppButton
         v-if="canManage"
         :href="`/admin/catalog/products/${product.id}/options/create`"
         variant="primary"
+        icon="add"
       >
-        New option group
+        {{ t('ui.catalog.options.new') }}
       </AppButton>
     </EmptyState>
 
-    <div class="mt-6">
-      <AppButton :href="`/admin/catalog/products/${product.id}/edit`" variant="ghost">
-        Back to product
-      </AppButton>
-    </div>
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="t('ui.catalog.options.delete_title', { name: removing?.name ?? '' })"
+      :description="t('ui.catalog.options.delete_detail')"
+      :confirm-label="t('ui.catalog.options.delete_confirm')"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
+    />
   </AdminLayout>
 </template>

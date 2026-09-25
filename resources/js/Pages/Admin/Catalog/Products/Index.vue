@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppButton from '../../../../Components/AppButton.vue'
+import AppTableRow from '../../../../Components/AppTableRow.vue'
+import PageHeader from '../../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../../Components/tableContext'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppStatus from '../../../../Components/AppStatus.vue'
 import AppTable from '../../../../Components/AppTable.vue'
 import EmptyState from '../../../../Components/EmptyState.vue'
@@ -28,6 +32,16 @@ const props = defineProps<{
 }>()
 
 /** Grouped in the list the way they are grouped on the storefront. */
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'product', label: t('ui.catalog.products.column') },
+  { key: 'type', label: t('ui.catalog.type') },
+  { key: 'status', label: t('ui.catalog.status') },
+  { key: 'prices', label: t('ui.catalog.prices'), numeric: true },
+  { key: 'actions', label: '' },
+]
+
 const sections = computed(() => {
   const byGroup = new Map<string, { name: string; products: ProductRow[] }>()
 
@@ -49,62 +63,85 @@ function statusLabel(value: string): string {
 </script>
 
 <template>
-  <Head title="Products" />
+  <Head :title="t('ui.catalog.products.title')" />
 
-  <AdminLayout
-    heading="Products"
-    description="What customers can buy. A product with no price in a currency is simply not sold in it."
-  >
-    <div v-if="sections.length > 0" class="mb-5 flex justify-end">
-      <AppButton href="/admin/catalog/products/create" variant="primary">New product</AppButton>
-    </div>
+  <AdminLayout :heading="t('ui.catalog.products.title')">
+    <template #header>
+      <PageHeader
+        :title="t('ui.catalog.products.title')"
+        :description="t('ui.catalog.products.intro')"
+      >
+        <template v-if="sections.length > 0" #actions>
+          <AppButton href="/admin/catalog/products/create" variant="primary" icon="add">
+            {{ t('ui.catalog.products.new') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
 
     <div v-if="sections.length > 0" class="flex flex-col gap-8">
+      <!-- One table per group, because the group is how an operator thinks
+           about the catalogue and a single list of everything is not. -->
       <section v-for="section in sections" :key="section.name">
-        <h2 class="text-content-muted text-chrome mb-2 font-medium">{{ section.name }}</h2>
+        <h2 class="text-content-subtle text-label mb-2 uppercase">{{ section.name }}</h2>
 
-        <AppTable :headers="['Product', 'Type', 'Status', 'Prices', '']">
-          <tr v-for="product in section.products" :key="product.id">
-            <td class="px-4 py-2.5">
+        <AppTable :name="`catalog-products-${section.name}`" :columns="COLUMNS">
+          <AppTableRow v-for="product in section.products" :key="product.id">
+            <td data-col="product">
               <p class="font-medium">{{ product.name }}</p>
               <p class="text-content-muted text-chrome font-mono">{{ product.slug }}</p>
             </td>
-            <td class="text-content-muted px-4 py-2.5">{{ product.typeLabel }}</td>
-            <td class="px-4 py-2.5">
-              <AppStatus :tone="statusTone(product.status)" :label="statusLabel(product.status)" />
-              <span v-if="product.stock === 0" class="text-danger text-chrome ml-2">Sold out</span>
+            <td data-col="type" class="text-content-muted">{{ product.typeLabel }}</td>
+            <td data-col="status">
+              <span class="flex flex-wrap items-center gap-x-2">
+                <AppStatus
+                  :tone="statusTone(product.status)"
+                  :label="statusLabel(product.status)"
+                />
+                <span v-if="product.stock === 0" class="text-danger text-chrome">
+                  {{ t('ui.catalog.products.sold_out') }}
+                </span>
+              </span>
             </td>
             <td
-              class="px-4 py-2.5 tabular-nums"
+              data-col="prices"
+              class="numeric tabular-nums"
               :class="product.priceCount === 0 ? 'text-danger' : 'text-content-muted'"
             >
-              {{ product.priceCount === 0 ? 'None' : product.priceCount }}
+              {{ product.priceCount === 0 ? t('ui.catalog.none') : product.priceCount }}
             </td>
-            <td class="px-4 py-2.5 text-right whitespace-nowrap">
-              <Link
-                :href="`/admin/catalog/products/${product.id}/edit`"
-                class="text-content-muted hover:text-content text-chrome underline underline-offset-4"
-              >
-                Edit
-              </Link>
-              <Link
-                :href="`/admin/catalog/products/${product.id}/pricing`"
-                class="text-content-muted hover:text-content text-chrome ml-3 underline underline-offset-4"
-              >
-                Pricing
-              </Link>
+            <td data-col="actions" class="text-right whitespace-nowrap">
+              <span class="row-actions inline-flex gap-1">
+                <AppButton
+                  size="sm"
+                  variant="ghost"
+                  :href="`/admin/catalog/products/${product.id}/edit`"
+                >
+                  {{ t('ui.catalog.edit') }}
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant="ghost"
+                  :href="`/admin/catalog/products/${product.id}/pricing`"
+                >
+                  {{ t('ui.catalog.pricing') }}
+                </AppButton>
+              </span>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
       </section>
     </div>
 
     <EmptyState
       v-else
-      title="No products yet"
-      description="A product is a thing a customer can order. It needs a group to sit in and at least one price before it can be sold."
+      icon="catalog"
+      :title="t('ui.catalog.products.empty')"
+      :description="t('ui.catalog.products.empty_detail')"
     >
-      <AppButton href="/admin/catalog/products/create" variant="primary">New product</AppButton>
+      <AppButton href="/admin/catalog/products/create" variant="primary" icon="add">
+        {{ t('ui.catalog.products.new') }}
+      </AppButton>
     </EmptyState>
   </AdminLayout>
 </template>
