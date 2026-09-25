@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Health\HealthChecks;
 use App\Domain\Automation\AutomationTask;
 use App\Domain\Licensing\Feature;
+use App\Domain\Modules\ModuleType;
 
 /**
  * Every word this platform shows has a word behind it.
@@ -95,10 +96,32 @@ it('has wording for every health check that is registered', function (): void {
     app()->setLocale('en');
 });
 
+it('names every module type in both locales', function (): void {
+    /*
+     * Asked of the enum, not of a list here. `Infrastructure` was added for
+     * the resource-graph phase and never given a label, so the Modules screen
+     * printed `modules.types.infrastructure.label` at an operator beside a
+     * package they were deciding whether to run — the permission-slug trap
+     * through a third door.
+     */
+    foreach (config('platform.locales', ['en']) as $locale) {
+        app()->setLocale($locale);
+
+        foreach (ModuleType::cases() as $type) {
+            foreach ([$type->labelKey(), $type->descriptionKey()] as $key) {
+                expect((string) __($key))->not->toBe($key, $type->value.' in '.$locale);
+            }
+        }
+    }
+
+    app()->setLocale('en');
+});
+
 it('is actually checking something', function (): void {
     // The guard on the guard. A dataset that silently became empty is a test
     // that passes by examining nothing, which is how an audit stops auditing.
     expect(count(vocabularyKeys()))->toBeGreaterThan(10)
         ->and(config('platform.locales'))->toContain('en')
-        ->and(config('platform.locales'))->toContain('tr');
+        ->and(config('platform.locales'))->toContain('tr')
+        ->and(count(ModuleType::cases()))->toBeGreaterThan(5);
 });

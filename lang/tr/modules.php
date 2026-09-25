@@ -51,6 +51,10 @@ return [
             'label' => 'Müşteri bileşeni',
             'description' => 'Müşteri panosuna bir panel ekler.',
         ],
+        'infrastructure' => [
+            'label' => 'Altyapı',
+            'description' => 'Sunucuları, adresleri ve onlara bağlı şeyleri keşfeder.',
+        ],
         'addon' => [
             'label' => 'Eklenti',
             'description' => 'Yukarıdakilerden birkaçı. Neyi kaydettiğini okuyun.',

@@ -4,10 +4,12 @@ import { ref } from 'vue'
 
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import { statusTone } from '../../../status'
 
 interface Check {
@@ -26,6 +28,8 @@ const props = defineProps<{
   maintenance: { active: boolean; message: string | null; until: string | null }
   can: { manage: boolean }
 }>()
+
+const { t } = useTranslations()
 
 const editing = ref(false)
 
@@ -71,115 +75,129 @@ function formatDateTime(value: string): string {
 </script>
 
 <template>
-  <Head title="System health" />
+  <Head :title="t('ui.health.title')" />
 
-  <AdminLayout
-    heading="System health"
-    description="What is working, what is about to stop working, and what has stopped."
-  >
-    <div class="mb-6 flex flex-wrap items-center gap-3">
-      <AppStatus
-        :tone="healthTone(overall)"
-        :label="checks.find((check) => check.state === overall)?.stateLabel ?? overall"
-        class="text-title font-semibold"
-      />
-      <span class="text-content-muted text-chrome">
-        Checked {{ formatDateTime(runtime.checkedAt) }}
-      </span>
-    </div>
+  <AdminLayout :heading="t('ui.health.title')">
+    <template #header>
+      <PageHeader :title="t('ui.health.title')" :description="t('ui.health.intro')">
+        <template #status>
+          <AppStatus
+            :tone="healthTone(overall)"
+            :label="checks.find((check) => check.state === overall)?.stateLabel ?? overall"
+          />
+        </template>
 
-    <div class="grid gap-4 md:grid-cols-2">
-      <AppCard v-for="check in checks" :key="check.key">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="text-body font-semibold">{{ check.label }}</h2>
-          <AppStatus :tone="healthTone(check.state)" :label="check.stateLabel" />
-        </div>
+        <template #meta>
+          <span>{{ t('ui.health.checked', { at: formatDateTime(runtime.checkedAt) }) }}</span>
+        </template>
+      </PageHeader>
+    </template>
 
-        <p v-if="check.detail" class="text-content-muted text-chrome mt-2 leading-relaxed">
-          {{ check.detail }}
-        </p>
+    <div class="flex flex-col gap-8">
+      <!--
+        A divided list, not a card per check. The question somebody opens this
+        screen with is "which one is red", and a column of states answers it in
+        one glance where a grid of boxes makes them hunt.
+      -->
+      <DetailSection :title="t('ui.health.checks')" :description="t('ui.health.checks_intro')">
+        <ul class="divide-line-subtle divide-y">
+          <li v-for="check in checks" :key="check.key" class="py-3 first:pt-0 last:pb-0">
+            <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+              <h3 class="text-body font-medium">{{ check.label }}</h3>
+              <AppStatus :tone="healthTone(check.state)" :label="check.stateLabel" />
+            </div>
 
-        <!-- Numbers, never configuration. A health page that proved the
-             database was configured by printing its DSN would have
-             published a password. -->
-        <dl
-          v-if="Object.keys(check.measurements).length > 0"
-          class="text-content-muted text-chrome mt-3 flex flex-wrap gap-x-5 gap-y-1"
+            <p v-if="check.detail" class="text-content-muted text-chrome mt-1 leading-relaxed">
+              {{ check.detail }}
+            </p>
+
+            <!-- Numbers, never configuration. A health page that proved the
+                 database was configured by printing its DSN would have
+                 published a password. -->
+            <dl
+              v-if="Object.keys(check.measurements).length > 0"
+              class="text-content-muted text-chrome mt-1.5 flex flex-wrap gap-x-5 gap-y-1"
+            >
+              <div v-for="(value, key) in check.measurements" :key="key">
+                <dt class="inline">{{ key }}</dt>
+                <dd class="text-content ml-1 inline tabular-nums">{{ value }}</dd>
+              </div>
+            </dl>
+          </li>
+        </ul>
+      </DetailSection>
+
+      <div class="grid gap-x-10 gap-y-8 lg:grid-cols-2">
+        <DetailSection :title="t('ui.health.installation')">
+          <dl class="text-content-muted text-chrome flex flex-wrap gap-x-6 gap-y-1">
+            <div>
+              <dt class="inline">{{ t('ui.health.version') }}</dt>
+              <dd class="text-content ml-1 inline">{{ runtime.version }}</dd>
+            </div>
+            <div>
+              <dt class="inline">{{ t('ui.health.php') }}</dt>
+              <dd class="text-content ml-1 inline">{{ runtime.php }}</dd>
+            </div>
+            <div>
+              <dt class="inline">{{ t('ui.health.environment') }}</dt>
+              <dd class="text-content ml-1 inline">{{ runtime.environment }}</dd>
+            </div>
+          </dl>
+        </DetailSection>
+
+        <DetailSection
+          :title="t('ui.health.maintenance')"
+          :description="t('ui.health.maintenance_intro')"
         >
-          <div v-for="(value, key) in check.measurements" :key="key">
-            <dt class="inline">{{ key }}</dt>
-            <dd class="text-content ml-1 inline tabular-nums">{{ value }}</dd>
-          </div>
-        </dl>
-      </AppCard>
-    </div>
+          <template v-if="maintenance.active">
+            <p class="text-body">{{ maintenance.message }}</p>
+            <p v-if="maintenance.until" class="text-content-muted text-chrome mt-1">
+              {{ t('ui.health.ends', { at: formatDateTime(maintenance.until) }) }}
+            </p>
 
-    <div class="mt-8 grid gap-4 md:grid-cols-2">
-      <AppCard title="This installation">
-        <dl class="text-content-muted text-chrome flex flex-wrap gap-x-6 gap-y-1">
-          <div>
-            <dt class="inline">Version</dt>
-            <dd class="text-content ml-1 inline">{{ runtime.version }}</dd>
-          </div>
-          <div>
-            <dt class="inline">PHP</dt>
-            <dd class="text-content ml-1 inline">{{ runtime.php }}</dd>
-          </div>
-          <div>
-            <dt class="inline">Environment</dt>
-            <dd class="text-content ml-1 inline">{{ runtime.environment }}</dd>
-          </div>
-        </dl>
-      </AppCard>
+            <div v-if="can.manage" class="mt-4">
+              <AppButton :loading="form.processing" @click="turnOff">
+                {{ t('ui.health.turn_off') }}
+              </AppButton>
+            </div>
+          </template>
 
-      <AppCard
-        title="Maintenance mode"
-        description="Closes the storefront and the client area. Staff can still sign in."
-      >
-        <template v-if="maintenance.active">
-          <p class="text-body">{{ maintenance.message }}</p>
-          <p v-if="maintenance.until" class="text-content-muted text-chrome mt-1">
-            Ends {{ formatDateTime(maintenance.until) }}
-          </p>
+          <template v-else-if="editing">
+            <form class="flex flex-col gap-3" @submit.prevent="save">
+              <AppTextarea
+                v-model="form.message"
+                :label="t('ui.health.message')"
+                :rows="3"
+                :error="form.errors.message"
+              />
+              <AppInput
+                v-model="form.until"
+                :label="t('ui.health.ends_at')"
+                type="datetime-local"
+                :hint="t('ui.health.ends_at_hint')"
+                :error="form.errors.until"
+              />
 
-          <div v-if="can.manage" class="mt-4">
-            <AppButton size="sm" :loading="form.processing" @click="turnOff">Turn off</AppButton>
-          </div>
-        </template>
+              <div class="flex gap-2">
+                <AppButton type="submit" variant="primary" :loading="form.processing">
+                  {{ t('ui.health.turn_on') }}
+                </AppButton>
+                <AppButton variant="ghost" @click="editing = false">
+                  {{ t('ui.confirm.cancel') }}
+                </AppButton>
+              </div>
+            </form>
+          </template>
 
-        <template v-else-if="editing">
-          <div class="flex flex-col gap-3">
-            <AppTextarea
-              v-model="form.message"
-              label="Message shown to visitors"
-              :rows="3"
-              :error="form.errors.message"
-            />
-            <AppInput
-              v-model="form.until"
-              label="Ends at"
-              type="datetime-local"
-              hint="Leave empty to leave it on until you turn it off."
-              :error="form.errors.until"
-            />
-          </div>
+          <template v-else>
+            <p class="text-content-muted text-body">{{ t('ui.health.off') }}</p>
 
-          <div class="mt-4 flex gap-2">
-            <AppButton variant="primary" size="sm" :loading="form.processing" @click="save">
-              Turn on
-            </AppButton>
-            <AppButton variant="ghost" size="sm" @click="editing = false">Cancel</AppButton>
-          </div>
-        </template>
-
-        <template v-else>
-          <p class="text-content-muted text-chrome">Off.</p>
-
-          <div v-if="can.manage" class="mt-4">
-            <AppButton size="sm" @click="editing = true">Turn on</AppButton>
-          </div>
-        </template>
-      </AppCard>
+            <div v-if="can.manage" class="mt-4">
+              <AppButton @click="editing = true">{{ t('ui.health.turn_on') }}</AppButton>
+            </div>
+          </template>
+        </DetailSection>
+      </div>
     </div>
   </AdminLayout>
 </template>

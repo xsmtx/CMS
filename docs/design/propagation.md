@@ -48,11 +48,11 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Tax/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Options/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Contacts/Form.vue` | form |  |  |  |  | yes |
-| [ ] | `Admin/Health/Index.vue` | list | 3 |  |  |  |  |
-| [ ] | `Admin/Modules/Index.vue` | list | 3 |  |  |  |  |
+| [x] | `Admin/Health/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Modules/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Promotions/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Staff/Form.vue` | form |  |  |  |  | yes |
-| [ ] | `Admin/Support/Overview.vue` | overview | 3 |  |  |  |  |
+| [x] | `Admin/Support/Overview.vue` | overview |  |  |  |  | yes |
 | [ ] | `Admin/Import/Index.vue` | list | 2 | 8 |  |  |  |
 | [ ] | `Admin/Import/Show.vue` | detail | 2 | 9 |  |  |  |
 | [ ] | `Admin/Infrastructure/Index.vue` | list | 2 | 12 |  |  |  |

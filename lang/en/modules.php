@@ -51,6 +51,10 @@ return [
             'label' => 'Client widget',
             'description' => 'Adds a panel to the customer dashboard.',
         ],
+        'infrastructure' => [
+            'label' => 'Infrastructure',
+            'description' => 'Discovers servers, addresses and the things that hang off them.',
+        ],
         'addon' => [
             'label' => 'Addon',
             'description' => 'Several of the above. Read what it registers.',
