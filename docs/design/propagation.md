@@ -55,7 +55,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Support/Overview.vue` | overview |  |  |  |  | yes |
 | [x] | `Admin/Import/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Import/Show.vue` | detail |  |  |  |  | yes |
-| [ ] | `Admin/Infrastructure/Index.vue` | list | 2 | 12 |  |  |  |
+| [x] | `Admin/Infrastructure/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Tlds/Index.vue` | list | 2 | 6 |  |  |  |
 | [ ] | `Admin/Catalog/Addons/Form.vue` | form | 2 |  |  |  |  |
 | [ ] | `Admin/Catalog/Currencies/Form.vue` | form | 1 |  |  | 1 |  |

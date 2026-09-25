@@ -3,12 +3,17 @@ import { Head, router, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppTextarea from '../../../Components/AppTextarea.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -155,13 +160,63 @@ function resetServer(): void {
   serverForm.reset()
 }
 
-function removeServer(server: ServerRow): void {
-  router.delete(`/admin/apps/infrastructure/servers/${server.id}`, { preserveScroll: true })
+/**
+ * Both deletions used to happen on the first click, from a ghost button in a
+ * row of ghost buttons beside Edit.
+ *
+ * Only an empty one can be removed at all — the button is not rendered while
+ * anything is placed on it — so this is configuration going, not a customer's
+ * data. That makes it level 2: say what happens and ask, rather than asking
+ * for the name typed back.
+ */
+const removingServer = ref<ServerRow | null>(null)
+const removingGroup = ref<GroupRow | null>(null)
+
+function removeServer(): void {
+  const server = removingServer.value
+
+  if (server === null) return
+
+  router.delete(`/admin/apps/infrastructure/servers/${server.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      removingServer.value = null
+    },
+  })
 }
 
-function removeGroup(group: GroupRow): void {
-  router.delete(`/admin/apps/infrastructure/groups/${group.id}`, { preserveScroll: true })
+function removeGroup(): void {
+  const group = removingGroup.value
+
+  if (group === null) return
+
+  router.delete(`/admin/apps/infrastructure/groups/${group.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      removingGroup.value = null
+    },
+  })
 }
+
+const { t } = useTranslations()
+
+const GROUP_COLUMNS: TableColumn[] = [
+  { key: 'group', label: t('ui.infrastructure.group') },
+  { key: 'placement', label: t('ui.infrastructure.placement') },
+  { key: 'region', label: t('ui.infrastructure.region') },
+  { key: 'servers', label: t('ui.infrastructure.servers'), numeric: true },
+  { key: 'actions', label: '' },
+]
+
+const SERVER_COLUMNS: TableColumn[] = [
+  { key: 'server', label: t('ui.infrastructure.server') },
+  { key: 'group', label: t('ui.infrastructure.group'), optional: true },
+  { key: 'module', label: t('ui.infrastructure.module') },
+  { key: 'status', label: t('ui.infrastructure.status') },
+  { key: 'health', label: t('ui.infrastructure.health') },
+  { key: 'usage', label: t('ui.infrastructure.in_use'), numeric: true },
+  { key: 'actions', label: '' },
+]
 
 function test(server: ServerRow): void {
   router.post(`/admin/apps/infrastructure/servers/${server.id}/test`, {}, { preserveScroll: true })
@@ -175,216 +230,277 @@ function usage(server: ServerRow): string {
 </script>
 
 <template>
-  <Head title="Infrastructure" />
+  <Head :title="t('ui.infrastructure.title')" />
 
-  <AdminLayout heading="Infrastructure" description="The nodes services are placed on.">
-    <div class="flex flex-col gap-6">
-      <AppCard title="Server groups" description="Placement belongs to the group, not the product.">
-        <AppTable
-          v-if="groups.length > 0"
-          :headers="['Group', 'Placement', 'Region', 'Servers', '']"
-        >
-          <tr v-for="group in groups" :key="group.id">
-            <td class="px-4 py-2.5 font-medium">{{ group.name }}</td>
-            <td class="px-4 py-2.5">{{ group.strategyLabel }}</td>
-            <td class="text-content-muted px-4 py-2.5">{{ group.region ?? '—' }}</td>
-            <td class="px-4 py-2.5 tabular-nums">{{ group.servers }}</td>
-            <td class="px-4 py-2.5 text-right">
-              <div v-if="can.manage" class="flex justify-end gap-2">
-                <AppButton size="sm" variant="ghost" @click="editGroup(group)">Edit</AppButton>
+  <AdminLayout :heading="t('ui.infrastructure.title')">
+    <template #header>
+      <PageHeader
+        :title="t('ui.infrastructure.title')"
+        :description="t('ui.infrastructure.intro')"
+      />
+    </template>
+
+    <div class="flex flex-col gap-8">
+      <DetailSection
+        :title="t('ui.infrastructure.groups')"
+        :description="t('ui.infrastructure.groups_intro')"
+        :divided="groups.length === 0"
+      >
+        <AppTable v-if="groups.length > 0" name="server-groups" :columns="GROUP_COLUMNS">
+          <AppTableRow v-for="group in groups" :key="group.id">
+            <td data-col="group" class="font-medium">{{ group.name }}</td>
+            <td data-col="placement">{{ group.strategyLabel }}</td>
+            <td data-col="region" class="text-content-muted">{{ group.region ?? '—' }}</td>
+            <td data-col="servers" class="numeric tabular-nums">{{ group.servers }}</td>
+            <td data-col="actions" class="text-right">
+              <span v-if="can.manage" class="row-actions inline-flex gap-1">
+                <AppButton size="sm" variant="ghost" @click="editGroup(group)">
+                  {{ t('ui.infrastructure.edit') }}
+                </AppButton>
                 <AppButton
                   v-if="group.servers === 0"
                   size="sm"
-                  variant="ghost"
-                  @click="removeGroup(group)"
+                  variant="danger-subtle"
+                  @click="removingGroup = group"
                 >
-                  Delete
+                  {{ t('ui.infrastructure.delete') }}
                 </AppButton>
-              </div>
+              </span>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
 
         <EmptyState
           v-else
-          title="No server groups yet"
-          description="A group holds the nodes a product's services are placed on, and the rule for choosing between them."
+          variant="plain"
+          icon="servers"
+          :title="t('ui.infrastructure.no_groups')"
+          :description="t('ui.infrastructure.no_groups_detail')"
         />
+      </DetailSection>
 
-        <div v-if="can.manage" class="border-line mt-5 border-t pt-5">
-          <h3 class="text-body mb-3 font-semibold">
-            {{ editingGroup ? 'Edit group' : 'Add a group' }}
-          </h3>
+      <DetailSection
+        v-if="can.manage"
+        :title="editingGroup ? t('ui.infrastructure.edit_group') : t('ui.infrastructure.add_group')"
+      >
+        <form class="flex flex-col gap-4" @submit.prevent="saveGroup">
           <div class="grid gap-4 sm:grid-cols-2">
-            <AppInput v-model="groupForm.name" label="Name" :error="groupForm.errors.name" />
+            <AppInput
+              v-model="groupForm.name"
+              :label="t('ui.infrastructure.name')"
+              :error="groupForm.errors.name"
+            />
             <AppSelect
               v-model="groupForm.placement_strategy"
-              label="Placement"
+              :label="t('ui.infrastructure.placement')"
               :options="options.strategies"
               :error="groupForm.errors.placement_strategy"
             />
             <AppInput
               v-model="groupForm.region"
-              label="Region"
+              :label="t('ui.infrastructure.region')"
               :error="groupForm.errors.region"
-              hint="Used by region-aware placement."
+              :hint="t('ui.infrastructure.region_hint')"
             />
             <AppTextarea
               v-model="groupForm.notes"
               class="sm:col-span-2"
-              label="Notes"
+              :label="t('ui.infrastructure.notes')"
               :error="groupForm.errors.notes"
             />
           </div>
-          <div class="mt-4 flex gap-2">
-            <AppButton variant="primary" :loading="groupForm.processing" @click="saveGroup">
-              Save
+          <div class="flex gap-2">
+            <AppButton type="submit" variant="primary" :loading="groupForm.processing">
+              {{ t('ui.infrastructure.save') }}
             </AppButton>
-            <AppButton v-if="editingGroup" variant="ghost" @click="resetGroup">Cancel</AppButton>
+            <AppButton v-if="editingGroup" variant="ghost" @click="resetGroup">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
           </div>
-        </div>
-      </AppCard>
+        </form>
+      </DetailSection>
 
-      <AppCard title="Servers">
-        <AppTable
-          v-if="servers.length > 0"
-          :headers="['Server', 'Group', 'Module', 'Status', 'Health', 'In use', '']"
-        >
-          <tr v-for="server in servers" :key="server.id">
-            <td class="px-4 py-2.5">
+      <DetailSection
+        :title="t('ui.infrastructure.servers')"
+        :description="t('ui.infrastructure.servers_intro')"
+        :divided="servers.length === 0"
+      >
+        <AppTable v-if="servers.length > 0" name="servers" :columns="SERVER_COLUMNS">
+          <AppTableRow v-for="server in servers" :key="server.id">
+            <td data-col="server">
               <span class="font-medium">{{ server.name }}</span>
               <span class="text-content-muted text-chrome block">{{ server.hostname }}</span>
             </td>
-            <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
-            <td class="px-4 py-2.5">{{ server.module }}</td>
-            <td class="px-4 py-2.5">
+            <td data-col="group" class="text-content-muted">{{ server.group ?? '—' }}</td>
+            <td data-col="module">{{ server.module }}</td>
+            <td data-col="status">
               <AppStatus :tone="statusTone(server.status)" :label="server.statusLabel" />
             </td>
-            <td class="px-4 py-2.5">
+            <td data-col="health">
               <AppStatus :tone="statusTone(server.health)" :label="server.healthLabel" />
               <span v-if="server.healthMessage" class="text-content-muted text-chrome block">
                 {{ server.healthMessage }}
               </span>
             </td>
-            <td class="px-4 py-2.5 tabular-nums">{{ usage(server) }}</td>
-            <td class="px-4 py-2.5 text-right">
-              <div v-if="can.manage" class="flex justify-end gap-2">
-                <AppButton size="sm" variant="ghost" @click="test(server)">Test</AppButton>
-                <AppButton size="sm" variant="ghost" @click="editServer(server)">Edit</AppButton>
+            <td data-col="usage" class="numeric tabular-nums">{{ usage(server) }}</td>
+            <td data-col="actions" class="text-right">
+              <span v-if="can.manage" class="row-actions inline-flex gap-1">
+                <AppButton size="sm" variant="ghost" @click="test(server)">
+                  {{ t('ui.infrastructure.test') }}
+                </AppButton>
+                <AppButton size="sm" variant="ghost" @click="editServer(server)">
+                  {{ t('ui.infrastructure.edit') }}
+                </AppButton>
                 <AppButton
                   v-if="server.services === 0"
                   size="sm"
-                  variant="ghost"
-                  @click="removeServer(server)"
+                  variant="danger-subtle"
+                  @click="removingServer = server"
                 >
-                  Delete
+                  {{ t('ui.infrastructure.delete') }}
                 </AppButton>
-              </div>
+              </span>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
 
         <EmptyState
           v-else
-          title="No servers yet"
-          description="Add the control panel a product's services should be created on. Credentials are stored encrypted and never shown again."
+          variant="plain"
+          icon="servers"
+          :title="t('ui.infrastructure.no_servers')"
+          :description="t('ui.infrastructure.no_servers_detail')"
         />
+      </DetailSection>
 
-        <div v-if="can.manage" class="border-line mt-5 border-t pt-5">
-          <h3 class="text-body mb-3 font-semibold">
-            {{ editingServer ? 'Edit server' : 'Add a server' }}
-          </h3>
-
+      <DetailSection
+        v-if="can.manage"
+        :title="
+          editingServer ? t('ui.infrastructure.edit_server') : t('ui.infrastructure.add_server')
+        "
+        :description="t('ui.infrastructure.server_form_intro')"
+      >
+        <form class="flex flex-col gap-4" @submit.prevent="saveServer">
           <div class="grid gap-4 sm:grid-cols-2">
-            <AppInput v-model="serverForm.name" label="Name" :error="serverForm.errors.name" />
+            <AppInput
+              v-model="serverForm.name"
+              :label="t('ui.infrastructure.name')"
+              :error="serverForm.errors.name"
+            />
             <AppSelect
               v-model="serverForm.server_group_id"
-              label="Group"
+              :label="t('ui.infrastructure.group')"
               :options="[
-                { value: '', label: 'None' },
+                { value: '', label: t('ui.infrastructure.none') },
                 ...groups.map((group) => ({ value: group.id, label: group.name })),
               ]"
               :error="serverForm.errors.server_group_id"
             />
             <AppSelect
               v-model="serverForm.module"
-              label="Module"
+              :label="t('ui.infrastructure.module')"
               :options="options.modules"
               :error="serverForm.errors.module"
             />
             <AppSelect
               v-model="serverForm.status"
-              label="Status"
+              :label="t('ui.infrastructure.status')"
               :options="options.statuses"
               :error="serverForm.errors.status"
             />
             <AppInput
               v-model="serverForm.hostname"
-              label="Hostname"
+              :label="t('ui.infrastructure.hostname')"
               :error="serverForm.errors.hostname"
             />
             <AppInput
               v-model="serverForm.ip_address"
-              label="IP address"
+              :label="t('ui.infrastructure.ip')"
               :error="serverForm.errors.ip_address"
             />
             <AppInput
               v-model="serverForm.port"
               type="number"
-              label="Port"
+              :label="t('ui.infrastructure.port')"
               :error="serverForm.errors.port"
             />
             <AppInput
               v-model="serverForm.username"
-              label="Username"
+              :label="t('ui.infrastructure.username')"
               :error="serverForm.errors.username"
             />
             <AppInput
               v-model="serverForm.secret"
               class="sm:col-span-2"
               type="password"
-              label="API token"
+              :label="t('ui.infrastructure.token')"
               :error="serverForm.errors.secret"
               :hint="
                 editingServer
-                  ? 'A token is stored. Leave this empty to keep it.'
-                  : 'A token, never a root password. Stored encrypted and never shown again.'
+                  ? t('ui.infrastructure.token_kept')
+                  : t('ui.infrastructure.token_hint')
               "
             />
             <AppInput
               v-model="serverForm.region"
-              label="Region"
+              :label="t('ui.infrastructure.region')"
               :error="serverForm.errors.region"
             />
             <AppInput
               v-model="serverForm.max_services"
               type="number"
-              label="Maximum services"
-              hint="Zero means no limit."
+              :label="t('ui.infrastructure.max_services')"
+              :hint="t('ui.infrastructure.max_services_hint')"
               :error="serverForm.errors.max_services"
             />
             <AppInput
               v-model="serverForm.weight"
               type="number"
-              label="Weight"
+              :label="t('ui.infrastructure.weight')"
               :error="serverForm.errors.weight"
             />
             <AppInput
               v-model="serverForm.nameservers"
-              label="Nameservers"
+              :label="t('ui.infrastructure.nameservers')"
               :error="serverForm.errors.nameservers"
             />
-            <AppCheckbox v-model="serverForm.secure" label="Use TLS" class="sm:col-span-2" />
+            <AppCheckbox
+              v-model="serverForm.secure"
+              :label="t('ui.infrastructure.tls')"
+              class="sm:col-span-2"
+            />
           </div>
 
-          <div class="mt-4 flex gap-2">
-            <AppButton variant="primary" :loading="serverForm.processing" @click="saveServer">
-              Save
+          <div class="flex gap-2">
+            <AppButton type="submit" variant="primary" :loading="serverForm.processing">
+              {{ t('ui.infrastructure.save') }}
             </AppButton>
-            <AppButton v-if="editingServer" variant="ghost" @click="resetServer">Cancel</AppButton>
+            <AppButton v-if="editingServer" variant="ghost" @click="resetServer">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
           </div>
-        </div>
-      </AppCard>
+        </form>
+      </DetailSection>
     </div>
+
+    <AppConfirm
+      :open="removingGroup !== null"
+      level="consequential"
+      :title="t('ui.infrastructure.delete_group_title', { name: removingGroup?.name ?? '' })"
+      :description="t('ui.infrastructure.delete_group_detail')"
+      :confirm-label="t('ui.infrastructure.delete_group_confirm')"
+      @update:open="(value: boolean) => (removingGroup = value ? removingGroup : null)"
+      @confirm="removeGroup"
+    />
+
+    <AppConfirm
+      :open="removingServer !== null"
+      level="consequential"
+      :title="t('ui.infrastructure.delete_server_title', { name: removingServer?.name ?? '' })"
+      :description="t('ui.infrastructure.delete_server_detail')"
+      :confirm-label="t('ui.infrastructure.delete_server_confirm')"
+      @update:open="(value: boolean) => (removingServer = value ? removingServer : null)"
+      @confirm="removeServer"
+    />
   </AdminLayout>
 </template>
