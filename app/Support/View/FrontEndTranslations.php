@@ -73,6 +73,8 @@ final class FrontEndTranslations
         'automation.description',
 
         'catalog.cycles',
+        'catalog.groups',
+        'catalog.currencies',
         'catalog.promotions',
 
         'access.screen',

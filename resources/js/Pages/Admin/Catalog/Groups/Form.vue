@@ -3,7 +3,7 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppButton from '../../../../Components/AppButton.vue'
-import AppCard from '../../../../Components/AppCard.vue'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppInput from '../../../../Components/AppInput.vue'
 import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
@@ -20,6 +20,8 @@ const props = defineProps<{
   } | null
   statuses: { value: string; label: string }[]
 }>()
+
+const { t } = useTranslations()
 
 const isEditing = computed(() => props.group !== null)
 
@@ -41,56 +43,61 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit group' : 'New group'" />
+  <Head :title="isEditing ? t('catalog.groups.edit') : t('catalog.groups.new')" />
 
   <AdminLayout
-    :heading="isEditing ? 'Edit group' : 'New group'"
-    description="Groups are the headings the storefront is organised by."
+    :heading="isEditing ? t('catalog.groups.edit') : t('catalog.groups.new')"
+    :description="t('catalog.groups.form_intro')"
   >
     <form class="flex flex-col gap-6" @submit.prevent="submit">
-      <AppCard>
-        <div class="grid gap-5 sm:grid-cols-2">
-          <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+      <div class="grid gap-5 sm:grid-cols-2">
+        <AppInput
+          v-model="form.name"
+          :label="t('catalog.groups.name')"
+          :error="form.errors.name"
+          required
+        />
 
-          <AppInput
-            v-model="form.slug"
-            label="Slug"
-            :error="form.errors.slug"
-            hint="Used in the storefront URL. Left empty, it is derived from the name."
-          />
+        <AppInput
+          v-model="form.slug"
+          :label="t('catalog.groups.slug')"
+          :error="form.errors.slug"
+          :hint="t('catalog.groups.slug_hint')"
+        />
 
-          <div class="sm:col-span-2">
-            <AppTextarea
-              v-model="form.description"
-              label="Description"
-              :error="form.errors.description"
-              hint="Shown under the heading on the storefront."
-            />
-          </div>
-
-          <AppSelect
-            v-model="form.status"
-            label="Status"
-            :options="statuses"
-            :error="form.errors.status"
-            hint="Hidden keeps the group off the menu but reachable by direct link."
-          />
-
-          <AppInput
-            v-model="form.position"
-            label="Position"
-            type="number"
-            :error="form.errors.position"
-            hint="Lower numbers appear first."
+        <div class="sm:col-span-2">
+          <AppTextarea
+            v-model="form.description"
+            :label="t('catalog.groups.description')"
+            :error="form.errors.description"
+            :hint="t('catalog.groups.description_hint')"
           />
         </div>
-      </AppCard>
+
+        <AppSelect
+          v-model="form.status"
+          :label="t('catalog.groups.status')"
+          :options="statuses"
+          :error="form.errors.status"
+          :hint="t('catalog.groups.status_hint')"
+        />
+
+        <AppInput
+          v-model="form.position"
+          :label="t('catalog.groups.position')"
+          type="number"
+          :error="form.errors.position"
+          :hint="t('catalog.groups.position_hint')"
+        />
+      </div>
 
       <div class="flex items-center gap-3">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save group' : 'Create group' }}
+          {{ isEditing ? t('catalog.groups.save') : t('catalog.groups.submit_create') }}
         </AppButton>
-        <AppButton href="/admin/catalog/groups" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/catalog/groups" variant="ghost">{{
+          t('ui.confirm.cancel')
+        }}</AppButton>
       </div>
     </form>
   </AdminLayout>

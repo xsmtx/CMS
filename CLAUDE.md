@@ -1342,3 +1342,16 @@ Products and services". The trail drops its last crumb when the two match
 exactly, so a screen whose name *is* the menu item's takes the label from
 `ui.nav.*` rather than restating it. Where the two are genuinely different
 levels (Utilities › Module Queue › Operations) all three crumbs are right.
+
+**A duplicate key in a language file is silent, and the later one wins.** Today's
+batch inserts put new keys at the top of a group that already had them further
+down, so a screen went on printing the old wording while the file showed the new
+one twenty lines above it — the product-group form's submit button said "New
+group" no matter what was written for it. `tests/Feature/LanguageFileTest.php`
+now refuses a key stated twice in one file, and separately refuses a key that
+exists in one language and not the other. It found fourteen of the first on the
+day it was written.
+
+Its parser follows an anonymous `[` as well as a named one, because a list of
+steps — each with a `title` and a `body` — otherwise looks exactly like the same
+key stated four times.

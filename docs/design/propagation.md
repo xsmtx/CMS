@@ -58,7 +58,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Infrastructure/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Tlds/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Catalog/Addons/Form.vue` | form | 2 |  |  |  |  |
-| [ ] | `Admin/Catalog/Currencies/Form.vue` | form | 1 |  |  | 1 |  |
+| [x] | `Admin/Catalog/Currencies/Form.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Catalog/Products/Form.vue` | form | 2 |  |  |  |  |
 | [x] | `Admin/Customers/Users.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Orders/Review.vue` | form | 1 |  |  | 1 |  |
@@ -76,7 +76,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Services/Addons.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Automation/Dunning.vue` | form | 1 |  |  |  |  |
-| [ ] | `Admin/Catalog/Groups/Form.vue` | form | 1 |  |  |  |  |
+| [x] | `Admin/Catalog/Groups/Form.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Catalog/Products/Pricing.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Content/Announcements.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Notifications/Templates.vue` | list | 1 |  |  |  |  |
