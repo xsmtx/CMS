@@ -130,3 +130,24 @@ it('refuses a name this installation already holds', function (): void {
         ->assertRedirect()
         ->assertSessionHas('error');
 });
+
+/**
+ * A shop that sells domains links to the search.
+ *
+ * The storefront header offered Plans, the cart and the client area, and
+ * nothing else: domain search and the knowledge base were reachable only by
+ * typing the URL. Listed the way the admin rail lists, so an installation
+ * with no TLDs on sale has no Domains link rather than a link to "no
+ * extensions are on sale yet".
+ */
+it('links the domain search from every public page', function (): void {
+    $this->get('/')->assertOk()->assertSee(route('storefront.domains'), false);
+});
+
+it('leaves the link out when nothing is on sale', function (): void {
+    TldPrice::query()->withoutGlobalScope('organization')->delete();
+    Tld::query()->withoutGlobalScope('organization')->delete();
+    app(TldCatalog::class)->forget();
+
+    $this->get('/')->assertOk()->assertDontSee(route('storefront.domains'), false);
+});

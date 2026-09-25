@@ -93,6 +93,36 @@
                     >
                         {{ __('storefront.plans') }}
                     </a>
+
+                    {{-- Only what has something behind it. A link to "no
+                         extensions are on sale yet" teaches a visitor that
+                         the navigation lies. --}}
+                    @if ($sections['domains'] ?? false)
+                        <a
+                            href="{{ route('storefront.domains') }}"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        >
+                            {{ __('domains.search.title') }}
+                        </a>
+                    @endif
+
+                    @if ($sections['help'] ?? false)
+                        <a
+                            href="{{ route('storefront.kb') }}"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        >
+                            {{ __('support.kb.title') }}
+                        </a>
+                    @endif
+
+                    @if ($sections['announcements'] ?? false)
+                        <a
+                            href="{{ route('storefront.announcements') }}"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        >
+                            {{ __('support.announcements.title') }}
+                        </a>
+                    @endif
                     <a
                         href="{{ route('storefront.cart') }}"
                         class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"

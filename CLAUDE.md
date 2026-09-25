@@ -1535,3 +1535,16 @@ is operator vocabulary — the admin price matrix's "One row per billing cycle,
 one column per currency." was printed under Add to cart, and a product's
 "Collects a domain at checkout" is a sentence about a setting rather than to
 a customer.
+
+**The storefront header links only what has something behind it.** Domain
+search and the knowledge base existed and nothing pointed at them — a shop
+that sells domains with no way to reach the search. `StorefrontComposer`
+answers which public sections are populated (memoised with `once()`, because
+the layout and the page are both composed), and the layout draws a link per
+section the way the admin rail does: no TLDs on sale, no Domains link, rather
+than a link to "no extensions are on sale yet".
+
+What a visitor still cannot do on the shop is choose a language: `SetLocale`
+follows the signed-in person, and an anonymous visitor gets the
+installation's. A public language switch is a cookie decision nobody has made
+yet.
