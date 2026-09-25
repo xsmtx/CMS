@@ -11,6 +11,7 @@ import { ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppInput from '../../../Components/AppInput.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -26,6 +27,8 @@ const props = defineProps<{
   groups: { key: string; label: string; more: string; rows: ResultRow[] }[]
 }>()
 
+const { t } = useTranslations()
+
 const term = ref(props.term)
 
 function submit(): void {
@@ -37,18 +40,15 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Search" />
+  <Head :title="t('ui.search.title')" />
 
-  <AdminLayout
-    heading="Search"
-    description="A client, a domain, a hostname, an invoice number — whatever the call gave you."
-  >
+  <AdminLayout :heading="t('ui.search.title')" :description="t('ui.search.subtitle')">
     <form class="mb-7 max-w-xl" @submit.prevent="submit">
       <div class="flex items-end gap-2">
         <div class="flex-1">
           <AppInput v-model="term" label="Search everything" />
         </div>
-        <AppButton type="submit" variant="primary">Search</AppButton>
+        <AppButton type="submit" variant="primary">{{ t('ui.search.action') }}</AppButton>
       </div>
       <p class="text-content-muted text-chrome mt-2">
         % anchors a term: Zeyn% or %nep. A whole name works.
@@ -84,8 +84,8 @@ function submit(): void {
 
     <EmptyState
       v-else-if="term !== ''"
-      title="Nothing matches"
-      description="Clients, services, domains, invoices, orders and tickets were all asked."
+      :title="t('ui.search.empty')"
+      :description="t('ui.search.empty_description')"
     />
 
     <EmptyState

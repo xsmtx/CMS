@@ -12,6 +12,8 @@ import { ref } from 'vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
@@ -37,6 +39,8 @@ const props = defineProps<{
   statuses: { value: string; label: string }[]
   staff: { value: string; label: string }[]
 }>()
+
+const { t } = useTranslations()
 
 const editing = ref<string | null>(null)
 
@@ -93,8 +97,24 @@ function markDone(item: TodoRow): void {
   )
 }
 
-function remove(item: TodoRow): void {
-  router.delete(`/admin/todo/${item.id}`, { preserveScroll: true })
+/*
+ * Deleting used to happen on the first click of a ghost button beside Edit.
+ * An item on this list is somebody's note to themselves, and the one thing
+ * they cannot do is remember what was on it.
+ */
+const removing = ref<TodoRow | null>(null)
+
+function remove(): void {
+  const item = removing.value
+
+  if (item === null) return
+
+  router.delete(`/admin/todo/${item.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      removing.value = null
+    },
+  })
 }
 
 function toggleDone(): void {
@@ -122,14 +142,13 @@ function tone(item: TodoRow): StatusTone {
 </script>
 
 <template>
-  <Head title="Todo list" />
+  <Head :title="t('ui.nav.todo_list')" />
 
-  <AdminLayout
-    heading="Todo List"
-    description="Things somebody meant to come back to. Not a ticket system: three states, a date if it has one, a name if it needs one."
-  >
+  <AdminLayout :heading="t('operations.todo.title')" :description="t('operations.todo.subtitle')">
     <div class="mb-6 flex flex-wrap items-center gap-2.5">
-      <AppButton v-if="editing === null" variant="primary" @click="startNew">Add item</AppButton>
+      <AppButton v-if="editing === null" variant="primary" @click="startNew">{{
+        t('operations.todo.add')
+      }}</AppButton>
       <AppButton variant="ghost" @click="toggleDone">
         {{ filters.done ? 'Hide done' : 'Show done' }}
       </AppButton>
@@ -159,8 +178,12 @@ function tone(item: TodoRow): StatusTone {
         />
 
         <div class="flex gap-2">
-          <AppButton type="submit" variant="primary" :loading="form.processing">Save</AppButton>
-          <AppButton type="button" variant="ghost" @click="editing = null">Cancel</AppButton>
+          <AppButton type="submit" variant="primary" :loading="form.processing">{{
+            t('operations.todo.save')
+          }}</AppButton>
+          <AppButton type="button" variant="ghost" @click="editing = null">{{
+            t('ui.confirm.cancel')
+          }}</AppButton>
         </div>
       </form>
     </AppCard>
@@ -192,18 +215,33 @@ function tone(item: TodoRow): StatusTone {
 
         <div class="flex gap-2">
           <AppButton size="sm" @click="markDone(item)">
-            {{ item.status === 'done' ? 'Reopen' : 'Done' }}
+            {{ item.status === 'done' ? t('operations.todo.reopen') : t('operations.todo.done') }}
           </AppButton>
-          <AppButton size="sm" variant="ghost" @click="startEdit(item)">Edit</AppButton>
-          <AppButton size="sm" variant="ghost" @click="remove(item)">Delete</AppButton>
+          <AppButton size="sm" variant="ghost" @click="startEdit(item)">
+            {{ t('operations.todo.edit') }}
+          </AppButton>
+          <AppButton size="sm" variant="danger-subtle" @click="removing = item">
+            {{ t('operations.todo.delete') }}
+          </AppButton>
         </div>
       </div>
     </div>
 
     <EmptyState
       v-else
-      title="Nothing on the list"
-      description="Write down the thing you will otherwise remember at two in the morning."
+      icon="todo"
+      :title="t('operations.todo.empty')"
+      :description="t('operations.todo.empty_description')"
+    />
+
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="t('operations.todo.delete_title', { title: removing?.title ?? '' })"
+      :description="t('operations.todo.delete_detail')"
+      :confirm-label="t('operations.todo.delete')"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
     />
   </AdminLayout>
 </template>

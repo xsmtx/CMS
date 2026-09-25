@@ -1549,4 +1549,11 @@ return [
         'already_on' => 'Bu hesapta iki adımlı doğrulama zaten açık.',
         'back' => 'Güvenliğe dön',
     ],
+    'search' => [
+        'title' => 'Arama',
+        'subtitle' => 'Bir müşteri, bir alan adı, bir sunucu adı, bir fatura numarası — telefonda size ne verildiyse.',
+        'action' => 'Ara',
+        'empty' => 'Eşleşen bir şey yok',
+        'empty_description' => 'Müşteriler, hizmetler, alan adları, faturalar, siparişler ve talepler; hepsine soruldu.',
+    ],
 ];

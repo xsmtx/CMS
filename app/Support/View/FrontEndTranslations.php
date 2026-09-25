@@ -68,6 +68,9 @@ final class FrontEndTranslations
          * has no use for the list of everything this installation can run.
          */
         'automation.operations',
+        'automation.runs',
+        'automation.title',
+        'automation.description',
 
         'catalog.cycles',
         'catalog.promotions',
@@ -150,6 +153,8 @@ final class FrontEndTranslations
          * `tax.php` and there must not be one (ADR 0045).
          */
         'tax',
+
+        'operations.todo',
 
         'ordering.cart',
         'ordering.orders',

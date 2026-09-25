@@ -5,6 +5,9 @@ import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -36,6 +39,19 @@ interface Task {
 
 defineProps<{ tasks: Task[]; runs: Run[]; can: { run: boolean } }>()
 
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'task', label: t('automation.runs.task'), sticky: true },
+  { key: 'started', label: t('automation.runs.started') },
+  { key: 'took', label: t('automation.runs.duration'), numeric: true },
+  { key: 'examined', label: t('automation.runs.examined'), numeric: true },
+  { key: 'changed', label: t('automation.runs.changed'), numeric: true },
+  { key: 'skipped', label: t('automation.runs.skipped'), numeric: true, optional: true },
+  { key: 'failed', label: t('automation.runs.failed'), numeric: true },
+  { key: 'actions', label: '' },
+]
+
 function run(task: string): void {
   router.post(`/admin/automation/${task}/run`, {}, { preserveScroll: true })
 }
@@ -60,12 +76,9 @@ function summarise(run: Run | null): string {
 </script>
 
 <template>
-  <Head title="Automation" />
+  <Head :title="t('automation.title')" />
 
-  <AdminLayout
-    heading="Automation"
-    description="What this platform does on its own, and what it did last time."
-  >
+  <AdminLayout :heading="t('automation.title')" :description="t('automation.description')">
     <div class="grid gap-4 md:grid-cols-2">
       <AppCard v-for="task in tasks" :key="task.value">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -83,71 +96,75 @@ function summarise(run: Run | null): string {
           />
           <!-- Said plainly. A task that has never run is the failure an
                operator is least likely to notice on their own. -->
-          <AppStatus v-else tone="warning" label="Never run" />
+          <AppStatus v-else tone="warning" :label="t('automation.runs.never')" />
         </div>
 
         <dl class="text-content-muted text-chrome mt-4 flex flex-wrap gap-x-6 gap-y-1">
           <div>
-            <dt class="inline">Runs</dt>
+            <dt class="inline">{{ t('automation.runs.cadence') }}</dt>
             <dd class="text-content ml-1 inline">{{ cadence(task.intervalMinutes) }}</dd>
           </div>
           <div>
-            <dt class="inline">Last</dt>
+            <dt class="inline">{{ t('automation.runs.last_run') }}</dt>
             <dd class="text-content ml-1 inline">
               {{ formatDateTime(task.lastRun?.startedAt ?? null) }}
             </dd>
           </div>
           <div>
-            <dt class="inline">Result</dt>
+            <dt class="inline">{{ t('automation.runs.result') }}</dt>
             <dd class="text-content ml-1 inline">{{ summarise(task.lastRun) }}</dd>
           </div>
         </dl>
 
         <div v-if="can.run" class="mt-4">
-          <AppButton size="sm" @click="run(task.value)">Run now</AppButton>
+          <AppButton size="sm" @click="run(task.value)">{{
+            t('automation.runs.run_now')
+          }}</AppButton>
           <span class="text-content-subtle text-chrome ml-3 font-mono">{{ task.command }}</span>
         </div>
       </AppCard>
     </div>
 
-    <h2 class="text-body mt-10 mb-3 font-semibold">Run history</h2>
+    <h2 class="text-body mt-10 mb-3 font-semibold">{{ t('automation.runs.title') }}</h2>
 
-    <AppTable
-      v-if="runs.length > 0"
-      :headers="['Task', 'Started', 'Took', 'Examined', 'Changed', 'Skipped', 'Failed', '']"
-    >
-      <tr v-for="item in runs" :key="item.id">
-        <td class="px-4 py-2.5 font-medium">{{ item.taskLabel }}</td>
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+    <AppTable v-if="runs.length > 0" name="automation-runs" :columns="COLUMNS">
+      <AppTableRow v-for="item in runs" :key="item.id">
+        <td data-col="task" class="font-medium">{{ item.taskLabel }}</td>
+        <td data-col="started" class="text-content-muted whitespace-nowrap">
           {{ formatDateTime(item.startedAt) }}
         </td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">
+        <td data-col="took" class="text-content-muted tabular-nums">
           {{ item.durationSeconds === null ? '—' : `${item.durationSeconds}s` }}
         </td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ item.examined }}</td>
-        <td class="px-4 py-2.5 tabular-nums">{{ item.changed }}</td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">{{ item.skipped }}</td>
-        <td class="px-4 py-2.5 tabular-nums" :class="item.failed > 0 ? 'text-danger' : ''">
+        <td data-col="examined" class="text-content-muted tabular-nums">{{ item.examined }}</td>
+        <td data-col="changed" class="tabular-nums">{{ item.changed }}</td>
+        <td data-col="skipped" class="text-content-muted tabular-nums">{{ item.skipped }}</td>
+        <td
+          data-col="failed"
+          class="px-4 py-2.5 tabular-nums"
+          :class="item.failed > 0 ? 'text-danger' : ''"
+        >
           {{ item.failed }}
         </td>
-        <td class="px-4 py-2.5">
+        <td data-col="actions">
           <AppStatus :tone="statusTone(item.status)" :label="item.statusLabel" />
           <span v-if="item.error" class="text-content-muted text-chrome block max-w-[40ch]">
             {{ item.error }}
           </span>
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
-      title="Nothing has run yet"
-      description="Tasks run on a schedule. You can also run one now and watch what it does."
+      icon="automation"
+      :title="t('automation.runs.none')"
+      :description="t('automation.runs.none_description')"
     />
 
     <p class="text-content-muted text-chrome mt-6">
       <Link href="/admin/automation/dunning" class="underline-offset-4 hover:underline">
-        Unpaid invoice sequence
+        {{ t('automation.runs.dunning_link') }}
       </Link>
     </p>
   </AdminLayout>

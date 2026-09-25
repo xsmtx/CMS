@@ -79,7 +79,7 @@ function apply(): void {
       </template>
 
       <AppTableRow v-for="row in rows" :key="row.id">
-        <td data-col="reseller" class="px-4 py-2.5">
+        <td data-col="reseller">
           <Link
             :href="`/admin/resellers/${row.id}`"
             class="font-medium underline-offset-4 hover:underline"
@@ -87,25 +87,25 @@ function apply(): void {
             {{ row.name }}
           </Link>
         </td>
-        <td data-col="customers" class="numeric px-4 py-2.5">{{ row.customers }}</td>
-        <td data-col="orders" class="numeric px-4 py-2.5">{{ row.orders }}</td>
-        <td data-col="services" class="numeric px-4 py-2.5">{{ row.services }}</td>
+        <td data-col="customers" class="numeric">{{ row.customers }}</td>
+        <td data-col="orders" class="numeric">{{ row.orders }}</td>
+        <td data-col="services" class="numeric">{{ row.services }}</td>
 
         <!-- A list rather than a figure: two currencies is two answers, and
              adding them is the mistake this platform refuses everywhere. -->
-        <td data-col="recurring" class="numeric px-4 py-2.5">
+        <td data-col="recurring" class="numeric">
           <span v-if="row.recurring.length === 0" class="text-content-subtle">—</span>
           <span v-for="money in row.recurring" :key="money.currency" class="block tabular-nums">
             {{ money.amount }}
           </span>
         </td>
-        <td data-col="invoiced" class="numeric px-4 py-2.5">
+        <td data-col="invoiced" class="numeric">
           <span v-if="row.invoiced.length === 0" class="text-content-subtle">—</span>
           <span v-for="money in row.invoiced" :key="money.currency" class="block tabular-nums">
             {{ money.amount }}
           </span>
         </td>
-        <td data-col="balance" class="numeric px-4 py-2.5">
+        <td data-col="balance" class="numeric">
           <span v-if="row.balances.length === 0" class="text-content-subtle">—</span>
           <span
             v-for="money in row.balances"

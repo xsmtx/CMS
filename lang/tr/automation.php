@@ -66,6 +66,10 @@ return [
     ],
 
     'runs' => [
+        'task' => 'Görev',
+        'cadence' => 'Sıklık',
+        'result' => 'Sonuç',
+        'dunning_link' => 'Ödenmemiş fatura dizisi',
         'title' => 'Çalışma geçmişi',
         'none' => 'Henüz hiçbir şey çalışmadı',
         'none_description' => 'Görevler zamanlanmış olarak çalışır. Dilerseniz şimdi çalıştırıp sonucu izleyebilirsiniz.',

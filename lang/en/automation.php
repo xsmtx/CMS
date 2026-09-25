@@ -66,6 +66,10 @@ return [
     ],
 
     'runs' => [
+        'task' => 'Task',
+        'cadence' => 'Runs',
+        'result' => 'Result',
+        'dunning_link' => 'Unpaid invoice sequence',
         'title' => 'Run history',
         'none' => 'Nothing has run yet',
         'none_description' => 'Tasks run on a schedule. You can also run one now and watch what it does.',

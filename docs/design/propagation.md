@@ -69,7 +69,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Staff/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Replies.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
-| [ ] | `Admin/Automation/Index.vue` | list | 1 | 8 |  |  |  |
+| [x] | `Admin/Automation/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Billing/Transactions.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
@@ -80,8 +80,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Catalog/Products/Pricing.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Content/Announcements.vue` | form | 1 |  |  |  |  |
 | [ ] | `Admin/Notifications/Templates.vue` | list | 1 |  |  |  |  |
-| [ ] | `Admin/Search/Index.vue` | list | 1 |  |  |  |  |
-| [ ] | `Admin/Todo/Index.vue` | list | 1 |  |  |  |  |
+| [x] | `Admin/Search/Index.vue` | list | 1 |  |  |  | yes |
+| [x] | `Admin/Todo/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Api/Activity.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Billing/GatewayLog.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Cancellations/Index.vue` | list |  |  |  |  | yes |
@@ -97,7 +97,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Organizations/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Promotions/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Resellers/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Resellers/Report.vue` | detail |  | 7 |  |  |  |
+| [x] | `Admin/Resellers/Report.vue` | detail |  |  |  |  | yes |
 | [x] | `Admin/Roles/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Index.vue` | list |  |  |  |  | yes |

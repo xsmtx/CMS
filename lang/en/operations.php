@@ -47,4 +47,18 @@ return [
     'errors' => [
         'not_permitted' => 'You do not have permission to do that.',
     ],
+    'todo' => [
+        'title' => 'Todo list',
+        'subtitle' => 'Things somebody meant to come back to. Not a ticket system: three states, a date if it has one, a name if it needs one.',
+        'add' => 'Add item',
+        'save' => 'Save',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'done' => 'Done',
+        'reopen' => 'Reopen',
+        'delete_title' => 'Delete ":title"?',
+        'delete_detail' => 'The note goes. Nothing else on this platform refers to it, which is also why nothing will remind you what it said.',
+        'empty' => 'Nothing on the list',
+        'empty_description' => 'Write down the thing you will otherwise remember at two in the morning.',
+    ],
 ];

@@ -47,4 +47,18 @@ return [
     'errors' => [
         'not_permitted' => 'Bunu yapma izniniz yok.',
     ],
+    'todo' => [
+        'title' => 'Yapılacaklar',
+        'subtitle' => 'Birinin sonra dönmeyi düşündüğü şeyler. Bir talep sistemi değil: üç durum, varsa bir tarih, gerekiyorsa bir isim.',
+        'add' => 'Madde ekle',
+        'save' => 'Kaydet',
+        'edit' => 'Düzenle',
+        'delete' => 'Sil',
+        'done' => 'Bitti',
+        'reopen' => 'Yeniden aç',
+        'delete_title' => '":title" silinsin mi?',
+        'delete_detail' => 'Not gider. Bu platformda ona atıfta bulunan başka bir şey yok; zaten bu yüzden içeriğini hiçbir şey size hatırlatmayacak.',
+        'empty' => 'Listede bir şey yok',
+        'empty_description' => 'Aksi hâlde sabahın ikisinde hatırlayacağınız şeyi yazın.',
+    ],
 ];

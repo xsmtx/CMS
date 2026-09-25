@@ -1554,4 +1554,11 @@ return [
         'already_on' => 'Two-factor authentication is already on for this account.',
         'back' => 'Back to security',
     ],
+    'search' => [
+        'title' => 'Search',
+        'subtitle' => 'A client, a domain, a hostname, an invoice number — whatever the call gave you.',
+        'action' => 'Search',
+        'empty' => 'Nothing matches',
+        'empty_description' => 'Clients, services, domains, invoices, orders and tickets were all asked.',
+    ],
 ];
