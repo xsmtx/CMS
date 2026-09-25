@@ -64,7 +64,7 @@ final readonly class SendEventNotifications
             [
                 'customer' => $order->customer->displayName(),
                 'order_number' => $order->number,
-                'total' => $order->total->format(app()->getLocale()),
+                'total' => $order->total,
             ],
             url('/client/orders/'.$order->id),
             organizationId: $event->organizationId,
@@ -84,7 +84,7 @@ final readonly class SendEventNotifications
             $this->recipients->forCustomer($order->customer, NotificationEvent::OrderPaid),
             [
                 'order_number' => $order->number,
-                'total' => $order->total->format(app()->getLocale()),
+                'total' => $order->total,
             ],
             url('/client/orders/'.$order->number),
             organizationId: $event->organizationId,
@@ -104,8 +104,8 @@ final readonly class SendEventNotifications
             $this->recipients->forCustomer($invoice->customer, NotificationEvent::InvoiceIssued),
             [
                 'invoice_number' => $invoice->number,
-                'total' => $invoice->total->format(app()->getLocale()),
-                'due_date' => $invoice->due_on?->toDateString() ?? '',
+                'total' => $invoice->total,
+                'due_date' => $invoice->due_on,
             ],
             url('/client/billing/invoices/'.$invoice->number),
             organizationId: $event->organizationId,
@@ -132,7 +132,7 @@ final readonly class SendEventNotifications
             $this->recipients->forCustomer($customer, NotificationEvent::PaymentReceived),
             [
                 'invoice_number' => $invoice->number,
-                'amount' => $payment->amount->format(app()->getLocale()),
+                'amount' => $payment->amount,
             ],
             url('/client/billing/invoices/'.$invoice->number),
             organizationId: $event->organizationId,
@@ -159,7 +159,7 @@ final readonly class SendEventNotifications
             $this->recipients->forCustomer($customer, NotificationEvent::PaymentFailed),
             [
                 'invoice_number' => $invoice === null ? '' : $invoice->number,
-                'amount' => $payment->amount->format(app()->getLocale()),
+                'amount' => $payment->amount,
                 // The provider's wording, not ours. "Your card was
                 // declined" from the bank is more use than a generic line.
                 'reason' => $event->reason ?? '',
@@ -241,7 +241,7 @@ final readonly class SendEventNotifications
             $this->recipients->forCustomer($domain->customer, NotificationEvent::DomainRegistered),
             [
                 'domain' => $domain->name,
-                'expires_on' => $domain->expires_on?->toDateString() ?? '',
+                'expires_on' => $domain->expires_on,
             ],
             url('/client/domains/'.$domain->id),
             organizationId: $event->organizationId,

@@ -193,7 +193,7 @@ final readonly class RunDunningSequence implements AutomationRun
                 'invoice_number' => $invoice->number,
                 'total' => $invoice->total->toDecimalString(),
                 'currency' => $invoice->currency_code,
-                'due_date' => $invoice->due_on?->toDateString() ?? '',
+                'due_date' => $invoice->due_on,
             ],
             url('/client/invoices/'.$invoice->id),
             organizationId: $invoice->organization_id,

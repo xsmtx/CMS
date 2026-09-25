@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'common' => [
+        'save' => 'Kaydet',
         'loading' => 'Yükleniyor…',
         'correlation_id' => 'İzleme kimliği',
         'columns' => 'Sütunlar',

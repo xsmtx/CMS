@@ -13,13 +13,16 @@
  */
 import { Head, router } from '@inertiajs/vue3'
 
-import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import { statusTone } from '../../../status'
 
 interface ServerRow {
@@ -30,15 +33,40 @@ interface ServerRow {
   group: string | null
   module: string | null
   status: string
+  statusLabel: string
   canOpenSession: boolean
   hasSecret: boolean
 }
 
-defineProps<{
-  brand: string
+const props = defineProps<{
+  brandName: string
   platform: { version: string; entitlements: { key: string; label: string; allowed: boolean }[] }
   servers: ServerRow[]
 }>()
+
+const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'server', label: t('provisioning.connect.columns.server') },
+  { key: 'hostname', label: t('provisioning.connect.columns.hostname') },
+  { key: 'group', label: t('provisioning.connect.columns.group') },
+  { key: 'module', label: t('provisioning.connect.columns.module') },
+  { key: 'status', label: t('provisioning.connect.columns.status') },
+  { key: 'actions', label: '' },
+]
+
+/**
+ * The version, then one row per feature. The state is given through a slot
+ * named after the feature's own key, so a licence that gains a feature
+ * gains a row without this page knowing the word for it.
+ */
+const facts: DescriptionItem[] = [
+  { key: 'version', label: t('provisioning.connect.platform_version'), mono: true },
+  ...props.platform.entitlements.map((entitlement) => ({
+    key: entitlement.key,
+    label: entitlement.label,
+  })),
+]
 
 function openSession(server: ServerRow): void {
   router.post(`/admin/apps/connect/servers/${server.id}/session`)
@@ -46,72 +74,72 @@ function openSession(server: ServerRow): void {
 </script>
 
 <template>
-  <Head :title="`${brand} Connect`" />
+  <Head :title="`${brandName} Connect`" />
 
-  <AdminLayout
-    :heading="`${brand} Connect`"
-    description="What this installation is joined to, and a way into the machines it already holds credentials for."
-  >
-    <AppCard
-      class="mb-6"
-      title="This installation"
-      description="What the licence says this installation may do. A seam with a dull default: a gate whose default is deny turns an unreachable licence service into an outage."
-    >
-      <dl class="text-body grid gap-x-8 gap-y-3 sm:grid-cols-2">
-        <div>
-          <dt class="text-content-muted text-chrome">Platform version</dt>
-          <dd class="mt-0.5 font-mono">{{ platform.version }}</dd>
-        </div>
-        <div v-for="entitlement in platform.entitlements" :key="entitlement.key">
-          <dt class="text-content-muted text-chrome">{{ entitlement.label }}</dt>
-          <dd class="mt-0.5">
-            <AppBadge :tone="entitlement.allowed ? 'success' : 'neutral'">
-              {{ entitlement.allowed ? 'Allowed' : 'Not allowed' }}
-            </AppBadge>
-          </dd>
-        </div>
-      </dl>
-    </AppCard>
+  <AdminLayout :heading="`${brandName} Connect`" :description="t('provisioning.connect.intro')">
+    <div class="flex flex-col gap-8">
+      <DetailSection
+        :title="t('provisioning.connect.installation')"
+        :description="t('provisioning.connect.installation_hint')"
+      >
+        <DescriptionList :items="facts">
+          <template #version>{{ platform.version }}</template>
 
-    <AppTable
-      v-if="servers.length > 0"
-      :headers="['Server', 'Hostname', 'Group', 'Module', 'Status', '']"
-    >
-      <tr v-for="server in servers" :key="server.id">
-        <td class="px-4 py-2.5 font-medium">{{ server.name }}</td>
-        <td class="text-content-muted px-4 py-2.5">
-          {{ server.hostname }}
-          <span v-if="server.ipAddress" class="text-chrome block font-mono">
-            {{ server.ipAddress }}
-          </span>
-        </td>
-        <td class="text-content-muted px-4 py-2.5">{{ server.group ?? '—' }}</td>
-        <td class="text-content-muted px-4 py-2.5">{{ server.module ?? '—' }}</td>
-        <td class="px-4 py-2.5">
-          <AppStatus :tone="statusTone(server.status)" :label="server.status" />
-        </td>
-        <td class="px-4 py-2.5 text-right">
-          <AppButton v-if="server.canOpenSession" size="sm" @click="openSession(server)">
-            Open panel
-          </AppButton>
-          <span v-else-if="!server.hasSecret" class="text-content-muted text-chrome">
-            No credential stored
-          </span>
-          <span v-else class="text-content-muted text-chrome">Panel cannot issue a session</span>
-        </td>
-      </tr>
-    </AppTable>
+          <template
+            v-for="entitlement in platform.entitlements"
+            :key="entitlement.key"
+            #[entitlement.key]
+          >
+            <AppStatus
+              :tone="entitlement.allowed ? 'healthy' : 'neutral'"
+              :label="
+                entitlement.allowed
+                  ? t('provisioning.connect.allowed')
+                  : t('provisioning.connect.not_allowed')
+              "
+            />
+          </template>
+        </DescriptionList>
+      </DetailSection>
 
-    <EmptyState
-      v-else
-      title="No servers yet"
-      description="Add one under Apps & Integrations. Its credential stays on this machine; what travels is a session the panel issued."
-    />
+      <AppTable v-if="servers.length > 0" name="connect" :columns="COLUMNS">
+        <AppTableRow v-for="server in servers" :key="server.id">
+          <td data-col="server" class="font-medium">{{ server.name }}</td>
+          <td data-col="hostname" class="text-content-muted">
+            {{ server.hostname }}
+            <span v-if="server.ipAddress" class="text-chrome block font-mono">
+              {{ server.ipAddress }}
+            </span>
+          </td>
+          <td data-col="group" class="text-content-muted">{{ server.group ?? '—' }}</td>
+          <td data-col="module" class="text-content-muted">{{ server.module ?? '—' }}</td>
+          <td data-col="status">
+            <AppStatus :tone="statusTone(server.status)" :label="server.statusLabel" />
+          </td>
+          <td data-col="actions" class="text-right">
+            <AppButton v-if="server.canOpenSession" size="sm" @click="openSession(server)">
+              {{ t('provisioning.connect.open_panel') }}
+            </AppButton>
+            <span v-else-if="!server.hasSecret" class="text-content-muted text-chrome">
+              {{ t('provisioning.connect.no_credential') }}
+            </span>
+            <span v-else class="text-content-muted text-chrome">
+              {{ t('provisioning.connect.cannot_issue') }}
+            </span>
+          </td>
+        </AppTableRow>
+      </AppTable>
 
-    <p class="text-content-muted text-chrome mt-6 max-w-[74ch] leading-relaxed">
-      Opening a panel never reveals a stored password. The platform asks the panel for a short-lived
-      session using the API credential it already holds, and that credential never reaches a
-      browser. Every session is recorded against the operator who asked for it.
-    </p>
+      <EmptyState
+        v-else
+        icon="servers"
+        :title="t('provisioning.connect.empty')"
+        :description="t('provisioning.connect.empty_description')"
+      />
+
+      <p class="text-content-muted text-chrome max-w-[74ch] leading-relaxed">
+        {{ t('provisioning.connect.footnote') }}
+      </p>
+    </div>
   </AdminLayout>
 </template>

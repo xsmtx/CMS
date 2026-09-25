@@ -59,7 +59,11 @@ final class ConnectController extends Controller
         $this->authorizeConnect();
 
         return Inertia::render('Admin/Apps/Connect', [
-            'brand' => $brand->current()->name,
+            // `brandName`, not `brand`: the shell shares a prop of that name
+            // and a page's own wins, which left the footer with no company on
+            // it and `useBranding()` holding a string. Found once on the
+            // settings screen already.
+            'brandName' => $brand->current()->name,
             'platform' => [
                 'version' => (string) config('platform.version', '1.0.0'),
                 // What this installation is allowed to do. A seam, and a
@@ -90,6 +94,10 @@ final class ConnectController extends Controller
                     'group' => $server->group?->name,
                     'module' => $server->module,
                     'status' => $server->status->value,
+                    // Two fields, because a status crossing to the browser is
+                    // a tone and a word: the raw value picks the mark, the
+                    // translated label is what an operator reads.
+                    'statusLabel' => (string) __($server->status->labelKey()),
                     // Whether this one can let somebody in without a
                     // password. Asked of the module rather than assumed, so
                     // a server on a panel that cannot do it says so instead

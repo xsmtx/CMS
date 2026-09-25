@@ -45,6 +45,7 @@ return [
     ],
 
     'admin' => [
+        'always_sent' => 'Her zaman gönderilir',
         'log_empty' => 'Henüz bir şey gönderilmedi',
         'log_empty_description' => 'Bu platformun gönderdiği her mesaj burada kaydedilir; göndermemeye karar verdikleri de dâhil.',
         'templates_title' => 'Bildirim şablonları',

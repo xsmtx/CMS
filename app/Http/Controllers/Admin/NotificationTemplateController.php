@@ -17,6 +17,8 @@ use App\Infrastructure\Notifications\Models\NotificationTemplate;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -54,7 +56,9 @@ final class NotificationTemplateController extends Controller
             ->keyBy(static fn (NotificationTemplate $template): string => $template->event->value);
 
         return Inertia::render('Admin/Notifications/Templates', [
-            'locale' => $locale,
+            // `editingLocale`, not `locale`: the shell shares the
+            // request's own locale under that name.
+            'editingLocale' => $locale,
             'locales' => $this->locales(),
             'templates' => array_values(array_map(
                 function (NotificationEvent $event) use ($templates, $locale): array {
@@ -218,7 +222,10 @@ final class NotificationTemplateController extends Controller
      * Not `lorem ipsum`: an operator checking whether their sentence reads
      * well needs it to read like a real message.
      *
-     * @return array<string, string>
+     * The dates are dates, not strings: the preview is worth having only if
+     * it words them exactly as the message will.
+     *
+     * @return array<string, string|CarbonInterface>
      */
     private function sampleFor(NotificationEvent $event): array
     {
@@ -229,7 +236,7 @@ final class NotificationTemplateController extends Controller
             NotificationEvent::InvoiceIssued => [
                 'invoice_number' => 'INV-000042',
                 'total' => '€14.99',
-                'due_date' => '2026-10-11',
+                'due_date' => CarbonImmutable::parse('2026-10-11'),
             ],
 
             NotificationEvent::PaymentReceived => [
@@ -257,7 +264,7 @@ final class NotificationTemplateController extends Controller
             NotificationEvent::DomainRegistered,
             NotificationEvent::DomainExpiring => [
                 'domain' => 'example.com',
-                'expires_on' => '2027-09-27',
+                'expires_on' => CarbonImmutable::parse('2027-09-27'),
             ],
 
             NotificationEvent::TicketOpened,

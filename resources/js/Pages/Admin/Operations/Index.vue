@@ -34,7 +34,7 @@ interface OperationRow {
 }
 
 defineProps<{
-  operations: {
+  feed: {
     data: OperationRow[]
     currentPage: number
     lastPage: number
@@ -116,8 +116,8 @@ function formatDateTime(value: string | null): string {
       </button>
     </div>
 
-    <AppTable v-if="operations.data.length > 0" name="admin-operations" :columns="COLUMNS">
-      <AppTableRow v-for="operation in operations.data" :key="operation.id">
+    <AppTable v-if="feed.data.length > 0" name="admin-operations" :columns="COLUMNS">
+      <AppTableRow v-for="operation in feed.data" :key="operation.id">
         <td data-col="subject">
           <Link
             v-if="operation.subjectHref"
@@ -185,6 +185,6 @@ function formatDateTime(value: string | null): string {
       :description="t('automation.operations.empty_description')"
     />
 
-    <AppPagination :links="operations.links" :total="operations.total" />
+    <AppPagination :links="feed.links" :total="feed.total" />
   </AdminLayout>
 </template>

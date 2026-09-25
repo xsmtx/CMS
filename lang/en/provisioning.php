@@ -121,6 +121,27 @@ return [
         'not_permitted' => 'You do not have access to services.',
     ],
 
+    'connect' => [
+        'intro' => 'What this installation is joined to, and a way into the machines it already holds credentials for.',
+        'installation' => 'This installation',
+        'installation_hint' => 'What the licence says this installation may do. A seam with a dull default: a gate whose default is deny turns an unreachable licence service into an outage.',
+        'platform_version' => 'Platform version',
+        'allowed' => 'Allowed',
+        'not_allowed' => 'Not allowed',
+        'columns' => [
+            'server' => 'Server',
+            'hostname' => 'Hostname',
+            'group' => 'Group',
+            'module' => 'Module',
+            'status' => 'Status',
+        ],
+        'open_panel' => 'Open panel',
+        'no_credential' => 'No credential stored',
+        'cannot_issue' => 'Panel cannot issue a session',
+        'empty' => 'No servers yet',
+        'empty_description' => 'Add one under Setup. Its credential stays on this machine; what travels is a session the panel issued.',
+        'footnote' => 'Opening a panel never reveals a stored password. The platform asks the panel for a short-lived session using the API credential it already holds, and that credential never reaches a browser. Every session is recorded against the operator who asked for it.',
+    ],
     'servers' => [
         'connect_not_permitted' => 'You do not have permission to open a server panel.',
         'no_session' => 'This server cannot issue a panel session, or the stored credential does not allow it.',

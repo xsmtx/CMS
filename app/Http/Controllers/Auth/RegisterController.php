@@ -9,7 +9,6 @@ use App\Application\Crm\ClientContactAttributes;
 use App\Application\Crm\CreateClient;
 use App\Application\Crm\CustomerAttributes;
 use App\Application\Identity\AuthenticateUser;
-use App\Application\Tax\TaxIdentity;
 use App\Domain\Crm\CustomerStatus;
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Controller;
@@ -54,7 +53,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class RegisterController extends Controller
 {
     public function __construct(
-        private readonly TaxIdentity $taxIdentity,
         private readonly StorefrontCurrency $currency,
     ) {}
 
@@ -68,12 +66,6 @@ final class RegisterController extends Controller
             'currencies' => $this->currency->available(),
             'defaultCountry' => (string) config('platform.crm.default_country', ''),
             'phonePlaceholder' => (string) config('platform.crm.phone_placeholder', ''),
-            /*
-             * What this seller calls a tax id, and whether a business has to
-             * give one. Sent as data for the same reason the checkout template
-             * gets it as data: the page may not ask the server mid-form.
-             */
-            'taxIdentity' => $this->taxIdentity->current(),
         ]);
     }
 

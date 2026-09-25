@@ -175,6 +175,7 @@ final class FrontEndTranslations
         'reports.aging',
 
         'provisioning.addons',
+        'provisioning.connect',
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',

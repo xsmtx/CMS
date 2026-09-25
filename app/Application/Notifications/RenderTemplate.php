@@ -6,7 +6,9 @@ namespace App\Application\Notifications;
 
 use App\Domain\Notifications\NotificationEvent;
 use App\Domain\Notifications\RenderedMessage;
+use App\Domain\Shared\Money;
 use App\Infrastructure\Notifications\Models\NotificationTemplate;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -25,11 +27,17 @@ use Illuminate\Support\Facades\Lang;
  * placeholder with no value is **left as itself** rather than blanked: a
  * visible `:invoice_number` in an email is a bug report from the message,
  * and an empty space is a bug nobody notices.
+ *
+ * A date or an amount is handed over **as itself**, not as a string, and is
+ * worded here — in the locale this message is being rendered in. A caller
+ * that formatted first could only use the locale of whichever process
+ * happened to dispatch the event, which is how a Turkish invoice email came
+ * to say `2026-10-11` among its Turkish sentences.
  */
 final readonly class RenderTemplate
 {
     /**
-     * @param  array<string, string>  $data
+     * @param  array<string, string|int|float|CarbonInterface|Money|null>  $data
      */
     public function handle(
         NotificationEvent $event,
@@ -38,6 +46,11 @@ final readonly class RenderTemplate
         ?string $actionUrl = null,
     ): RenderedMessage {
         $template = $this->templateFor($event, $locale);
+
+        // The locale the words will actually be in, which is the one the
+        // dates and the amounts have to agree with.
+        $rendered = $template === null ? $locale : $template->locale;
+        $values = $this->worded($data, $rendered);
 
         $subject = $template === null
             ? $this->shipped($event, 'subject', $locale)
@@ -53,12 +66,12 @@ final readonly class RenderTemplate
 
         return new RenderedMessage(
             event: $event,
-            subject: $this->substitute($subject, $data),
-            body: $this->substitute($body, $data),
-            locale: $template === null ? $locale : $template->locale,
+            subject: $this->substitute($subject, $values),
+            body: $this->substitute($body, $values),
+            locale: $rendered,
             actionUrl: $actionUrl,
-            actionLabel: $actionLabel === null ? null : $this->substitute($actionLabel, $data),
-            data: $data,
+            actionLabel: $actionLabel === null ? null : $this->substitute($actionLabel, $values),
+            data: $values,
         );
     }
 
@@ -90,6 +103,32 @@ final readonly class RenderTemplate
         $line = Lang::get($key, [], $locale);
 
         return is_string($line) && $line !== $key ? $line : null;
+    }
+
+    /**
+     * Every value as the words it will appear as.
+     *
+     * A date is written long (11 October 2026, 11 Ekim 2026) rather than
+     * ISO: a message is prose, and the one machine-readable string among
+     * the sentences is the one that reads as a mistake.
+     *
+     * @param  array<string, string|int|float|CarbonInterface|Money|null>  $data
+     * @return array<string, string>
+     */
+    private function worded(array $data, string $locale): array
+    {
+        $worded = [];
+
+        foreach ($data as $key => $value) {
+            $worded[$key] = match (true) {
+                $value === null => '',
+                $value instanceof CarbonInterface => $value->locale($locale)->isoFormat('LL'),
+                $value instanceof Money => $value->format($locale),
+                default => (string) $value,
+            };
+        }
+
+        return $worded;
     }
 
     /**

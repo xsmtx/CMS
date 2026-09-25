@@ -121,6 +121,27 @@ return [
         'not_permitted' => 'Hizmetlere erişiminiz yok.',
     ],
 
+    'connect' => [
+        'intro' => 'Bu kurulumun bağlı olduğu şeyler ve kimlik bilgilerini zaten tuttuğu makinelere bir giriş yolu.',
+        'installation' => 'Bu kurulum',
+        'installation_hint' => 'Lisansın bu kuruluma neye izin verdiği. Sade bir varsayılanı olan bir ek yeri: varsayılanı ret olan bir kapı, ulaşılamayan bir lisans servisini kesintiye çevirir.',
+        'platform_version' => 'Platform sürümü',
+        'allowed' => 'İzinli',
+        'not_allowed' => 'İzinli değil',
+        'columns' => [
+            'server' => 'Sunucu',
+            'hostname' => 'Ana makine adı',
+            'group' => 'Grup',
+            'module' => 'Modül',
+            'status' => 'Durum',
+        ],
+        'open_panel' => 'Paneli aç',
+        'no_credential' => 'Kayıtlı kimlik bilgisi yok',
+        'cannot_issue' => 'Panel oturum açamıyor',
+        'empty' => 'Henüz sunucu yok',
+        'empty_description' => 'Kurulum bölümünden bir tane ekleyin. Kimlik bilgisi bu makinede kalır; yolculuk eden şey, panelin verdiği bir oturumdur.',
+        'footnote' => 'Bir paneli açmak, kayıtlı bir şifreyi asla göstermez. Platform, zaten elinde tuttuğu API kimlik bilgisiyle panelden kısa ömürlü bir oturum ister ve o kimlik bilgisi hiçbir zaman tarayıcıya ulaşmaz. Her oturum, isteyen operatörün adına kaydedilir.',
+    ],
     'servers' => [
         'connect_not_permitted' => 'Sunucu paneli açma izniniz yok.',
         'no_session' => 'Bu sunucunun paneli oturum veremiyor ya da kimlik bilgisi buna izin vermiyor.',

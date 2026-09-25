@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 
+import AppSegmented from './AppSegmented.vue'
 import MoneyInput from './MoneyInput.vue'
 import { useTranslations } from '../composables/useTranslations'
 import { cellKey, type CurrencyOption, type CycleOption, type PriceCell } from '../types/catalog'
@@ -111,31 +112,13 @@ watch(
     </p>
 
     <template v-else>
-      <div
-        class="border-line bg-surface-secondary inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-sm border p-0.5"
-        role="tablist"
-        :aria-label="t('catalog.pricing.currency')"
-      >
-        <button
-          v-for="currency in currencies"
-          :key="currency.code"
-          type="button"
-          role="tab"
-          :aria-selected="currency.code === active"
-          class="pressable text-body rounded-[calc(var(--radius-sm)-2px)] px-3 py-1.5 font-medium whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
-          :class="
-            currency.code === active
-              ? 'bg-surface-primary text-content shadow-(--shadow-raised)'
-              : 'text-content-muted hover:text-content'
-          "
-          @click="active = currency.code"
-        >
-          {{ currency.code }}
-          <span class="text-content-subtle text-label ml-1 tabular-nums">
-            {{ soldCount(currency.code) }}
-          </span>
-        </button>
-      </div>
+      <AppSegmented
+        v-model="active"
+        :segments="
+          currencies.map((c) => ({ value: c.code, label: c.code, count: soldCount(c.code) }))
+        "
+        :label="t('catalog.pricing.currency')"
+      />
 
       <div class="border-line overflow-x-auto rounded-lg border">
         <table class="text-body w-full text-left">

@@ -58,7 +58,9 @@ final class OperationController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Operations/Index', [
-            'operations' => [
+            // `feed`, not `operations`: the shell shares a prop of that name
+            // holding the topbar's two counts, and a page's own wins.
+            'feed' => [
                 'data' => $operations->getCollection()
                     ->map(fn (Operation $operation): array => $this->row($operation))
                     ->values()

@@ -6,6 +6,7 @@ import AppButton from '../../Components/AppButton.vue'
 import AppCheckbox from '../../Components/AppCheckbox.vue'
 import AppInput from '../../Components/AppInput.vue'
 import AppSelect from '../../Components/AppSelect.vue'
+import { useTaxIdentity } from '../../composables/useTaxIdentity'
 import { useTranslations } from '../../composables/useTranslations'
 import AuthLayout from '../../Layouts/AuthLayout.vue'
 
@@ -23,10 +24,13 @@ const props = defineProps<{
   currencies: string[]
   defaultCountry: string
   phonePlaceholder: string
-  taxIdentity: { label: string; requiredForBusiness: boolean }
 }>()
 
 const { t } = useTranslations()
+
+// The shared prop rather than one of our own: a page prop named like a shared
+// one wins for that screen and quietly takes the shell's copy with it.
+const { label: taxIdentityLabel, requiredForBusiness } = useTaxIdentity()
 
 const form = useForm({
   first_name: '',
@@ -63,9 +67,7 @@ const currencyOptions = computed(() =>
  * give an id is the seller's setting. The asterisk therefore appears exactly
  * when the server would refuse.
  */
-const taxIdRequired = computed(
-  () => props.taxIdentity.requiredForBusiness && form.company_name.trim() !== '',
-)
+const taxIdRequired = computed(() => requiredForBusiness.value && form.company_name.trim() !== '')
 
 function submit(): void {
   // Both password fields are cleared whatever the outcome, so a refused
@@ -157,7 +159,7 @@ function submit(): void {
           />
           <AppInput
             v-model="form.tax_id"
-            :label="taxIdentity.label"
+            :label="taxIdentityLabel"
             autocomplete="off"
             :required="taxIdRequired"
             :error="form.errors.tax_id"

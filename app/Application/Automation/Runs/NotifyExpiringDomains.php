@@ -149,7 +149,7 @@ final readonly class NotifyExpiringDomains implements AutomationRun
             $this->recipients->forCustomer($customer, NotificationEvent::DomainExpiring),
             [
                 'domain' => $domain->name,
-                'expires_on' => $domain->expires_on?->toDateString() ?? '',
+                'expires_on' => $domain->expires_on,
                 'days' => (string) $window,
             ],
             url('/client/domains/'.$domain->id),

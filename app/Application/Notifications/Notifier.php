@@ -10,12 +10,14 @@ use App\Domain\Notifications\NotificationChannel;
 use App\Domain\Notifications\NotificationEvent;
 use App\Domain\Notifications\NotificationRecipient;
 use App\Domain\Notifications\RenderedMessage;
+use App\Domain\Shared\Money;
 use App\Infrastructure\Notifications\ChannelRegistry;
 use App\Infrastructure\Notifications\Models\NotificationDelivery;
 use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Logging\SecretRedactor;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -49,7 +51,7 @@ final readonly class Notifier
 
     /**
      * @param  list<NotificationRecipient>  $recipients
-     * @param  array<string, string>  $data
+     * @param  array<string, string|int|float|CarbonInterface|Money|null>  $data
      * @param  list<NotificationChannel>|null  $channels  Null means the configured default.
      */
     public function send(

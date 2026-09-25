@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 return [
     'common' => [
+        'save' => 'Save',
         'loading' => 'Loading…',
         'correlation_id' => 'Correlation ID',
         'columns' => 'Columns',

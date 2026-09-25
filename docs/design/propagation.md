@@ -68,7 +68,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Roles/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Staff/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Replies.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
+| [x] | `Admin/Apps/Connect.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Automation/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Billing/Transactions.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
@@ -79,7 +79,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Catalog/Groups/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Products/Pricing.vue` | form |  |  |  |  | yes |
 | [ ] | `Admin/Content/Announcements.vue` | form | 1 |  |  |  |  |
-| [ ] | `Admin/Notifications/Templates.vue` | list | 1 |  |  |  |  |
+| [x] | `Admin/Notifications/Templates.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Search/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Todo/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Api/Activity.vue` | list |  |  |  |  | yes |

@@ -142,7 +142,7 @@ it('shows staff the operations that need attention first', function (): void {
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('Admin/Operations/Index')
             // The default view is the problem list, not the history.
-            ->has('operations.data', 1)
+            ->has('feed.data', 1)
             ->where('attention', 1));
 });
 
