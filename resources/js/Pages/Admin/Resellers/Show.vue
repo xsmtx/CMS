@@ -23,14 +23,17 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { computed, reactive, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import MetricStrip, { type Metric } from '../../../Components/MetricStrip.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface CatalogueRow {
@@ -85,12 +88,31 @@ const props = defineProps<{
   kinds: { value: string; label: string; increases: boolean }[]
 }>()
 
+const { t } = useTranslations()
+
 const CATALOGUE_COLUMNS: TableColumn[] = [
-  { key: 'product', label: 'Product' },
-  { key: 'group', label: 'Group', optional: true },
-  { key: 'enabled', label: 'May sell' },
-  { key: 'margin', label: 'Margin %', numeric: true },
+  { key: 'product', label: t('ui.reseller.product') },
+  { key: 'group', label: t('ui.reseller.group'), optional: true },
+  { key: 'enabled', label: t('ui.reseller.may_sell') },
+  { key: 'margin', label: t('ui.reseller.margin'), numeric: true },
   { key: 'save', label: '' },
+]
+
+const PRICE_COLUMNS: TableColumn[] = [
+  { key: 'product', label: t('ui.reseller.product') },
+  { key: 'cycle', label: t('ui.reseller.cycle') },
+  { key: 'currency', label: t('ui.reseller.currency') },
+  { key: 'recurring', label: t('ui.reseller.recurring'), numeric: true },
+  { key: 'setup', label: t('ui.reseller.setup'), numeric: true },
+  { key: 'clear', label: '' },
+]
+
+const STATEMENT_COLUMNS: TableColumn[] = [
+  { key: 'when', label: t('ui.reseller.when') },
+  { key: 'movement', label: t('ui.reseller.movement') },
+  { key: 'amount', label: t('ui.reseller.amount'), numeric: true },
+  { key: 'balance', label: t('ui.reseller.balance'), numeric: true },
+  { key: 'note', label: t('ui.reseller.note') },
 ]
 
 /**
@@ -197,65 +219,109 @@ function recordEntry(): void {
 function formatDateTime(value: string): string {
   return new Date(value).toLocaleString()
 }
+
+/**
+ * What they hold and what they may sell, in one strip.
+ *
+ * The balance renders through its slot because it is a list: a reseller
+ * selling in lira and euros owes two amounts and there is no rate here to
+ * make them one. It carries a tone only when it is negative, which is the
+ * one case where the figure *is* a state.
+ */
+const figures = computed<Metric[]>(() => [
+  {
+    key: 'customers',
+    label: t('ui.reseller.customers'),
+    value: props.reseller.customers,
+  },
+  {
+    key: 'catalogue',
+    label: t('ui.reseller.may_sell'),
+    value: enabledCount.value,
+    hint: t('ui.reseller.of_catalogue', { count: props.catalogue.length }),
+  },
+  {
+    key: 'balance',
+    label: t('ui.reseller.balance'),
+    value: '—',
+    hint: t('ui.reseller.balance_hint'),
+  },
+])
 </script>
 
 <template>
   <Head :title="reseller.name" />
 
-  <AdminLayout
-    :heading="reseller.name"
-    :description="`${reseller.customers} customer(s), ${enabledCount} product(s) they may sell.`"
-  >
-    <div class="flex flex-col gap-5">
-      <!-- Who runs it, and what they hold. The two facts somebody arriving
-           from the list wants before they change anything. -->
-      <div class="grid gap-5 lg:grid-cols-3">
-        <AppCard class="lg:col-span-2" title="Who runs it">
-          <ul v-if="reseller.staff.length > 0" class="divide-line -my-1 divide-y">
-            <li
-              v-for="member in reseller.staff"
-              :key="member.id"
-              class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2"
-            >
+  <AdminLayout :heading="reseller.name">
+    <template #header>
+      <PageHeader :title="reseller.name">
+        <template #status>
+          <AppStatus
+            :tone="reseller.isActive ? 'healthy' : 'neutral'"
+            :label="reseller.isActive ? t('ui.reseller.active') : t('ui.reseller.inactive')"
+          />
+        </template>
+
+        <template #meta>
+          <span class="font-mono">{{ reseller.slug }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ t('ui.reseller.since', { date: formatDateTime(reseller.createdAt) }) }}</span>
+        </template>
+      </PageHeader>
+    </template>
+
+    <div class="flex flex-col gap-8">
+      <MetricStrip :items="figures">
+        <template #balance>
+          <span
+            v-for="balance in balances"
+            :key="balance.currency"
+            class="block"
+            :class="balance.minor < 0 ? 'text-danger' : ''"
+          >
+            {{ balance.amount }}
+          </span>
+          <span v-if="balances.length === 0" class="text-content-subtle">—</span>
+        </template>
+      </MetricStrip>
+
+      <DetailSection :title="t('ui.reseller.who')" :description="t('ui.reseller.who_intro')">
+        <ul v-if="reseller.staff.length > 0" class="divide-line-subtle divide-y">
+          <!--
+            Name and address together on the left rather than pushed to
+            opposite edges: `justify-between` across a full-width row put a
+            person's email 900px from their name, which reads as two columns
+            of unrelated things.
+          -->
+          <li
+            v-for="member in reseller.staff"
+            :key="member.id"
+            class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 first:pt-0 last:pb-0"
+          >
+            <span class="flex flex-wrap items-baseline gap-x-2">
               <span class="text-body font-medium">{{ member.name }}</span>
               <span class="text-content-muted text-chrome">{{ member.email }}</span>
-              <AppStatus
-                v-if="member.status !== 'active'"
-                tone="warning"
-                :label="member.statusLabel"
-                compact
-              />
-            </li>
-          </ul>
-          <p v-else class="text-content-muted text-body">Nobody yet.</p>
-        </AppCard>
+            </span>
+            <AppStatus
+              v-if="member.status !== 'active'"
+              tone="warning"
+              :label="member.statusLabel"
+            />
+          </li>
+        </ul>
+        <EmptyState
+          v-else
+          variant="plain"
+          icon="user"
+          :title="t('ui.reseller.nobody')"
+          :description="t('ui.reseller.nobody_detail')"
+        />
+      </DetailSection>
 
-        <AppCard
-          title="Balance"
-          description="A positive balance is what they hold with you. Negative means they owe you."
-        >
-          <ul v-if="balances.length > 0" class="flex flex-col gap-1.5">
-            <li
-              v-for="balance in balances"
-              :key="balance.currency"
-              class="flex items-baseline justify-between gap-4"
-            >
-              <span class="text-content-muted text-chrome">{{ balance.currency }}</span>
-              <span
-                class="text-title font-semibold tabular-nums"
-                :class="balance.minor < 0 ? 'text-danger' : ''"
-              >
-                {{ balance.amount }}
-              </span>
-            </li>
-          </ul>
-          <p v-else class="text-content-muted text-body">No movements yet.</p>
-        </AppCard>
-      </div>
-
-      <AppCard
-        title="What they may sell"
-        description="Absence is a refusal: a product with nothing ticked is not sold, and an empty margin is the provider price rather than zero."
+      <DetailSection
+        :title="t('ui.reseller.catalogue')"
+        :description="t('ui.reseller.catalogue_intro')"
+        :divided="catalogue.length === 0"
       >
         <AppTable
           v-if="catalogue.length > 0"
@@ -263,27 +329,29 @@ function formatDateTime(value: string): string {
           :columns="CATALOGUE_COLUMNS"
         >
           <AppTableRow v-for="row in catalogue" :key="row.id">
-            <td data-col="product" class="px-4 py-2.5">{{ row.name }}</td>
-            <td data-col="group" class="text-content-muted px-4 py-2.5">{{ row.group ?? '—' }}</td>
-            <td data-col="enabled" class="px-4 py-2.5">
+            <td data-col="product">{{ row.name }}</td>
+            <td data-col="group" class="text-content-muted">{{ row.group ?? '—' }}</td>
+            <td data-col="enabled">
               <input
                 v-model="edited[row.id]!.isEnabled"
                 type="checkbox"
-                class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
-                :aria-label="`${reseller.name} may sell ${row.name}`"
+                class="border-line-strong accent-brand size-3.5 rounded-sm border"
+                :aria-label="
+                  t('ui.reseller.may_sell_aria', { reseller: reseller.name, product: row.name })
+                "
               />
             </td>
-            <td data-col="margin" class="numeric px-4 py-2.5">
+            <td data-col="margin" class="numeric">
               <input
                 v-model="edited[row.id]!.margin"
                 type="text"
                 inputmode="decimal"
                 placeholder="—"
                 class="border-line bg-surface-primary text-chrome w-20 rounded-sm border px-2 py-1 text-right tabular-nums"
-                :aria-label="`Margin for ${row.name}, per cent`"
+                :aria-label="t('ui.reseller.margin_aria', { product: row.name })"
               />
             </td>
-            <td data-col="save" class="px-4 py-2.5 text-right">
+            <td data-col="save" class="text-right">
               <!-- Only when the row has changed: a screen with forty Save
                    buttons on it is a screen where nobody knows which one
                    they still have to press. -->
@@ -294,7 +362,7 @@ function formatDateTime(value: string): string {
                 :loading="saving === row.id"
                 @click="saveRow(row)"
               >
-                Save
+                {{ t('ui.reseller.save') }}
               </AppButton>
             </td>
           </AppTableRow>
@@ -302,151 +370,141 @@ function formatDateTime(value: string): string {
 
         <EmptyState
           v-else
+          variant="plain"
           icon="catalog"
-          title="Nothing to sell yet"
-          description="Add a product to your own catalogue first, then decide which resellers may offer it."
+          :title="t('ui.reseller.no_catalogue')"
+          :description="t('ui.reseller.no_catalogue_detail')"
         />
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
-        title="Exact prices"
-        description="An exact number beats any margin, because somebody who typed a number meant that number."
-      >
+      <DetailSection :title="t('ui.reseller.prices')" :description="t('ui.reseller.prices_intro')">
         <form class="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" @submit.prevent="savePrice">
           <AppSelect
             v-model="priceForm.product_id"
-            label="Product"
+            :label="t('ui.reseller.product')"
             :options="productOptions"
             :error="priceForm.errors.product_id"
           />
           <AppSelect
             v-model="priceForm.billing_cycle"
-            label="Cycle"
+            :label="t('ui.reseller.cycle')"
             :options="cycles"
             :error="priceForm.errors.billing_cycle"
           />
           <AppInput
             v-model="priceForm.currency_code"
-            label="Currency"
+            :label="t('ui.reseller.currency')"
             :error="priceForm.errors.currency_code"
           />
           <AppInput
             v-model="priceForm.recurring_minor"
-            label="Recurring (minor units)"
+            :label="t('ui.reseller.recurring_minor')"
             type="number"
             :error="priceForm.errors.recurring_minor"
-            hint="Integer minor units, never a decimal."
+            :hint="t('ui.reseller.minor_hint')"
           />
           <div class="flex items-end">
             <AppButton type="submit" variant="primary" :loading="priceForm.processing">
-              Set price
+              {{ t('ui.reseller.set_price') }}
             </AppButton>
           </div>
         </form>
 
-        <AppTable
-          v-if="prices.length > 0"
-          :headers="['Product', 'Cycle', 'Currency', 'Recurring', 'Setup', '']"
-          :numeric="[3, 4]"
-        >
-          <tr v-for="price in prices" :key="price.id">
-            <td class="px-4 py-2.5">{{ price.product ?? '—' }}</td>
-            <td class="text-content-muted px-4 py-2.5">{{ price.cycleLabel }}</td>
-            <td class="text-content-muted px-4 py-2.5">{{ price.currency }}</td>
-            <td class="numeric px-4 py-2.5">{{ price.recurring }}</td>
-            <td class="numeric px-4 py-2.5">{{ price.setup }}</td>
-            <td class="px-4 py-2.5 text-right">
-              <AppButton size="sm" variant="ghost" @click="clearPrice(price)">Clear</AppButton>
+        <AppTable v-if="prices.length > 0" name="reseller-prices" :columns="PRICE_COLUMNS">
+          <AppTableRow v-for="price in prices" :key="price.id">
+            <td data-col="product">{{ price.product ?? '—' }}</td>
+            <td data-col="cycle" class="text-content-muted">{{ price.cycleLabel }}</td>
+            <td data-col="currency" class="text-content-muted">{{ price.currency }}</td>
+            <td data-col="recurring" class="numeric">{{ price.recurring }}</td>
+            <td data-col="setup" class="numeric">{{ price.setup }}</td>
+            <td data-col="clear" class="text-right">
+              <AppButton size="sm" variant="ghost" @click="clearPrice(price)">
+                {{ t('ui.reseller.clear') }}
+              </AppButton>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
 
-        <p v-else class="text-content-muted text-body">
-          No exact prices. Every product is sold at the provider price plus its margin.
-        </p>
-      </AppCard>
+        <p v-else class="text-content-muted text-body">{{ t('ui.reseller.no_prices') }}</p>
+      </DetailSection>
 
-      <AppCard
-        title="The account"
-        description="Append-only. Every amount is positive and the kind decides which way it moves."
+      <DetailSection
+        :title="t('ui.reseller.account')"
+        :description="t('ui.reseller.account_intro')"
       >
         <form class="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" @submit.prevent="recordEntry">
           <AppSelect
             v-model="entryForm.kind"
-            label="Movement"
+            :label="t('ui.reseller.movement')"
             :options="kinds"
             :error="entryForm.errors.kind"
           />
           <AppInput
             v-model="entryForm.currency_code"
-            label="Currency"
+            :label="t('ui.reseller.currency')"
             :error="entryForm.errors.currency_code"
           />
           <AppInput
             v-model="entryForm.amount_minor"
-            label="Amount (minor units)"
+            :label="t('ui.reseller.amount_minor')"
             type="number"
             :error="entryForm.errors.amount_minor"
           />
           <AppInput
             v-model="entryForm.occurred_at"
-            label="When the money moved"
+            :label="t('ui.reseller.when_moved')"
             type="date"
             :error="entryForm.errors.occurred_at"
-            hint="Optional. Today, if you leave it."
+            :hint="t('ui.reseller.when_moved_hint')"
           />
           <div class="flex items-end">
             <AppButton type="submit" variant="primary" :loading="entryForm.processing">
-              Record
+              {{ t('ui.reseller.record') }}
             </AppButton>
           </div>
           <AppInput
             v-model="entryForm.description"
-            label="Description"
+            :label="t('ui.reseller.note')"
             class="sm:col-span-2 lg:col-span-5"
             :error="entryForm.errors.description"
-            hint="Goes on the statement and into the audit record."
+            :hint="t('ui.reseller.note_hint')"
           />
         </form>
 
         <AppTable
           v-if="statement.length > 0"
-          :headers="['When', 'Movement', 'Amount', 'Balance', 'Note']"
-          :numeric="[2, 3]"
+          name="reseller-statement"
+          :columns="STATEMENT_COLUMNS"
         >
-          <tr v-for="row in statement" :key="row.id">
-            <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+          <AppTableRow v-for="row in statement" :key="row.id">
+            <td data-col="when" class="text-content-muted whitespace-nowrap">
               {{ formatDateTime(row.occurredAt) }}
             </td>
-            <td class="px-4 py-2.5">
-              <AppStatus
-                :tone="row.increases ? 'healthy' : 'warning'"
-                :label="row.kindLabel"
-                compact
-              />
+            <td data-col="movement">
+              <AppStatus :tone="row.increases ? 'healthy' : 'warning'" :label="row.kindLabel" />
             </td>
             <!-- The sign is drawn here and stored nowhere: the amount in the
                  table is positive on purpose, and a column where the sign and
                  the kind could disagree is a ledger that lies twice. -->
-            <td class="numeric px-4 py-2.5" :class="row.increases ? '' : 'text-danger'">
+            <td data-col="amount" class="numeric" :class="row.increases ? '' : 'text-danger'">
               {{ row.increases ? '+' : '−' }}{{ row.amount }}
             </td>
-            <td class="numeric px-4 py-2.5">{{ row.balance }}</td>
-            <td class="text-content-muted px-4 py-2.5">
+            <td data-col="balance" class="numeric">{{ row.balance }}</td>
+            <td data-col="note" class="text-content-muted">
               {{ row.description ?? '—' }}
               <span v-if="row.recordedBy" class="text-content-subtle text-chrome block">
                 {{ row.recordedBy }}
               </span>
             </td>
-          </tr>
+          </AppTableRow>
         </AppTable>
 
-        <p v-else class="text-content-muted text-body">No movements yet.</p>
-      </AppCard>
+        <p v-else class="text-content-muted text-body">{{ t('ui.reseller.no_movements') }}</p>
+      </DetailSection>
 
-      <p class="text-content-subtle text-label">
+      <p class="text-content-subtle text-chrome">
         <Link href="/admin/organizations" class="underline-offset-4 hover:underline">
-          See where this reseller sits in the organization tree
+          {{ t('ui.reseller.tree_link') }}
         </Link>
       </p>
     </div>

@@ -23,12 +23,20 @@ import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DangerZone from '../../../Components/DangerZone.vue'
+import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import EmptyState from '../../../Components/EmptyState.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../Components/tableContext'
+import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 
 interface Licence {
@@ -56,7 +64,16 @@ const props = defineProps<{
   history: { id: string; action: string; actor: string | null; reason: string | null; at: string }[]
 }>()
 
+const { t } = useTranslations()
+
 const activation = useForm({ licence_key: '' })
+
+const HISTORY_COLUMNS: TableColumn[] = [
+  { key: 'when', label: t('ui.licence.when') },
+  { key: 'what', label: t('ui.licence.what') },
+  { key: 'who', label: t('ui.licence.who') },
+  { key: 'detail', label: t('ui.licence.detail') },
+]
 
 const releasing = ref(false)
 const busy = ref(false)
@@ -69,12 +86,30 @@ const busy = ref(false)
  * naming.
  */
 const overall = computed<{ tone: StatusTone; label: string }>(() => {
-  if (!props.licence.configured) return { tone: 'unknown', label: 'No licence activated' }
-  if (props.licence.isInGrace) return { tone: 'warning', label: 'Out of contact' }
-  if (props.licence.isLive) return { tone: 'healthy', label: 'Licensed' }
+  if (!props.licence.configured) {
+    return { tone: 'unknown', label: t('ui.licence.not_activated') }
+  }
+
+  if (props.licence.isInGrace) return { tone: 'warning', label: t('ui.licence.out_of_contact') }
+  if (props.licence.isLive) return { tone: 'healthy', label: t('ui.licence.licensed') }
 
   return { tone: 'critical', label: props.licence.statusLabel }
 })
+
+const facts = computed<DescriptionItem[]>(() => [
+  { key: 'licence', label: t('ui.licence.licence'), value: props.licence.licenceId, mono: true },
+  { key: 'expires', label: t('ui.licence.expires'), value: formatDate(props.licence.expiresAt) },
+  {
+    key: 'heartbeat',
+    label: t('ui.licence.heartbeat_due'),
+    value: formatDate(props.licence.heartbeatBy),
+  },
+  {
+    key: 'contact',
+    label: t('ui.licence.last_contact'),
+    value: formatDateTime(props.licence.lastContactAt),
+  },
+])
 
 const limits = computed(() => Object.entries(props.licence.limits))
 
@@ -121,7 +156,7 @@ function formatDate(value: string | null): string {
 }
 
 function formatDateTime(value: string | null): string {
-  return value === null ? 'Never' : new Date(value).toLocaleString()
+  return value === null ? t('ui.common.never') : new Date(value).toLocaleString()
 }
 
 /** `licensing.token.refused` reads as "Token refused". */
@@ -133,78 +168,67 @@ function readAction(action: string): string {
 </script>
 
 <template>
-  <Head title="Licence" />
+  <Head :title="t('ui.licence.title')" />
 
-  <AdminLayout
-    heading="Licence"
-    description="What this installation is licensed for, and when it last spoke to the vendor."
-  >
-    <div class="flex flex-col gap-5">
+  <AdminLayout :heading="t('ui.licence.title')">
+    <template #header>
+      <PageHeader :title="t('ui.licence.title')" :description="t('ui.licence.intro')">
+        <template #status>
+          <AppStatus :tone="overall.tone" :label="overall.label" />
+        </template>
+
+        <template v-if="licence.edition" #meta>
+          <span>{{ t('ui.licence.edition', { edition: licence.edition }) }}</span>
+        </template>
+
+        <template v-if="licence.configured" #actions>
+          <AppButton icon="sync" :loading="busy" @click="heartbeat">
+            {{ t('ui.licence.check_now') }}
+          </AppButton>
+        </template>
+      </PageHeader>
+    </template>
+
+    <div class="flex flex-col gap-8">
       <!-- Said before anything else, because it is the thing that decides
            whether the rest of the screen matters. -->
       <AppAlert v-if="!configured.api" tone="info">
-        No licence server is configured for this installation, so every feature is available and
-        nothing here has to be done. A commercial distribution sets
-        <code>LICENSE_API_URL</code>.
+        {{ t('ui.licence.no_server', { name: 'LICENSE_API_URL' }) }}
       </AppAlert>
 
       <AppAlert v-else-if="!configured.publicKey" tone="warning">
-        This distribution has no licence public key, so no token can be verified. Activation will be
-        refused until <code>LICENSE_PUBLIC_KEY_PATH</code> points at one.
+        {{ t('ui.licence.no_public_key', { name: 'LICENSE_PUBLIC_KEY_PATH' }) }}
       </AppAlert>
 
-      <div class="grid gap-5 lg:grid-cols-3">
-        <AppCard class="lg:col-span-2" title="Status">
-          <div class="flex flex-col gap-4">
-            <div class="flex flex-wrap items-center gap-3">
-              <AppStatus :tone="overall.tone" :label="overall.label" />
-              <span v-if="licence.edition" class="text-content-muted text-chrome">
-                {{ licence.edition }} edition
-              </span>
-            </div>
+      <!-- The warning, with the date it runs out. A grace period with no
+           deadline on the screen is a grace period nobody acts on. -->
+      <AppAlert v-if="licence.isInGrace" tone="warning">
+        {{
+          t('ui.licence.grace', {
+            since: formatDateTime(licence.lastContactAt),
+            until: formatDate(licence.graceUntil),
+          })
+        }}
+      </AppAlert>
 
-            <!-- The warning, with the date it runs out. A grace period with no
-                 deadline on the screen is a grace period nobody acts on. -->
-            <AppAlert v-if="licence.isInGrace" tone="warning">
-              The licence server has not been reached since
-              {{ formatDateTime(licence.lastContactAt) }}. Everything still works until
-              {{ formatDate(licence.graceUntil) }}, after which the vendor mark returns.
-            </AppAlert>
+      <!-- What a lapse actually costs, said plainly. An operator who thinks it
+           takes the platform down will make a panicked decision about it at two
+           in the morning. -->
+      <AppAlert v-else-if="licence.configured && !licence.isLive" tone="danger">
+        {{ t('ui.licence.lapsed', { status: licence.statusLabel.toLowerCase() }) }}
+      </AppAlert>
 
-            <!-- What a lapse actually costs, said plainly. An operator who
-                 thinks it takes the platform down will make a panicked
-                 decision about it at two in the morning. -->
-            <AppAlert v-else-if="licence.configured && !licence.isLive" tone="danger">
-              This licence is {{ licence.statusLabel.toLowerCase() }}. The vendor mark has returned.
-              Nothing else has changed: no screen is closed, no order is refused and no service is
-              suspended.
-            </AppAlert>
+      <AppAlert v-if="licence.lastFailure" tone="warning">{{ licence.lastFailure }}</AppAlert>
 
-            <AppAlert v-if="licence.lastFailure" tone="warning">
-              {{ licence.lastFailure }}
-            </AppAlert>
+      <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+        <div class="flex min-w-0 flex-col gap-8">
+          <DetailSection v-if="licence.configured" :title="t('ui.licence.status')">
+            <DescriptionList :items="facts" />
 
-            <dl v-if="licence.configured" class="text-body grid gap-2 sm:grid-cols-2">
-              <div class="flex items-baseline justify-between gap-4">
-                <dt class="text-content-muted">Licence</dt>
-                <dd class="text-chrome font-mono">{{ licence.licenceId ?? '—' }}</dd>
-              </div>
-              <div class="flex items-baseline justify-between gap-4">
-                <dt class="text-content-muted">Expires</dt>
-                <dd>{{ formatDate(licence.expiresAt) }}</dd>
-              </div>
-              <div class="flex items-baseline justify-between gap-4">
-                <dt class="text-content-muted">Heartbeat due</dt>
-                <dd>{{ formatDate(licence.heartbeatBy) }}</dd>
-              </div>
-              <div class="flex items-baseline justify-between gap-4">
-                <dt class="text-content-muted">Last contact</dt>
-                <dd>{{ formatDateTime(licence.lastContactAt) }}</dd>
-              </div>
-            </dl>
-
-            <div v-if="licence.excluded.length > 0">
-              <p class="text-content-subtle text-label mb-1.5 uppercase">Not included</p>
+            <div v-if="licence.excluded.length > 0" class="mt-5">
+              <p class="text-content-subtle text-label mb-1.5 uppercase">
+                {{ t('ui.licence.not_included') }}
+              </p>
               <ul class="text-body flex flex-wrap gap-2">
                 <li
                   v-for="feature in licence.excluded"
@@ -216,8 +240,10 @@ function readAction(action: string): string {
               </ul>
             </div>
 
-            <div v-if="limits.length > 0">
-              <p class="text-content-subtle text-label mb-1.5 uppercase">Limits</p>
+            <div v-if="limits.length > 0" class="mt-5">
+              <p class="text-content-subtle text-label mb-1.5 uppercase">
+                {{ t('ui.licence.limits') }}
+              </p>
               <dl class="text-body flex flex-col gap-1">
                 <div
                   v-for="[name, value] in limits"
@@ -229,76 +255,93 @@ function readAction(action: string): string {
                 </div>
               </dl>
             </div>
+          </DetailSection>
 
-            <div v-if="licence.configured" class="flex flex-wrap items-center gap-2">
-              <AppButton :loading="busy" @click="heartbeat">Check now</AppButton>
-              <AppButton variant="ghost" @click="releasing = true">Release this licence</AppButton>
+          <DetailSection
+            v-if="configured.api"
+            :title="licence.configured ? t('ui.licence.activate_other') : t('ui.licence.activate')"
+            :description="t('ui.licence.activate_intro', { days: configured.graceDays })"
+          >
+            <form class="flex flex-wrap items-end gap-3" @submit.prevent="activate">
+              <AppInput
+                v-model="activation.licence_key"
+                :label="t('ui.licence.key')"
+                class="min-w-64 flex-1"
+                autocomplete="off"
+                :error="activation.errors.licence_key"
+              />
+              <AppButton type="submit" variant="primary" :loading="activation.processing">
+                {{ t('ui.licence.activate_button') }}
+              </AppButton>
+            </form>
+          </DetailSection>
+
+          <DetailSection
+            :title="t('ui.licence.history')"
+            :description="t('ui.licence.history_intro')"
+            :divided="history.length === 0"
+          >
+            <AppTable v-if="history.length > 0" name="licence-history" :columns="HISTORY_COLUMNS">
+              <AppTableRow v-for="entry in history" :key="entry.id">
+                <td data-col="when" class="text-content-muted whitespace-nowrap">
+                  {{ formatDateTime(entry.at) }}
+                </td>
+                <td data-col="what">{{ readAction(entry.action) }}</td>
+                <td data-col="who" class="text-content-muted">
+                  {{ entry.actor ?? t('ui.licence.the_scheduler') }}
+                </td>
+                <td data-col="detail" class="text-content-muted">{{ entry.reason ?? '—' }}</td>
+              </AppTableRow>
+            </AppTable>
+
+            <EmptyState
+              v-else
+              variant="plain"
+              icon="history"
+              :title="t('ui.licence.no_history')"
+              :description="t('ui.licence.no_history_detail')"
+            />
+          </DetailSection>
+        </div>
+
+        <aside class="flex min-w-0 flex-col gap-8">
+          <DetailSection
+            :title="t('ui.licence.installation')"
+            :description="t('ui.licence.installation_intro')"
+          >
+            <div class="flex flex-col gap-3">
+              <AppCopy :value="installation.id" :noun="t('ui.licence.installation_id')" />
+
+              <dl class="text-body flex flex-col gap-1.5">
+                <div
+                  v-for="(value, name) in installation.claims"
+                  :key="name"
+                  class="flex items-baseline justify-between gap-4"
+                >
+                  <dt class="text-content-muted text-chrome">{{ name }}</dt>
+                  <dd class="text-chrome">{{ value }}</dd>
+                </div>
+              </dl>
+
+              <p class="text-content-subtle text-chrome leading-relaxed">
+                {{ t('ui.licence.claims_note') }}
+              </p>
             </div>
-          </div>
-        </AppCard>
-
-        <AppCard
-          title="This installation"
-          description="The identity the vendor knows this installation by. Quote it when you telephone them."
-        >
-          <div class="flex flex-col gap-3">
-            <AppCopy :value="installation.id" noun="installation ID" />
-
-            <dl class="text-body flex flex-col gap-1.5">
-              <div
-                v-for="(value, name) in installation.claims"
-                :key="name"
-                class="flex items-baseline justify-between gap-4"
-              >
-                <dt class="text-content-muted text-chrome">{{ name }}</dt>
-                <dd class="text-chrome">{{ value }}</dd>
-              </div>
-            </dl>
-
-            <p class="text-content-subtle text-label">
-              These three are everything the vendor is told. No paths, no database name, no keys.
-            </p>
-          </div>
-        </AppCard>
+          </DetailSection>
+        </aside>
       </div>
-
-      <AppCard
-        v-if="configured.api"
-        :title="licence.configured ? 'Activate a different licence' : 'Activate a licence'"
-        :description="`The key is stored by your deployment, never here. The last good answer keeps working for ${configured.graceDays} day(s) if the vendor cannot be reached.`"
-      >
-        <form class="flex flex-wrap items-end gap-3" @submit.prevent="activate">
-          <AppInput
-            v-model="activation.licence_key"
-            label="Licence key"
-            class="min-w-64 flex-1"
-            autocomplete="off"
-            :error="activation.errors.licence_key"
-          />
-          <AppButton type="submit" variant="primary" :loading="activation.processing">
-            Activate
-          </AppButton>
-        </form>
-      </AppCard>
-
-      <AppCard
-        title="What has happened to this licence"
-        description="Activations, heartbeats and every token this installation refused, with the reason."
-      >
-        <AppTable v-if="history.length > 0" :headers="['When', 'What', 'Who', 'Detail']">
-          <tr v-for="entry in history" :key="entry.id">
-            <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
-              {{ formatDateTime(entry.at) }}
-            </td>
-            <td class="px-4 py-2.5">{{ readAction(entry.action) }}</td>
-            <td class="text-content-muted px-4 py-2.5">{{ entry.actor ?? 'The scheduler' }}</td>
-            <td class="text-content-muted px-4 py-2.5">{{ entry.reason ?? '—' }}</td>
-          </tr>
-        </AppTable>
-
-        <p v-else class="text-content-muted text-body">Nothing yet.</p>
-      </AppCard>
     </div>
+
+    <DangerZone v-if="licence.configured">
+      <DangerZoneRow
+        :title="t('ui.licence.release_title')"
+        :description="t('ui.licence.release_detail')"
+      >
+        <AppButton variant="danger-subtle" @click="releasing = true">
+          {{ t('ui.licence.release_button') }}
+        </AppButton>
+      </DangerZoneRow>
+    </DangerZone>
 
     <!--
       Level 3, not 4: releasing a licence is reversible — the same key can be
@@ -308,9 +351,9 @@ function readAction(action: string): string {
     <AppConfirm
       v-model:open="releasing"
       level="high-risk"
-      title="Release this licence?"
-      description="The activation is returned to the vendor and the vendor mark comes back. Nothing else changes, and the same key can be activated again."
-      confirm-label="Release"
+      :title="t('ui.licence.release_confirm_title')"
+      :description="t('ui.licence.release_confirm_detail')"
+      :confirm-label="t('ui.licence.release_confirm')"
       :busy="busy"
       @confirm="release"
     />
