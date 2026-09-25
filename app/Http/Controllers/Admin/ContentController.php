@@ -14,6 +14,7 @@ use App\Infrastructure\Content\Models\KbCategory;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -44,6 +45,7 @@ final class ContentController extends Controller
                     'title' => $announcement->title,
                     'body' => $announcement->body,
                     'visibility' => $announcement->visibility->value,
+                    'visibilityLabel' => (string) __($announcement->visibility->labelKey()),
                     'publishedAt' => $announcement->published_at?->toIso8601String(),
                     'expiresAt' => $announcement->expires_at?->toIso8601String(),
                     'isPinned' => $announcement->is_pinned,
@@ -217,7 +219,11 @@ final class ContentController extends Controller
                 : $existing->slug,
             'body' => $request->string('body')->toString(),
             'visibility' => $request->string('visibility')->toString(),
-            'published_at' => $request->input('published_at'),
+            // Empty means now, which is what the field's own hint promises.
+            // Stored as null it was invisible to everybody: `scopeVisible`
+            // wants a date in the past, so the operator saw their
+            // announcement in this list and no customer ever saw it at all.
+            'published_at' => $request->input('published_at') ?: CarbonImmutable::now(),
             'expires_at' => $request->input('expires_at'),
             'is_pinned' => $request->boolean('is_pinned'),
         ];

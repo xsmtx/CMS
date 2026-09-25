@@ -17,6 +17,11 @@ Already done everywhere: type scale, radius utilities, status via
 Numbers generated 2026-09-24; re-count with the grep in
 `visual-quality-review` after editing a page.
 
+**All 105 pages are converted** (2026-09-25). The list stays here as the
+record of what was covered and as the place a new page joins: a screen added
+after this date gets a row, and it is ticked the same way — the gates, then
+the browser.
+
 ## Reference screens (done)
 
 | Done | Page | Type | cards | padded td | solid danger | arbitrary type | i18n |
@@ -59,7 +64,7 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Tlds/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Addons/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Currencies/Form.vue` | form |  |  |  |  | yes |
-| [ ] | `Admin/Catalog/Products/Form.vue` | form | 2 |  |  |  |  |
+| [x] | `Admin/Catalog/Products/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Customers/Users.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Orders/Review.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Resellers/Create.vue` | form |  |  |  |  | yes |
@@ -75,10 +80,10 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Resources/Telemetry.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Addons.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Automation/Dunning.vue` | form | 1 |  |  |  |  |
+| [x] | `Admin/Automation/Dunning.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Groups/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Catalog/Products/Pricing.vue` | form |  |  |  |  | yes |
-| [ ] | `Admin/Content/Announcements.vue` | form | 1 |  |  |  |  |
+| [x] | `Admin/Content/Announcements.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Notifications/Templates.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Search/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Todo/Index.vue` | list | 1 |  |  |  | yes |

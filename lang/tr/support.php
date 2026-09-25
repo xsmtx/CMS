@@ -120,6 +120,15 @@ return [
     ],
 
     'announcements' => [
+        'admin_subtitle' => 'Müşterilerin mağazada ve panellerinde gördükleri.',
+        'admin_empty_description' => 'Bakım pencereleri, fiyat değişiklikleri ve kesintiler buraya yazılır — müşteriler sormadan görür.',
+        'compose' => 'Duyuru yaz',
+        'edit_title' => 'Duyuruyu düzenle',
+        'body_hint' => 'Markdown. Geri kalan her şey işlenmeden önce kaçışlanır.',
+        'published_at_hint' => 'Hemen yayımlamak için boş bırakın.',
+        'is_pinned' => 'Sabitlenmiş',
+        'delete_title' => 'Bu duyuru silinsin mi?',
+        'delete_detail' => '“:title” artık gösterilmeyecek ve hiçbir yerde saklanmayacak. Arkasında bir taslak yok.',
         'title' => 'Duyurular',
         'subtitle' => 'Herkesin okuması gerekenler.',
         'empty' => 'Henüz duyuru yok.',

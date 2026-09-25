@@ -3,12 +3,13 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppButton from '../../../../Components/AppButton.vue'
-import AppCard from '../../../../Components/AppCard.vue'
+import DetailSection from '../../../../Components/DetailSection.vue'
 import AppCheckbox from '../../../../Components/AppCheckbox.vue'
 import AppInput from '../../../../Components/AppInput.vue'
 import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
+import { useTranslations } from '../../../../composables/useTranslations'
 
 interface TypeOption {
   value: string
@@ -38,6 +39,8 @@ const props = defineProps<{
   types: TypeOption[]
   statuses: { value: string; label: string }[]
 }>()
+
+const { t } = useTranslations()
 
 const isEditing = computed(() => props.product !== null)
 
@@ -96,52 +99,59 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit product' : 'New product'" />
+  <Head :title="isEditing ? t('catalog.products.edit') : t('catalog.products.create')" />
 
   <AdminLayout
-    :heading="isEditing ? (product?.name ?? 'Edit product') : 'New product'"
-    description="What the product is and how it is described. Prices live on their own screen."
+    :heading="
+      isEditing ? (product?.name ?? t('catalog.products.edit')) : t('catalog.products.create')
+    "
+    :description="t('catalog.products.form_intro')"
   >
     <form class="flex flex-col gap-6" @submit.prevent="submit">
-      <AppCard>
+      <DetailSection :title="t('catalog.products.the_product')">
         <div class="grid gap-5 sm:grid-cols-2">
           <AppSelect
             v-model="form.product_group_id"
-            label="Group"
+            :label="t('catalog.products.group')"
             :options="groups"
             :error="form.errors.product_group_id"
           />
 
           <AppSelect
             v-model="form.type"
-            label="Type"
+            :label="t('catalog.products.type')"
             :options="types"
             :error="form.errors.type"
-            hint="Decides what provisioning needs and whether checkout asks for a domain."
+            :hint="t('catalog.products.type_hint')"
           />
 
-          <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+          <AppInput
+            v-model="form.name"
+            :label="t('catalog.products.name')"
+            :error="form.errors.name"
+            required
+          />
 
           <AppInput
             v-model="form.slug"
-            label="Slug"
+            :label="t('catalog.products.slug')"
             :error="form.errors.slug"
-            hint="Left empty, it is derived from the name."
+            :hint="t('catalog.products.slug_hint')"
           />
 
           <div class="sm:col-span-2">
             <AppInput
               v-model="form.tagline"
-              label="Tagline"
+              :label="t('catalog.products.tagline')"
               :error="form.errors.tagline"
-              hint="One line under the product name on the storefront."
+              :hint="t('catalog.products.tagline_hint')"
             />
           </div>
 
           <div class="sm:col-span-2">
             <AppTextarea
               v-model="form.description"
-              label="Description"
+              :label="t('catalog.products.description')"
               :error="form.errors.description"
             />
           </div>
@@ -149,56 +159,60 @@ function submit(): void {
           <div class="sm:col-span-2">
             <AppTextarea
               v-model="featureText"
-              label="Features"
+              :label="t('catalog.products.features')"
               :error="form.errors.features"
-              hint="One per line. These are the bullet points on the plan card."
+              :hint="t('catalog.products.features_hint')"
             />
           </div>
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard>
+      <DetailSection :title="t('catalog.products.how_it_sells')">
         <div class="grid gap-5 sm:grid-cols-2">
           <AppSelect
             v-model="form.status"
-            label="Status"
+            :label="t('catalog.products.status')"
             :options="statuses"
             :error="form.errors.status"
-            hint="Hidden keeps it orderable by direct link. Retired stops orders entirely."
+            :hint="t('catalog.products.status_hint')"
           />
 
           <AppInput
             v-model="form.position"
-            label="Position"
+            :label="t('catalog.products.position')"
             type="number"
             :error="form.errors.position"
           />
 
           <AppInput
             v-model="form.stock"
-            label="Stock"
+            :label="t('catalog.products.stock')"
             type="number"
             :error="form.errors.stock"
-            hint="Empty is unlimited. Zero reads as sold out."
+            :hint="t('catalog.products.stock_hint')"
           />
 
           <div class="flex items-end pb-1">
             <AppCheckbox
               v-model="effectiveRequiresDomain"
-              label="Collect a domain at checkout"
+              :label="t('catalog.products.collect_domain')"
               :description="
-                domainOverridden ? 'Overridden for this product.' : 'Following the product type.'
+                domainOverridden
+                  ? t('catalog.products.domain_overridden')
+                  : t('catalog.products.domain_from_type')
               "
             />
           </div>
         </div>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex flex-wrap items-center gap-3">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          {{ isEditing ? 'Save product' : 'Create product' }}
+          {{ isEditing ? t('catalog.products.save') : t('catalog.products.create_submit') }}
         </AppButton>
-        <AppButton href="/admin/catalog/products" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/catalog/products" variant="ghost">{{
+          t('ui.confirm.cancel')
+        }}</AppButton>
 
         <template v-if="product">
           <span class="text-line-strong" aria-hidden="true">|</span>
@@ -207,19 +221,19 @@ function submit(): void {
             :href="`/admin/catalog/products/${product.id}/pricing`"
             class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
-            Pricing
+            {{ t('catalog.products.pricing') }}
           </Link>
           <Link
             :href="`/admin/catalog/products/${product.id}/options`"
             class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
-            Options ({{ product.optionGroupCount }})
+            {{ t('catalog.products.options', { count: product.optionGroupCount }) }}
           </Link>
           <Link
             :href="`/admin/catalog/products/${product.id}/addons`"
             class="text-content-muted hover:text-content text-body underline underline-offset-4"
           >
-            Addons ({{ product.addonCount }})
+            {{ t('catalog.products.addons', { count: product.addonCount }) }}
           </Link>
         </template>
       </div>

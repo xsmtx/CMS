@@ -90,6 +90,11 @@ return [
     ],
 
     'dunning' => [
+        'remove' => 'Kaldır',
+        'remove_title' => 'Bu adım kaldırılsın mı?',
+        'remove_detail' => ':step artık gerçekleşmeyecek. O noktayı geçmiş faturalar bunun için tekrar takip edilmez.',
+        'choose_event' => 'Bir mesaj seçin',
+        'add_step' => 'Ekle',
         'title' => 'Ödenmemiş fatura sırası',
         'description' => 'Ödenmemiş bir faturaya ne zaman ne olacağı. Askıya alma adımı olmayan bir sıra da geçerli bir seçimdir.',
         'none' => 'Tanımlı sıra yok',

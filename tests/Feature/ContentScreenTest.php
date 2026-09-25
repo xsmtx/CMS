@@ -88,6 +88,35 @@ it('publishes, edits and removes an announcement', function (): void {
     expect(Announcement::query()->whereKey($announcement->id)->exists())->toBeFalse();
 });
 
+/**
+ * The field's hint says "Leave empty to publish now", and it has to be true.
+ *
+ * Stored as null, the announcement was invisible to everybody:
+ * `scopeVisible` wants a date that has passed, so the operator saw their own
+ * announcement in the admin list and no customer ever saw it anywhere. The
+ * screen looked like it had worked.
+ */
+it('publishes an announcement with no date the moment it is written', function (): void {
+    $this->actingAs($this->staff, 'staff')
+        ->post('/admin/content/announcements', [
+            'title' => 'Nothing scheduled',
+            'body' => 'Written now, read now.',
+            'visibility' => ArticleVisibility::Public->value,
+            'published_at' => '',
+            'expires_at' => '',
+            'is_pinned' => false,
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $announcement = Announcement::query()->where('title', 'Nothing scheduled')->first();
+
+    expect($announcement)->not->toBeNull()
+        ->and($announcement->published_at)->not->toBeNull()
+        ->and(Announcement::query()->publiclyVisible()->whereKey($announcement->id)->exists())
+        ->toBeTrue();
+});
+
 it('refuses an announcement that expires before it is published', function (): void {
     $this->actingAs($this->staff, 'staff')
         ->post('/admin/content/announcements', [

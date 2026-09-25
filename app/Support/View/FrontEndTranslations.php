@@ -69,11 +69,13 @@ final class FrontEndTranslations
          * has no use for the list of everything this installation can run.
          */
         'automation.operations',
+        'automation.dunning',
         'automation.runs',
         'automation.title',
         'automation.description',
 
         'catalog.addons',
+        'catalog.products',
         'catalog.pricing',
         'catalog.cycles',
         'catalog.groups',
@@ -180,6 +182,7 @@ final class FrontEndTranslations
         'provisioning.services',
         'provisioning.statuses',
 
+        'support.announcements',
         'support.portal',
         'support.statuses',
         'support.tickets',

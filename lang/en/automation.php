@@ -90,6 +90,11 @@ return [
     ],
 
     'dunning' => [
+        'remove' => 'Remove',
+        'remove_title' => 'Remove this step?',
+        'remove_detail' => ':step will no longer happen. Invoices already past that point are not chased again for it.',
+        'choose_event' => 'Choose a message',
+        'add_step' => 'Add',
         'title' => 'Unpaid invoice sequence',
         'description' => 'What happens, and when, to an invoice nobody has paid. A sequence with no suspend step is a valid choice.',
         'none' => 'No sequence configured',

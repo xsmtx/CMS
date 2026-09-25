@@ -124,3 +124,30 @@ it('says everything in both languages', function (): void {
 
     expect($missing)->toBe([], 'Present in one language only: '.PHP_EOL.implode(PHP_EOL, array_slice($missing, 0, 40)));
 });
+
+/**
+ * The framework's own sentences, which are not in `lang/` until somebody
+ * publishes them.
+ *
+ * Every validation error in this product — on every admin form and every
+ * customer one — came out of Laravel's built-in English, so a Turkish
+ * operator filling in a Turkish form was told "The event field is
+ * required." It was invisible because no test ever read a refusal in
+ * Turkish, and no screen shows one until somebody makes a mistake.
+ */
+it('answers in Turkish when the framework refuses something', function (): void {
+    $lines = [
+        'validation.required' => ['attribute' => 'ad'],
+        'auth.failed' => [],
+        'passwords.sent' => [],
+        'pagination.next' => [],
+    ];
+
+    foreach ($lines as $key => $replace) {
+        $english = trans($key, $replace, 'en');
+        $turkish = trans($key, $replace, 'tr');
+
+        expect($turkish)->not->toBe($key, $key.' is missing from lang/tr')
+            ->and($turkish)->not->toBe($english, $key.' is still the English sentence');
+    }
+});

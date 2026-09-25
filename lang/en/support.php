@@ -120,6 +120,15 @@ return [
     ],
 
     'announcements' => [
+        'admin_subtitle' => 'What customers see on the storefront and in their portal.',
+        'admin_empty_description' => 'Maintenance windows, price changes and outages belong here — customers see them without asking.',
+        'compose' => 'Write an announcement',
+        'edit_title' => 'Edit announcement',
+        'body_hint' => 'Markdown. Everything else is escaped before it is rendered.',
+        'published_at_hint' => 'Leave empty to publish now.',
+        'is_pinned' => 'Pinned',
+        'delete_title' => 'Delete this announcement?',
+        'delete_detail' => '“:title” stops being shown and is not kept anywhere. There is no draft behind it.',
         'title' => 'Announcements',
         'subtitle' => 'Things everybody should read.',
         'empty' => 'No announcements yet.',

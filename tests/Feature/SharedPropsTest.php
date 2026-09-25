@@ -23,8 +23,8 @@ declare(strict_types=1);
  */
 $shared = static function (): array {
     $source = (string) file_get_contents(app_path('Http/Middleware/HandleInertiaRequests.php'));
-    $share = (string) mb_substr($source, (int) mb_strpos($source, 'public function share('));
-    $share = (string) mb_substr($share, 0, (int) mb_strpos($share, "\n    }\n"));
+    $share = mb_substr($source, (int) mb_strpos($source, 'public function share('));
+    $share = mb_substr($share, 0, (int) mb_strpos($share, "\n    }\n"));
 
     preg_match_all("/^            '([a-zA-Z]+)' =>/m", $share, $matches);
 

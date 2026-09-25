@@ -1355,3 +1355,65 @@ day it was written.
 Its parser follows an anonymous `[` as well as a named one, because a list of
 steps — each with a `title` and a `body` — otherwise looks exactly like the same
 key stated four times.
+
+That comparison is **lowercased**, not collated. "Review Queue" in the map over
+"Review queue" as a heading is one name, and `localeCompare` with a collator
+answers a runtime built without the full ICU data with a plain byte comparison —
+so the duplicate comes back on somebody else's PHP build with nothing saying
+why. `AdminLayout.test.ts` mounts the shell with a heading that differs only in
+case.
+
+**A page prop must not be named like a shared one**, and now a test says so.
+`tests/Feature/SharedPropsTest.php` reads the shared names out of
+`HandleInertiaRequests::share()` and refuses any first-level key of an
+`Inertia::render([…])` payload that matches one. The settings screen taught the
+rule and Connect repeated it — both sent something called `brand`, both lost the
+company name from the footer chrome while the page itself looked fine. The
+sweep found three more: the Operations screen shadowed the topbar's own
+operation counts, the templates screen shadowed the request locale with the
+locale being edited, and the register form was sending its own copy of
+`taxIdentity` instead of reading the shared one through `useTaxIdentity()`.
+The payload is sliced out by `Inertia::render('…', [` and its own closing line,
+because a validation-rule array sits at exactly the same indentation as a
+payload key.
+
+**Laravel's own sentences are not in `lang/` until somebody publishes them.**
+Every validation error in this product — every form, admin and client — came out
+of the framework's built-in English, so a Turkish operator filling in a Turkish
+form was told "The event field is required." It was invisible because no test
+had ever read a *refusal* in Turkish, and no screen shows one until somebody
+makes a mistake. `php artisan lang:publish` plus a Turkish `validation.php`,
+`auth.php`, `passwords.php` and `pagination.php` fixes it; `LanguageFileTest`
+asserts the parity and that four of those lines actually differ from the
+English.
+
+**A date or an amount is handed to `RenderTemplate` as itself**, not as a
+string, and worded there in the locale the message is being rendered in. A
+caller can only format with the locale of whichever process dispatched the
+event, which is how a Turkish invoice email came to say `2026-10-11` among its
+Turkish sentences. The preview on the templates screen passes real dates for
+the same reason: a preview that words them differently from the message is a
+preview worth nothing.
+
+**"Leave empty to publish now" has to be true.** An announcement saved with no
+publish date stored null, and `Announcement::scopeVisible()` wants a date that
+has passed — so the operator saw their announcement in the admin list and no
+customer ever saw it anywhere. The screen looked like it had worked. After
+writing a hint that promises a default, check the write actually applies it.
+
+**Pagination has no exemption any more.** The Resource Graph's two screens kept
+a hand-written previous/next pair, which was two untranslated words and no way
+to reach page seven; they use `AppPagination` like everything else and
+`PaginationTest` no longer names them.
+
+`AppSegmented` is the segmented control — a few mutually exclusive choices shown
+at once, for the currency strip on a price matrix and the language strip on the
+templates screen. Toggle buttons with `aria-pressed`, not a tablist: there are
+no panels, and `role="tablist"` promises a `tabpanel` that does not exist.
+
+`.row-actions` only hides inside `.data-table`. On a list that is not a table it
+is inert, and writing it there promises a hover behaviour that never happens.
+
+**Every page in `docs/design/propagation.md` is converted** (2026-09-25, 105 of
+105). A screen added after that date gets a row and is ticked the same way: the
+gates, then the browser.
