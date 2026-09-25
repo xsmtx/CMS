@@ -41,8 +41,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Billing/AddTransaction.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Resellers/Show.vue` | detail |  |  |  |  | yes |
 | [x] | `Admin/Licence/Index.vue` | detail |  |  |  |  | yes |
-| [ ] | `Admin/Billing/Settings.vue` | form | 4 |  |  |  | yes |
-| [ ] | `Admin/Content/Articles.vue` | form | 2 | 6 |  |  |  |
+| [x] | `Admin/Billing/Settings.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Content/Articles.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Customers/Form.vue` | form | 4 |  |  |  |  |
 | [ ] | `Admin/Support/Show.vue` | detail | 4 |  |  |  |  |
 | [ ] | `Admin/Tax/Index.vue` | list | 3 | 9 |  |  | yes |

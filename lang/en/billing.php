@@ -192,7 +192,7 @@ return [
      * law: every sentence here is about *saying* what the terms are.
      */
     'settings' => [
-        'title' => 'Billing terms',
+        'title' => 'Billing Terms',
         'intro' => 'When an invoice falls due, what being late costs, and what every document has to say. These are yours to state; this platform ships defaults, not rules.',
         'save' => 'Save these terms',
         'saved' => 'Saved.',

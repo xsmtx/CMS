@@ -161,13 +161,24 @@ final class ContentController extends Controller
         return back()->with('status', __('support.kb.saved'));
     }
 
-    public function destroyArticle(KbArticle $article): RedirectResponse
+    public function destroyArticle(Request $request, KbArticle $article): RedirectResponse
     {
         $this->authorizeFor('content.kb.manage');
 
+        // The screen asks why before it deletes, so the record says why. A
+        // confirmation that collected a reason and dropped it would be worse
+        // than one that never asked.
+        $reason = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ])['reason'] ?? null;
+
         $article->delete();
 
-        Audit::action('content.article.deleted')->by($this->actor->model())->on($article)->write();
+        Audit::action('content.article.deleted')
+            ->by($this->actor->model())
+            ->on($article)
+            ->because($reason)
+            ->write();
 
         return back()->with('status', __('support.kb.deleted'));
     }

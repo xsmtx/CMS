@@ -20,10 +20,11 @@ import { reactive } from 'vue'
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
+import PageHeader from '../../../Components/PageHeader.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 
@@ -93,14 +94,22 @@ function saveSequence(key: string): void {
 <template>
   <Head :title="t('billing.settings.title')" />
 
-  <AdminLayout :heading="t('billing.settings.title')" :description="t('billing.settings.intro')">
-    <div class="flex flex-col gap-6">
+  <AdminLayout :heading="t('billing.settings.title')">
+    <template #header>
+      <PageHeader :title="t('billing.settings.title')" :description="t('billing.settings.intro')" />
+    </template>
+
+    <!--
+      Capped: two columns across the full window give a due-days field 580px
+      wide, which reads as a mistake. A form is prose with boxes in it.
+    -->
+    <div class="flex max-w-4xl flex-col gap-8">
       <AppAlert v-if="!settings.stated" tone="info">
         {{ t('billing.settings.default_note') }}
       </AppAlert>
 
-      <form class="flex flex-col gap-6" @submit.prevent="saveTerms">
-        <AppCard
+      <form class="flex flex-col gap-8" @submit.prevent="saveTerms">
+        <DetailSection
           :title="t('billing.settings.terms_title')"
           :description="t('billing.settings.terms_intro')"
         >
@@ -114,9 +123,9 @@ function saveSequence(key: string): void {
               required
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           :title="t('billing.settings.late_fee_title')"
           :description="t('billing.settings.late_fee_intro')"
         >
@@ -143,9 +152,9 @@ function saveSequence(key: string): void {
               {{ t('billing.settings.late_fee_step_note') }}
             </p>
           </div>
-        </AppCard>
+        </DetailSection>
 
-        <AppCard
+        <DetailSection
           :title="t('billing.settings.document_title')"
           :description="t('billing.settings.document_intro')"
         >
@@ -155,7 +164,7 @@ function saveSequence(key: string): void {
             :rows="3"
             :error="terms.errors.document_note"
           />
-        </AppCard>
+        </DetailSection>
 
         <div>
           <AppButton type="submit" variant="primary" :loading="terms.processing">
@@ -164,17 +173,21 @@ function saveSequence(key: string): void {
         </div>
       </form>
 
-      <section class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
-          <h2 class="text-title font-semibold tracking-tight">
-            {{ t('billing.settings.numbering.title') }}
-          </h2>
-          <p class="text-content-muted text-body max-w-[75ch] leading-relaxed">
-            {{ t('billing.settings.numbering.intro') }}
-          </p>
-        </div>
-
-        <AppCard v-for="sequence in sequences" :key="sequence.key">
+      <DetailSection
+        :title="t('billing.settings.numbering.title')"
+        :description="t('billing.settings.numbering.intro')"
+      >
+        <!--
+          A frame per sequence, not a divider. Each one is its own form and its
+          own save: an operator migrating an invoice book must not have the
+          order sequence written alongside it by a button that happened to be
+          nearby, and the frame is what says where one ends.
+        -->
+        <div
+          v-for="sequence in sequences"
+          :key="sequence.key"
+          class="border-line mb-4 rounded-lg border p-4 last:mb-0"
+        >
           <form class="flex flex-col gap-4" @submit.prevent="saveSequence(sequence.key)">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <h3 class="text-body font-semibold">{{ sequence.label }}</h3>
@@ -231,8 +244,8 @@ function saveSequence(key: string): void {
               </AppButton>
             </div>
           </form>
-        </AppCard>
-      </section>
+        </div>
+      </DetailSection>
     </div>
   </AdminLayout>
 </template>

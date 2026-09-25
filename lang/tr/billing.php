@@ -185,7 +185,7 @@ return [
     ],
 
     'settings' => [
-        'title' => 'Fatura koşulları',
+        'title' => 'Faturalama Koşulları',
         'intro' => 'Faturanın ne zaman vadesinin geldiği, gecikmenin ne kadara mal olduğu ve her belgede ne yazması gerektiği. Bunları siz belirlersiniz; bu platform kural değil varsayılan gönderir.',
         'save' => 'Koşulları kaydet',
         'saved' => 'Kaydedildi.',
