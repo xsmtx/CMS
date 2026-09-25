@@ -29,13 +29,30 @@ return [
         'orders_none_description' => 'Verdiğiniz siparişler durumu ve tutarıyla birlikte burada listelenir.',
         'credit_title' => 'Hesap bakiyesi',
         'see_all' => 'Tümünü gör',
-        'coming_title' => 'Hizmetler ve destek',
-        'coming_description' => 'Hizmetleriniz kurulduğunda buradan yönetilecek; alan adları ve destek talepleri de burada olacak. Bunlar sonraki sürümlerde geliyor.',
     ],
 
     'billing' => [
         'invoices' => 'Faturalar',
         'transactions' => 'İşlemler',
         'details' => 'Fatura bilgileri',
+    ],
+    'columns' => [
+        'service' => 'Hizmet',
+        'domain' => 'Alan adı',
+        'status' => 'Durum',
+        'price' => 'Fiyat',
+        'next_due' => 'Sonraki ödeme',
+        'expires' => 'Bitiş',
+        'renewal' => 'Yenileme',
+        'invoice' => 'Fatura',
+        'due' => 'Vade',
+        'amount' => 'Tutar',
+        'order' => 'Sipariş',
+        'placed' => 'Verildi',
+        'total' => 'Toplam',
+    ],
+
+    'domain_detail' => [
+        'add_nameserver' => 'Ad sunucusu ekle',
     ],
 ];

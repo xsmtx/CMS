@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 
-import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
+import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
 
 interface DomainRow {
@@ -22,37 +24,50 @@ interface DomainRow {
 defineProps<{ domains: DomainRow[] }>()
 
 const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'domain', label: t('portal.columns.domain'), sticky: true },
+  { key: 'status', label: t('portal.columns.status') },
+  { key: 'expires', label: t('portal.columns.expires') },
+  { key: 'renewal', label: t('portal.columns.renewal'), numeric: true },
+]
+
+/**
+ * A date-only column arrives as `Y-m-d` and has to be localised here: it is
+ * the one value a server cannot format, because only the browser knows where
+ * the person reading it lives. The admin copies of these screens learned the
+ * same lesson; the portal renders the same records through different pages.
+ */
+function formatDate(value: string | null): string {
+  return value === null ? '—' : new Date(value).toLocaleDateString()
+}
 </script>
 
 <template>
   <Head :title="t('domains.portal.title')" />
 
   <ClientLayout :heading="t('domains.portal.title')" :description="t('domains.portal.description')">
-    <div v-if="domains.length > 0" class="grid gap-5 sm:grid-cols-2">
-      <AppCard v-for="domain in domains" :key="domain.id">
-        <div class="flex items-start justify-between gap-4">
+    <AppTable v-if="domains.length > 0" name="portal-domains" :columns="COLUMNS">
+      <AppTableRow v-for="domain in domains" :key="domain.id">
+        <td data-col="domain">
           <Link
             :href="`/client/domains/${domain.id}`"
-            class="text-body min-w-0 font-semibold break-all underline-offset-4 hover:underline"
+            class="font-mono font-medium break-all underline-offset-4 hover:underline"
           >
             {{ domain.name }}
           </Link>
+        </td>
+        <td data-col="status">
           <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
-        </div>
-
-        <dl class="border-line text-body mt-4 border-t pt-3">
-          <div v-if="domain.expiresOn" class="flex justify-between gap-4 py-1">
-            <dt class="text-content-muted">
-              {{ t('domains.portal.expires_on', { date: domain.expiresOn }) }}
-            </dt>
-            <dd class="tabular-nums">{{ domain.renewal }}</dd>
-          </div>
-        </dl>
-      </AppCard>
-    </div>
+        </td>
+        <td data-col="expires" class="text-content-muted">{{ formatDate(domain.expiresOn) }}</td>
+        <td data-col="renewal" class="numeric tabular-nums">{{ domain.renewal }}</td>
+      </AppTableRow>
+    </AppTable>
 
     <EmptyState
       v-else
+      icon="domains"
       :title="t('domains.portal.none')"
       :description="t('domains.portal.none_description')"
     />

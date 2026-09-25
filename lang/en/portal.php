@@ -29,13 +29,30 @@ return [
         'orders_none_description' => 'Anything you order will be listed here with its status and what it cost.',
         'credit_title' => 'Account credit',
         'see_all' => 'See all',
-        'coming_title' => 'Services and support',
-        'coming_description' => 'Once your services are provisioned they will be managed from here, alongside domains and support tickets. Those arrive in the next releases.',
     ],
 
     'billing' => [
         'invoices' => 'Invoices',
         'transactions' => 'Transactions',
         'details' => 'Billing details',
+    ],
+    'columns' => [
+        'service' => 'Service',
+        'domain' => 'Domain',
+        'status' => 'Status',
+        'price' => 'Price',
+        'next_due' => 'Next due',
+        'expires' => 'Expires',
+        'renewal' => 'Renewal',
+        'invoice' => 'Invoice',
+        'due' => 'Due',
+        'amount' => 'Amount',
+        'order' => 'Order',
+        'placed' => 'Placed',
+        'total' => 'Total',
+    ],
+
+    'domain_detail' => [
+        'add_nameserver' => 'Add a nameserver',
     ],
 ];

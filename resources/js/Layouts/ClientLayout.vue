@@ -99,13 +99,15 @@ function isCurrent(href: string): boolean {
       v-if="impersonation?.active"
       class="bg-warning text-surface-secondary text-body flex flex-wrap items-center justify-center gap-3 px-4 py-2 font-medium"
     >
-      <span>You are viewing this account as {{ impersonation.subjectName }}.</span>
+      <span>
+        {{ t('identity.impersonation.active', { name: impersonation.subjectName ?? '' }) }}
+      </span>
       <button
         type="button"
         class="pressable text-chrome rounded-sm bg-black/15 px-2 py-0.5 underline underline-offset-4"
         @click="stopImpersonating"
       >
-        Stop
+        {{ t('identity.impersonation.stop') }}
       </button>
     </div>
 
@@ -125,7 +127,14 @@ function isCurrent(href: string): boolean {
         </Link>
 
         <nav aria-label="Client area" class="min-w-0 flex-1">
-          <ul class="flex items-center gap-0.5 overflow-x-auto">
+          <!--
+            Wrapping, not scrolling. `overflow-x-auto` drew a scrollbar under
+            the portal nav on every desktop and still clipped the last
+            destination, which is a link a customer cannot see and cannot
+            scroll to without noticing the bar. Eleven short labels wrap onto a
+            second line on a narrow window and that is the whole cost.
+          -->
+          <ul class="flex flex-wrap items-center gap-x-0.5 gap-y-1">
             <li v-for="item in items" :key="item.href" class="shrink-0">
               <Link
                 :href="item.href"

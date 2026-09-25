@@ -1186,3 +1186,37 @@ not a broken render; check `window.isSecureContext` before chasing it.
 A QR code is the one white surface in the product. A dark card behind a dark
 code is a code no camera reads, so `bg-white` there is a scannable surface
 rather than a design one, and the comment above it says so.
+
+**The client area is driven in a browser through impersonation.** A staff
+session and a customer session cannot coexist usefully — `CurrentActor` checks
+staff first — but `Impersonator` replaces one with the other and restores it on
+exit, which is how the portal gets looked at without anybody typing a
+customer's password. The reason is required and both ends are audited, so the
+pass leaves a truthful record of itself. Seed the rows the screens need, drive
+them, press Stop, delete the rows.
+
+Four things that pass every test and are wrong on the screen, found in one
+sitting on the portal:
+
+- **The portal nav drew a scrollbar under itself on every desktop** and still
+  clipped the last destination. `overflow-x-auto` on eleven short labels is a
+  link a customer cannot see and does not know to scroll to; it wraps now.
+- **Every date-only column in the portal printed `2026-10-25`** beside
+  timestamps that were localised. The admin copies of those same screens had
+  already been fixed once — the portal renders the same records through
+  different pages, so the rule has to be applied per page, not per record.
+- **`class="block"` on an `AppStatus` does nothing**, because the component's
+  root is `inline-flex` and which of two utilities wins is decided by the order
+  Tailwind emitted them in, not by the attribute. Wrap it in a `span` instead.
+  This is the same cascade trap as `border-line` beside `border-danger`, and it
+  will keep happening: **a utility that fights a primitive's own class is a
+  coin toss, so wrap rather than override.**
+- **The impersonation banner was hard-coded English** above a portal that was
+  otherwise entirely Turkish — and `identity.impersonation.active` had existed
+  in both language files the whole time, read by nobody. Published as leaf
+  paths, and `FrontEndTranslationsTest` now covers them.
+
+The client dashboard still says nothing about services or domains, because the
+controller does not send them. That is a payload change with a test behind it
+rather than a redesign, and it is worth doing: a hosting customer opens the
+portal to look at what they are running.

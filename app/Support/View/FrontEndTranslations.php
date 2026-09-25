@@ -93,6 +93,14 @@ final class FrontEndTranslations
         'identity.auth.confirm_title',
         'identity.auth.confirm_body',
 
+        /*
+         * The impersonation banner. It was hard-coded English above a portal
+         * that was otherwise fully Turkish — and the wording had existed in
+         * both language files the whole time, read by nobody.
+         */
+        'identity.impersonation.active',
+        'identity.impersonation.stop',
+
         'identity.tokens',
         'api.tokens',
         'api.scopes',

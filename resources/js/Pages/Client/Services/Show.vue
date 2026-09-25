@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
 
-defineProps<{
+const props = defineProps<{
   service: {
     id: string
     name: string
@@ -27,14 +30,51 @@ defineProps<{
 }>()
 
 const { t } = useTranslations()
+
+/**
+ * A date-only column arrives as `Y-m-d` and has to be localised here: it is
+ * the one value a server cannot format, because only the browser knows where
+ * the person reading it lives. The admin copies of these screens learned the
+ * same lesson; the portal renders the same records through different pages.
+ */
+function formatDate(value: string | null): string {
+  return value === null ? '—' : new Date(value).toLocaleDateString()
+}
+
+const facts = computed<DescriptionItem[]>(() => [
+  { key: 'domain', label: t('provisioning.services.domain'), value: props.service.domain },
+  { key: 'package', label: t('provisioning.services.package'), value: props.service.package },
+  {
+    key: 'price',
+    label: props.service.cycleLabel ?? t('portal.columns.price'),
+    value: props.service.recurring,
+  },
+  {
+    key: 'due',
+    label: t('provisioning.services.next_due'),
+    value: formatDate(props.service.nextDueOn),
+  },
+])
+
+const chosen = computed<DescriptionItem[]>(() =>
+  props.service.options.map((option) => ({
+    key: option.group + option.label,
+    label: option.group,
+    value: option.label,
+  })),
+)
 </script>
 
 <template>
   <Head :title="service.name" />
 
   <ClientLayout :heading="service.name" :description="service.domain ?? undefined">
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
+    <template #actions>
+      <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
+    </template>
+
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      <div class="flex flex-col gap-8">
         <!--
           What the customer is told about a failure: that it happened and
           that somebody knows. Which node, which rule and which provider
@@ -50,74 +90,44 @@ const { t } = useTranslations()
           {{ t('provisioning.portal.suspended') }}
         </AppAlert>
 
-        <AppCard :title="t('provisioning.portal.overview')">
-          <div class="mb-4">
-            <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
-          </div>
+        <DetailSection :title="t('provisioning.portal.overview')">
+          <DescriptionList :items="facts" />
+        </DetailSection>
 
-          <dl class="divide-line text-body divide-y">
-            <div class="flex justify-between gap-4 py-2.5 first:pt-0">
-              <dt class="text-content-muted">{{ t('provisioning.services.domain') }}</dt>
-              <dd>{{ service.domain ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">{{ t('provisioning.services.package') }}</dt>
-              <dd>{{ service.package ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5">
-              <dt class="text-content-muted">{{ service.cycleLabel ?? '' }}</dt>
-              <dd class="tabular-nums">{{ service.recurring }}</dd>
-            </div>
-            <div class="flex justify-between gap-4 py-2.5 last:pb-0">
-              <dt class="text-content-muted">{{ t('provisioning.services.next_due') }}</dt>
-              <dd>{{ service.nextDueOn ?? '—' }}</dd>
-            </div>
-          </dl>
-        </AppCard>
-
-        <AppCard v-if="service.options.length > 0" :title="t('provisioning.portal.what_you_get')">
-          <dl class="divide-line text-body divide-y">
-            <div
-              v-for="option in service.options"
-              :key="option.group + option.label"
-              class="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
-            >
-              <dt class="text-content-muted">{{ option.group }}</dt>
-              <dd>{{ option.label }}</dd>
-            </div>
-          </dl>
-        </AppCard>
+        <DetailSection
+          v-if="chosen.length > 0"
+          :title="t('provisioning.portal.what_you_get')"
+          :level="3"
+        >
+          <DescriptionList :items="chosen" />
+        </DetailSection>
       </div>
 
-      <div>
-        <!--
-          The one credential in this platform meant to be read by the person
-          it belongs to: they cannot sign in to their own account without
-          it.
-        -->
-        <AppCard :title="t('provisioning.portal.credentials')">
-          <dl v-if="service.credentials" class="text-body">
-            <dt class="text-content-muted text-chrome">
-              {{ t('provisioning.services.username') }}
-            </dt>
-            <dd class="text-chrome mb-3 font-mono break-all">{{ service.credentials.username }}</dd>
-            <dt class="text-content-muted text-chrome">
-              {{ t('provisioning.services.password') }}
-            </dt>
-            <dd class="text-chrome font-mono break-all">
-              {{ service.credentials.password ?? '—' }}
-            </dd>
-          </dl>
+      <!--
+        Framed, and the only framed thing on the page: this is the one
+        credential in the product meant to be read by the person it belongs
+        to, and they cannot sign in to their own service without it.
+      -->
+      <AppCard :title="t('provisioning.portal.credentials')">
+        <dl v-if="service.credentials" class="text-body">
+          <dt class="text-content-muted text-chrome">
+            {{ t('provisioning.services.username') }}
+          </dt>
+          <dd class="mb-3 font-mono break-all">{{ service.credentials.username ?? '—' }}</dd>
+          <dt class="text-content-muted text-chrome">
+            {{ t('provisioning.services.password') }}
+          </dt>
+          <dd class="font-mono break-all">{{ service.credentials.password ?? '—' }}</dd>
+        </dl>
 
-          <p v-else class="text-content-muted text-body leading-relaxed">
-            {{ t('provisioning.portal.no_credentials') }}
-          </p>
+        <p v-else class="text-content-muted text-body leading-relaxed">
+          {{ t('provisioning.portal.no_credentials') }}
+        </p>
 
-          <p v-if="service.credentials" class="text-content-muted text-chrome mt-4 leading-relaxed">
-            {{ t('provisioning.portal.credentials_hint') }}
-          </p>
-        </AppCard>
-      </div>
+        <p v-if="service.credentials" class="text-content-muted text-chrome mt-4 leading-relaxed">
+          {{ t('provisioning.portal.credentials_hint') }}
+        </p>
+      </AppCard>
     </div>
   </ClientLayout>
 </template>
