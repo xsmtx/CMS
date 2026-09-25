@@ -1220,3 +1220,30 @@ The client dashboard still says nothing about services or domains, because the
 controller does not send them. That is a payload change with a test behind it
 rather than a redesign, and it is worth doing: a hosting customer opens the
 portal to look at what they are running.
+
+**Both paginated portal lists had no pagination.** Invoices and transactions
+printed `1 / 3 — 47` as plain text and offered no control at all, so a customer
+with more than twenty invoices could not reach the older ones — and the page
+number told them exactly how many they were missing. The controllers send
+`linkCollection()` now and the screens use `AppPagination`, which hides itself
+when there is one page. A list that paginates server-side and renders a count
+client-side is not a list that paginates; when converting one, check that
+something actually links to page two.
+
+A payment's status reached the invoice screen as a **translated label only**,
+so it could not be toned. Same rule as everywhere else: a status crossing to
+the browser is two fields, `status` for the tone and `statusLabel` for the
+word. It is the third time this has been found — orders, tickets, and now
+payments — and each was written by somebody who thought a label was enough.
+
+**Removing a stored card happened on the first click** in the portal. It is a
+level-2 confirmation now, and the sentence says what actually goes: the
+instrument the next renewal would have been charged to, with nothing already
+paid affected. That is the tenth first-click destructive action found in this
+pass, and the first one in the customer's own area.
+
+**A section titled the same as its page is a heading that says nothing twice.**
+The invoice detail headed its document "Invoices" and the billing form headed
+itself "Billing details" under a page called Billing details. Neither needed a
+heading at all: the page heading and the status beside it already say what the
+screen is.

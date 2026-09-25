@@ -8,6 +8,8 @@ return [
     'details_saved' => 'Fatura bilgileri kaydedildi. Bir sonraki faturanızda kullanılacak.',
 
     'portal' => [
+        'remove_title' => ':method kaldırılsın mı?',
+        'remove_detail' => 'Kart bir sonraki yenilemeniz için kullanılamaz olur. Ödenmiş hiçbir şey etkilenmez ve bir sonraki ödemenizde yeni bir kart kaydedebilirsiniz.',
         'invoices_title' => 'Faturalar',
         'invoices_description' => 'Bu hesap için düzenlenen her şey, en yenisi önce.',
         'outstanding' => 'Ödenmemiş',
@@ -37,6 +39,7 @@ return [
     ],
 
     'methods' => [
+        'expires' => 'Son kullanma',
         'default_set' => 'Varsayılan ödeme yöntemi değiştirildi.',
         'removed' => 'Ödeme yöntemi kaldırıldı.',
     ],
@@ -82,6 +85,7 @@ return [
     ],
 
     'invoices' => [
+        'description' => 'Açıklama',
         'all' => 'Tümü',
         'raised' => 'Bu sipariş için :number numaralı fatura oluşturuldu.',
         'title' => 'Faturalar',
@@ -156,6 +160,7 @@ return [
     ],
 
     'credit_notes' => [
+        'number' => 'Numara',
         'title' => 'İade faturaları',
         'issue' => 'İade faturası kes',
         'issued' => ':number numaralı iade faturası kesildi.',

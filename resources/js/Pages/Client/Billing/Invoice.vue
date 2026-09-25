@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
 
 interface InvoiceLine {
@@ -22,6 +26,7 @@ interface InvoicePayment {
   gateway: string
   amount: string
   status: string
+  statusLabel: string
   receivedAt: string | null
 }
 
@@ -61,6 +66,27 @@ const { t } = useTranslations()
 const form = useForm({ gateway: props.gateways[0]?.value ?? '' })
 const chosen = ref(props.gateways[0] ?? null)
 
+const LINE_COLUMNS: TableColumn[] = [
+  { key: 'description', label: t('billing.invoices.description') },
+  { key: 'amount', label: t('billing.payments.amount'), numeric: true },
+]
+
+const PAYMENT_COLUMNS: TableColumn[] = [
+  { key: 'when', label: t('billing.payments.received_on') },
+  { key: 'status', label: t('billing.invoices.status') },
+  { key: 'amount', label: t('billing.payments.amount'), numeric: true },
+]
+
+const NOTE_COLUMNS: TableColumn[] = [
+  { key: 'number', label: t('billing.credit_notes.number') },
+  { key: 'issued', label: t('billing.credit_notes.issued') },
+  { key: 'amount', label: t('billing.payments.amount'), numeric: true },
+]
+
+/** The dates a document carries, read the way the reader's browser reads them. */
+const issued = computed(() => formatDate(props.invoice.issuedOn))
+const due = computed(() => formatDate(props.invoice.dueOn))
+
 function choose(value: string): void {
   form.gateway = value
   chosen.value = props.gateways.find((gateway) => gateway.value === value) ?? null
@@ -81,17 +107,17 @@ function formatDate(value: string | null): string {
   <Head :title="invoice.number" />
 
   <ClientLayout :heading="invoice.number">
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-6 lg:col-span-2">
-        <AppCard>
+    <template #actions>
+      <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
+    </template>
+
+    <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+      <div class="flex flex-col gap-8">
+        <div>
           <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <AppStatus :tone="statusTone(invoice.status)" :label="invoice.statusLabel" />
-              <p class="text-content-muted text-chrome mt-2">
-                {{ invoice.issuedOn ?? '—' }} ·
-                {{ t('billing.portal.due', { date: invoice.dueOn ?? '—' }) }}
-              </p>
-            </div>
+            <p class="text-content-muted text-chrome">
+              {{ issued }} · {{ t('billing.portal.due', { date: due }) }}
+            </p>
 
             <div v-if="invoice.billTo.length > 0" class="text-right">
               <p class="text-content-muted text-chrome">{{ t('billing.portal.bill_to') }}</p>
@@ -105,31 +131,32 @@ function formatDate(value: string | null): string {
             </div>
           </div>
 
-          <ul class="divide-line divide-y">
-            <li v-for="item in invoice.items" :key="item.id" class="py-3 first:pt-0">
-              <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0">
-                  <p class="text-body font-medium">
-                    {{ item.description }}
-                    <span v-if="item.quantity > 1" class="text-content-muted">
-                      × {{ item.quantity }}
-                    </span>
-                  </p>
-                  <p
-                    v-if="item.detail"
-                    class="text-content-muted text-chrome mt-0.5 leading-relaxed whitespace-pre-line"
-                  >
-                    {{ item.detail }}
-                  </p>
-                </div>
-                <p class="text-body shrink-0 tabular-nums">{{ item.amount }}</p>
-              </div>
-            </li>
-          </ul>
+          <AppTable :columns="LINE_COLUMNS">
+            <AppTableRow v-for="item in invoice.items" :key="item.id">
+              <td data-col="description">
+                <span class="font-medium">{{ item.description }}</span>
+                <span v-if="item.quantity > 1" class="text-content-muted">
+                  × {{ item.quantity }}
+                </span>
+                <span
+                  v-if="item.detail"
+                  class="text-content-muted text-chrome mt-0.5 block leading-relaxed whitespace-pre-line"
+                >
+                  {{ item.detail }}
+                </span>
+              </td>
+              <td data-col="amount" class="numeric tabular-nums">{{ item.amount }}</td>
+            </AppTableRow>
+          </AppTable>
 
-          <dl class="border-line text-body mt-4 border-t pt-4">
+          <!--
+            The arithmetic of the document, right-aligned under it and capped
+            in width: a total sitting 700px from the line it totals is a total
+            nobody connects to anything.
+          -->
+          <dl class="text-body mt-4 ml-auto max-w-sm">
             <div class="flex justify-between gap-4 py-1">
-              <dt class="text-content-muted">{{ t('billing.invoices.total') }}</dt>
+              <dt class="text-content-muted">{{ t('ordering.cart.subtotal') }}</dt>
               <dd class="tabular-nums">{{ invoice.subtotal }}</dd>
             </div>
             <div v-if="invoice.discount" class="flex justify-between gap-4 py-1">
@@ -153,52 +180,57 @@ function formatDate(value: string | null): string {
               <dd class="tabular-nums">{{ invoice.balance }}</dd>
             </div>
           </dl>
-        </AppCard>
+        </div>
 
-        <AppCard v-if="invoice.payments.length > 0" :title="t('billing.invoices.payments')">
-          <ul class="divide-line text-body divide-y">
-            <li
-              v-for="payment in invoice.payments"
-              :key="payment.id"
-              class="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
-            >
-              <span class="text-content-muted">
-                {{ formatDate(payment.receivedAt) }} · {{ payment.status }}
-              </span>
-              <span class="tabular-nums">{{ payment.amount }}</span>
-            </li>
-          </ul>
-        </AppCard>
+        <DetailSection
+          v-if="invoice.payments.length > 0"
+          :title="t('billing.invoices.payments')"
+          :level="3"
+          :divided="false"
+        >
+          <AppTable :columns="PAYMENT_COLUMNS">
+            <AppTableRow v-for="payment in invoice.payments" :key="payment.id">
+              <td data-col="when" class="text-content-muted whitespace-nowrap">
+                {{ formatDate(payment.receivedAt) }}
+              </td>
+              <td data-col="status">
+                <AppStatus :tone="statusTone(payment.status)" :label="payment.statusLabel" />
+              </td>
+              <td data-col="amount" class="numeric tabular-nums">{{ payment.amount }}</td>
+            </AppTableRow>
+          </AppTable>
+        </DetailSection>
 
-        <AppCard v-if="invoice.creditNotes.length > 0" :title="t('billing.credit_notes.title')">
-          <ul class="divide-line text-body divide-y">
-            <li
-              v-for="note in invoice.creditNotes"
-              :key="note.id"
-              class="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
-            >
-              <span>
-                {{ note.number }}
-                <span class="text-content-muted">· {{ note.issuedOn ?? '—' }}</span>
-              </span>
-              <span class="tabular-nums">{{ note.amount }}</span>
-            </li>
-          </ul>
-        </AppCard>
+        <DetailSection
+          v-if="invoice.creditNotes.length > 0"
+          :title="t('billing.credit_notes.title')"
+          :level="3"
+          :divided="false"
+        >
+          <AppTable :columns="NOTE_COLUMNS">
+            <AppTableRow v-for="note in invoice.creditNotes" :key="note.id">
+              <td data-col="number" class="font-medium">{{ note.number }}</td>
+              <td data-col="issued" class="text-content-muted">{{ formatDate(note.issuedOn) }}</td>
+              <td data-col="amount" class="numeric tabular-nums">{{ note.amount }}</td>
+            </AppTableRow>
+          </AppTable>
+        </DetailSection>
       </div>
 
+      <!--
+        Framed, because paying is a separate thing from reading: it is the one
+        place on this page where something leaves the customer's bank.
+      -->
       <div>
         <AppCard v-if="invoice.isOwed && can.pay && gateways.length > 0">
           <h2 class="text-body mb-1 font-semibold">{{ t('billing.payments.pay_now') }}</h2>
-          <p class="text-content-muted mb-4 text-2xl font-semibold tracking-tight tabular-nums">
-            {{ invoice.balance }}
-          </p>
+          <p class="text-page mb-4 font-semibold tabular-nums">{{ invoice.balance }}</p>
 
           <div class="flex flex-col gap-2">
             <label
               v-for="gateway in gateways"
               :key="gateway.value"
-              class="border-line hover:bg-surface-secondary text-body flex cursor-pointer items-center gap-2.5 rounded-sm border px-3 py-2.5 transition-colors duration-(--duration-fast)"
+              class="border-line hover:bg-surface-secondary text-body flex cursor-pointer items-center gap-2.5 rounded-md border px-3 py-2.5 transition-colors duration-(--duration-fast)"
               :class="form.gateway === gateway.value ? 'border-brand' : ''"
             >
               <input
@@ -215,7 +247,7 @@ function formatDate(value: string | null): string {
 
           <p
             v-if="chosen?.instructions"
-            class="border-line bg-surface-secondary text-chrome mt-3 rounded-sm border px-3 py-2 leading-relaxed whitespace-pre-line"
+            class="border-line bg-surface-secondary text-chrome mt-3 rounded-md border px-3 py-2 leading-relaxed whitespace-pre-line"
           >
             {{ chosen.instructions }}
           </p>
@@ -238,7 +270,7 @@ function formatDate(value: string | null): string {
     -->
     <p
       v-if="invoice.terms"
-      class="border-line text-content-muted text-chrome mt-6 border-t pt-4 leading-relaxed whitespace-pre-line"
+      class="border-line text-content-muted text-chrome mt-8 border-t pt-4 leading-relaxed whitespace-pre-line"
     >
       {{ invoice.terms }}
     </p>

@@ -108,11 +108,11 @@ Numbers generated 2026-09-24; re-count with the grep in
 
 | Done | Page | Type | cards | padded td | solid danger | arbitrary type | i18n |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | `Client/Billing/BillingTabs.vue` | form |  |  |  |  | yes |
-| [ ] | `Client/Billing/Details.vue` | form | 2 |  |  |  | yes |
-| [ ] | `Client/Billing/Invoice.vue` | detail | 5 |  |  | 1 | yes |
-| [ ] | `Client/Billing/Invoices.vue` | list |  | 6 |  | 1 | yes |
-| [ ] | `Client/Billing/Transactions.vue` | list |  | 5 |  | 1 | yes |
+| [x] | `Client/Billing/BillingTabs.vue` | form |  |  |  |  | yes |
+| [x] | `Client/Billing/Details.vue` | form |  |  |  |  | yes |
+| [x] | `Client/Billing/Invoice.vue` | detail | 1 |  |  |  | yes |
+| [x] | `Client/Billing/Invoices.vue` | list |  |  |  |  | yes |
+| [x] | `Client/Billing/Transactions.vue` | list |  |  |  |  | yes |
 | [ ] | `Client/Contacts.vue` | list | 2 |  |  |  |  |
 | [x] | `Client/Dashboard.vue` | overview |  |  |  |  | yes |
 | [ ] | `Client/Developer/Tokens.vue` | list | 2 |  |  |  | yes |

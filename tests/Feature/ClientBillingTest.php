@@ -56,6 +56,28 @@ it('lists the invoices belonging to this customer', function (): void {
             ->has('outstanding', 1));
 });
 
+/*
+ * The way to page two.
+ *
+ * Both portal lists printed "1 / 3 - 47" and offered no control at all, so a
+ * customer with more than twenty invoices could not reach the older ones —
+ * and the page number told them exactly how many they were missing.
+ */
+it('carries the links a customer needs to reach the rest of their invoices', function (): void {
+    $this->actingAs($this->owner, 'client')
+        ->get('/client/billing')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('invoices.links')
+            ->where('invoices.links.0.label', fn (string $label): bool => str_contains($label, 'Previous')));
+
+    $this->actingAs($this->owner, 'client')
+        ->get('/client/billing/transactions')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('transactions.links'));
+});
+
 it('never lists a draft', function (): void {
     Invoice::factory()->forCustomer($this->customer)->draft()->create();
 

@@ -63,6 +63,15 @@ final class InvoiceController extends Controller
                 'currentPage' => $invoices->currentPage(),
                 'lastPage' => $invoices->lastPage(),
                 'total' => $invoices->total(),
+                /*
+                 * The links, so the screen can offer page two.
+                 *
+                 * It printed "1 / 3 - 47" and nothing else: a customer with
+                 * more than twenty invoices could not reach the older ones at
+                 * all, and the page number told them exactly how much they
+                 * were missing.
+                 */
+                'links' => $invoices->linkCollection()->all(),
             ],
             'filters' => ['status' => $status === '' ? null : $status],
             'statuses' => $this->statuses(),
@@ -119,7 +128,11 @@ final class InvoiceController extends Controller
                         'id' => $payment->id,
                         'gateway' => $payment->gateway,
                         'amount' => $payment->amount->format(app()->getLocale()),
-                        'status' => (string) __('billing.payment_statuses.'.$payment->status->value),
+                        // Two fields, because a status crossing to the browser
+                        // is a tone and a word: the label alone drew the
+                        // unknown mark on a perfectly good payment.
+                        'status' => $payment->status->value,
+                        'statusLabel' => (string) __('billing.payment_statuses.'.$payment->status->value),
                         'receivedAt' => $payment->received_at?->toIso8601String(),
                     ])
                     ->values()

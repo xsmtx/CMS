@@ -8,6 +8,8 @@ return [
     'details_saved' => 'Billing details saved. They will be used on your next invoice.',
 
     'portal' => [
+        'remove_title' => 'Remove :method?',
+        'remove_detail' => 'The card stops being available for your next renewal. Nothing already paid is affected, and you can save another one the next time you pay.',
         'invoices_title' => 'Invoices',
         'invoices_description' => 'Everything issued to this account, newest first.',
         'outstanding' => 'Outstanding',
@@ -37,6 +39,7 @@ return [
     ],
 
     'methods' => [
+        'expires' => 'Expires',
         'default_set' => 'Default payment method changed.',
         'removed' => 'Payment method removed.',
     ],
@@ -82,6 +85,7 @@ return [
     ],
 
     'invoices' => [
+        'description' => 'Description',
         'all' => 'All',
         'raised' => 'Invoice :number has been raised for this order.',
         'title' => 'Invoices',
@@ -159,6 +163,7 @@ return [
     ],
 
     'credit_notes' => [
+        'number' => 'Number',
         'title' => 'Credit notes',
         'issue' => 'Issue a credit note',
         'issued' => 'Credit note :number issued.',

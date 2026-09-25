@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import MetricStrip, { type Metric } from '../../../Components/MetricStrip.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import BillingTabs from './BillingTabs.vue'
 
 interface TransactionRow {
@@ -18,17 +23,35 @@ interface TransactionRow {
   occurredAt: string
 }
 
-defineProps<{
+const props = defineProps<{
   transactions: {
     data: TransactionRow[]
     currentPage: number
     lastPage: number
     total: number
+    links: { url: string | null; label: string; active: boolean }[]
   }
   credit: { balance: string; currency: string }
 }>()
 
 const { t } = useTranslations()
+
+const COLUMNS: TableColumn[] = [
+  { key: 'when', label: t('billing.payments.received_on'), sticky: true },
+  { key: 'kind', label: t('billing.transactions.kind') },
+  { key: 'against', label: t('billing.portal.against') },
+  { key: 'amount', label: t('billing.payments.amount'), numeric: true },
+  { key: 'balance', label: t('billing.portal.running_balance'), numeric: true },
+]
+
+const credit = computed<Metric[]>(() => [
+  {
+    key: 'credit',
+    label: `${t('billing.portal.credit_balance')} · ${props.credit.currency}`,
+    value: props.credit.balance,
+    hint: t('billing.portal.credit_explained'),
+  },
+])
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString()
@@ -44,32 +67,15 @@ function formatDate(value: string): string {
   >
     <BillingTabs current="transactions" />
 
-    <div class="mb-6">
-      <p class="text-content-muted text-chrome">
-        {{ t('billing.portal.credit_balance') }} · {{ credit.currency }}
-      </p>
-      <p class="mt-0.5 text-xl font-semibold tracking-tight tabular-nums">{{ credit.balance }}</p>
-      <p class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
-        {{ t('billing.portal.credit_explained') }}
-      </p>
-    </div>
+    <MetricStrip class="mb-6" :items="credit" />
 
-    <AppTable
-      v-if="transactions.data.length > 0"
-      :headers="[
-        t('billing.payments.received_on'),
-        t('billing.transactions.kind'),
-        t('billing.portal.against'),
-        t('billing.payments.amount'),
-        t('billing.portal.running_balance'),
-      ]"
-    >
-      <tr v-for="transaction in transactions.data" :key="transaction.id">
-        <td class="text-content-muted px-4 py-2.5 whitespace-nowrap">
+    <AppTable v-if="transactions.data.length > 0" name="portal-transactions" :columns="COLUMNS">
+      <AppTableRow v-for="transaction in transactions.data" :key="transaction.id">
+        <td data-col="when" class="text-content-muted whitespace-nowrap">
           {{ formatDate(transaction.occurredAt) }}
         </td>
-        <td class="px-4 py-2.5">{{ transaction.kindLabel }}</td>
-        <td class="px-4 py-2.5">
+        <td data-col="kind">{{ transaction.kindLabel }}</td>
+        <td data-col="against">
           <Link
             v-if="transaction.invoiceNumber"
             :href="`/client/billing/invoices/${transaction.invoiceNumber}`"
@@ -84,25 +90,25 @@ function formatDate(value: string): string {
           ledger row is positive, and the direction is the kind's to say.
         -->
         <td
-          class="px-4 py-2.5 tabular-nums"
+          data-col="amount"
+          class="numeric tabular-nums"
           :class="transaction.increasesPaid ? '' : 'text-content-muted'"
         >
           {{ transaction.increasesPaid ? '' : '−' }}{{ transaction.amount }}
         </td>
-        <td class="text-content-muted px-4 py-2.5 tabular-nums">
+        <td data-col="balance" class="numeric text-content-muted tabular-nums">
           {{ transaction.creditBalance }}
         </td>
-      </tr>
+      </AppTableRow>
     </AppTable>
 
     <EmptyState
       v-else
+      icon="billing"
       :title="t('billing.portal.no_transactions')"
       :description="t('billing.portal.credit_explained')"
     />
 
-    <p v-if="transactions.lastPage > 1" class="text-content-muted text-chrome mt-4">
-      {{ transactions.currentPage }} / {{ transactions.lastPage }} — {{ transactions.total }}
-    </p>
+    <AppPagination :links="transactions.links" :total="transactions.total" />
   </ClientLayout>
 </template>

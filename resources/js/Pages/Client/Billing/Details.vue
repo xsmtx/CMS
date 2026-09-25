@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
+import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
-import ClientLayout from '../../../Layouts/ClientLayout.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTaxIdentity } from '../../../composables/useTaxIdentity'
 import { useTranslations } from '../../../composables/useTranslations'
+import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import BillingTabs from './BillingTabs.vue'
 
 interface StoredMethod {
@@ -43,6 +48,12 @@ const { t } = useTranslations()
 // of the world, and this customer is reading their own invoice's vocabulary.
 const { label: taxIdLabel } = useTaxIdentity()
 
+const METHOD_COLUMNS: TableColumn[] = [
+  { key: 'method', label: t('billing.portal.methods_title'), sticky: true },
+  { key: 'expiry', label: t('billing.methods.expires') },
+  { key: 'actions', label: '' },
+]
+
 const form = useForm({
   company_name: props.details.companyName ?? '',
   legal_name: props.details.legalName ?? '',
@@ -55,6 +66,15 @@ const form = useForm({
   country_code: props.details.countryCode ?? '',
 })
 
+/**
+ * Removing a card used to happen on the first click.
+ *
+ * What goes is the instrument the next renewal would have been charged to, so
+ * the sentence says that rather than "are you sure" — level 2, because
+ * nothing is lost that the customer cannot add again the next time they pay.
+ */
+const removing = ref<StoredMethod | null>(null)
+
 function save(): void {
   form.put('/client/billing/details', { preserveScroll: true })
 }
@@ -63,8 +83,23 @@ function makeDefault(id: string): void {
   router.put(`/client/billing/methods/${id}/default`, {}, { preserveScroll: true })
 }
 
-function remove(id: string): void {
-  router.delete(`/client/billing/methods/${id}`, { preserveScroll: true })
+function remove(): void {
+  const method = removing.value
+
+  if (method === null) return
+
+  router.delete(`/client/billing/methods/${method.id}`, {
+    preserveScroll: true,
+    onFinish: () => {
+      removing.value = null
+    },
+  })
+}
+
+function describe(method: StoredMethod): string {
+  const name = method.brand ?? method.gateway
+
+  return method.lastFour === null ? name : `${name} •••• ${method.lastFour}`
 }
 </script>
 
@@ -77,13 +112,15 @@ function remove(id: string): void {
   >
     <BillingTabs current="details" />
 
-    <div class="flex flex-col gap-6">
-      <AppCard>
-        <!--
-          Said plainly, because every system that lets a customer assume
-          otherwise has taught them the wrong thing: an issued invoice keeps
-          the details it was issued with.
-        -->
+    <div class="flex flex-col gap-8">
+      <!--
+        No heading: the page is already called Billing details, and a section
+        titled the same as its page is a heading that says nothing twice. The
+        note stays, because it is the one thing on this screen a customer
+        misunderstands — an issued invoice keeps the details it was issued
+        with.
+      -->
+      <div>
         <p class="text-content-muted text-body mb-5 max-w-[60ch] leading-relaxed">
           {{ t('billing.portal.details_note') }}
         </p>
@@ -102,7 +139,9 @@ function remove(id: string): void {
           <AppInput v-model="form.tax_id" :label="taxIdLabel" :error="form.errors.tax_id" />
         </div>
 
-        <h3 class="text-body mt-6 mb-3 font-semibold">{{ t('billing.portal.address') }}</h3>
+        <h3 class="text-content-subtle text-label mt-6 mb-3 uppercase">
+          {{ t('billing.portal.address') }}
+        </h3>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <AppInput
@@ -140,52 +179,54 @@ function remove(id: string): void {
             {{ t('crm.save') }}
           </AppButton>
         </div>
-      </AppCard>
+      </div>
 
-      <AppCard :title="t('billing.portal.methods_title')">
-        <ul v-if="methods.length > 0" class="divide-line divide-y">
-          <li
-            v-for="method in methods"
-            :key="method.id"
-            class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-          >
-            <div>
-              <p class="text-body font-medium">
-                {{ method.brand ?? method.gateway }}
-                <span v-if="method.lastFour" class="text-content-muted">
-                  •••• {{ method.lastFour }}
-                </span>
-                <AppBadge v-if="method.isDefault" class="ml-2" tone="brand">
-                  {{ t('billing.portal.default') }}
-                </AppBadge>
-              </p>
-              <p v-if="method.expiry" class="text-content-muted text-chrome mt-0.5">
-                {{ method.expiry }}
-              </p>
-            </div>
-
-            <div v-if="can.manage" class="flex gap-2">
-              <AppButton
-                v-if="!method.isDefault"
-                size="sm"
-                variant="ghost"
-                @click="makeDefault(method.id)"
-              >
-                {{ t('billing.portal.make_default') }}
-              </AppButton>
-              <AppButton size="sm" variant="ghost" @click="remove(method.id)">
-                {{ t('billing.portal.remove') }}
-              </AppButton>
-            </div>
-          </li>
-        </ul>
+      <DetailSection :title="t('billing.portal.methods_title')" :divided="methods.length === 0">
+        <AppTable v-if="methods.length > 0" name="portal-methods" :columns="METHOD_COLUMNS">
+          <AppTableRow v-for="method in methods" :key="method.id">
+            <td data-col="method">
+              <span class="font-medium">{{ describe(method) }}</span>
+              <AppBadge v-if="method.isDefault" class="ml-2" tone="brand">
+                {{ t('billing.portal.default') }}
+              </AppBadge>
+            </td>
+            <td data-col="expiry" class="text-content-muted">{{ method.expiry ?? '—' }}</td>
+            <td data-col="actions" class="text-right">
+              <span v-if="can.manage" class="row-actions inline-flex gap-1">
+                <AppButton
+                  v-if="!method.isDefault"
+                  size="sm"
+                  variant="ghost"
+                  @click="makeDefault(method.id)"
+                >
+                  {{ t('billing.portal.make_default') }}
+                </AppButton>
+                <AppButton size="sm" variant="danger-subtle" @click="removing = method">
+                  {{ t('billing.portal.remove') }}
+                </AppButton>
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
 
         <EmptyState
           v-else
+          variant="plain"
+          icon="billing"
           :title="t('billing.portal.methods_none')"
           :description="t('billing.portal.methods_add_note')"
         />
-      </AppCard>
+      </DetailSection>
     </div>
+
+    <AppConfirm
+      :open="removing !== null"
+      level="consequential"
+      :title="t('billing.portal.remove_title', { method: removing ? describe(removing) : '' })"
+      :description="t('billing.portal.remove_detail')"
+      :confirm-label="t('billing.portal.remove')"
+      @update:open="(value: boolean) => (removing = value ? removing : null)"
+      @confirm="remove"
+    />
   </ClientLayout>
 </template>

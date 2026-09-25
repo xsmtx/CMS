@@ -67,6 +67,9 @@ final class TransactionController extends Controller
                 'currentPage' => $transactions->currentPage(),
                 'lastPage' => $transactions->lastPage(),
                 'total' => $transactions->total(),
+                // The same gap the invoice list had: a page number and no way to
+                // turn the page.
+                'links' => $transactions->linkCollection()->all(),
             ],
             'credit' => [
                 'balance' => $this->ledger
