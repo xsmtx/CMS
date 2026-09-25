@@ -59,7 +59,6 @@ final class NotificationTemplateController extends Controller
             // `editingLocale`, not `locale`: the shell shares the
             // request's own locale under that name.
             'editingLocale' => $locale,
-            'locales' => $this->locales(),
             'templates' => array_values(array_map(
                 function (NotificationEvent $event) use ($templates, $locale): array {
                     $custom = $templates->get($event->value);
@@ -274,20 +273,6 @@ final class NotificationTemplateController extends Controller
                 'department' => 'Technical Support',
             ],
         };
-    }
-
-    /**
-     * @return list<array{value: string, label: string}>
-     */
-    private function locales(): array
-    {
-        /** @var list<string> $available */
-        $available = config('platform.locales', ['en', 'tr']);
-
-        return array_values(array_map(
-            static fn (string $locale): array => ['value' => $locale, 'label' => strtoupper($locale)],
-            $available,
-        ));
     }
 
     private function authorizeFor(string $permission): void

@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\SecurityController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,6 +68,17 @@ return function (Guard $guard): void {
         Route::post('confirm-password', [ConfirmPasswordController::class, 'store'])
             ->middleware('throttle:10,1')
             ->name('password.confirm.store');
+
+        /*
+         * The language somebody reads the panel in, written on their own
+         * row. Blocked during impersonation with the security settings and
+         * for the same reason: an operator standing in for a customer is
+         * there to fix something, not to change what language that customer
+         * reads their invoices in.
+         */
+        Route::middleware('impersonation.blocked')
+            ->put('locale', [LocaleController::class, 'update'])
+            ->name('locale');
 
         // Security settings belong to the person signed in, and none of it
         // is available to someone impersonating them.

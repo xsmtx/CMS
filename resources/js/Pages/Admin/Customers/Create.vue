@@ -13,7 +13,7 @@
  * installation has defined appears here automatically, typed the way it
  * was defined, so a Turkish installation is not a special case in the code.
  */
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import type { CustomFieldDefinition } from '../../../Components/CustomFieldInput.vue'
@@ -42,7 +42,6 @@ interface RoleOption extends Option {
 const props = defineProps<{
   statuses: Option[]
   currencies: Option[]
-  locales: Option[]
   tags: Option[]
   roles: RoleOption[]
   customFields: CustomFieldDefinition[]
@@ -59,6 +58,10 @@ const props = defineProps<{
 const { label: taxIdLabel } = useTaxIdentity()
 
 const { t } = useTranslations()
+
+// The shared list rather than one of our own: a page prop named like a
+// shared one wins for that screen and takes the shell's copy with it.
+const locales = computed(() => usePage().props.locales ?? [])
 
 interface ClientForm {
   first_name: string

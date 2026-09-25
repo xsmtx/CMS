@@ -10,6 +10,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireInstallationOwner;
 use App\Http\Middleware\RequireRecentAuthentication;
 use App\Http\Middleware\ResolveOrganizationContext;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackAuthenticatedSession;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Errors\ApiExceptionRenderer;
@@ -69,6 +70,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // unscoped.
         $middleware->web(append: [
             ResolveOrganizationContext::class,
+            // Before anything renders a word. Appended to the group rather
+            // than prepended globally because it needs the session, and a
+            // global middleware runs before there is one.
+            SetLocale::class,
             TrackAuthenticatedSession::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

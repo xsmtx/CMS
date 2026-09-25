@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppMenu from '../Components/AppMenu.vue'
+import LanguageSwitch from '../Components/LanguageSwitch.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useBranding } from '../composables/useBranding'
 import { useTranslations } from '../composables/useTranslations'
@@ -184,6 +185,10 @@ function isCurrent(href: string): boolean {
         </Link>
 
         <div class="ml-auto flex shrink-0 items-center gap-2">
+          <!-- Not while impersonating: the row it writes is the
+               customer's, and their reading language is not what an
+               operator is standing in for them to change. -->
+          <LanguageSwitch v-if="!impersonation?.active" url="/locale" />
           <ThemeSwitch />
 
           <AppMenu v-if="user" :label="initials" align="end" width="14rem" avatar>

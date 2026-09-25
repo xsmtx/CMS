@@ -9,6 +9,7 @@ import { type IconName } from '../icons'
 import AppMenu from '../Components/AppMenu.vue'
 import OperationsDrawer from '../Components/OperationsDrawer.vue'
 import PageHeader from '../Components/PageHeader.vue'
+import LanguageSwitch from '../Components/LanguageSwitch.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
 import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { useBranding } from '../composables/useBranding'
@@ -67,14 +68,17 @@ const addons = computed(() => page.props.moduleNavigation ?? [])
 
 const help = computed(() => page.props.help ?? {})
 
-const HELP_LABELS: Record<string, string> = {
-  documentation: 'Documentation',
-  support: 'Technical Support',
-  community: 'Community Forums',
-  license: 'License Information',
-  bug: 'Report a Bug',
-  contact: 'Contact us',
-}
+// A computed rather than a constant: `t` is declared further down with the
+// rest of the composables, and a map built at module scope would read it
+// before it exists.
+const helpLabels = computed<Record<string, string>>(() => ({
+  documentation: t('ui.shell.links.documentation', {}, 'Documentation'),
+  support: t('ui.shell.links.support', {}, 'Technical Support'),
+  community: t('ui.shell.links.community', {}, 'Community Forums'),
+  license: t('ui.shell.links.license', {}, 'License Information'),
+  bug: t('ui.shell.links.bug', {}, 'Report a Bug'),
+  contact: t('ui.shell.links.contact', {}, 'Contact us'),
+}))
 
 /**
  * The footer's three links, in the order they are read.
@@ -89,7 +93,7 @@ const FOOTER_LINKS = ['bug', 'documentation', 'contact'] as const
 const footerLinks = computed(() =>
   FOOTER_LINKS.filter((key) => Boolean(help.value[key])).map((key) => ({
     key,
-    label: HELP_LABELS[key] ?? key,
+    label: helpLabels.value[key] ?? key,
     href: help.value[key] as string,
   })),
 )
@@ -940,7 +944,7 @@ onBeforeUnmount(() => {
       href="#main"
       class="focus:bg-surface-elevated sr-only rounded-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-40 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
     >
-      Skip to content
+      {{ t('ui.shell.skip', {}, 'Skip to content') }}
     </a>
 
     <!-- The scrim exists only below lg, where the rail is a drawer. -->
@@ -961,7 +965,7 @@ onBeforeUnmount(() => {
       data-admin-nav
       class="border-line bg-surface-chrome fixed inset-y-0 left-0 z-40 flex w-(--rail-w) flex-col border-r transition-transform duration-(--duration-fast) ease-(--ease-out) lg:translate-x-0"
       :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
-      aria-label="Sections"
+      :aria-label="t('ui.shell.sections', {}, 'Sections')"
     >
       <!--
         Collapsed, the header stacks: the mark, and the control that opens
@@ -1087,7 +1091,9 @@ onBeforeUnmount(() => {
                       type="button"
                       class="pressable text-content-subtle hover:text-content rounded-sm px-1"
                       :aria-expanded="openItem === item.label"
-                      :aria-label="`${item.label} submenu`"
+                      :aria-label="
+                        t('ui.shell.submenu', { name: item.label }, `${item.label} submenu`)
+                      "
                       @click.stop="openItem = openItem === item.label ? null : item.label"
                     >
                       <AppIcon name="chevronDown" :size="11" />
@@ -1172,13 +1178,13 @@ onBeforeUnmount(() => {
           type="button"
           class="pressable text-content-muted hover:text-content rounded-sm p-1.5 lg:hidden"
           :aria-expanded="mobileOpen"
-          aria-label="Sections"
+          :aria-label="t('ui.shell.sections', {}, 'Sections')"
           @click="mobileOpen = !mobileOpen"
         >
           <AppIcon name="more" :size="18" />
         </button>
 
-        <nav aria-label="Breadcrumb" class="min-w-0 flex-1">
+        <nav :aria-label="t('ui.shell.breadcrumb', {}, 'Breadcrumb')" class="min-w-0 flex-1">
           <ol class="text-chrome flex items-center gap-1.5">
             <li v-for="crumb in breadcrumbs" :key="crumb.label" class="flex items-center gap-1.5">
               <component
@@ -1201,12 +1207,19 @@ onBeforeUnmount(() => {
                nothing at all for somebody who may not see operations. -->
           <OperationsDrawer />
 
+          <LanguageSwitch url="/admin/locale" />
           <ThemeSwitch />
 
           <!-- The spanner: what an installation is configured to be, rather
                than what somebody works in. Drawn only when there is something
                on it, because each row now answers for itself. -->
-          <AppMenu v-if="tools.length > 0" label="Tools" align="end" width="15rem" icon="utilities">
+          <AppMenu
+            v-if="tools.length > 0"
+            :label="t('ui.shell.tools', {}, 'Tools')"
+            align="end"
+            width="15rem"
+            icon="utilities"
+          >
             <Link
               v-for="tool in tools"
               :key="tool.href"
@@ -1221,7 +1234,7 @@ onBeforeUnmount(() => {
           <!-- Where to get help. Every link is configurable, because a
                white-label installation sends its operators to its own
                documentation, not to ours. -->
-          <AppMenu label="Help" align="end" width="15rem" icon="help">
+          <AppMenu :label="t('ui.shell.help', {}, 'Help')" align="end" width="15rem" icon="help">
             <a
               v-for="(url, key) in help"
               :key="key"
@@ -1231,13 +1244,13 @@ onBeforeUnmount(() => {
               class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
-              {{ HELP_LABELS[key] ?? key }}
+              {{ helpLabels[key] ?? key }}
             </a>
             <p
               v-if="Object.keys(help).length === 0"
               class="text-content-muted text-chrome px-2 py-1.5"
             >
-              No help links are configured for this installation.
+              {{ t('ui.shell.no_help', {}, 'No help links are configured for this installation.') }}
             </p>
           </AppMenu>
 
@@ -1255,14 +1268,14 @@ onBeforeUnmount(() => {
               class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
-              My Account
+              {{ t('ui.shell.my_account', {}, 'My Account') }}
             </Link>
             <a
               href="/client"
               class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
               role="menuitem"
             >
-              Visit Client Area
+              {{ t('ui.shell.client_area', {}, 'Visit Client Area') }}
             </a>
             <Link
               href="/admin/logout"
@@ -1271,7 +1284,7 @@ onBeforeUnmount(() => {
               class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
               role="menuitem"
             >
-              Sign out
+              {{ t('ui.shell.sign_out', {}, 'Sign out') }}
             </Link>
           </AppMenu>
         </div>
@@ -1313,7 +1326,11 @@ onBeforeUnmount(() => {
       >
         <p>&copy; {{ year }} {{ brand.name }}</p>
 
-        <nav v-if="footerLinks.length > 0" aria-label="Help" class="flex items-center gap-2">
+        <nav
+          v-if="footerLinks.length > 0"
+          :aria-label="t('ui.shell.help', {}, 'Help')"
+          class="flex items-center gap-2"
+        >
           <template v-for="(link, index) in footerLinks" :key="link.key">
             <span v-if="index > 0" aria-hidden="true">|</span>
             <a

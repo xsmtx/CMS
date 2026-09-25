@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTranslations } from '../composables/useTranslations'
 import { useTheme } from '../composables/useTheme'
 
 /**
@@ -8,6 +9,8 @@ import { useTheme } from '../composables/useTheme'
  * people actually want — and the only way to get back to it once they have
  * clicked once would be to clear site data.
  */
+const { t } = useTranslations()
+
 const { choice, set, options } = useTheme()
 </script>
 
@@ -15,7 +18,7 @@ const { choice, set, options } = useTheme()
   <div
     class="border-line bg-surface-secondary inline-flex gap-0.5 rounded-sm border p-0.5"
     role="radiogroup"
-    aria-label="Colour theme"
+    :aria-label="t('ui.shell.theme', {}, 'Colour theme')"
   >
     <button
       v-for="option in options"

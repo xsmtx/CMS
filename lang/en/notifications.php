@@ -45,6 +45,7 @@ return [
     ],
 
     'admin' => [
+        'template_language' => 'Template language',
         'always_sent' => 'Always sent',
         'log_empty' => 'Nothing sent yet',
         'log_empty_description' => 'Every message this platform sends is recorded here, including the ones it decided not to send.',

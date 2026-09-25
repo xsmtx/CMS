@@ -66,7 +66,6 @@ final class ClientController extends Controller
             'currencies' => $this->currencies(),
             'tags' => $this->tags(),
             'roles' => $this->roles($this->names),
-            'locales' => $this->locales(),
             'customFields' => $this->customFields(),
             'defaults' => [
                 // The installation's own, so an operator in one country is
@@ -251,31 +250,6 @@ final class ClientController extends Controller
                 ];
             },
             [SystemRole::AccountOwner, SystemRole::PortalMember],
-        ));
-    }
-
-    /**
-     * The languages this installation ships strings for.
-     *
-     * Offering a language nothing is translated into would produce a
-     * customer whose invoices arrive in a language the platform cannot
-     * write.
-     *
-     * @return list<array<string, string>>
-     */
-    private function locales(): array
-    {
-        /** @var list<string> $locales */
-        $locales = (array) config('platform.locales', ['en']);
-
-        return array_values(array_map(
-            static fn (string $locale): array => [
-                'value' => $locale,
-                // Upper-cased, as the notification template editor
-                // shows them. One vocabulary, not two.
-                'label' => strtoupper($locale),
-            ],
-            $locales,
         ));
     }
 

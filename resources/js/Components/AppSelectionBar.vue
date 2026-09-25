@@ -27,7 +27,7 @@ const { t } = useTranslations()
   <div
     class="border-brand/35 bg-brand/8 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border px-3 py-2"
     role="region"
-    aria-label="Selection"
+    :aria-label="t('ui.shell.selection', {}, 'Selection')"
   >
     <p class="text-body font-medium" aria-live="polite">
       {{

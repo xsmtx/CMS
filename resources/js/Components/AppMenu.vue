@@ -17,6 +17,7 @@
  * person's password.
  */
 
+import { useTranslations } from '../composables/useTranslations'
 import AppIcon from './AppIcon.vue'
 import { useAnchoredPanel } from '../composables/useAnchoredPanel'
 import { type IconName } from '../icons'
@@ -42,6 +43,8 @@ const props = withDefaults(
   }>(),
   { align: 'end', width: '15rem', avatar: false, icon: null },
 )
+
+const { t } = useTranslations()
 
 const { open, trigger, panel, style } = useAnchoredPanel({
   align: props.align,
@@ -80,7 +83,7 @@ defineExpose({ close })
     class="pressable bg-surface-secondary text-content-muted hover:text-content border-line hover:border-line-strong text-chrome inline-flex size-8 items-center justify-center rounded-full border font-semibold transition-colors duration-(--duration-fast)"
     :aria-expanded="open"
     aria-haspopup="menu"
-    aria-label="Account"
+    :aria-label="t('ui.shell.account', {}, 'Account')"
     @click="toggle"
   >
     {{ label }}

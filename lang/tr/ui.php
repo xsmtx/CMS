@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 return [
     'common' => [
+        'close' => 'Kapat',
+        'select_all' => 'Bu sayfadaki bütün :noun kayıtlarını seç',
         'save' => 'Kaydet',
         'loading' => 'Yükleniyor…',
         'correlation_id' => 'İzleme kimliği',
@@ -24,6 +26,31 @@ return [
         'nothing_in_period' => 'Bu dönemde hiçbir şey yok.',
     ],
 
+    'shell' => [
+        'language' => 'Dil',
+        'skip' => 'İçeriğe geç',
+        'sections' => 'Bölümler',
+        'submenu' => ':name alt menüsü',
+        'breadcrumb' => 'Sayfa yolu',
+        'account' => 'Hesap',
+        'pagination' => 'Sayfalama',
+        'selection' => 'Seçim',
+        'theme' => 'Renk teması',
+        'tools' => 'Araçlar',
+        'help' => 'Yardım',
+        'no_help' => 'Bu kurulum için yardım bağlantısı tanımlanmamış.',
+        'my_account' => 'Hesabım',
+        'client_area' => 'Müşteri paneline git',
+        'sign_out' => 'Çıkış yap',
+        'links' => [
+            'documentation' => 'Belgeler',
+            'support' => 'Teknik destek',
+            'community' => 'Topluluk forumları',
+            'license' => 'Lisans bilgisi',
+            'bug' => 'Hata bildir',
+            'contact' => 'Bize ulaşın',
+        ],
+    ],
     'confirm' => [
         'confirm' => 'Onayla',
         'delete' => 'Sil',

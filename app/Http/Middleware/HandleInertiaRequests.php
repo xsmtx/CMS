@@ -12,6 +12,7 @@ use App\Infrastructure\Modules\ActiveModules;
 use App\Support\Branding\CurrentBrand;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
+use App\Support\Locales;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
@@ -84,6 +85,9 @@ final class HandleInertiaRequests extends Middleware
              */
             'taxIdentity' => fn (): array => app(TaxIdentity::class)->current(),
             'locale' => app()->getLocale(),
+            // What else this installation speaks. Shared rather than passed
+            // per screen because the switch is in the chrome, on every page.
+            'locales' => Locales::options(),
             'flash' => [
                 'success' => fn (): ?string => $request->session()->get('success'),
                 'error' => fn (): ?string => $request->session()->get('error'),

@@ -23,6 +23,7 @@
  * somebody tabbed into from the row behind it is a panel that reads its own
  * content and the list's at once.
  */
+import { useTranslations } from '../composables/useTranslations'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 
@@ -40,6 +41,8 @@ withDefaults(
   }>(),
   { subtitle: undefined, href: undefined, loading: false },
 )
+
+const { t } = useTranslations()
 
 const open = defineModel<boolean>('open', { required: true })
 
@@ -115,7 +118,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-sm p-1.5 transition-colors duration-(--duration-fast)"
-              aria-label="Close"
+              :aria-label="t('ui.common.close', {}, 'Close')"
               @click="open = false"
             >
               <AppIcon name="close" :size="16" />
@@ -126,7 +129,7 @@ onBeforeUnmount(() => {
             <!-- The skeleton is three bars rather than a spinner, for the
                  same reason the tables use one: the panel keeps its size. -->
             <div v-if="loading" class="flex flex-col gap-2.5" aria-busy="true">
-              <p class="sr-only" role="status">Loading</p>
+              <p class="sr-only" role="status">{{ t('ui.common.loading', {}, 'Loading') }}</p>
               <span class="skeleton block h-3 w-1/3 rounded-full" aria-hidden="true" />
               <span class="skeleton block h-3 w-3/4 rounded-full" aria-hidden="true" />
               <span class="skeleton block h-3 w-2/3 rounded-full" aria-hidden="true" />

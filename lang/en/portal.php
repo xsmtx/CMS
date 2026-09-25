@@ -18,7 +18,6 @@ return [
         'security' => 'Security',
     ],
 
-
     'shell' => [
         'skip' => 'Skip to content',
         'sign_out' => 'Sign out',

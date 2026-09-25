@@ -28,7 +28,7 @@ function readable(label: string): string {
 <template>
   <nav
     v-if="links.length > 3"
-    aria-label="Pagination"
+    :aria-label="t('ui.shell.pagination', {}, 'Pagination')"
     class="mt-5 flex items-center justify-between gap-4"
   >
     <p class="text-content-muted text-chrome">

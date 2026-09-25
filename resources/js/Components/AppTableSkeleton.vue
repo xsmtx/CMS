@@ -11,6 +11,7 @@
  * random: identical bars read as a progress bar, and a different layout on
  * every render is a page that looks broken while it loads.
  */
+import { useTranslations } from '../composables/useTranslations'
 import { computed } from 'vue'
 
 import { type TableColumn } from './tableContext'
@@ -25,6 +26,8 @@ const props = withDefaults(
   }>(),
   { headers: undefined, columns: undefined, rows: 8, selectable: false },
 )
+
+const { t } = useTranslations()
 
 const labels = computed(() => props.columns?.map((column) => column.label) ?? props.headers ?? [])
 
@@ -43,7 +46,7 @@ function width(row: number, column: number): string {
   >
     <!-- One announcement, not one per bar: a screen reader reading eighty
          placeholder cells is worse than silence. -->
-    <p class="sr-only" role="status">Loading</p>
+    <p class="sr-only" role="status">{{ t('ui.common.loading', {}, 'Loading') }}</p>
 
     <table class="data-table text-body w-full text-left">
       <thead>

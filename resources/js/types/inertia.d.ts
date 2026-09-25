@@ -127,6 +127,8 @@ declare module '@inertiajs/core' {
     help?: Record<string, string>
     impersonation: ImpersonationProps | null
     locale: string
+    /** What else this installation speaks, for the switch in the chrome. */
+    locales?: { value: string; label: string }[]
     flash: FlashProps
     correlationId: string | null
     operations?: OperationCounts | null

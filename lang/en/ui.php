@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 return [
     'common' => [
+        'close' => 'Close',
+        'select_all' => 'Select every :noun on this page',
         'save' => 'Save',
         'loading' => 'Loading…',
         'correlation_id' => 'Correlation ID',
@@ -29,6 +31,31 @@ return [
         'nothing_in_period' => 'Nothing in this period.',
     ],
 
+    'shell' => [
+        'language' => 'Language',
+        'skip' => 'Skip to content',
+        'sections' => 'Sections',
+        'submenu' => ':name submenu',
+        'breadcrumb' => 'Breadcrumb',
+        'account' => 'Account',
+        'pagination' => 'Pagination',
+        'selection' => 'Selection',
+        'theme' => 'Colour theme',
+        'tools' => 'Tools',
+        'help' => 'Help',
+        'no_help' => 'No help links are configured for this installation.',
+        'my_account' => 'My Account',
+        'client_area' => 'Visit Client Area',
+        'sign_out' => 'Sign out',
+        'links' => [
+            'documentation' => 'Documentation',
+            'support' => 'Technical Support',
+            'community' => 'Community Forums',
+            'license' => 'License Information',
+            'bug' => 'Report a Bug',
+            'contact' => 'Contact us',
+        ],
+    ],
     'confirm' => [
         'confirm' => 'Confirm',
         'delete' => 'Delete',

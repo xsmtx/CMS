@@ -10,8 +10,8 @@
  * it: switching it reloads the page, because a different locale is a
  * different set of rows.
  */
-import { Head, router, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, router, useForm, usePage } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
@@ -38,12 +38,14 @@ interface TemplateRow {
 
 const props = defineProps<{
   editingLocale: string
-  locales: { value: string; label: string }[]
   templates: TemplateRow[]
   can: { manage: boolean }
 }>()
 
 const { t } = useTranslations()
+
+// The shared list rather than one of our own, which would shadow it.
+const locales = computed(() => usePage().props.locales ?? [])
 
 const editing = ref<string | null>(null)
 const chosenLocale = ref(props.editingLocale)
@@ -94,12 +96,21 @@ function switchLocale(locale: string): void {
     :description="t('notifications.admin.templates_subtitle')"
   >
     <div class="flex flex-col gap-5">
-      <AppSegmented
-        v-model="chosenLocale"
-        :segments="locales.map((option) => ({ value: option.value, label: option.label }))"
-        :label="t('notifications.admin.locale')"
-        @update:model-value="switchLocale"
-      />
+      <!-- Labelled on the screen, not only to a screen reader: the topbar
+           has an identical-looking EN|TR for the language the operator
+           reads the panel in, and two unlabelled pairs on one page is two
+           controls nobody can tell apart. -->
+      <div class="flex flex-col gap-1.5">
+        <span class="text-content-subtle text-label uppercase">
+          {{ t('notifications.admin.template_language') }}
+        </span>
+        <AppSegmented
+          v-model="chosenLocale"
+          :segments="locales.map((option) => ({ value: option.value, label: option.label }))"
+          :label="t('notifications.admin.template_language')"
+          @update:model-value="switchLocale"
+        />
+      </div>
 
       <!-- One surface with hairline-divided rows: a message is an item in a
            list of wordings, not a separate object with a card of its own. -->

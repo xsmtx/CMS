@@ -1463,3 +1463,39 @@ how a table sits inside one — the card keeps the frame, the table gives its
 own up, and the result is one rectangle with a header above the column names
 rather than the card-in-a-card the design system refuses. `designSystem.test.ts`
 asserts both halves, because either one alone still draws two borders.
+
+**Nothing in this product spoke Turkish until today, and everything was
+translated.** `locale` on a staff user and on a contact was read by exactly
+one thing — the notifier, choosing the wording of an email — while every
+rendered page used `config('app.locale')`, for everybody, for ever. Half the
+work in `lang/tr` was unreachable and no test could see it, because a test
+asserts behaviour and this was a column stored and read by nothing.
+
+`SetLocale` (web group, after the session) answers it: the person's own
+locale, then — for a contact — the customer's, then the installation's, and
+only a locale this installation ships. `LanguageSwitch` is beside the theme
+switch in both shells and writes to `PUT /admin/locale` / `PUT /locale`
+(`routes/auth.php`, registered once per guard, blocked during impersonation
+because the row it writes is the customer's).
+
+**A language change is a full document reload, not an Inertia visit.**
+`useTranslations()` reads a JSON block rendered into the document and Inertia
+replaces only the page component, so switching without reloading gave a
+Turkish heading over an English table — the exact half-translated screen all
+of this exists to prevent.
+
+`App\Support\Locales` is the one list of what this installation speaks; the
+client form and the template editor each had a private copy of it, and the
+switch would have been the third. The list the control is drawn from and the
+list the write is validated against must be the same list, or a language
+appears in a control and is then refused.
+
+Two identical-looking controls on one screen are two controls nobody can tell
+apart: the template editor's EN|TR picks the language being *edited* and the
+topbar's picks the language being *read*, so the first one is labelled on the
+screen and not only to a screen reader.
+
+The shell had its own untranslated words — the skip link, four `aria-label`s,
+the account menu, the help links, "Select every :noun on this page". A
+primitive takes the three-argument `t(key, {}, 'English')` form, because it
+can be mounted where no translations block was rendered at all.

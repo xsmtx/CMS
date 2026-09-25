@@ -341,7 +341,9 @@ provide(TABLE_CONTEXT, {
                   class="border-line-strong accent-brand size-3.5 rounded-[3px] border"
                   :checked="allSelected"
                   :indeterminate="someSelected"
-                  :aria-label="`Select every ${noun} on this page`"
+                  :aria-label="
+                    t('ui.common.select_all', { noun }, `Select every ${noun} on this page`)
+                  "
                   @change="toggleAll"
                 />
               </th>
