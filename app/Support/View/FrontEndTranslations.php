@@ -58,6 +58,7 @@ final class FrontEndTranslations
         // customer reads is rendered server side onto the document.
         'billing.settings',
         'marketplace',
+        'modules.settings',
         'billing.statuses',
         'billing.transaction_kinds',
         'billing.transactions',

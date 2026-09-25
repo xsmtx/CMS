@@ -62,17 +62,17 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [ ] | `Admin/Catalog/Products/Form.vue` | form | 2 |  |  |  |  |
 | [x] | `Admin/Customers/Users.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Orders/Review.vue` | form | 1 |  |  | 1 |  |
-| [ ] | `Admin/Resellers/Create.vue` | form | 2 |  |  |  |  |
-| [ ] | `Admin/Resources/Adapters.vue` | list | 2 |  |  |  | yes |
-| [ ] | `Admin/Resources/Explorer.vue` | list |  | 5 |  |  | yes |
-| [ ] | `Admin/Roles/Form.vue` | form | 2 |  |  |  |  |
+| [x] | `Admin/Resellers/Create.vue` | form |  |  |  |  | yes |
+| [x] | `Admin/Resources/Adapters.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Resources/Explorer.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Roles/Form.vue` | form |  |  |  |  | yes |
 | [x] | `Admin/Staff/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Replies.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Apps/Connect.vue` | form | 1 | 6 |  |  |  |
 | [x] | `Admin/Automation/Index.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Billing/Transactions.vue` | list | 1 |  |  |  | yes |
 | [x] | `Admin/Invoices/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Resources/Telemetry.vue` | list | 1 | 5 |  |  | yes |
+| [x] | `Admin/Resources/Telemetry.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Addons.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Services/Index.vue` | list |  |  |  |  | yes |
 | [ ] | `Admin/Automation/Dunning.vue` | form | 1 |  |  |  |  |
@@ -100,9 +100,9 @@ Numbers generated 2026-09-24; re-count with the grep in
 | [x] | `Admin/Resellers/Report.vue` | detail |  |  |  |  | yes |
 | [x] | `Admin/Roles/Index.vue` | list |  |  |  |  | yes |
 | [x] | `Admin/Support/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Apps/Index.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Apps/Marketplace.vue` | list |  |  |  |  | yes |
-| [ ] | `Admin/Modules/ModuleSettings.vue` | form |  |  |  |  |  |
+| [x] | `Admin/Apps/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Apps/Marketplace.vue` | list |  |  |  |  | yes |
+| [x] | `Admin/Modules/ModuleSettings.vue` | form |  |  |  |  | yes |
 
 ## Client area (Horizon-leaning; same rules, comfortable density)
 

@@ -81,4 +81,10 @@ return [
         'widget' => 'Pano bileşeni',
         'infrastructure_adapter' => 'Altyapı bağdaştırıcısı',
     ],
+    'settings' => [
+        'title' => 'Ayarlar',
+        'save' => 'Ayarları kaydet',
+        'secret_set' => 'Tanımlı. Korumak için boş bırakın.',
+        'secret_unset' => 'Tanımlı değil.',
+    ],
 ];

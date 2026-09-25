@@ -20,7 +20,6 @@ import { ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
@@ -154,7 +153,11 @@ function when(value: string | null): string {
         icon="connection"
       />
 
-      <AppCard v-for="adapter in adapters" :key="adapter.id">
+      <div
+        v-for="adapter in adapters"
+        :key="adapter.id"
+        class="border-line bg-surface-primary rounded-lg border p-4"
+      >
         <div class="flex flex-col gap-4">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="flex flex-col gap-1">
@@ -274,12 +277,12 @@ function when(value: string | null): string {
             </div>
           </div>
         </div>
-      </AppCard>
+      </div>
 
       <!-- Rows whose module is gone. Shown rather than hidden: one that says an
            operator once allowed writes is worth seeing before the module comes
            back. -->
-      <AppCard v-if="orphaned.length > 0">
+      <div v-if="orphaned.length > 0" class="border-line bg-surface-primary rounded-lg border p-4">
         <div class="flex flex-col gap-2">
           <p class="text-content-muted text-body">{{ t('infrastructure.adapters.orphaned') }}</p>
           <ul class="flex flex-col gap-1">
@@ -292,7 +295,7 @@ function when(value: string | null): string {
             </li>
           </ul>
         </div>
-      </AppCard>
+      </div>
     </div>
 
     <AppConfirm

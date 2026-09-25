@@ -17,7 +17,6 @@ import { Head, router } from '@inertiajs/vue3'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
@@ -152,21 +151,21 @@ function when(value: string): string {
         </template>
 
         <AppTableRow v-for="metric in metrics.data" :key="metric.id">
-          <td data-col="resource" class="px-4 py-2.5">
+          <td data-col="resource">
             <span class="font-medium">{{ metric.node?.label ?? '—' }}</span>
             <span class="text-content-subtle text-chrome block">{{ metric.node?.kindLabel }}</span>
           </td>
-          <td data-col="metric" class="px-4 py-2.5">{{ metric.metricLabel }}</td>
-          <td data-col="value" class="numeric px-4 py-2.5 font-medium tabular-nums">
+          <td data-col="metric">{{ metric.metricLabel }}</td>
+          <td data-col="value" class="numeric font-medium tabular-nums">
             {{ reading(metric) }}
           </td>
-          <td data-col="sampled" class="text-chrome px-4 py-2.5 tabular-nums">
+          <td data-col="sampled" class="text-chrome tabular-nums">
             {{ when(metric.sampledAt) }}
             <AppBadge v-if="metric.stale" tone="warning">
               {{ t('infrastructure.telemetry.stale') }}
             </AppBadge>
           </td>
-          <td data-col="source" class="text-content-muted text-chrome px-4 py-2.5 font-mono">
+          <td data-col="source" class="text-content-muted text-chrome font-mono">
             {{ metric.source }}
           </td>
         </AppTableRow>
@@ -194,7 +193,7 @@ function when(value: string): string {
 
       <!-- The absences. Capped on the server, because on a fresh installation
            this is every resource and a list of four thousand is not a finding. -->
-      <AppCard v-if="unwatched.length > 0">
+      <div v-if="unwatched.length > 0" class="border-line bg-surface-primary rounded-lg border p-4">
         <div class="flex flex-col gap-2">
           <p class="text-content-muted text-body">
             {{ t('infrastructure.telemetry.unwatched_intro') }}
@@ -206,7 +205,7 @@ function when(value: string): string {
             </li>
           </ul>
         </div>
-      </AppCard>
+      </div>
     </div>
   </AdminLayout>
 </template>

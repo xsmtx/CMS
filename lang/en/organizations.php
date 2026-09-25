@@ -12,6 +12,14 @@ return [
     ],
 
     'resellers' => [
+        'create_intro' => 'The organization and the person who will run it, in one step.',
+        'the_reseller' => 'The reseller',
+        'trading_name' => 'Trading name',
+        'trading_name_hint' => 'What their customers will see, unless they set their own brand.',
+        'slug_hint' => 'Optional. Ours rather than theirs, and suffixed if it is taken — two resellers with the same trading name is an ordinary thing.',
+        'who_runs_it' => 'Who runs it',
+        'who_runs_it_hint' => 'An administrator of the reseller, not of this installation: they see their own subtree and nothing above it.',
+        'owner_email_hint' => 'Unique across this installation. They reach the panel through the password reset flow — no password is set here.',
         'noun' => 'reseller',
         'active' => 'Active',
         'suspended' => 'Suspended',

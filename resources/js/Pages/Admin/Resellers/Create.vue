@@ -18,10 +18,13 @@
 import { Head, useForm } from '@inertiajs/vue3'
 
 import AppAlert from '../../../Components/AppAlert.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
+
+const { t } = useTranslations()
 
 const form = useForm({
   name: '',
@@ -36,53 +39,53 @@ function submit(): void {
 </script>
 
 <template>
-  <Head title="Add reseller" />
+  <Head :title="t('organizations.resellers.add')" />
 
   <AdminLayout
-    heading="Add reseller"
-    description="The organization and the person who will run it, in one step."
+    :heading="t('organizations.resellers.add')"
+    :description="t('organizations.resellers.create_intro')"
   >
     <form class="flex max-w-3xl flex-col gap-5" @submit.prevent="submit">
-      <AppCard title="The reseller">
+      <DetailSection :title="t('organizations.resellers.the_reseller')">
         <div class="flex flex-col gap-4">
           <AppInput
             v-model="form.name"
-            label="Trading name"
+            :label="t('organizations.resellers.trading_name')"
             :error="form.errors.name"
-            hint="What their customers will see, unless they set their own brand."
+            :hint="t('organizations.resellers.trading_name_hint')"
             required
           />
           <AppInput
             v-model="form.slug"
-            label="Slug"
+            :label="t('organizations.resellers.slug')"
             :error="form.errors.slug"
-            hint="Optional. Ours rather than theirs, and suffixed if it is taken — two resellers with the same trading name is an ordinary thing."
+            :hint="t('organizations.resellers.slug_hint')"
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
-      <AppCard
-        title="Who runs it"
-        description="An administrator of the reseller, not of this installation: they see their own subtree and nothing above it."
+      <DetailSection
+        :title="t('organizations.resellers.who_runs_it')"
+        :description="t('organizations.resellers.who_runs_it_hint')"
       >
         <div class="flex flex-col gap-4">
           <AppInput
             v-model="form.owner_name"
-            label="Owner name"
+            :label="t('organizations.resellers.owner_name')"
             :error="form.errors.owner_name"
             required
           />
           <AppInput
             v-model="form.owner_email"
-            label="Owner email"
+            :label="t('organizations.resellers.owner_email')"
             type="email"
             autocomplete="off"
             :error="form.errors.owner_email"
-            hint="Unique across this installation. They reach the panel through the password reset flow — no password is set here."
+            :hint="t('organizations.resellers.owner_email_hint')"
             required
           />
         </div>
-      </AppCard>
+      </DetailSection>
 
       <!-- Said on the way in rather than discovered afterwards: a reseller
            created on Friday that could sell the whole catalogue would be
@@ -96,7 +99,7 @@ function submit(): void {
         <AppButton type="submit" variant="primary" :loading="form.processing">
           Create reseller
         </AppButton>
-        <AppButton href="/admin/resellers" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/resellers" variant="ghost">{{ t('ui.confirm.cancel') }}</AppButton>
       </div>
     </form>
   </AdminLayout>

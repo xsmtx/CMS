@@ -81,4 +81,10 @@ return [
         'widget' => 'Dashboard widget',
         'infrastructure_adapter' => 'Infrastructure adapter',
     ],
+    'settings' => [
+        'title' => 'Settings',
+        'save' => 'Save settings',
+        'secret_set' => 'Set. Leave blank to keep it.',
+        'secret_unset' => 'Not set.',
+    ],
 ];

@@ -12,6 +12,14 @@ return [
     ],
 
     'resellers' => [
+        'create_intro' => 'Organizasyon ve onu yönetecek kişi, tek adımda.',
+        'the_reseller' => 'Bayi',
+        'trading_name' => 'Ticari ad',
+        'trading_name_hint' => 'Kendi markalarını belirlemedikleri sürece müşterilerinin göreceği ad.',
+        'slug_hint' => 'İsteğe bağlı. Onların değil bizim kullandığımız ad; alınmışsa sonuna ek gelir — aynı ticari ada sahip iki bayi olağan bir durumdur.',
+        'who_runs_it' => 'Kim yönetiyor',
+        'who_runs_it_hint' => 'Bu kurulumun değil, bayinin yöneticisi: kendi alt ağacını görür, üstündeki hiçbir şeyi görmez.',
+        'owner_email_hint' => 'Bu kurulumda benzersiz olmalı. Panele şifre sıfırlama akışıyla ulaşırlar — burada şifre belirlenmez.',
         'noun' => 'bayi',
         'active' => 'Etkin',
         'suspended' => 'Askıda',

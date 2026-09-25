@@ -10,6 +10,7 @@
 import { useForm } from '@inertiajs/vue3'
 
 import AppButton from '../../../Components/AppButton.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -27,6 +28,8 @@ export interface ConfigFieldProps {
 }
 
 const props = defineProps<{ slug: string; fields: ConfigFieldProps[] }>()
+
+const { t } = useTranslations()
 
 /**
  * A secret starts blank and means "leave it alone" when it is still blank
@@ -66,13 +69,13 @@ function setFlag(key: string, value: boolean): void {
 function hintFor(field: ConfigFieldProps): string | undefined {
   if (!field.secret) return field.hint ?? undefined
 
-  return field.isSet ? 'Set. Leave blank to keep it.' : 'Not set.'
+  return field.isSet ? t('modules.settings.secret_set') : t('modules.settings.secret_unset')
 }
 </script>
 
 <template>
   <form class="border-line mt-5 border-t pt-5" @submit.prevent="submit">
-    <p class="text-body mb-3 font-medium">Settings</p>
+    <p class="text-body mb-3 font-medium">{{ t('modules.settings.title') }}</p>
 
     <div class="grid max-w-xl gap-5">
       <template v-for="field in fields" :key="field.key">
@@ -104,7 +107,7 @@ function hintFor(field: ConfigFieldProps): string | undefined {
 
     <div class="mt-5">
       <AppButton type="submit" size="sm" variant="primary" :loading="form.processing">
-        Save settings
+        {{ t('modules.settings.save') }}
       </AppButton>
     </div>
   </form>

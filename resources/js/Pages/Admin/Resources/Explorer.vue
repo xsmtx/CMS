@@ -302,7 +302,7 @@ function duration(seconds: number): string {
         </template>
 
         <AppTableRow v-for="node in nodes.data" :key="node.id">
-          <td data-col="label" class="px-4 py-2.5">
+          <td data-col="label">
             <!-- The row whose drawer is open is marked, so somebody who has
                  scrolled the list can still see where they are. -->
             <button
@@ -315,16 +315,16 @@ function duration(seconds: number): string {
             </button>
             <span class="text-content-subtle text-chrome block font-mono">{{ node.key }}</span>
           </td>
-          <td data-col="kind" class="px-4 py-2.5">
+          <td data-col="kind">
             <AppBadge tone="neutral">{{ node.kindLabel }}</AppBadge>
           </td>
-          <td data-col="health" class="px-4 py-2.5">
+          <td data-col="health">
             <AppStatus :tone="toneOf(node)" :label="node.healthLabel" />
           </td>
-          <td data-col="source" class="text-content-muted text-chrome px-4 py-2.5 font-mono">
+          <td data-col="source" class="text-content-muted text-chrome font-mono">
             {{ node.source }}
           </td>
-          <td data-col="seen" class="text-content-muted text-chrome px-4 py-2.5 tabular-nums">
+          <td data-col="seen" class="text-content-muted text-chrome tabular-nums">
             {{ when(node.lastSeenAt) }}
           </td>
         </AppTableRow>

@@ -3,9 +3,10 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
@@ -41,6 +42,8 @@ const props = defineProps<{
   permissionGroups: PermissionGroup[]
   scopes: { value: string; label: string }[]
 }>()
+
+const { t } = useTranslations()
 
 const isEditing = computed(() => props.role !== null)
 
@@ -80,42 +83,51 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit role' : 'Add role'" />
+  <Head :title="isEditing ? t('access.screen.edit') : t('access.screen.add')" />
 
   <AdminLayout
-    :heading="isEditing ? 'Edit role' : 'Add role'"
-    description="Changing a role takes effect for everyone who holds it, immediately."
+    :heading="isEditing ? t('access.screen.edit') : t('access.screen.add')"
+    :description="t('access.screen.form_intro')"
   >
     <form class="flex flex-col gap-5" @submit.prevent="submit">
-      <AppCard title="Role">
+      <DetailSection :title="t('access.screen.role')">
         <div class="grid max-w-xl gap-5">
-          <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+          <AppInput
+            v-model="form.name"
+            :label="t('access.screen.name')"
+            :error="form.errors.name"
+            required
+          />
           <AppInput
             v-model="form.slug"
-            label="Slug"
-            hint="Lowercase, hyphen separated. Policies and modules refer to this."
+            :label="t('access.screen.slug')"
+            :hint="t('access.screen.slug_hint')"
             :error="form.errors.slug"
             :disabled="role?.isSystem"
             required
           />
           <AppSelect
             v-model="form.scope"
-            label="Scope"
+            :label="t('access.screen.scope')"
             :options="scopes"
-            hint="Staff roles cannot be assigned to customers, or the reverse."
+            :hint="t('access.screen.scope_hint')"
             :error="form.errors.scope"
             :disabled="role?.isSystem"
           />
-          <AppTextarea v-model="form.description" label="Description" :rows="3" />
+          <AppTextarea
+            v-model="form.description"
+            :label="t('access.screen.description')"
+            :rows="3"
+          />
         </div>
-      </AppCard>
+      </DetailSection>
 
       <AppAlert v-if="role?.isSuperAdmin" tone="info">
         This role bypasses permission checks entirely, so it has no grants to edit. Its use on a
         high-risk capability is recorded in the audit trail.
       </AppAlert>
 
-      <AppCard v-else title="Permissions">
+      <DetailSection v-else :title="t('access.screen.permissions')">
         <div class="flex flex-col gap-6">
           <section v-for="group in visibleGroups" :key="group.key">
             <h3 class="text-content-muted text-chrome mb-3 font-medium">{{ group.label }}</h3>
@@ -132,7 +144,9 @@ function submit(): void {
                   @update:model-value="(checked: boolean) => toggle(permission.slug, checked)"
                 />
                 <div class="mt-1 ml-7 flex flex-wrap items-center gap-2">
-                  <AppBadge v-if="permission.highRisk" tone="warning">High risk</AppBadge>
+                  <AppBadge v-if="permission.highRisk" tone="warning">{{
+                    t('access.screen.high_risk')
+                  }}</AppBadge>
                   <AppBadge v-if="permission.module" tone="neutral">
                     {{ permission.module }}
                   </AppBadge>
@@ -142,13 +156,13 @@ function submit(): void {
             </div>
           </section>
         </div>
-      </AppCard>
+      </DetailSection>
 
       <div class="flex gap-2">
         <AppButton type="submit" variant="primary" :loading="form.processing">
           {{ isEditing ? 'Save changes' : 'Create role' }}
         </AppButton>
-        <AppButton href="/admin/roles" variant="ghost">Cancel</AppButton>
+        <AppButton href="/admin/roles" variant="ghost">{{ t('ui.confirm.cancel') }}</AppButton>
       </div>
     </form>
   </AdminLayout>
