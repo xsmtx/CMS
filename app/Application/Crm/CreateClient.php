@@ -80,7 +80,17 @@ final readonly class CreateClient
                     'city' => $address->city,
                     'region' => $address->region,
                     'postal_code' => $address->postalCode,
-                    'country_code' => $address->countryCode,
+                    /*
+                     * Upper-cased here, at the write.
+                     *
+                     * A tax rule is matched on an ISO country code, so a row
+                     * holding `tr` is a row no rule for `TR` ever fires on —
+                     * and the symptom is a correct-looking invoice with no
+                     * tax on it. Every other writer of this column already
+                     * normalises; this one did not, which made it depend on
+                     * whether the person typing used the shift key.
+                     */
+                    'country_code' => mb_strtoupper($address->countryCode),
                     'is_default' => true,
                 ]);
             }

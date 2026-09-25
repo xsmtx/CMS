@@ -1432,4 +1432,47 @@ return [
         'delete_detail' => 'Uzantı ve üzerindeki her fiyat gider; ödeme adımında artık sunulmaz. Altında kayıtlı alan adı yok; bu yüzden zaten sunulmaktadır.',
         'delete_confirm' => 'Uzantıyı sil',
     ],
+    'auth' => [
+        'heading' => 'Oturum açın',
+        'staff_heading' => 'Personel girişi',
+        'intro' => 'Devam etmek için e-posta adresinizi ve şifrenizi girin.',
+        'email' => 'E-posta adresi',
+        'password' => 'Şifre',
+        'remember' => 'Bu cihazda oturumum açık kalsın',
+        'submit' => 'Oturum aç',
+        'forgot' => 'Şifrenizi mi unuttunuz?',
+        'no_account' => 'Hesabınız yok mu?',
+        'register' => 'Hesap oluşturun',
+    ],
+
+    'register' => [
+        'title' => 'Hesap oluşturun',
+        'intro' => 'Hizmetlerinizi, faturalarınızı ve taleplerinizi yöneteceğiniz bir hesap. Bir şey satın almadan önce de sonra da hesap açabilirsiniz.',
+
+        'you' => 'Siz',
+        'first_name' => 'Ad',
+        'last_name' => 'Soyad',
+        'email' => 'E-posta adresi',
+        'phone' => 'Telefon',
+
+        'password_group' => 'Oturum açma',
+        'password' => 'Şifre',
+        'password_again' => 'Şifre yeniden',
+        'password_hint' => 'En az 12 karakter; bir rakam ve bir sembol içermeli.',
+
+        'company_group' => 'Şirket adına alıyorsanız',
+        'company_hint' => 'İsteğe bağlı. Bir şirket adı verirseniz faturalarınız sizin adınıza değil şirket adına kesilir.',
+        'company' => 'Şirket adı',
+        'currency' => 'Para birimi',
+        'currency_hint' => 'Faturalandırılacağınız para birimi. Fiyatlar her para birimi için ayrı girilir; bu bir çevrim değildir.',
+
+        'address_group' => 'Fatura adresiniz',
+        'address_hint' => 'Şimdi isteğe bağlı, ilk faturanızdan önce gerekli. Hangi verginin uygulanacağını da bu belirler.',
+        'country_hint' => 'İki harfli kod; örneğin TR ya da DE.',
+
+        'marketing' => 'Ürünler ve kampanyalar hakkında zaman zaman haber gönderin',
+        'submit' => 'Hesabı oluştur',
+        'have_account' => 'Hesabınız var mı?',
+        'sign_in' => 'Oturum açın',
+    ],
 ];

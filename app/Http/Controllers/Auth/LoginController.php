@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Application\Identity\AuthenticateUser;
+use App\Domain\Identity\Guard;
 use App\Http\Controllers\Auth\Concerns\ResolvesGuard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Identity\LoginRequest;
@@ -48,6 +49,15 @@ final class LoginController extends Controller
         return Inertia::render('Auth/Login', [
             'guard' => $guard->value,
             'forgotPasswordUrl' => route($guard->routePrefix().'.password.request'),
+            /*
+             * Offered on the customer surface only, and only while the
+             * installation is open to it: a link to a page that answers 404
+             * is worse than no link, and staff accounts are never
+             * self-registered.
+             */
+            'registerUrl' => $guard === Guard::Client && config('platform.crm.self_registration') === true
+                ? route('client.register')
+                : null,
             'status' => $request->session()->get('status'),
         ]);
     }

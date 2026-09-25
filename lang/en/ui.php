@@ -1437,4 +1437,47 @@ return [
         'delete_detail' => 'The extension and every price on it go, so it stops being offered at checkout. No domain is registered under it, which is why this is offered at all.',
         'delete_confirm' => 'Delete extension',
     ],
+    'auth' => [
+        'heading' => 'Sign in',
+        'staff_heading' => 'Staff sign in',
+        'intro' => 'Enter your email address and password to continue.',
+        'email' => 'Email address',
+        'password' => 'Password',
+        'remember' => 'Keep me signed in on this device',
+        'submit' => 'Sign in',
+        'forgot' => 'Forgot your password?',
+        'no_account' => 'No account yet?',
+        'register' => 'Create one',
+    ],
+
+    'register' => [
+        'title' => 'Create an account',
+        'intro' => 'An account to manage your services, invoices and tickets in. You can buy something before or after opening one.',
+
+        'you' => 'You',
+        'first_name' => 'First name',
+        'last_name' => 'Last name',
+        'email' => 'Email address',
+        'phone' => 'Telephone',
+
+        'password_group' => 'Signing in',
+        'password' => 'Password',
+        'password_again' => 'Password again',
+        'password_hint' => 'At least 12 characters, with a number and a symbol.',
+
+        'company_group' => 'Buying as a company',
+        'company_hint' => 'Optional. Give a company name and your invoices are made out to it rather than to you.',
+        'company' => 'Company name',
+        'currency' => 'Currency',
+        'currency_hint' => 'What you will be invoiced in. Prices are entered per currency, so this is not a conversion.',
+
+        'address_group' => 'Where to invoice you',
+        'address_hint' => 'Optional now, and needed before your first invoice. It also decides which tax applies.',
+        'country_hint' => 'Two-letter code, such as TR or DE.',
+
+        'marketing' => 'Send me occasional news about products and offers',
+        'submit' => 'Create account',
+        'have_account' => 'Already have an account?',
+        'sign_in' => 'Sign in',
+    ],
 ];

@@ -36,8 +36,8 @@ const describedBy = computed(() => {
       :disabled="disabled"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      class="border-line bg-surface-primary text-content text-body h-(--control-h) w-full rounded-md border px-3 transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
-      :class="error ? 'border-danger' : 'focus:border-brand'"
+      class="bg-surface-primary text-content text-body h-(--control-h) w-full rounded-md border px-3 transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+      :class="error ? 'border-danger' : 'border-line focus:border-brand'"
     >
       <option v-for="option in options" :key="option.value" :value="option.value">
         {{ option.label }}

@@ -1095,3 +1095,44 @@ can text them, and that is left honest rather than invented.
 An SMS module truncates the **subject**, never the URL: half a link is a message
 that cost money and did nothing. And a number that normalises to something
 implausible is refused before it is sent rather than paid for.
+
+**A visitor can open their own account** (`/register`, `Auth/Register.vue`). It is
+declared in `routes/client.php` and **not** in `routes/auth.php`, although it sits
+beside sign-in on the page: that file is registered once per guard, and a
+self-registration form on the staff surface would be a way to grant oneself a
+staff session. The parent organization comes from `ResolveStorefrontOrganization`
+— a visitor registers with whoever's shop they are standing in, and that is not
+something a request may state. The customer is created **active**, because
+pending would be a trap: `PlaceOrder` refuses a customer who cannot transact,
+nothing in this product moves an account out of pending on its own, and
+registering creates no obligation there would be anything to withhold against.
+An operator who wants to vet new accounts sets `platform.crm.self_registration`
+to false, which makes both routes answer 404 and stops the sign-in screen
+offering a link to a page that would refuse. The one difference from checkout is
+the password: somebody who has bought something claims their account through the
+reset flow (which proves the address), and somebody who has bought nothing chose
+a password. Neither is ever sent one this platform generated.
+
+**A field in error looked exactly like a field that was fine — on every form in
+the product.** `AppInput`, `AppSelect` and `AppTextarea` carried `border-line` in
+the base class list and added `border-danger` beside it, so which colour won was
+decided by the order Tailwind happened to emit two border-colour utilities in.
+The hairline won. Only one of the two classes is ever present now, and
+`designSystem.test.ts` asserts the **absence** of the other, because the presence
+was never the problem. Two classes that set the same property is not a
+precedence question a component may leave to the stylesheet.
+
+`CreateClient` wrote the country code as it was typed. A tax rule is matched on
+an ISO code, so a row holding `tr` is a row no rule for `TR` ever fires on — and
+the symptom is a correct-looking invoice with no tax on it. It is upper-cased at
+the write now, like every other writer of that column. Registration found it,
+because a form a visitor fills in is the first one where nobody is in the habit
+of using the shift key.
+
+**A browser signed into the admin cannot open the client area**, and the answer
+it gets is a bare 404. `CurrentActor` checks guards staff-first and its comment
+says a request can only ever be authenticated on one of them — two session keys
+in one browser is exactly the case that is not true, and `CurrentCustomer` then
+refuses a `StaffUser` the only way it knows how. Nothing here is wrong on its
+own; it means a staff member testing the portal has to use a second profile or a
+private window. It is worth a decision before somebody debugs it a second time.

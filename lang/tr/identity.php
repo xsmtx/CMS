@@ -101,4 +101,8 @@ return [
         'no_portal_access' => 'Bu kişinin panel erişimi yok, bu nedenle işlem yapılabilecek bir oturum bulunmuyor.',
         'blocked_action' => 'Bu işlem hesap görüntüleme sırasında kullanılamaz.',
     ],
+    'register' => [
+        'email_taken' => 'Bu e-posta adresini kullanan bir hesap zaten var. Oturum açın ya da şifrenizi unuttuysanız sıfırlayın.',
+        'welcome' => 'Hesabınız hazır.',
+    ],
 ];

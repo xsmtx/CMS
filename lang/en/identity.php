@@ -106,4 +106,8 @@ return [
         'no_portal_access' => 'That contact has no portal access, so there is no session to act in.',
         'blocked_action' => 'This action is not available while impersonating.',
     ],
+    'register' => [
+        'email_taken' => 'An account already uses that email address. Sign in instead, or reset the password if you have forgotten it.',
+        'welcome' => 'Your account is ready.',
+    ],
 ];

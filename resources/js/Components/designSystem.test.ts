@@ -4,8 +4,11 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { httpTone, statusTone } from '../status'
+import AppInput from './AppInput.vue'
+import AppSelect from './AppSelect.vue'
 import AppTable from './AppTable.vue'
 import AppTabs from './AppTabs.vue'
+import AppTextarea from './AppTextarea.vue'
 import { type TableSort } from './tableContext'
 
 /**
@@ -195,5 +198,38 @@ describe('AppTable responsive columns', () => {
     expect(css).toContain('@media (max-width:1279.98px)')
     expect(css).toContain('[data-col="region"]{display:none}')
     expect(css).toContain('[data-col="name"]{position:sticky')
+  })
+})
+
+describe('a field in error looks like one', () => {
+  /*
+   * It did not. The base class list carried `border-line` and the conditional
+   * added `border-danger` beside it, so which colour won was decided by the
+   * order Tailwind happened to emit two border-colour utilities in — and the
+   * hairline won. A refused field was pixel-identical to an accepted one on
+   * every form in the product, which the sign-up screen found by being asked
+   * for a password twice and getting it wrong on purpose.
+   *
+   * The fix is that only one of the two classes is ever present. The test
+   * asserts the absence, because the presence was never the problem.
+   */
+  it.each([
+    ['AppInput', AppInput],
+    ['AppSelect', AppSelect],
+    ['AppTextarea', AppTextarea],
+  ])('drops the hairline when %s is refused', (_name, component) => {
+    const props = { label: 'Password', modelValue: '', options: [] }
+
+    const fine = mount(component, { props })
+    const refused = mount(component, { props: { ...props, error: 'Not that one.' } })
+
+    const control = (wrapper: ReturnType<typeof mount>): string =>
+      (wrapper.find('input, select, textarea').element as HTMLElement).className
+
+    expect(control(fine)).toContain('border-line')
+    expect(control(fine)).not.toContain('border-danger')
+
+    expect(control(refused)).toContain('border-danger')
+    expect(control(refused)).not.toContain('border-line')
   })
 })

@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
 import AppCheckbox from '../../Components/AppCheckbox.vue'
 import AppInput from '../../Components/AppInput.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AuthLayout from '../../Layouts/AuthLayout.vue'
 
 const props = defineProps<{
   guard: string
   forgotPasswordUrl: string
+  /** Absent when this installation does not let visitors open their own account. */
+  registerUrl?: string | null
   status?: string | null
 }>()
+
+const { t } = useTranslations()
 
 const form = useForm({
   email: '',
@@ -21,7 +26,10 @@ const form = useForm({
 })
 
 const action = computed(() => (props.guard === 'staff' ? '/admin/login' : '/login'))
-const heading = computed(() => (props.guard === 'staff' ? 'Staff sign in' : 'Sign in'))
+
+const heading = computed(() =>
+  props.guard === 'staff' ? t('ui.auth.staff_heading') : t('ui.auth.heading'),
+)
 
 function submit(): void {
   // The password is cleared whatever the outcome, so a failed attempt never
@@ -33,13 +41,13 @@ function submit(): void {
 <template>
   <Head :title="heading" />
 
-  <AuthLayout :heading="heading" subheading="Enter your email address and password to continue.">
+  <AuthLayout :heading="heading" :subheading="t('ui.auth.intro')">
     <AppAlert v-if="status" tone="success" class="mb-6">{{ status }}</AppAlert>
 
     <form class="flex flex-col gap-5" @submit.prevent="submit">
       <AppInput
         v-model="form.email"
-        label="Email address"
+        :label="t('ui.auth.email')"
         type="email"
         autocomplete="username"
         :error="form.errors.email"
@@ -48,25 +56,34 @@ function submit(): void {
 
       <AppInput
         v-model="form.password"
-        label="Password"
+        :label="t('ui.auth.password')"
         type="password"
         autocomplete="current-password"
         :error="form.errors.password"
         required
       />
 
-      <AppCheckbox v-model="form.remember" label="Keep me signed in on this device" />
+      <AppCheckbox v-model="form.remember" :label="t('ui.auth.remember')" />
 
       <AppButton type="submit" variant="primary" :loading="form.processing" class="w-full">
-        Sign in
+        {{ t('ui.auth.submit') }}
       </AppButton>
     </form>
 
-    <a
-      :href="forgotPasswordUrl"
-      class="text-content-muted hover:text-content text-body mt-6 inline-block underline underline-offset-4"
-    >
-      Forgot your password?
-    </a>
+    <div class="text-body mt-6 flex flex-col gap-2">
+      <a
+        :href="forgotPasswordUrl"
+        class="text-content-muted hover:text-content inline-block underline underline-offset-4"
+      >
+        {{ t('ui.auth.forgot') }}
+      </a>
+
+      <p v-if="registerUrl" class="text-content-muted">
+        {{ t('ui.auth.no_account') }}
+        <Link :href="registerUrl" class="text-brand underline underline-offset-4">
+          {{ t('ui.auth.register') }}
+        </Link>
+      </p>
+    </div>
   </AuthLayout>
 </template>

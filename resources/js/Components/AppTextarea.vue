@@ -35,8 +35,8 @@ const describedBy = computed(() => {
       :rows="rows"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      class="border-line bg-surface-primary text-content placeholder:text-content-subtle text-body w-full rounded-md border px-3 py-2 transition-colors duration-(--duration-fast) ease-(--ease-out)"
-      :class="error ? 'border-danger' : 'focus:border-brand'"
+      class="bg-surface-primary text-content placeholder:text-content-subtle text-body w-full rounded-md border px-3 py-2 transition-colors duration-(--duration-fast) ease-(--ease-out)"
+      :class="error ? 'border-danger' : 'border-line focus:border-brand'"
     />
 
     <p v-if="hint && !error" :id="`${id}-hint`" class="text-content-muted text-chrome">

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\ApiTokenController;
 use App\Http\Controllers\Client\BillingDetailsController;
 use App\Http\Controllers\Client\ContactController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Client\ServiceController;
 use App\Http\Controllers\Client\TicketController;
 use App\Http\Controllers\Client\TransactionController;
 use App\Http\Controllers\Client\WebhookController;
+use App\Http\Middleware\ResolveStorefrontOrganization;
 use App\Http\Middleware\RestrictIncompleteAccounts;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,29 @@ use Illuminate\Support\Facades\Route;
 */
 
 (require __DIR__.'/auth.php')(Guard::Client);
+
+/*
+ * Opening an account.
+ *
+ * Not in routes/auth.php, although it sits beside sign-in on the page: that
+ * file is registered once per guard, and a self-registration form on the
+ * staff surface would be a way to grant oneself a staff session. Staff
+ * accounts are created by `identity:create-owner` or by another staff member.
+ *
+ * `ResolveStorefrontOrganization` because a visitor has no actor to take a
+ * boundary from, and the new customer needs a seller to hang off. It is the
+ * same seam the storefront and checkout use, so a registration cannot end up
+ * parented somewhere the shop is not.
+ *
+ * Throttled at the route: the form writes rows and sends nothing, which makes
+ * it the cheapest thing on the site to hammer.
+ */
+Route::middleware(['guest:client', ResolveStorefrontOrganization::class])->group(function (): void {
+    Route::get('register', [RegisterController::class, 'create'])->name('register');
+    Route::post('register', [RegisterController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('register.store');
+});
 
 Route::middleware(['auth:client', RestrictIncompleteAccounts::class])
     ->prefix('client')

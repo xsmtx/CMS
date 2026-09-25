@@ -488,6 +488,16 @@ return [
     */
 
     'crm' => [
+        /*
+         * Whether a visitor may open an account for themselves.
+         *
+         * Read in two places and nowhere else: the register routes answer 404
+         * when it is off, and the sign-in screen stops offering a link to a
+         * page that would refuse. An installation that sells only through
+         * checkout, or only to accounts an operator creates, turns it off.
+         */
+        'self_registration' => (bool) env('CRM_SELF_REGISTRATION', true),
+
         'default_country' => env('CRM_DEFAULT_COUNTRY', 'TR'),
         'default_currency' => env('CRM_DEFAULT_CURRENCY', 'TRY'),
         'phone_placeholder' => env('CRM_PHONE_PLACEHOLDER', '+90 501 234 56 78'),
