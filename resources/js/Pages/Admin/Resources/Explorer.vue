@@ -24,10 +24,10 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
-import AppButton from '../../../Components/AppButton.vue'
 import AppDrawer from '../../../Components/AppDrawer.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppStatus, { type StatusTone } from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
@@ -35,6 +35,12 @@ import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+
+interface PaginationLink {
+  url: string | null
+  label: string
+  active: boolean
+}
 
 interface NodeRow {
   id: string
@@ -107,7 +113,13 @@ interface Peek {
 }
 
 const props = defineProps<{
-  nodes: { data: NodeRow[]; currentPage: number; lastPage: number; total: number }
+  nodes: {
+    links: PaginationLink[]
+    data: NodeRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+  }
   filters: { kind: string | null; health: string | null; q: string | null; retired: boolean }
   kinds: { value: string; label: string }[]
   healthStates: { value: string; label: string }[]
@@ -330,25 +342,7 @@ function duration(seconds: number): string {
         </AppTableRow>
       </AppTable>
 
-      <div v-if="nodes.lastPage > 1" class="flex items-center gap-3">
-        <AppButton
-          variant="secondary"
-          :disabled="nodes.currentPage <= 1"
-          @click="go({ page: nodes.currentPage - 1 })"
-        >
-          Previous
-        </AppButton>
-        <span class="text-content-muted text-chrome tabular-nums">
-          {{ nodes.currentPage }} / {{ nodes.lastPage }} — {{ nodes.total }}
-        </span>
-        <AppButton
-          variant="secondary"
-          :disabled="nodes.currentPage >= nodes.lastPage"
-          @click="go({ page: nodes.currentPage + 1 })"
-        >
-          Next
-        </AppButton>
-      </div>
+      <AppPagination :links="nodes.links" :total="nodes.total" />
     </div>
 
     <AppDrawer

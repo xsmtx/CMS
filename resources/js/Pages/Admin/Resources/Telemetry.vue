@@ -17,12 +17,19 @@ import { Head, router } from '@inertiajs/vue3'
 
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
+import AppPagination from '../../../Components/AppPagination.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+
+interface PaginationLink {
+  url: string | null
+  label: string
+  active: boolean
+}
 
 interface NodeRow {
   id: string
@@ -46,7 +53,13 @@ interface MetricRow {
 }
 
 const props = defineProps<{
-  metrics: { data: MetricRow[]; currentPage: number; lastPage: number; total: number }
+  metrics: {
+    links: PaginationLink[]
+    data: MetricRow[]
+    currentPage: number
+    lastPage: number
+    total: number
+  }
   filters: { source: string | null; metric: string | null }
   sources: { value: string; label: string; count: number }[]
   stats: { measurements: number; sources: number; stale: number; unwatched: number }
@@ -171,25 +184,7 @@ function when(value: string): string {
         </AppTableRow>
       </AppTable>
 
-      <div v-if="metrics.lastPage > 1" class="flex items-center gap-3">
-        <AppButton
-          variant="secondary"
-          :disabled="metrics.currentPage <= 1"
-          @click="go({ page: metrics.currentPage - 1 })"
-        >
-          Previous
-        </AppButton>
-        <span class="text-content-muted text-chrome tabular-nums">
-          {{ metrics.currentPage }} / {{ metrics.lastPage }} — {{ metrics.total }}
-        </span>
-        <AppButton
-          variant="secondary"
-          :disabled="metrics.currentPage >= metrics.lastPage"
-          @click="go({ page: metrics.currentPage + 1 })"
-        >
-          Next
-        </AppButton>
-      </div>
+      <AppPagination :links="metrics.links" :total="metrics.total" />
 
       <!-- The absences. Capped on the server, because on a fresh installation
            this is every resource and a list of four thousand is not a finding. -->

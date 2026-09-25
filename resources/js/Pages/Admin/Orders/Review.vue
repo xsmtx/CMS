@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3'
 
 import AppButton from '../../../Components/AppButton.vue'
-import AppCard from '../../../Components/AppCard.vue'
+import { useTranslations } from '../../../composables/useTranslations'
 import AppStatus from '../../../Components/AppStatus.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -22,20 +22,27 @@ interface ReviewRow {
 
 defineProps<{ orders: ReviewRow[]; canReview: boolean }>()
 
+const { t } = useTranslations()
+
 function formatDateTime(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
 </script>
 
 <template>
-  <Head title="Review queue" />
+  <Head :title="t('ordering.orders.review_queue')" />
 
   <AdminLayout
-    heading="Review queue"
-    description="Orders the platform held rather than refused. Nothing here moves until someone decides."
+    :heading="t('ordering.orders.review_queue')"
+    :description="t('ordering.orders.review_intro')"
   >
-    <div v-if="orders.length > 0" class="flex flex-col gap-4">
-      <AppCard v-for="order in orders" :key="order.id">
+    <!-- One framed surface with hairline-divided rows rather than a card each: the
+         queue is a list of orders, not a page of separate objects. -->
+    <div
+      v-if="orders.length > 0"
+      class="border-line bg-surface-primary divide-line divide-y rounded-lg border"
+    >
+      <div v-for="order in orders" :key="order.id" class="p-4">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p class="text-body font-medium">
@@ -56,7 +63,7 @@ function formatDateTime(value: string | null): string {
           </div>
 
           <div class="text-right">
-            <p class="text-base font-semibold tabular-nums">{{ order.total }}</p>
+            <p class="text-title font-semibold tabular-nums">{{ order.total }}</p>
             <AppButton
               v-if="canReview"
               :href="`/admin/orders/${order.id}`"
@@ -64,21 +71,22 @@ function formatDateTime(value: string | null): string {
               variant="primary"
               class="mt-3"
             >
-              Decide
+              {{ t('ordering.orders.decide') }}
             </AppButton>
           </div>
         </div>
-      </AppCard>
+      </div>
     </div>
 
     <EmptyState
       v-else
-      title="Nothing is waiting for review"
-      description="Orders land here when the risk rules flag one. An empty queue means everything placed so far went straight through."
+      icon="orders"
+      :title="t('ordering.orders.review_empty')"
+      :description="t('ordering.orders.review_empty_description')"
     />
 
     <div class="mt-6">
-      <AppButton href="/admin/orders" variant="ghost">Back to orders</AppButton>
+      <AppButton href="/admin/orders" variant="ghost">{{ t('ordering.orders.back') }}</AppButton>
     </div>
   </AdminLayout>
 </template>

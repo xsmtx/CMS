@@ -141,6 +141,10 @@ return [
     ],
 
     'orders' => [
+        'decide' => 'Decide',
+        'review_intro' => 'Orders the platform held rather than refused. Nothing here moves until someone decides.',
+        'review_empty_description' => 'Orders land here when the risk rules flag one. An empty queue means everything placed so far went straight through.',
+        'back' => 'Back to orders',
         'id' => 'ID',
         'any' => 'Any',
         'all' => 'All',

@@ -3,8 +3,9 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../../Components/AppAlert.vue'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppButton from '../../../../Components/AppButton.vue'
-import AppCard from '../../../../Components/AppCard.vue'
+import DetailSection from '../../../../Components/DetailSection.vue'
 import AppInput from '../../../../Components/AppInput.vue'
 import AppSelect from '../../../../Components/AppSelect.vue'
 import AppTextarea from '../../../../Components/AppTextarea.vue'
@@ -33,6 +34,8 @@ const props = defineProps<{
   cycles: CycleOption[]
   currencies: CurrencyOption[]
 }>()
+
+const { t } = useTranslations()
 
 const isEditing = computed(() => props.addon !== null)
 
@@ -72,55 +75,60 @@ function savePrices(): void {
 </script>
 
 <template>
-  <Head :title="isEditing ? 'Edit addon' : 'New addon'" />
+  <Head :title="isEditing ? t('catalog.addons.edit') : t('catalog.addons.new')" />
 
   <AdminLayout
-    :heading="isEditing ? 'Edit addon' : 'New addon'"
-    :description="`Bought alongside ${product.name} and billed on its own line.`"
+    :heading="isEditing ? t('catalog.addons.edit') : t('catalog.addons.new')"
+    :description="t('catalog.addons.form_intro', { product: product.name })"
   >
     <div class="flex flex-col gap-8">
       <form class="flex flex-col gap-6" @submit.prevent="submit">
-        <AppCard>
+        <DetailSection :title="t('catalog.addons.the_addon')">
           <div class="grid gap-5 sm:grid-cols-2">
-            <AppInput v-model="form.name" label="Name" :error="form.errors.name" required />
+            <AppInput
+              v-model="form.name"
+              :label="t('catalog.addons.name')"
+              :error="form.errors.name"
+              required
+            />
 
             <AppInput
               v-model="form.slug"
-              label="Slug"
+              :label="t('catalog.addons.slug')"
               :error="form.errors.slug"
-              hint="Left empty, it is derived from the name."
+              :hint="t('catalog.addons.slug_hint')"
             />
 
             <div class="sm:col-span-2">
               <AppTextarea
                 v-model="form.description"
-                label="Description"
+                :label="t('catalog.addons.description')"
                 :error="form.errors.description"
               />
             </div>
 
             <AppSelect
               v-model="form.status"
-              label="Status"
+              :label="t('catalog.addons.status')"
               :options="statuses"
               :error="form.errors.status"
             />
 
             <AppInput
               v-model="form.position"
-              label="Position"
+              :label="t('catalog.addons.position')"
               type="number"
               :error="form.errors.position"
             />
           </div>
-        </AppCard>
+        </DetailSection>
 
         <div class="flex items-center gap-3">
           <AppButton type="submit" variant="primary" :loading="form.processing">
             {{ isEditing ? 'Save addon' : 'Create addon' }}
           </AppButton>
           <AppButton :href="`/admin/catalog/products/${product.id}/addons`" variant="ghost">
-            Cancel
+            {{ t('ui.confirm.cancel') }}
           </AppButton>
         </div>
       </form>
@@ -128,15 +136,13 @@ function savePrices(): void {
       <form v-if="addon" class="flex flex-col gap-6" @submit.prevent="savePrices">
         <AppAlert v-if="priceError" tone="danger">{{ priceError }}</AppAlert>
 
-        <AppCard>
-          <PriceMatrix
-            v-model="pricing.prices"
-            :cycles="cycles"
-            :currencies="currencies"
-            title="Pricing"
-            description="What this addon costs, per cycle and currency. It is billed alongside the product, not folded into it."
-          />
-        </AppCard>
+        <PriceMatrix
+          v-model="pricing.prices"
+          :cycles="cycles"
+          :currencies="currencies"
+          :title="t('catalog.addons.pricing')"
+          :description="t('catalog.addons.pricing_hint')"
+        />
 
         <div>
           <AppButton type="submit" variant="primary" :loading="pricing.processing">

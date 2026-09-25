@@ -141,6 +141,10 @@ return [
     ],
 
     'orders' => [
+        'decide' => 'Karar ver',
+        'review_intro' => 'Platformun reddetmek yerine beklettiği siparişler. Biri karar verene kadar buradan hiçbir şey ilerlemez.',
+        'review_empty_description' => 'Risk kuralları bir siparişi işaretlediğinde buraya düşer. Boş kuyruk, şimdiye kadar verilen her siparişin doğrudan geçtiği anlamına gelir.',
+        'back' => 'Siparişlere dön',
         'id' => 'Kimlik',
         'any' => 'Hepsi',
         'all' => 'Tümü',

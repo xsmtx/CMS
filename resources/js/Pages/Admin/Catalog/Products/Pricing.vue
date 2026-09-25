@@ -3,8 +3,8 @@ import { Head, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppAlert from '../../../../Components/AppAlert.vue'
+import { useTranslations } from '../../../../composables/useTranslations'
 import AppButton from '../../../../Components/AppButton.vue'
-import AppCard from '../../../../Components/AppCard.vue'
 import PriceMatrix from '../../../../Components/PriceMatrix.vue'
 import AdminLayout from '../../../../Layouts/AdminLayout.vue'
 import {
@@ -22,6 +22,8 @@ const props = defineProps<{
   currencies: CurrencyOption[]
 }>()
 
+const { t } = useTranslations()
+
 const form = useForm<{ prices: PriceCell[] }>({ prices: props.prices })
 
 const priceError = computed(() => firstPriceError(form.errors))
@@ -34,25 +36,23 @@ function submit(): void {
 </script>
 
 <template>
-  <Head :title="`Pricing — ${product.name}`" />
+  <Head :title="`${t('catalog.pricing.title')} — ${product.name}`" />
 
   <AdminLayout
-    :heading="`Pricing — ${product.name}`"
-    description="One row per billing cycle, one tab per currency. Nothing is converted: a customer pays the price in their currency exactly as it is entered here."
+    :heading="`${t('catalog.pricing.title')} — ${product.name}`"
+    :description="t('catalog.pricing.subtitle')"
   >
     <form class="flex flex-col gap-6" @submit.prevent="submit">
       <AppAlert v-if="priceError" tone="danger">{{ priceError }}</AppAlert>
 
-      <AppCard>
-        <PriceMatrix v-model="form.prices" :cycles="cycles" :currencies="currencies" />
-      </AppCard>
+      <PriceMatrix v-model="form.prices" :cycles="cycles" :currencies="currencies" />
 
       <div class="flex items-center gap-3">
         <AppButton type="submit" variant="primary" :loading="form.processing">
-          Save prices
+          {{ t('catalog.pricing.save') }}
         </AppButton>
         <AppButton :href="`/admin/catalog/products/${product.id}/edit`" variant="ghost">
-          Back to product
+          {{ t('catalog.pricing.back_to_product') }}
         </AppButton>
       </div>
     </form>

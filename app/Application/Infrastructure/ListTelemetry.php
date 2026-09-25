@@ -6,8 +6,8 @@ namespace App\Application\Infrastructure;
 
 use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * What arrived, from where, and what has not.

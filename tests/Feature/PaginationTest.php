@@ -69,25 +69,13 @@ it('sends the links with every paginated payload', function (): void {
 
 it('draws a pager on every screen that is given one', function (): void {
     /*
-     * The Resource Graph's two screens roll their own previous/next pair,
-     * because their lists are keyset-ish walks rather than numbered pages.
-     * They are exempt by name rather than by pattern: an exemption that
-     * matches a shape is an exemption everything eventually matches.
+     * There is no exemption. The Resource Graph's two screens kept a
+     * hand-written previous/next pair for a while, which meant two English
+     * words nothing translated and no way to reach page seven of a fleet.
      */
-    $rollsItsOwn = [
-        'Admin'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'Explorer.vue',
-        'Admin'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'Telemetry.vue',
-    ];
-
     $missing = [];
 
     foreach (paginatedPages() as $path => $contents) {
-        if (in_array($path, $rollsItsOwn, true)) {
-            expect($contents)->toContain('currentPage <= 1');
-
-            continue;
-        }
-
         if (! str_contains($contents, 'AppPagination')) {
             $missing[] = $path;
         }

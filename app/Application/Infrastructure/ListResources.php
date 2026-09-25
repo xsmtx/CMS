@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Infrastructure;
 
 use App\Infrastructure\Resources\Models\ResourceNode;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * The Explorer's list, as a use case rather than as a query in a controller.

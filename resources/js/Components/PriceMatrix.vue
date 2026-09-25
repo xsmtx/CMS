@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 
 import MoneyInput from './MoneyInput.vue'
+import { useTranslations } from '../composables/useTranslations'
 import { cellKey, type CurrencyOption, type CycleOption, type PriceCell } from '../types/catalog'
 
 /**
@@ -25,6 +26,8 @@ const props = withDefaults(
   }>(),
   { allowNegative: false, title: undefined, description: undefined },
 )
+
+const { t } = useTranslations()
 
 const model = defineModel<PriceCell[]>({ required: true })
 
@@ -97,21 +100,21 @@ watch(
 <template>
   <section class="flex flex-col gap-4">
     <div v-if="title">
-      <h2 class="text-base font-semibold tracking-tight">{{ title }}</h2>
+      <h2 class="text-title font-semibold">{{ title }}</h2>
       <p v-if="description" class="text-content-muted text-body mt-1 max-w-[60ch] leading-relaxed">
         {{ description }}
       </p>
     </div>
 
     <p v-if="currencies.length === 0" class="text-content-muted text-body">
-      No active currencies yet. Add one before pricing anything.
+      {{ t('catalog.pricing.no_currencies') }}
     </p>
 
     <template v-else>
       <div
         class="border-line bg-surface-secondary inline-flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-sm border p-0.5"
         role="tablist"
-        aria-label="Currency"
+        :aria-label="t('catalog.pricing.currency')"
       >
         <button
           v-for="currency in currencies"
@@ -138,9 +141,15 @@ watch(
         <table class="text-body w-full text-left">
           <thead class="bg-surface-secondary text-content-muted">
             <tr>
-              <th scope="col" class="text-chrome px-4 py-2.5 font-medium">Billing cycle</th>
-              <th scope="col" class="text-chrome w-40 px-4 py-2.5 font-medium">Recurring</th>
-              <th scope="col" class="text-chrome w-40 px-4 py-2.5 font-medium">Setup fee</th>
+              <th scope="col" class="text-label px-4 py-2.5 uppercase">
+                {{ t('catalog.pricing.billing_cycle') }}
+              </th>
+              <th scope="col" class="text-label w-40 px-4 py-2.5 uppercase">
+                {{ t('catalog.pricing.recurring') }}
+              </th>
+              <th scope="col" class="text-label w-40 px-4 py-2.5 uppercase">
+                {{ t('catalog.pricing.setup') }}
+              </th>
             </tr>
           </thead>
           <tbody class="divide-line bg-surface-primary divide-y">
@@ -164,7 +173,7 @@ watch(
                   :symbol="activeCurrency?.symbol ?? activeCurrency?.code"
                   :disabled="!cell(cycle.value).enabled"
                   :allow-negative="allowNegative"
-                  :aria-label="`${cycle.label} recurring price`"
+                  :aria-label="t('catalog.pricing.recurring_aria', { cycle: cycle.label })"
                 />
               </td>
               <td class="px-4 py-2.5">
@@ -174,7 +183,7 @@ watch(
                   :symbol="activeCurrency?.symbol ?? activeCurrency?.code"
                   :disabled="!cell(cycle.value).enabled"
                   :allow-negative="allowNegative"
-                  :aria-label="`${cycle.label} setup fee`"
+                  :aria-label="t('catalog.pricing.setup_aria', { cycle: cycle.label })"
                 />
               </td>
             </tr>
@@ -183,7 +192,7 @@ watch(
       </div>
 
       <p class="text-content-subtle text-chrome">
-        Unticked cycles are not sold in {{ active }}. Zero means free.
+        {{ t('catalog.pricing.not_sold_in', { currency: active }) }}
       </p>
     </template>
   </section>

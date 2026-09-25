@@ -440,6 +440,22 @@ describe('AdminLayout navigation', () => {
   })
 
   /**
+   * The map says "Review Queue" and the page heading says "Review queue".
+   * That is one name, and comparing the two exactly drew it twice, side by
+   * side, on every screen whose heading was worded in sentence case.
+   */
+  it('does not draw the screen name twice in a different case', () => {
+    const trail = mount(AdminLayout, {
+      props: { heading: 'invoices' },
+      global: { stubs: { ThemeSwitch: true, AppAlert: true } },
+    })
+      .findAll('nav[aria-label="Breadcrumb"] li')
+      .map((crumb) => crumb.text().trim())
+
+    expect(trail).toEqual(['Billing', 'invoices'])
+  })
+
+  /**
    * The one gate that is not a permission. An administrator holds every staff
    * permission by design, so "only the owner of this installation" cannot be
    * expressed as one.

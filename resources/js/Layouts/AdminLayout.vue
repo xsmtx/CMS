@@ -777,6 +777,13 @@ const tools = computed(() => {
  * ("Acme Ltd") has no entry in a menu, and the breadcrumb is the only place
  * that says which record you are looking at.
  */
+function differs(a: string, b: string): boolean {
+  // Lowercased rather than compared with a collator: a runtime built without
+  // the full ICU data answers every collator with a plain byte comparison,
+  // and the duplicate comes back with nothing saying why.
+  return a.toLocaleLowerCase() !== b.toLocaleLowerCase()
+}
+
 const breadcrumbs = computed(() => {
   const trail: { label: string; href?: string }[] = []
 
@@ -791,7 +798,9 @@ const breadcrumbs = computed(() => {
 
     trail.push({ label: group.label })
 
-    if (item.label !== props.heading) trail.push({ label: item.label, href: item.href })
+    // Case-insensitively: the map says "Review Queue" and the page heading says
+    // "Review queue", which is one name and would otherwise be two crumbs.
+    if (differs(item.label, props.heading)) trail.push({ label: item.label, href: item.href })
 
     break
   }
