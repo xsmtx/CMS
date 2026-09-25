@@ -42,13 +42,35 @@ it('records a session row when someone signs in', function (): void {
 it('lists the sessions on the security page', function (): void {
     seedSession($this->staff, 'another-device');
 
+    // Two: the seeded one, and the one this request is being made on — which
+    // the registry records the moment it sees a session it does not know.
+    $this->actingAs($this->staff, 'staff')
+        ->get('/admin/security')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Security/Index')
+            ->has('sessions', 2));
+});
+
+/*
+ * The device you are reading the list on.
+ *
+ * A session rebuilt from a remember-me cookie has an id nothing recorded —
+ * `complete()` never runs on that path — so the registry knew about the
+ * session it replaced and not about the live one. The list then left out the
+ * device in front of the person reading it and offered to sign out one that
+ * no longer existed.
+ */
+it('records the session in use even when nothing registered it', function (): void {
     $this->actingAs($this->staff, 'staff')
         ->get('/admin/security')
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('Security/Index')
             ->has('sessions', 1)
-            ->where('sessions.0.current', false));
+            ->where('sessions.0.current', true));
+
+    expect($this->staff->fresh()->authenticatedSessions()->sole()->guard)->toBe(Guard::Staff);
 });
 
 it('keeps only the current session when revoking the others', function (): void {
@@ -84,7 +106,12 @@ it('revokes other sessions from the security page', function (): void {
         ->delete('/admin/security/sessions')
         ->assertRedirect();
 
-    expect($this->staff->fresh()->authenticatedSessions()->count())->toBe(0);
+    // One left: the session the request was made on, which is the whole
+    // point of the word "others".
+    $remaining = $this->staff->fresh()->authenticatedSessions()->get();
+
+    expect($remaining)->toHaveCount(1)
+        ->and($remaining->first()->isCurrent(session()->getId()))->toBeTrue();
 });
 
 it('revokes one named session', function (): void {
@@ -119,7 +146,11 @@ it('ends every other session when the password changes', function (): void {
         ])
         ->assertSessionHasNoErrors();
 
-    expect($this->staff->fresh()->authenticatedSessions()->count())->toBe(0);
+    // Their own session survives a password change; every other one does not.
+    $remaining = $this->staff->fresh()->authenticatedSessions()->get();
+
+    expect($remaining)->toHaveCount(1)
+        ->and($remaining->first()->isCurrent(session()->getId()))->toBeTrue();
 });
 
 it('refuses a password change without the current password', function (): void {

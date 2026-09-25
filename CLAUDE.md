@@ -1165,3 +1165,24 @@ between a verified password and a granted session, so reaching it means typing
 somebody's password. `TwoFactorTest` renders it instead and asserts the
 component and its props. A screen no browser can reach still needs the test
 that proves the document builds.
+
+**The session registry drifted from the live session, and the Security screen
+is where it showed.** `SessionRegistry::touch()` updated a row and returned
+silently when there was none, and only `AuthenticateUser::complete()` ever
+created one — which a remember-me cookie never calls. So a session Laravel
+rebuilt from that cookie was invisible: the operator's own device was missing
+from their list of devices, while the row for the session it replaced sat
+there looking live with a Sign out button beside it. `track()` registers the
+unknown session instead, for the same indexed read it was already doing. Two
+existing tests asserted "no sessions left" after revoking the others and after
+a password change; both now assert that exactly one is left and that it is the
+one the request was made on, which is what the word *others* meant all along.
+
+`AppCopy` hides its button with no secure context, which is every installation
+served over plain HTTP — the two-factor setup key looks like plain text on a
+dev box and gains its button in production. That is the documented behaviour,
+not a broken render; check `window.isSecureContext` before chasing it.
+
+A QR code is the one white surface in the product. A dark card behind a dark
+code is a code no camera reads, so `bg-white` there is a scannable surface
+rather than a design one, and the comment above it says so.

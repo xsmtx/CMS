@@ -4,8 +4,10 @@ import { computed } from 'vue'
 
 import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
-import AppCard from '../../Components/AppCard.vue'
+import AppCopy from '../../Components/AppCopy.vue'
 import AppInput from '../../Components/AppInput.vue'
+import DetailSection from '../../Components/DetailSection.vue'
+import { useTranslations } from '../../composables/useTranslations'
 import AdminLayout from '../../Layouts/AdminLayout.vue'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 
@@ -15,6 +17,8 @@ const props = defineProps<{
   secret: string
   confirmed: boolean
 }>()
+
+const { t } = useTranslations()
 
 const layout = computed(() => (props.guard === 'staff' ? AdminLayout : ClientLayout))
 const base = computed(() => (props.guard === 'staff' ? '/admin/security' : '/security'))
@@ -27,14 +31,14 @@ function confirm(): void {
 </script>
 
 <template>
-  <Head title="Two-factor authentication" />
+  <Head :title="t('ui.auth.two_factor_heading')" />
 
   <component
     :is="layout"
-    heading="Two-factor authentication"
-    description="Scan the code with an authenticator app, then enter the six digits it shows."
+    :heading="t('ui.auth.two_factor_heading')"
+    :description="t('ui.security.setup_intro')"
   >
-    <AppCard>
+    <DetailSection :title="t('ui.security.setup_title')" :divided="false">
       <div class="grid gap-8 sm:grid-cols-[auto_1fr]">
         <div>
           <!--
@@ -42,6 +46,10 @@ function confirm(): void {
             secret to a third-party QR endpoint would hand that endpoint the
             secret. The markup is generated from a server-side value and no
             user input reaches it.
+
+            White, deliberately, and the one place in the product that is: a
+            dark card behind a dark QR code is a code no camera reads. This is
+            a scannable surface rather than a design one.
           -->
           <div class="border-line inline-block rounded-sm border bg-white p-3">
             <!-- eslint-disable-next-line vue/no-v-html -->
@@ -49,38 +57,43 @@ function confirm(): void {
           </div>
 
           <p class="text-content-muted text-chrome mt-3 max-w-[28ch] leading-relaxed">
-            Cannot scan? Enter this key by hand:
+            {{ t('ui.security.cannot_scan') }}
           </p>
-          <p class="text-body mt-1 font-mono break-all">{{ secret }}</p>
+          <div class="mt-1">
+            <AppCopy :value="secret" :noun="t('ui.security.secret')" mono />
+          </div>
         </div>
 
         <div>
           <AppAlert v-if="confirmed" tone="success" class="mb-5">
-            Two-factor authentication is already on for this account.
+            {{ t('ui.security.already_on') }}
           </AppAlert>
 
           <form v-else class="flex max-w-xs flex-col gap-5" @submit.prevent="confirm">
             <AppInput
               v-model="form.code"
-              label="Authentication code"
+              :label="t('ui.auth.code')"
               autocomplete="one-time-code"
-              hint="Six digits from your authenticator app."
+              inputmode="numeric"
+              :hint="t('ui.security.code_hint')"
               :error="form.errors.code"
               required
             />
 
             <div>
               <AppButton type="submit" variant="primary" :loading="form.processing">
-                Confirm and turn on
+                {{ t('ui.security.confirm_and_enable') }}
               </AppButton>
             </div>
           </form>
 
-          <AppButton :href="base" variant="ghost" size="sm" class="mt-6">
-            Back to security
-          </AppButton>
+          <div class="mt-6">
+            <AppButton :href="base" variant="ghost" size="sm">
+              {{ t('ui.security.back') }}
+            </AppButton>
+          </div>
         </div>
       </div>
-    </AppCard>
+    </DetailSection>
   </component>
 </template>

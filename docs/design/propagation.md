@@ -133,8 +133,8 @@ Numbers generated 2026-09-24; re-count with the grep in
 
 | Done | Page | Type | cards | padded td | solid danger | arbitrary type | i18n |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ ] | `Security/Index.vue` | list | 4 |  |  |  |  |
-| [ ] | `Security/TwoFactorSetup.vue` | form | 1 |  |  |  |  |
+| [x] | `Security/Index.vue` | list |  |  |  |  | yes |
+| [x] | `Security/TwoFactorSetup.vue` | form |  |  |  |  | yes |
 | [x] | `Auth/ConfirmPassword.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/ForgotPassword.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/Login.vue` | auth |  |  |  |  | yes |

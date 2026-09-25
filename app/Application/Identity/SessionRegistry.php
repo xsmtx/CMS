@@ -50,7 +50,21 @@ final readonly class SessionRegistry
         );
     }
 
-    public function touch(string $sessionId): void
+    /**
+     * Keep the mirror honest for the session actually being used.
+     *
+     * `touch()` alone could not. A session Laravel rebuilt from a remember-me
+     * cookie carries an id the registry has never seen — nothing on that path
+     * calls `complete()` — so the person's own device was **missing from
+     * their own list of devices**, while the row for the session it replaced
+     * sat there looking live with a Sign out button beside it. Any other
+     * regeneration of the id has the same effect.
+     *
+     * Registering the unknown one costs the same indexed read either way, and
+     * a list of sessions that leaves out the one you are reading it on is
+     * worse than no list.
+     */
+    public function track(Guard $guard, Model $subject, string $sessionId): void
     {
         $session = AuthenticatedSession::query()
             ->withoutGlobalScope('organization')
@@ -58,6 +72,8 @@ final readonly class SessionRegistry
             ->first();
 
         if ($session === null) {
+            $this->register($guard, $subject, $sessionId);
+
             return;
         }
 
