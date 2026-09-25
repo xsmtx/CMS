@@ -64,14 +64,27 @@ return [
 
     'units' => [
         'ratio' => 'ratio',
+        'percent' => '%',
         'bytes' => 'bytes',
+        'kilobytes' => 'KB',
+        'megabytes' => 'MB',
+        'gigabytes' => 'GB',
+        'terabytes' => 'TB',
         'bits_per_second' => 'bit/s',
+        'kilobits_per_second' => 'kbit/s',
+        'megabits_per_second' => 'Mbit/s',
+        'gigabits_per_second' => 'Gbit/s',
+        'bytes_per_second' => 'B/s',
         'seconds' => 'seconds',
         'milliseconds' => 'ms',
+        'minutes' => 'minutes',
+        'hours' => 'hours',
         'count' => '',
         'per_second' => '/s',
         'celsius' => '°C',
+        'fahrenheit' => '°F',
         'watts' => 'W',
+        'kilowatts' => 'kW',
     ],
 
     'metrics' => [

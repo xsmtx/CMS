@@ -3,6 +3,17 @@
 declare(strict_types=1);
 
 return [
+    /*
+     * Where a product sits in its life: on sale, off the menu but still
+     * renewing, or finished. `VocabularyTest` walks every enum in app/Domain
+     * that names itself, and these were printing their own key.
+     */
+    'statuses' => [
+        'active' => 'Active',
+        'hidden' => 'Hidden',
+        'retired' => 'Retired',
+    ],
+
     'groups' => [
         'title' => 'Product groups',
         'subtitle' => 'How products are arranged on the storefront.',

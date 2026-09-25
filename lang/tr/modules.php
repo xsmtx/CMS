@@ -79,5 +79,6 @@ return [
         'permission' => 'Yetki',
         'navigation' => 'Menü öğesi',
         'widget' => 'Pano bileşeni',
+        'infrastructure_adapter' => 'Altyapı bağdaştırıcısı',
     ],
 ];

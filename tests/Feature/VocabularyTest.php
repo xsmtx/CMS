@@ -117,11 +117,71 @@ it('names every module type in both locales', function (): void {
     app()->setLocale('en');
 });
 
+/**
+ * Every enum in `app/Domain` that names itself.
+ *
+ * Found by walking the directory rather than by listing them, because the
+ * one that goes unnamed is always the one somebody added last and nobody
+ * added to a list. `ModuleType::Infrastructure` and every `CatalogStatus`
+ * were printing their own key at an operator when this was written.
+ */
+function labelledEnums(): array
+{
+    $cases = [];
+
+    foreach (
+        new RecursiveIteratorIterator(new RecursiveDirectoryIterator(app_path('Domain'))) as $file
+    ) {
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
+
+        $relative = str_replace(
+            [app_path('Domain'), DIRECTORY_SEPARATOR, '.php'],
+            ['', '\\', ''],
+            $file->getPathname(),
+        );
+        $class = 'App\\Domain'.$relative;
+
+        if (! enum_exists($class) || ! method_exists($class, 'labelKey')) {
+            continue;
+        }
+
+        foreach ($class::cases() as $case) {
+            $cases[] = [$class, $case];
+        }
+    }
+
+    return $cases;
+}
+
+it('names every enum case an operator reads, in both locales', function (): void {
+    $enums = labelledEnums();
+
+    expect($enums)->not->toBeEmpty();
+
+    foreach (config('platform.locales', ['en']) as $locale) {
+        app()->setLocale($locale);
+
+        foreach ($enums as [$class, $case]) {
+            $key = $case->labelKey();
+
+            expect((string) __($key))->not->toBe(
+                $key,
+                class_basename($class).'::'.$case->name.' in '.$locale,
+            );
+        }
+    }
+
+    app()->setLocale('en');
+});
+
 it('is actually checking something', function (): void {
     // The guard on the guard. A dataset that silently became empty is a test
     // that passes by examining nothing, which is how an audit stops auditing.
     expect(count(vocabularyKeys()))->toBeGreaterThan(10)
         ->and(config('platform.locales'))->toContain('en')
         ->and(config('platform.locales'))->toContain('tr')
-        ->and(count(ModuleType::cases()))->toBeGreaterThan(5);
+        ->and(count(ModuleType::cases()))->toBeGreaterThan(5)
+        ->and(count(labelledEnums()))->toBeGreaterThan(100);
 });

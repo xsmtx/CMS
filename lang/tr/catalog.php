@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'statuses' => [
+        'active' => 'Etkin',
+        'hidden' => 'Gizli',
+        'retired' => 'Emekli',
+    ],
+
     'groups' => [
         'title' => 'Ürün grupları',
         'subtitle' => 'Ürünlerin mağazada nasıl sıralandığı.',

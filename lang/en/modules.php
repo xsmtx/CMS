@@ -79,5 +79,6 @@ return [
         'permission' => 'Permission',
         'navigation' => 'Menu item',
         'widget' => 'Dashboard widget',
+        'infrastructure_adapter' => 'Infrastructure adapter',
     ],
 ];

@@ -58,14 +58,27 @@ return [
 
     'units' => [
         'ratio' => 'oran',
+        'percent' => '%',
         'bytes' => 'bayt',
+        'kilobytes' => 'KB',
+        'megabytes' => 'MB',
+        'gigabytes' => 'GB',
+        'terabytes' => 'TB',
         'bits_per_second' => 'bit/sn',
+        'kilobits_per_second' => 'kbit/sn',
+        'megabits_per_second' => 'Mbit/sn',
+        'gigabits_per_second' => 'Gbit/sn',
+        'bytes_per_second' => 'B/sn',
         'seconds' => 'saniye',
         'milliseconds' => 'ms',
+        'minutes' => 'dakika',
+        'hours' => 'saat',
         'count' => '',
         'per_second' => '/sn',
         'celsius' => '°C',
+        'fahrenheit' => '°F',
         'watts' => 'W',
+        'kilowatts' => 'kW',
     ],
 
     'metrics' => [
