@@ -8,6 +8,7 @@ use App\Domain\Access\SystemRole;
 use App\Domain\Crm\CustomerStatus;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
+use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
 use Inertia\Testing\AssertableInertia;
@@ -184,4 +185,39 @@ it('holds an account whose information is required, and leaves support open', fu
 
 it('lets everybody else through', function (): void {
     $this->actingAs($this->owner, 'client')->get('/client')->assertOk();
+});
+
+/**
+ * One browser, both guards.
+ *
+ * Separate session keys are not separate sessions: an operator signed into
+ * `/admin` who also signs into the portal — to see what a customer sees, or
+ * because the storefront signed them in at checkout — holds both at once.
+ * `CurrentActor` used to answer staff-first everywhere, so
+ * `CurrentCustomer::contact()` got a staff user on a client route and threw:
+ * every page of the portal answered 404, with nothing saying why.
+ */
+it('serves the portal to the client session even when a staff one is open', function (): void {
+    $staff = StaffUser::factory()->create();
+    $staff->assignRole(SystemRole::Administrator);
+
+    $this->actingAs($staff->fresh(), 'staff')
+        ->actingAs($this->owner, 'client')
+        ->get('/client')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Client/Dashboard'));
+});
+
+/** And the admin area still answers to the staff session, not the client one. */
+it('serves the admin area to the staff session even when a client one is open', function (): void {
+    $staff = StaffUser::factory()->create();
+    $staff->assignRole(SystemRole::Administrator);
+
+    $this->actingAs($staff->fresh(), 'staff')
+        ->actingAs($this->owner, 'client')
+        ->get('/admin')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Admin/Dashboard'));
 });

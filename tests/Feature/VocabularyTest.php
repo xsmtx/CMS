@@ -185,3 +185,45 @@ it('is actually checking something', function (): void {
         ->and(count(ModuleType::cases()))->toBeGreaterThan(5)
         ->and(count(labelledEnums()))->toBeGreaterThan(100);
 });
+
+/**
+ * Every licensing audit action an operator can read on the Licence screen.
+ *
+ * The screen used to derive English from the slug — `licensing.token.refused`
+ * became "Token refused" — which reads as a translation right up until
+ * somebody switches the panel to Turkish. The actions are string literals
+ * rather than an enum, so this reads them out of the source the same way the
+ * screen would have to: the ones audited directly, and the ones `accept()` is
+ * called with.
+ */
+it('names every licensing audit action in both locales', function (): void {
+    $sources = [
+        app_path('Application/Licensing/Licensing.php'),
+        app_path('Http/Controllers/Admin/LicenceController.php'),
+    ];
+
+    $actions = [];
+
+    foreach ($sources as $file) {
+        $contents = (string) file_get_contents($file);
+
+        preg_match_all("/Audit::action\('licensing\.([a-z._]+)'\)/", $contents, $direct);
+        preg_match_all("/action: '([a-z_]+)',/", $contents, $passed);
+
+        $actions = [...$actions, ...$direct[1], ...$passed[1]];
+    }
+
+    $actions = array_values(array_unique($actions));
+
+    expect($actions)->not->toBeEmpty('No licensing actions were found to check.');
+
+    foreach ($actions as $action) {
+        $key = 'licensing.audit.'.str_replace('.', '_', $action);
+
+        foreach (['en', 'tr'] as $locale) {
+            $wording = trans($key, [], $locale);
+
+            expect($wording)->not->toBe($key, $action.' has no wording in '.$locale);
+        }
+    }
+});

@@ -16,6 +16,7 @@ use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -174,10 +175,30 @@ final class LicenceController extends Controller
             ->map(static fn (AuditLog $record): array => [
                 'id' => $record->id,
                 'action' => $record->action,
+                // The wording, not the slug. The screen used to derive
+                // English from the slug itself — "Token refused" — which
+                // read as a translation right up until somebody switched
+                // the panel to Turkish.
+                'actionLabel' => self::actionLabel($record->action),
                 'actor' => $record->actor_label,
                 'reason' => $record->reason,
                 'at' => $record->occurred_at->toIso8601String(),
             ])
             ->all());
+    }
+
+    /**
+     * An audit slug's own sentence, or the slug when there is none.
+     *
+     * A key that answers with itself is the designed symptom of missing
+     * wording, and an action added later says what it is rather than
+     * nothing at all.
+     */
+    private static function actionLabel(string $action): string
+    {
+        $key = 'licensing.audit.'.str_replace('.', '_', Str::after($action, 'licensing.'));
+        $line = __($key);
+
+        return is_string($line) && $line !== $key ? $line : $action;
     }
 }

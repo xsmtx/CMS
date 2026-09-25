@@ -23,17 +23,24 @@ use Illuminate\Support\Facades\Gate;
 final class CurrentActor
 {
     /**
-     * Guards are checked staff-first. A request can only ever be
-     * authenticated on one of them, because they use separate session keys;
-     * the order only decides which answer wins in the impossible case.
+     * The guard of the area being asked for, and the other one after it.
      *
-     * @return list<Guard>
+     * Separate session **keys** are not separate sessions: one browser holds
+     * both, and an operator signed into `/admin` who also signs into the
+     * portal — to see what a customer sees, or because the storefront signed
+     * them in at checkout — is an ordinary thing rather than an impossible
+     * one. Staff-first everywhere made `CurrentCustomer::contact()` answer
+     * with a staff user on a client route, which is a 404 on every page of
+     * the portal and no way to find out why.
+     *
+     * The area comes from the route name, which every authenticated route
+     * carries, and from the path when the route has not been resolved yet —
+     * the organization boundary runs as global middleware, before there is
+     * one.
      */
-    private const array ORDER = [Guard::Staff, Guard::Client];
-
     public function guard(): ?Guard
     {
-        foreach (self::ORDER as $guard) {
+        foreach ($this->order() as $guard) {
             if (Auth::guard($guard->value)->check()) {
                 return $guard;
             }
@@ -135,5 +142,32 @@ final class CurrentActor
     public function check(): bool
     {
         return $this->guard() !== null;
+    }
+
+    /**
+     * @return list<Guard>
+     */
+    private function order(): array
+    {
+        return $this->isAdminArea()
+            ? [Guard::Staff, Guard::Client]
+            : [Guard::Client, Guard::Staff];
+    }
+
+    private function isAdminArea(): bool
+    {
+        if (! app()->bound('request')) {
+            // A console run authenticates nobody, so the order cannot matter.
+            return true;
+        }
+
+        $request = request();
+        $named = Guard::fromRouteName($request->route()?->getName());
+
+        if ($named !== null) {
+            return $named === Guard::Staff;
+        }
+
+        return $request->is('admin', 'admin/*');
     }
 }

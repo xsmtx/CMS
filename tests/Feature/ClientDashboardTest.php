@@ -8,11 +8,14 @@ use App\Domain\Access\SystemRole;
 use App\Domain\Billing\InvoiceStatus;
 use App\Domain\Billing\TransactionKind;
 use App\Domain\Ordering\OrderStatus;
+use App\Domain\Provisioning\ServiceStatus;
 use App\Infrastructure\Billing\Models\Invoice;
 use App\Infrastructure\Billing\Models\Transaction;
 use App\Infrastructure\Crm\Models\Customer;
+use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Ordering\Models\Order;
+use App\Infrastructure\Provisioning\Models\Service;
 use Carbon\CarbonImmutable;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
@@ -126,4 +129,64 @@ it('does not put a total owed in front of a contact who cannot see billing', fun
             ->where('can.billing', false)
             ->has('unpaid', 0)
             ->where('credit', null));
+});
+
+/**
+ * The thing they bought.
+ *
+ * Services and domains waited for Phases 6 and 7 and were then left behind,
+ * so a customer whose whole account is one hosting plan opened the portal
+ * and saw two empty billing panels and no mention of it. Soonest renewal
+ * first, because that is the date that costs money.
+ */
+it('shows what is running and what is about to expire', function (): void {
+    $later = Service::factory()->forCustomer($this->customer)->active()->create([
+        'name' => 'Backup add-on',
+        'next_due_on' => CarbonImmutable::now()->addMonths(6)->toDateString(),
+    ]);
+
+    $sooner = Service::factory()->forCustomer($this->customer)->active()->create([
+        'name' => 'Starter Hosting',
+        'next_due_on' => CarbonImmutable::now()->addDays(4)->toDateString(),
+    ]);
+
+    // Terminated is not "what you have", and belongs in the orders instead.
+    Service::factory()->forCustomer($this->customer)->create([
+        'name' => 'Old plan',
+        'status' => ServiceStatus::Terminated->value,
+    ]);
+
+    Domain::factory()->forCustomer($this->customer)->active(30)->create(['name' => 'ines.test']);
+
+    $this->actingAs($this->owner, 'client')
+        ->get('/client')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Client/Dashboard')
+            ->has('services', 2)
+            ->where('services.0.name', 'Starter Hosting')
+            ->where('services.0.id', $sooner->id)
+            ->where('services.1.id', $later->id)
+            // Two fields, because a status crossing to the browser is a tone
+            // and a word.
+            ->where('services.0.status', 'active')
+            ->where('services.0.statusLabel', 'Active')
+            ->has('domains', 1)
+            ->where('domains.0.name', 'ines.test')
+            ->where('can.services', true)
+            ->where('can.domains', true));
+});
+
+it('never shows another customers services or domains', function (): void {
+    $other = Customer::factory()->create();
+
+    Service::factory()->forCustomer($other)->active()->create(['name' => 'Not theirs']);
+    Domain::factory()->forCustomer($other)->active()->create(['name' => 'not-theirs.test']);
+
+    $this->actingAs($this->owner, 'client')
+        ->get('/client')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('services', 0)
+            ->has('domains', 0));
 });

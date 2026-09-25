@@ -18,6 +18,12 @@ return [
     ],
 
     'dashboard' => [
+        'services_title' => 'Hizmetleriniz',
+        'services_none' => 'Henüz çalışan bir şey yok',
+        'services_none_description' => 'Sipariş ettiğiniz her şey kurulumu bittiğinde, yenileme tarihiyle birlikte burada görünür.',
+        'domains_title' => 'Alan adlarınız',
+        'domains_none' => 'Henüz alan adı yok',
+        'domains_none_description' => 'Buradan kaydettiğiniz veya transfer ettiğiniz alan adları, biteceği tarihle birlikte listelenir.',
         'title' => 'Genel bakış',
         'greeting' => 'Merhaba, :name.',
         'description' => 'Ödenmesi gerekenler, son siparişleriniz ve bilgilerinizi değiştirebileceğiniz yer.',

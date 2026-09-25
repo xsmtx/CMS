@@ -18,6 +18,12 @@ return [
     ],
 
     'dashboard' => [
+        'services_title' => 'Your services',
+        'services_none' => 'Nothing running yet',
+        'services_none_description' => 'Anything you order appears here once it is set up, with its renewal date.',
+        'domains_title' => 'Your domains',
+        'domains_none' => 'No domains yet',
+        'domains_none_description' => 'Domains you register or transfer here are listed with the date they expire.',
         'title' => 'Overview',
         'greeting' => 'Hello, :name.',
         'description' => 'What is owed, what you last ordered, and where to change your details.',

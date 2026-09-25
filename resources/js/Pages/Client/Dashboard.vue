@@ -2,9 +2,10 @@
 /**
  * The client area landing page.
  *
- * Owed first, and soonest first inside it: it is the reason a customer opens
- * this page, and the reason a dunning run exists. Everything else on it is
- * something they might want, rather than something they came for.
+ * What is running comes first — it is the account, and the reason the rest
+ * of the page exists. Then what is owed, soonest first, which is the reason
+ * a dunning run exists. Everything below that is something a customer might
+ * want rather than something they came for.
  */
 import { Head, Link } from '@inertiajs/vue3'
 
@@ -25,6 +26,23 @@ interface UnpaidInvoice {
   isPastDue: boolean
 }
 
+interface RunningService {
+  id: string
+  name: string
+  domain: string | null
+  status: string
+  statusLabel: string
+  nextDueOn: string | null
+}
+
+interface HeldDomain {
+  id: string
+  name: string
+  status: string
+  statusLabel: string
+  expiresOn: string | null
+}
+
 interface RecentOrder {
   number: string
   status: string
@@ -38,7 +56,9 @@ defineProps<{
   unpaid: UnpaidInvoice[]
   credit: { balance: string } | null
   orders: RecentOrder[]
-  can: { billing: boolean; orders: boolean }
+  services: RunningService[]
+  domains: HeldDomain[]
+  can: { billing: boolean; orders: boolean; services: boolean; domains: boolean }
 }>()
 
 const { t } = useTranslations()
@@ -47,6 +67,18 @@ const UNPAID_COLUMNS: TableColumn[] = [
   { key: 'invoice', label: t('portal.columns.invoice') },
   { key: 'due', label: t('portal.columns.due') },
   { key: 'amount', label: t('portal.columns.amount'), numeric: true },
+]
+
+const SERVICE_COLUMNS: TableColumn[] = [
+  { key: 'service', label: t('portal.columns.service') },
+  { key: 'status', label: t('portal.columns.status') },
+  { key: 'renews', label: t('portal.columns.next_due') },
+]
+
+const DOMAIN_COLUMNS: TableColumn[] = [
+  { key: 'domain', label: t('portal.columns.domain') },
+  { key: 'status', label: t('portal.columns.status') },
+  { key: 'expires', label: t('portal.columns.expires') },
 ]
 
 const ORDER_COLUMNS: TableColumn[] = [
@@ -68,6 +100,93 @@ function formatDate(value: string | null): string {
     :description="t('portal.dashboard.description')"
   >
     <div class="flex flex-col gap-8">
+      <DetailSection
+        v-if="can.services"
+        :title="t('portal.dashboard.services_title')"
+        :divided="services.length === 0"
+      >
+        <template #actions>
+          <Link
+            href="/client/services"
+            class="text-content-muted hover:text-content text-body underline-offset-4 hover:underline"
+          >
+            {{ t('portal.dashboard.see_all') }}
+          </Link>
+        </template>
+
+        <EmptyState
+          v-if="services.length === 0"
+          variant="plain"
+          icon="services"
+          :title="t('portal.dashboard.services_none')"
+          :description="t('portal.dashboard.services_none_description')"
+        />
+
+        <AppTable v-else name="portal-services" :columns="SERVICE_COLUMNS">
+          <AppTableRow v-for="service in services" :key="service.id">
+            <td data-col="service">
+              <Link
+                :href="`/client/services/${service.id}`"
+                class="font-medium underline-offset-4 hover:underline"
+              >
+                {{ service.name }}
+              </Link>
+              <span v-if="service.domain" class="text-content-muted text-chrome block font-mono">
+                {{ service.domain }}
+              </span>
+            </td>
+            <td data-col="status">
+              <AppStatus :tone="statusTone(service.status)" :label="service.statusLabel" />
+            </td>
+            <td data-col="renews" class="text-content-muted">
+              {{ formatDate(service.nextDueOn) }}
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
+
+      <DetailSection
+        v-if="can.domains"
+        :title="t('portal.dashboard.domains_title')"
+        :divided="domains.length === 0"
+      >
+        <template #actions>
+          <Link
+            href="/client/domains"
+            class="text-content-muted hover:text-content text-body underline-offset-4 hover:underline"
+          >
+            {{ t('portal.dashboard.see_all') }}
+          </Link>
+        </template>
+
+        <EmptyState
+          v-if="domains.length === 0"
+          variant="plain"
+          icon="domains"
+          :title="t('portal.dashboard.domains_none')"
+          :description="t('portal.dashboard.domains_none_description')"
+        />
+
+        <AppTable v-else name="portal-domains" :columns="DOMAIN_COLUMNS">
+          <AppTableRow v-for="domain in domains" :key="domain.id">
+            <td data-col="domain">
+              <Link
+                :href="`/client/domains/${domain.id}`"
+                class="font-medium underline-offset-4 hover:underline"
+              >
+                {{ domain.name }}
+              </Link>
+            </td>
+            <td data-col="status">
+              <AppStatus :tone="statusTone(domain.status)" :label="domain.statusLabel" />
+            </td>
+            <td data-col="expires" class="text-content-muted">
+              {{ formatDate(domain.expiresOn) }}
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
+
       <DetailSection
         v-if="can.billing"
         :title="t('portal.dashboard.unpaid_title')"
@@ -116,7 +235,9 @@ function formatDate(value: string | null): string {
         </AppTable>
       </DetailSection>
 
-      <div class="grid gap-8 lg:grid-cols-2">
+      <!-- Two columns only when the credit panel is there to fill the second
+           one: a half-width panel beside nothing reads as something missing. -->
+      <div class="grid gap-8" :class="credit ? 'lg:grid-cols-2' : ''">
         <DetailSection
           v-if="can.orders"
           :title="t('portal.dashboard.orders_title')"

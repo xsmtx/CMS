@@ -251,3 +251,26 @@ it('pays two invoices from one transfer without lazy loading either', function (
     expect($invoices->map->fresh()->pluck('status')->all())
         ->each->toBe(InvoiceStatus::Paid);
 });
+
+/**
+ * The portal's own landing page, with two of everything on it.
+ *
+ * Strict mode only reports a lazy load when the query returned more than one
+ * row, so a dashboard that is correct with one service and throws with two
+ * passes every test written against a single fixture.
+ */
+it('shows a customer two services, two domains, two invoices and two orders', function (): void {
+    $customer = Customer::factory()->create(['company_name' => null, 'legal_name' => null]);
+
+    $contact = Contact::factory()->forCustomer($customer)->primary()->create();
+    $contact->assignRole(SystemRole::AccountOwner);
+
+    foreach (range(1, 2) as $index) {
+        Service::factory()->forCustomer($customer)->active()->create(['name' => 'Plan '.$index]);
+        Domain::factory()->forCustomer($customer)->active()->create(['name' => 'site'.$index.'.test']);
+        Invoice::factory()->forCustomer($customer)->status(InvoiceStatus::Unpaid)->create();
+        Order::factory()->forCustomer($customer)->create();
+    }
+
+    $this->actingAs($contact->fresh(), 'client')->get('/client')->assertOk();
+});

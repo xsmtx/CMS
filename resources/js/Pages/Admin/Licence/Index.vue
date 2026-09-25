@@ -61,7 +61,14 @@ const props = defineProps<{
   installation: { id: string; claims: Record<string, string> }
   configured: { api: boolean; key: boolean; publicKey: boolean; graceDays: number }
   licence: Licence
-  history: { id: string; action: string; actor: string | null; reason: string | null; at: string }[]
+  history: {
+    id: string
+    action: string
+    actionLabel: string
+    actor: string | null
+    reason: string | null
+    at: string
+  }[]
 }>()
 
 const { t } = useTranslations()
@@ -157,13 +164,6 @@ function formatDate(value: string | null): string {
 
 function formatDateTime(value: string | null): string {
   return value === null ? t('ui.common.never') : new Date(value).toLocaleString()
-}
-
-/** `licensing.token.refused` reads as "Token refused". */
-function readAction(action: string): string {
-  const words = action.replace(/^licensing\./, '').replace(/[._]/g, ' ')
-
-  return words.charAt(0).toUpperCase() + words.slice(1)
 }
 </script>
 
@@ -286,7 +286,7 @@ function readAction(action: string): string {
                 <td data-col="when" class="text-content-muted whitespace-nowrap">
                   {{ formatDateTime(entry.at) }}
                 </td>
-                <td data-col="what">{{ readAction(entry.action) }}</td>
+                <td data-col="what">{{ entry.actionLabel }}</td>
                 <td data-col="who" class="text-content-muted">
                   {{ entry.actor ?? t('ui.licence.the_scheduler') }}
                 </td>

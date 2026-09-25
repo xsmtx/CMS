@@ -10,6 +10,14 @@ return [
     'heartbeat_ok' => 'The licence server answered. Nothing needs doing.',
     'deactivated' => 'The licence has been released from this installation.',
 
+    'audit' => [
+        'activated' => 'Licence activated',
+        'heartbeat' => 'Licence confirmed',
+        'heartbeat_failed' => 'The vendor could not be reached',
+        'token_refused' => 'Token refused',
+        'deactivated' => 'Licence deactivated',
+        'deactivate_unreachable' => 'Deactivated without reaching the vendor',
+    ],
     'statuses' => [
         'active' => 'Active',
         'suspended' => 'Suspended',

@@ -1417,3 +1417,25 @@ is inert, and writing it there promises a hover behaviour that never happens.
 **Every page in `docs/design/propagation.md` is converted** (2026-09-25, 105 of
 105). A screen added after that date gets a row and is ticked the same way: the
 gates, then the browser.
+
+**One browser holds both guards.** Separate session *keys* are not separate
+sessions: an operator signed into `/admin` who also signs into the portal — to
+see what a customer sees, or because the storefront signed them in at checkout —
+is ordinary, not impossible. `CurrentActor` resolved staff-first everywhere, so
+`CurrentCustomer::contact()` got a staff user on a client route and threw: **every
+page of the portal answered 404**, with nothing saying why. It now takes the
+guard of the area being asked for — `Guard::fromRouteName()`, falling back to the
+path because the organization boundary runs as global middleware before a route
+is resolved — and `ClientAreaTest` drives both areas with both sessions open.
+
+The client dashboard had waited for Phases 6 and 7 and was then left behind: it
+showed invoices and orders and never mentioned the services or the domains the
+customer actually bought. It shows both now, soonest renewal and soonest expiry
+first, each gated by its own portal permission. A docblock that says "arrives
+with Phase N" is a TODO with better manners — grep for them when Phase N lands.
+
+An audit slug is not a sentence. `Admin/Licence/Index.vue` turned
+`licensing.token.refused` into "Token refused" in the page, which reads as a
+translation right up until somebody switches to Turkish; the controller sends
+the wording now and `VocabularyTest` reads the actions out of the source rather
+than a hand-written list.
