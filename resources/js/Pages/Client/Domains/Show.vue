@@ -8,7 +8,7 @@ import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
@@ -93,11 +93,11 @@ function requestCode(): void {
           {{ t('domains.portal.registration_failed') }}
         </AppAlert>
 
-        <DetailSection :title="t('domains.portal.overview')">
+        <AppCard :title="t('domains.portal.overview')">
           <DescriptionList :items="facts" />
-        </DetailSection>
+        </AppCard>
 
-        <DetailSection
+        <AppCard
           v-if="can.nameservers"
           :title="t('domains.portal.nameservers_title')"
           :description="t('domains.portal.nameservers_hint')"
@@ -123,15 +123,11 @@ function requestCode(): void {
               {{ t('portal.domain_detail.add_nameserver') }}
             </AppButton>
           </div>
-        </DetailSection>
+        </AppCard>
       </div>
 
       <div class="flex flex-col gap-8">
-        <DetailSection
-          v-if="can.autoRenew"
-          :title="t('domains.portal.auto_renew_title')"
-          :level="3"
-        >
+        <AppCard v-if="can.autoRenew" :title="t('domains.portal.auto_renew_title')">
           <p class="text-body leading-relaxed">
             {{
               domain.autoRenew
@@ -144,17 +140,13 @@ function requestCode(): void {
               {{ t('domains.portal.auto_renew_toggle') }}
             </AppButton>
           </div>
-        </DetailSection>
+        </AppCard>
 
         <!--
           The code that moves this domain away. Fetched when asked for,
           shown once, and never written down on our side.
         -->
-        <DetailSection
-          v-if="can.transferCode"
-          :title="t('domains.portal.transfer_title')"
-          :level="3"
-        >
+        <AppCard v-if="can.transferCode" :title="t('domains.portal.transfer_title')">
           <p class="text-content-muted text-body leading-relaxed">
             {{ t('domains.portal.transfer_hint') }}
           </p>
@@ -178,7 +170,7 @@ function requestCode(): void {
               {{ t('domains.portal.transfer_request') }}
             </AppButton>
           </div>
-        </DetailSection>
+        </AppCard>
       </div>
     </div>
   </ClientLayout>

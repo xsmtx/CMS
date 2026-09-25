@@ -9,14 +9,22 @@
  * The header is separated from the body by a hairline rather than by
  * whitespace. On a dark panel a rule is what reads as structure; padding
  * alone reads as a gap, and an operator scanning six cards sees six gaps.
+ *
+ * `flush` drops the body's padding, for the one thing that brings its own:
+ * a table. A framed table inside a framed card is the card-in-a-card the
+ * design system refuses, so the table is told to give up its frame
+ * (`AppTable flush`) and the card is told to give up its padding — one
+ * rectangle, with a header above the column names.
  */
 withDefaults(
   defineProps<{
     title?: string
     description?: string
     as?: 'section' | 'article' | 'div'
+    /** The body has no padding of its own. For a flush table. */
+    flush?: boolean
   }>(),
-  { title: undefined, description: undefined, as: 'section' },
+  { title: undefined, description: undefined, as: 'section', flush: false },
 )
 </script>
 
@@ -40,7 +48,7 @@ withDefaults(
       </div>
     </header>
 
-    <div class="px-5 py-4">
+    <div :class="flush ? '' : 'px-5 py-4'">
       <slot />
     </div>
   </component>

@@ -6,7 +6,6 @@ import AppAlert from '../../../Components/AppAlert.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
@@ -90,17 +89,13 @@ const chosen = computed<DescriptionItem[]>(() =>
           {{ t('provisioning.portal.suspended') }}
         </AppAlert>
 
-        <DetailSection :title="t('provisioning.portal.overview')">
+        <AppCard :title="t('provisioning.portal.overview')">
           <DescriptionList :items="facts" />
-        </DetailSection>
+        </AppCard>
 
-        <DetailSection
-          v-if="chosen.length > 0"
-          :title="t('provisioning.portal.what_you_get')"
-          :level="3"
-        >
+        <AppCard v-if="chosen.length > 0" :title="t('provisioning.portal.what_you_get')">
           <DescriptionList :items="chosen" />
-        </DetailSection>
+        </AppCard>
       </div>
 
       <!--

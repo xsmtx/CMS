@@ -11,7 +11,7 @@ import AppInput from '../../../Components/AppInput.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
@@ -110,7 +110,7 @@ function formatDateTime(value: string | null): string {
         </span>
       </AppAlert>
 
-      <DetailSection :title="t('api.webhooks.create')">
+      <AppCard :title="t('api.webhooks.create')">
         <div class="grid gap-4 sm:grid-cols-2">
           <AppInput
             v-model="form.url"
@@ -134,9 +134,9 @@ function formatDateTime(value: string | null): string {
             {{ t('api.webhooks.create') }}
           </AppButton>
         </div>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection :title="t('api.webhooks.title')">
+      <AppCard :title="t('api.webhooks.title')">
         <ul v-if="endpoints.length > 0" class="divide-line divide-y">
           <li v-for="endpoint in endpoints" :key="endpoint.id" class="py-3 first:pt-0 last:pb-0">
             <div class="flex flex-wrap items-start justify-between gap-3">
@@ -173,10 +173,15 @@ function formatDateTime(value: string | null): string {
           :title="t('api.webhooks.none')"
           :description="t('api.webhooks.none_description')"
         />
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection :title="t('api.webhooks.deliveries')" :divided="false">
-        <AppTable v-if="deliveries.length > 0" name="portal-deliveries" :columns="DELIVERY_COLUMNS">
+      <AppCard :flush="deliveries.length > 0" :title="t('api.webhooks.deliveries')">
+        <AppTable
+          v-if="deliveries.length > 0"
+          flush
+          name="portal-deliveries"
+          :columns="DELIVERY_COLUMNS"
+        >
           <AppTableRow v-for="delivery in deliveries" :key="delivery.id">
             <td data-col="event" class="text-chrome font-mono">{{ delivery.event }}</td>
             <td data-col="status">
@@ -212,7 +217,7 @@ function formatDateTime(value: string | null): string {
             {{ t('api.webhooks.verify_body') }}
           </p>
         </div>
-      </DetailSection>
+      </AppCard>
     </div>
 
     <AppConfirm

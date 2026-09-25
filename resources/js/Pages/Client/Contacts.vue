@@ -10,7 +10,7 @@ import AppConfirm from '../../Components/AppConfirm.vue'
 import AppInput from '../../Components/AppInput.vue'
 import AppTable from '../../Components/AppTable.vue'
 import AppTableRow from '../../Components/AppTableRow.vue'
-import DetailSection from '../../Components/DetailSection.vue'
+import AppCard from '../../Components/AppCard.vue'
 import { type TableColumn } from '../../Components/tableContext'
 import { useTranslations } from '../../composables/useTranslations'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
@@ -110,8 +110,8 @@ function remove(): void {
         {{ t('portal.contacts.owner_only') }}
       </AppAlert>
 
-      <DetailSection :title="t('portal.contacts.people')" :divided="false">
-        <AppTable name="portal-contacts" :columns="COLUMNS">
+      <AppCard flush :title="t('portal.contacts.people')">
+        <AppTable flush name="portal-contacts" :columns="COLUMNS">
           <AppTableRow v-for="contact in contacts" :key="contact.id">
             <td data-col="name">
               <span class="font-medium">{{ contact.name }}</span>
@@ -140,9 +140,9 @@ function remove(): void {
             </td>
           </AppTableRow>
         </AppTable>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection
+      <AppCard
         v-if="adding && can.manage"
         :title="t('portal.contacts.add_title')"
         :description="t('portal.contacts.add_hint')"
@@ -188,7 +188,7 @@ function remove(): void {
             </AppButton>
           </div>
         </form>
-      </DetailSection>
+      </AppCard>
     </div>
 
     <AppConfirm

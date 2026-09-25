@@ -8,7 +8,7 @@ import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTaxIdentity } from '../../../composables/useTaxIdentity'
@@ -181,8 +181,8 @@ function describe(method: StoredMethod): string {
         </div>
       </div>
 
-      <DetailSection :title="t('billing.portal.methods_title')" :divided="methods.length === 0">
-        <AppTable v-if="methods.length > 0" name="portal-methods" :columns="METHOD_COLUMNS">
+      <AppCard :flush="methods.length > 0" :title="t('billing.portal.methods_title')">
+        <AppTable v-if="methods.length > 0" flush name="portal-methods" :columns="METHOD_COLUMNS">
           <AppTableRow v-for="method in methods" :key="method.id">
             <td data-col="method">
               <span class="font-medium">{{ describe(method) }}</span>
@@ -216,7 +216,7 @@ function describe(method: StoredMethod): string {
           :title="t('billing.portal.methods_none')"
           :description="t('billing.portal.methods_add_note')"
         />
-      </DetailSection>
+      </AppCard>
     </div>
 
     <AppConfirm

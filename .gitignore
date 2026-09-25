@@ -31,3 +31,6 @@ Thumbs.db
 /storage/inertia-devtools
 storage/app/keys/
 storage/app/packages/
+
+# Dropped in by hand: a git repository of its own, not part of this one.
+/design-skill

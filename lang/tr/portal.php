@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'nav' => [
+        'notifications' => 'Bildirimler',
         'overview' => 'Genel bakış',
         'services' => 'Hizmetler',
         'domains' => 'Alan adları',
@@ -17,6 +18,12 @@ return [
         'security' => 'Güvenlik',
     ],
 
+
+    'shell' => [
+        'skip' => 'İçeriğe geç',
+        'sign_out' => 'Çıkış yap',
+        'destinations' => 'Hesabınız',
+    ],
     'dashboard' => [
         'services_title' => 'Hizmetleriniz',
         'services_none' => 'Henüz çalışan bir şey yok',

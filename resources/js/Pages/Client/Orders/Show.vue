@@ -4,7 +4,6 @@ import { Head, Link } from '@inertiajs/vue3'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
@@ -69,7 +68,7 @@ function formatDate(value: string | null): string {
 
     <div class="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
       <div>
-        <DetailSection :title="t('ordering.portal.what_you_ordered')">
+        <AppCard :title="t('ordering.portal.what_you_ordered')">
           <!--
             The copy the order froze when it was placed, not what the
             catalog says today (ADR 0021). That is the point of reading an
@@ -146,7 +145,7 @@ function formatDate(value: string | null): string {
               <dd class="text-content-muted tabular-nums">{{ order.recurringTotal }}</dd>
             </div>
           </dl>
-        </DetailSection>
+        </AppCard>
       </div>
 
       <!--

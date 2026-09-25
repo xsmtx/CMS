@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'nav' => [
+        'notifications' => 'Notifications',
         'overview' => 'Overview',
         'services' => 'Services',
         'domains' => 'Domains',
@@ -17,6 +18,12 @@ return [
         'security' => 'Security',
     ],
 
+
+    'shell' => [
+        'skip' => 'Skip to content',
+        'sign_out' => 'Sign out',
+        'destinations' => 'Your account',
+    ],
     'dashboard' => [
         'services_title' => 'Your services',
         'services_none' => 'Nothing running yet',

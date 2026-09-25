@@ -7,6 +7,7 @@ import { httpTone, statusTone } from '../status'
 import AppInput from './AppInput.vue'
 import AppPagination from './AppPagination.vue'
 import AppSelect from './AppSelect.vue'
+import AppCard from './AppCard.vue'
 import AppTable from './AppTable.vue'
 import AppTabs from './AppTabs.vue'
 import AppTextarea from './AppTextarea.vue'
@@ -286,5 +287,36 @@ describe('a list that paginates can be paged', () => {
     })
 
     expect(wrapper.find('nav').exists()).toBe(false)
+  })
+})
+
+/**
+ * A card with a table in it is one rectangle, not two.
+ *
+ * The portal is built out of framed panels, and a framed table inside a
+ * framed card is the card-in-a-card the design system refuses. Both halves
+ * of the answer are asserted here because either one alone still draws two
+ * borders.
+ */
+describe('flush surfaces', () => {
+  const COLUMNS = [
+    { key: 'name', label: 'Server' },
+    { key: 'status', label: 'Status' },
+  ]
+
+  it('gives up its frame when the table is flush', () => {
+    const framed = mount(AppTable, { props: { columns: COLUMNS } })
+    const flush = mount(AppTable, { props: { columns: COLUMNS, flush: true } })
+
+    expect(framed.find('table').element.parentElement?.className).toContain('border')
+    expect(flush.find('table').element.parentElement?.className).not.toContain('border')
+  })
+
+  it('gives up its padding when the card is flush', () => {
+    const padded = mount(AppCard, { props: { title: 'Invoices' } })
+    const flush = mount(AppCard, { props: { title: 'Invoices', flush: true } })
+
+    expect(padded.findAll('div').at(-1)?.classes()).toContain('px-5')
+    expect(flush.findAll('div').at(-1)?.classes()).not.toContain('px-5')
   })
 })

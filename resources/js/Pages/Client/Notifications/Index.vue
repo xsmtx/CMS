@@ -3,7 +3,7 @@ import { Head, router, useForm } from '@inertiajs/vue3'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
@@ -125,7 +125,7 @@ function formatDateTime(value: string): string {
       </div>
 
       <div>
-        <DetailSection
+        <AppCard
           :title="t('notifications.portal.preferences')"
           :description="t('notifications.portal.preferences_hint')"
         >
@@ -152,7 +152,7 @@ function formatDateTime(value: string): string {
               {{ t('crm.save') }}
             </AppButton>
           </div>
-        </DetailSection>
+        </AppCard>
       </div>
     </div>
   </ClientLayout>

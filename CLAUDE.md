@@ -1439,3 +1439,27 @@ An audit slug is not a sentence. `Admin/Licence/Index.vue` turned
 translation right up until somebody switches to Turkish; the controller sends
 the wording now and `VocabularyTest` reads the actions out of the source rather
 than a hand-written list.
+
+**The portal is not the console, and now it does not look like one.**
+`ClientLayout` is a brand band with a tab bar under it: the first row is *who*
+— the seller's brand, the theme, the account — and the second is *where*, six
+destinations with the current one underlined in the accent. Everything about
+the account itself (profile, security, notifications, contacts, tokens,
+webhooks) moved into the account menu, because eleven destinations in one bar
+wrapped onto a second line and a customer looking for their invoices read past
+"Webhooks" to find them. `ClientLayout.test.ts` pins which list a destination
+is in, and that Overview is not marked current on a screen underneath it.
+
+The column is 1024px and the footer carries the brand: a customer reads one
+invoice where an operator compares forty rows, and on a white-label
+installation the name at the bottom of the page is the one they have a
+contract with.
+
+**Every region of a portal screen is a framed panel** (`AppCard`), where the
+admin's default is a hairline (`DetailSection`). Both are right: an operator
+screen has forty regions and rectangles would flatten it, a customer has four
+and each of them is a separate object. `AppCard flush` + `AppTable flush` is
+how a table sits inside one — the card keeps the frame, the table gives its
+own up, and the result is one rectangle with a header above the column names
+rather than the card-in-a-card the design system refuses. `designSystem.test.ts`
+asserts both halves, because either one alone still draws two borders.

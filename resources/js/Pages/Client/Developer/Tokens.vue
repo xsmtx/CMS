@@ -11,7 +11,7 @@ import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
@@ -125,7 +125,7 @@ function formatDate(value: string | null): string {
         </span>
       </AppAlert>
 
-      <DetailSection :title="t('api.tokens.create')">
+      <AppCard :title="t('api.tokens.create')">
         <div class="grid gap-4 sm:grid-cols-2">
           <AppInput v-model="form.name" :label="t('api.tokens.name')" :error="form.errors.name" />
           <AppInput
@@ -178,10 +178,10 @@ function formatDate(value: string | null): string {
             {{ t('api.tokens.create') }}
           </AppButton>
         </div>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection :title="t('identity.tokens.title')" :divided="tokens.length === 0">
-        <AppTable v-if="tokens.length > 0" name="portal-tokens" :columns="COLUMNS">
+      <AppCard :flush="tokens.length > 0" :title="t('identity.tokens.title')">
+        <AppTable v-if="tokens.length > 0" flush name="portal-tokens" :columns="COLUMNS">
           <AppTableRow v-for="token in tokens" :key="token.id">
             <td data-col="name">
               <span class="font-medium">{{ token.name }}</span>
@@ -218,7 +218,7 @@ function formatDate(value: string | null): string {
           :title="t('api.tokens.none')"
           :description="t('api.tokens.none_description')"
         />
-      </DetailSection>
+      </AppCard>
     </div>
 
     <!--

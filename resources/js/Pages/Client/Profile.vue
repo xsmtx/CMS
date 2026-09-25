@@ -5,7 +5,7 @@ import AppAlert from '../../Components/AppAlert.vue'
 import AppButton from '../../Components/AppButton.vue'
 import AppCheckbox from '../../Components/AppCheckbox.vue'
 import AppInput from '../../Components/AppInput.vue'
-import DetailSection from '../../Components/DetailSection.vue'
+import AppCard from '../../Components/AppCard.vue'
 import { useTaxIdentity } from '../../composables/useTaxIdentity'
 import { useTranslations } from '../../composables/useTranslations'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
@@ -68,7 +68,7 @@ const customerForm = useForm({
         {{ page.props.flash.status }}
       </AppAlert>
 
-      <DetailSection :title="t('portal.profile.you')">
+      <AppCard :title="t('portal.profile.you')">
         <form
           class="grid max-w-xl gap-5"
           @submit.prevent="meForm.put('/client/profile', { preserveScroll: true })"
@@ -133,9 +133,9 @@ const customerForm = useForm({
             </AppButton>
           </div>
         </form>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection
+      <AppCard
         :title="t('portal.profile.company')"
         :description="
           can.manage ? t('portal.profile.company_shown') : t('portal.profile.company_owner_only')
@@ -170,7 +170,7 @@ const customerForm = useForm({
             </AppButton>
           </div>
         </form>
-      </DetailSection>
+      </AppCard>
     </div>
   </ClientLayout>
 </template>

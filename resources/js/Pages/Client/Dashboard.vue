@@ -12,7 +12,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import AppStatus from '../../Components/AppStatus.vue'
 import AppTable from '../../Components/AppTable.vue'
 import AppTableRow from '../../Components/AppTableRow.vue'
-import DetailSection from '../../Components/DetailSection.vue'
+import AppCard from '../../Components/AppCard.vue'
 import EmptyState from '../../Components/EmptyState.vue'
 import { type TableColumn } from '../../Components/tableContext'
 import { useTranslations } from '../../composables/useTranslations'
@@ -100,10 +100,10 @@ function formatDate(value: string | null): string {
     :description="t('portal.dashboard.description')"
   >
     <div class="flex flex-col gap-8">
-      <DetailSection
+      <AppCard
         v-if="can.services"
+        :flush="services.length > 0"
         :title="t('portal.dashboard.services_title')"
-        :divided="services.length === 0"
       >
         <template #actions>
           <Link
@@ -122,7 +122,7 @@ function formatDate(value: string | null): string {
           :description="t('portal.dashboard.services_none_description')"
         />
 
-        <AppTable v-else name="portal-services" :columns="SERVICE_COLUMNS">
+        <AppTable v-else flush name="portal-services" :columns="SERVICE_COLUMNS">
           <AppTableRow v-for="service in services" :key="service.id">
             <td data-col="service">
               <Link
@@ -143,12 +143,12 @@ function formatDate(value: string | null): string {
             </td>
           </AppTableRow>
         </AppTable>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection
+      <AppCard
         v-if="can.domains"
+        :flush="domains.length > 0"
         :title="t('portal.dashboard.domains_title')"
-        :divided="domains.length === 0"
       >
         <template #actions>
           <Link
@@ -167,7 +167,7 @@ function formatDate(value: string | null): string {
           :description="t('portal.dashboard.domains_none_description')"
         />
 
-        <AppTable v-else name="portal-domains" :columns="DOMAIN_COLUMNS">
+        <AppTable v-else flush name="portal-domains" :columns="DOMAIN_COLUMNS">
           <AppTableRow v-for="domain in domains" :key="domain.id">
             <td data-col="domain">
               <Link
@@ -185,12 +185,12 @@ function formatDate(value: string | null): string {
             </td>
           </AppTableRow>
         </AppTable>
-      </DetailSection>
+      </AppCard>
 
-      <DetailSection
+      <AppCard
         v-if="can.billing"
+        :flush="unpaid.length > 0"
         :title="t('portal.dashboard.unpaid_title')"
-        :divided="unpaid.length === 0"
       >
         <template #actions>
           <Link
@@ -209,7 +209,7 @@ function formatDate(value: string | null): string {
           :description="t('portal.dashboard.unpaid_none_description')"
         />
 
-        <AppTable v-else name="portal-unpaid" :columns="UNPAID_COLUMNS">
+        <AppTable v-else flush name="portal-unpaid" :columns="UNPAID_COLUMNS">
           <AppTableRow v-for="invoice in unpaid" :key="invoice.number">
             <td data-col="invoice">
               <Link
@@ -233,15 +233,15 @@ function formatDate(value: string | null): string {
             </td>
           </AppTableRow>
         </AppTable>
-      </DetailSection>
+      </AppCard>
 
       <!-- Two columns only when the credit panel is there to fill the second
            one: a half-width panel beside nothing reads as something missing. -->
       <div class="grid gap-8" :class="credit ? 'lg:grid-cols-2' : ''">
-        <DetailSection
+        <AppCard
           v-if="can.orders"
+          :flush="orders.length > 0"
           :title="t('portal.dashboard.orders_title')"
-          :divided="orders.length === 0"
         >
           <template #actions>
             <Link
@@ -260,7 +260,7 @@ function formatDate(value: string | null): string {
             :description="t('portal.dashboard.orders_none_description')"
           />
 
-          <AppTable v-else name="portal-orders" :columns="ORDER_COLUMNS">
+          <AppTable v-else flush name="portal-orders" :columns="ORDER_COLUMNS">
             <AppTableRow v-for="order in orders" :key="order.number">
               <td data-col="order">
                 <Link
@@ -282,15 +282,15 @@ function formatDate(value: string | null): string {
               <td data-col="total" class="numeric tabular-nums">{{ order.total }}</td>
             </AppTableRow>
           </AppTable>
-        </DetailSection>
+        </AppCard>
 
         <!-- Only when there is something in it. A zero balance is not news. -->
-        <DetailSection v-if="credit" :title="t('portal.dashboard.credit_title')">
+        <AppCard v-if="credit" :title="t('portal.dashboard.credit_title')">
           <p class="text-page font-semibold tabular-nums">{{ credit.balance }}</p>
           <p class="text-content-muted text-body mt-2 max-w-[60ch] leading-relaxed">
             {{ t('billing.portal.credit_explained') }}
           </p>
-        </DetailSection>
+        </AppCard>
       </div>
     </div>
   </ClientLayout>

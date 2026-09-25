@@ -7,7 +7,6 @@ import AppCard from '../../../Components/AppCard.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
@@ -182,13 +181,8 @@ function formatDate(value: string | null): string {
           </dl>
         </div>
 
-        <DetailSection
-          v-if="invoice.payments.length > 0"
-          :title="t('billing.invoices.payments')"
-          :level="3"
-          :divided="false"
-        >
-          <AppTable :columns="PAYMENT_COLUMNS">
+        <AppCard v-if="invoice.payments.length > 0" flush :title="t('billing.invoices.payments')">
+          <AppTable flush :columns="PAYMENT_COLUMNS">
             <AppTableRow v-for="payment in invoice.payments" :key="payment.id">
               <td data-col="when" class="text-content-muted whitespace-nowrap">
                 {{ formatDate(payment.receivedAt) }}
@@ -199,22 +193,21 @@ function formatDate(value: string | null): string {
               <td data-col="amount" class="numeric tabular-nums">{{ payment.amount }}</td>
             </AppTableRow>
           </AppTable>
-        </DetailSection>
+        </AppCard>
 
-        <DetailSection
+        <AppCard
           v-if="invoice.creditNotes.length > 0"
+          flush
           :title="t('billing.credit_notes.title')"
-          :level="3"
-          :divided="false"
         >
-          <AppTable :columns="NOTE_COLUMNS">
+          <AppTable flush :columns="NOTE_COLUMNS">
             <AppTableRow v-for="note in invoice.creditNotes" :key="note.id">
               <td data-col="number" class="font-medium">{{ note.number }}</td>
               <td data-col="issued" class="text-content-muted">{{ formatDate(note.issuedOn) }}</td>
               <td data-col="amount" class="numeric tabular-nums">{{ note.amount }}</td>
             </AppTableRow>
           </AppTable>
-        </DetailSection>
+        </AppCard>
       </div>
 
       <!--

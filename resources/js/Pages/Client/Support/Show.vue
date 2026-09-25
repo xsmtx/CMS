@@ -5,7 +5,7 @@ import AppAlert from '../../../Components/AppAlert.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTextarea from '../../../Components/AppTextarea.vue'
-import DetailSection from '../../../Components/DetailSection.vue'
+import AppCard from '../../../Components/AppCard.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 import ClientLayout from '../../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../../status'
@@ -116,7 +116,7 @@ function formatDateTime(value: string): string {
         </li>
       </ul>
 
-      <DetailSection class="mt-8" :title="t('support.portal.your_reply')">
+      <AppCard class="mt-8" :title="t('support.portal.your_reply')">
         <AppTextarea
           v-model="form.body"
           :label="t('support.tickets.reply')"
@@ -129,7 +129,7 @@ function formatDateTime(value: string): string {
             {{ t('support.tickets.send') }}
           </AppButton>
         </div>
-      </DetailSection>
+      </AppCard>
     </div>
   </ClientLayout>
 </template>

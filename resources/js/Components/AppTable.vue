@@ -47,6 +47,11 @@ const props = withDefaults(
      * which is worse than no control.
      */
     name?: string
+    /**
+     * Drop the frame. For a table that sits inside one already — a portal
+     * card, where the card is the rectangle and the table is its body.
+     */
+    flush?: boolean
     /** Offer a checkbox per row. */
     selectable?: boolean
     /** Every row on this page, in order — what "select all" means. */
@@ -59,6 +64,7 @@ const props = withDefaults(
     numeric: undefined,
     columns: undefined,
     name: undefined,
+    flush: false,
     selectable: false,
     rowIds: undefined,
     noun: 'row',
@@ -321,7 +327,11 @@ provide(TABLE_CONTEXT, {
     <component :is="'style'" v-if="columnCss">{{ columnCss }}</component>
 
     <div class="relative">
-      <div :id="tableId" class="border-line bg-surface-primary overflow-x-auto rounded-lg border">
+      <div
+        :id="tableId"
+        class="bg-surface-primary overflow-x-auto"
+        :class="flush ? '' : 'border-line rounded-lg border'"
+      >
         <table class="data-table text-body w-full text-left">
           <thead>
             <tr>
