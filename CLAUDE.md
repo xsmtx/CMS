@@ -113,9 +113,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phase A is
-complete** (`phase-a-result.md`); B to J are not started. Do not begin one without
-being asked for it.
+plan before any of it was built — and its phases are lettered. **Phases A and B
+are complete** (`phase-a-result.md`, `phase-b-result.md`); C to J are not started.
+Do not begin one without being asked for it.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
