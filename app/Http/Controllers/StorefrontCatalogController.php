@@ -14,6 +14,7 @@ use App\Infrastructure\Catalog\Models\OptionGroup;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Infrastructure\Catalog\Models\ProductGroup;
 use App\Support\Catalog\StorefrontCurrency;
+use App\Support\View\StorefrontImagery;
 use App\Support\View\StorefrontRenderer;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +37,7 @@ final class StorefrontCatalogController extends Controller
         private readonly StorefrontCurrency $currency,
         private readonly StorefrontRenderer $renderer,
         private readonly ResolveSellingPrice $sellingPrices,
+        private readonly StorefrontImagery $imagery,
     ) {}
 
     public function index(): Renderable
@@ -204,6 +206,8 @@ final class StorefrontCatalogController extends Controller
             'name' => $product->name,
             'slug' => $product->slug,
             'tagline' => $product->tagline,
+            // Null until `public/storefront/products/<slug>.png` exists.
+            'image' => $this->imagery->product($product->slug),
             'features' => $product->features ?? [],
             'soldOut' => $product->isSoldOut(),
             'startingPrice' => $starting === null ? null : $this->present($starting['money'], $starting['cycle']),

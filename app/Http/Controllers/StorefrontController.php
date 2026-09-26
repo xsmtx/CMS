@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Domain\Catalog\CatalogStatus;
 use App\Infrastructure\Catalog\Models\Product;
 use App\Support\Catalog\StorefrontCurrency;
+use App\Support\View\StorefrontImagery;
 use App\Support\View\StorefrontRenderer;
 use Illuminate\Contracts\Support\Renderable;
 
@@ -20,14 +21,20 @@ use Illuminate\Contracts\Support\Renderable;
  */
 final class StorefrontController extends Controller
 {
-    public function __invoke(StorefrontRenderer $renderer, StorefrontCurrency $currency): Renderable
-    {
+    public function __invoke(
+        StorefrontRenderer $renderer,
+        StorefrontCurrency $currency,
+        StorefrontImagery $imagery,
+    ): Renderable {
         $code = $currency->current();
 
         return $renderer->render('home', [
             'currency' => $code,
             'currencies' => $currency->available(),
             'hasCatalog' => $code !== null && $this->hasSomethingToSell($code),
+            // Null until somebody puts a file there, and the tile composes
+            // either way.
+            'heroImage' => $imagery->hero(),
         ]);
     }
 

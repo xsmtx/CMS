@@ -52,11 +52,17 @@
 
     <div class="flex min-h-full flex-col">
 {{--
-            `global-nav`: surface-black, 44px, 12px links. It is the first
-            thing that makes a page read as this language, and it is the same
-            bar the console wears - the shop and the panel are one product.
+            `global-nav`: 44px, 12px links, and **parchment rather than
+            black**. The reference is unambiguous about this - apple.com's bar
+            is #f5f5f7 with dark links in light appearance and black in dark,
+            which is what `--background` already resolves to. A black bar over
+            a white page is the one thing that made this read as a dark SaaS
+            product rather than as a shop.
+
+            Translucent, because the bar never scrolls away and a tile passing
+            under it should show through.
         --}}
-        <header class="on-chrome bg-surface-chrome">
+        <header class="bg-background/80 sticky top-0 z-30 backdrop-blur-xl">
             <div class="mx-auto flex h-11 w-full max-w-[1024px] items-center justify-between gap-4 px-6">
                 <a href="{{ url('/') }}" class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-chrome font-semibold tracking-tight">
                     @if ($branding->logoUrl)

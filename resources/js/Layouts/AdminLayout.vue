@@ -836,9 +836,50 @@ const flyoutGroup = computed(
   () => visibleGroups.value.find((group) => group.label === openGroup.value) ?? null,
 )
 
+/**
+ * The second level, beside the first.
+ *
+ * Products/Services carries eleven filtered lists and Orders carries six.
+ * Listed inline they bury the six ordinary destinations under them; opened to
+ * the side they are one press away and the first panel stays readable, which
+ * is the shape every panel this product replaces uses.
+ */
+const submenu = useAnchoredPanel({ side: 'right', width: '15rem' })
+
+const submenuOpen = submenu.open
+const submenuPanel = submenu.panel
+const submenuStyle = submenu.style
+
+const openItem = ref<string | null>(null)
+
+const submenuItem = computed(
+  () => flyoutGroup.value?.items.find((item) => item.label === openItem.value) ?? null,
+)
+
+function toggleItem(label: string, event?: Event): void {
+  const next = openItem.value === label ? null : label
+
+  openItem.value = next
+
+  if (next !== null && event?.currentTarget instanceof HTMLElement) {
+    submenu.trigger.value = event.currentTarget
+  }
+
+  submenu.open.value = next !== null
+}
+
+watch(submenuOpen, (isOpen) => {
+  if (!isOpen) openItem.value = null
+})
+
 // Click rather than hover: a hover menu is unreachable on a touch screen and
 // unforgiving with a trackpad.
 function toggle(label: string, event?: Event): void {
+  // A second level belonging to the group that is closing would hang there
+  // over the page with nothing under it.
+  openItem.value = null
+  submenu.open.value = false
+
   const next = openGroup.value === label ? null : label
 
   openGroup.value = next
@@ -852,7 +893,9 @@ function toggle(label: string, event?: Event): void {
 
 function close(): void {
   openGroup.value = null
+  openItem.value = null
   flyout.open.value = false
+  submenu.open.value = false
 }
 
 // The panel closes itself on an outside press or on Escape, and the group
@@ -910,7 +953,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="mobileOpen"
-      class="on-chrome bg-surface-chrome fixed inset-x-0 top-11 z-30 max-h-[80dvh] overflow-y-auto px-4 pt-2 pb-6 lg:hidden"
+      class="on-chrome bg-background fixed inset-x-0 top-11 z-30 max-h-[80dvh] overflow-y-auto px-4 pt-2 pb-6 lg:hidden"
     >
       <div v-for="entry in navSections" :key="entry.section" class="mb-5 last:mb-0">
         <p class="text-content-subtle text-label px-1 pb-1.5 uppercase">{{ entry.label }}</p>
@@ -953,50 +996,72 @@ onBeforeUnmount(() => {
           {{ flyoutGroup.label }}
         </p>
         <!--
-          A destination with children is a heading and its rows, not a row
-          that expands. The rail made somebody press twice to reach a
-          filtered list; a menu that is already open has nothing to gain by
-          hiding half of itself, and the parent's own href is always the
-          first child's anyway.
+          A destination with children keeps its own row and gains a chevron:
+          the row is still a link to the whole list, and the chevron opens the
+          filters beside it. Listing eleven filters inline would bury the six
+          ordinary destinations under them.
         -->
         <ul class="max-h-[70dvh] space-y-0.5 overflow-y-auto">
-          <template v-for="item in flyoutGroup.items" :key="item.label">
-            <li v-if="item.children">
-              <p class="text-content-subtle text-label px-2.5 pt-2 pb-1 uppercase">
-                {{ item.label }}
-              </p>
-              <ul class="space-y-0.5">
-                <li v-for="child in item.children" :key="child.href">
-                  <Link
-                    :href="child.href"
-                    :aria-current="isCurrent(child.href) ? 'page' : undefined"
-                    class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
-                    :class="
-                      isCurrent(child.href)
-                        ? 'bg-surface-hover text-content border-accent font-medium'
-                        : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
-                    "
-                  >
-                    {{ child.label }}
-                  </Link>
-                </li>
-              </ul>
-            </li>
-            <li v-else>
-              <Link
-                :href="item.href"
-                :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
-                :class="
-                  isCurrent(item.href)
-                    ? 'bg-surface-hover text-content border-accent font-medium'
-                    : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
-                "
-              >
-                {{ item.label }}
-              </Link>
-            </li>
-          </template>
+          <li v-for="item in flyoutGroup.items" :key="item.label" class="flex items-stretch">
+            <Link
+              :href="item.href"
+              :aria-current="isCurrent(item.href) ? 'page' : undefined"
+              class="pressable text-body block flex-1 truncate rounded-sm border-l-2 px-2.5 py-1.5 transition-colors duration-(--duration-fast)"
+              :class="
+                isCurrent(item.href)
+                  ? 'bg-surface-hover text-content border-accent font-medium'
+                  : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
+              "
+            >
+              {{ item.label }}
+            </Link>
+            <button
+              v-if="item.children"
+              type="button"
+              class="pressable rounded-sm px-1.5 transition-colors duration-(--duration-fast)"
+              :class="
+                openItem === item.label
+                  ? 'bg-surface-hover text-content'
+                  : 'text-content-subtle hover:bg-surface-hover hover:text-content'
+              "
+              :aria-expanded="openItem === item.label"
+              :aria-label="t('ui.shell.submenu', { name: item.label }, `${item.label} submenu`)"
+              @click.stop="toggleItem(item.label, $event)"
+            >
+              <AppIcon name="chevronRight" :size="12" />
+            </button>
+          </li>
+        </ul>
+      </div>
+    </Teleport>
+
+    <!-- The second level, beside the first and teleported for the same reason. -->
+    <Teleport to="body">
+      <div
+        v-if="submenuOpen && submenuItem?.children"
+        ref="submenuPanel"
+        data-rail-submenu
+        :style="submenuStyle"
+        class="panel-enter floating text-content z-50 rounded-lg p-1.5"
+      >
+        <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
+          {{ submenuItem.label }}
+        </p>
+        <ul class="max-h-[70dvh] space-y-0.5 overflow-y-auto">
+          <li v-for="child in submenuItem.children" :key="child.href">
+            <Link
+              :href="child.href"
+              :aria-current="isCurrent(child.href) ? 'page' : undefined"
+              class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
+              :class="
+                isCurrent(child.href)
+                  ? 'bg-surface-hover text-content border-accent font-medium'
+                  : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
+              "
+            >
+              {{ child.label }}
+            </Link>
+          </li>
         </ul>
       </div>
     </Teleport>
@@ -1010,7 +1075,7 @@ onBeforeUnmount(() => {
       -->
       <header
         data-admin-nav
-        class="on-chrome bg-surface-chrome/85 sticky top-0 z-30 h-11 backdrop-blur-xl"
+        class="on-chrome bg-background sticky top-0 z-30 h-11"
         :aria-label="t('ui.shell.sections', {}, 'Sections')"
       >
         <div class="mx-auto flex h-full max-w-[1600px] items-center gap-1 px-4 sm:px-6">

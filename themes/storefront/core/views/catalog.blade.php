@@ -56,6 +56,19 @@
                         {{-- Centred, like every tile on the page: the card is
                              a small composition rather than a row of facts. --}}
                         <article class="flex flex-col rounded-[var(--radius-xl)] border border-line bg-surface-primary p-8 text-center">
+                            {{-- A square crop at the top of the card, when the
+                                 installation has one. `public/storefront/products/<slug>.png`. --}}
+                            @if (! empty($product['image']))
+                                <img
+                                    src="{{ $product['image'] }}"
+                                    alt=""
+                                    width="800"
+                                    height="800"
+                                    loading="lazy"
+                                    class="mb-6 aspect-square w-full rounded-[var(--radius-control)] object-contain"
+                                >
+                            @endif
+
                             <h3 class="text-title font-semibold">{{ $product['name'] }}</h3>
 
                             @if ($product['tagline'])

@@ -11,7 +11,7 @@
  * 1. **Attention required** — the rows that are somebody's job today. First,
  *    because it is the only block that asks for anything. When it is empty
  *    it is one line, not a box.
- * 2. **The headline strip** — four figures in one `MetricStrip`, so they
+ * 2. **The headline blocks** — four figures as solid colour tiles, which is
  *    read as a sentence about the business instead of four unrelated claims.
  * 3. **Revenue and infrastructure**, side by side: is it growing, and is it up.
  * 4. **Recent activity** — the audit trail as a table, because it is one:
@@ -35,7 +35,7 @@ import AppTable from '../../Components/AppTable.vue'
 import DescriptionList from '../../Components/DescriptionList.vue'
 import DetailSection from '../../Components/DetailSection.vue'
 import EmptyState from '../../Components/EmptyState.vue'
-import MetricStrip from '../../Components/MetricStrip.vue'
+import StatBlocks from '../../Components/StatBlocks.vue'
 import { useTranslations } from '../../composables/useTranslations'
 import AdminLayout from '../../Layouts/AdminLayout.vue'
 import { type IconName } from '../../icons'
@@ -212,7 +212,7 @@ const activityColumns = [
         </p>
       </DetailSection>
 
-      <MetricStrip v-if="headline.length > 0" :items="headline" />
+      <StatBlocks v-if="headline.length > 0" :items="headline" />
 
       <div
         v-if="revenue || infrastructure"

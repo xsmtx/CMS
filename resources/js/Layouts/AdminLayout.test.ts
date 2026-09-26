@@ -326,19 +326,6 @@ describe('AdminLayout navigation', () => {
    * Two levels, and the second opens beside the row that owns it rather than
    * pushing the rows below it down.
    */
-  it('lists a filtered destination under its own heading, with nothing to expand', async () => {
-    const wrapper = render()
-
-    await groupTriggers(wrapper)[0]?.trigger('click')
-
-    // The whole list and one of its filters, both reachable in one press.
-    expect(flyoutLink('/admin/services')).not.toBeNull()
-    expect(flyoutLink('/admin/services?product_type=vps')).not.toBeNull()
-
-    // And nothing to open: a menu that is already open has nothing to gain
-    // by hiding half of itself.
-    expect(flyout()?.querySelector('button')).toBeNull()
-  })
 
   /**
    * Every destination in the group, one press away.
@@ -347,7 +334,7 @@ describe('AdminLayout navigation', () => {
    * press; the bar lists them under their own heading, because a menu that is
    * already open has nothing to gain by hiding half of itself.
    */
-  it('lists every destination in a group, filters included', async () => {
+  it('lists a group one level deep, with the filters behind a chevron', async () => {
     const wrapper = render()
 
     await groupTriggers(wrapper)[2]?.trigger('click')
@@ -356,39 +343,50 @@ describe('AdminLayout navigation', () => {
       (row.textContent ?? '').trim(),
     )
 
+    // The six destinations, and not the seventeen filters underneath them:
+    // listing those inline buries the ordinary rows.
     expect(rows).toEqual([
-      'All transactions',
-      'Amount in',
-      'Amount out',
+      'Transactions List',
       'Add Transaction',
-      'All invoices',
-      'Paid',
-      'Draft',
-      'Unpaid',
-      'Overdue',
-      'Partially paid',
-      'Cancelled',
-      'Refunded',
+      'Invoices',
       'Gateway Log',
       'Unpaid invoice sequence',
       'Currencies',
       // Phase 16 added the monthly review here, because an operator looking
-      // for money looks under Billing. Its own two screens are rows now
-      // rather than a row that expands.
-      'Monthly review',
-      'Reseller performance',
+      // for money looks under Billing.
+      'Reports',
     ])
+  })
 
-    // The headings those filters sit under are the parents, and they are
-    // headings rather than rows: `Transactions List` names the group of
-    // three above, it is not a fourth destination.
-    const headings = [...(flyout()?.querySelectorAll('p') ?? [])].map((row) =>
-      (row.textContent ?? '').trim(),
-    )
+  /**
+   * The row stays a link to the whole list and the chevron opens the filters
+   * beside it, which is the shape every panel this product replaces uses.
+   */
+  it('opens a filtered list beside the menu, not inside it', async () => {
+    const wrapper = render()
 
-    expect(headings).toContain('Transactions List')
-    expect(headings).toContain('Invoices')
-    expect(headings).toContain('Reports')
+    await groupTriggers(wrapper)[0]?.trigger('click')
+
+    // The parent is a link in its own right: somebody who wanted the whole
+    // list should not have to pick a filter first.
+    expect(flyoutLink('/admin/services')).not.toBeNull()
+    expect(document.querySelector('[data-rail-submenu]')).toBeNull()
+
+    const chevron = flyout()?.querySelector(
+      'button[aria-label="Products/Services submenu"]',
+    ) as HTMLElement | null
+
+    chevron?.click()
+    await wrapper.vm.$nextTick()
+
+    const submenu = document.querySelector('[data-rail-submenu]')
+
+    expect(submenu).not.toBeNull()
+    expect(submenu?.querySelector('a[href="/admin/services?product_type=vps"]')).not.toBeNull()
+
+    // Beside the menu rather than inside it, for the reason the first panel
+    // is teleported: an ancestor's overflow cannot clip what is not inside it.
+    expect(submenu?.closest('[data-rail-flyout]')).toBeNull()
   })
 
   it('makes the wordmark the way to the dashboard', () => {

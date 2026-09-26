@@ -1826,3 +1826,46 @@ what nobody had looked for:
 
 Run it with `DESIGN_EMAIL=… DESIGN_PASS=… node tools/design-review.mjs`. It
 needs a staff account; create a throwaway one, and delete it afterwards.
+
+**Three surfaces, three references** (2026-09-26). The shop is `apple.png`, the
+console is `whmcs-admin-dashboard.png`, the portal is `whmcs-clientarea.png` —
+and that is coherent rather than inconsistent: the public shop is a frame
+around a photograph and the operator tools are what the people running this
+have spent years in.
+
+**The shop's bar is the page colour, not black.** apple.com's `global-nav` is
+`#f5f5f7` with dark links in light appearance and black in dark, which is what
+`--background` already resolves to. A black bar over a white page is the single
+thing that made the storefront read as a dark SaaS product rather than a shop.
+The hero tile *is* black, the secondary action is an **outlined pill** rather
+than a text link, and the two sit side by side at equal weight.
+
+**The console's bar is navy** (`.on-chrome`), because its reference and the
+shop's disagree, correctly. It is also where the contrast trap moved: navy is
+lighter than black, so the muted text on it has to be lighter than the dark
+appearance's own — 10px of `#98989d` on `#22364a` is 4.31:1, which the command
+palette's keycap failed at.
+
+**`StatBlocks` is the dashboard's four colour tiles**, and deliberately not
+`MetricStrip`, which stays the restrained answer everywhere else. A dashboard
+is the one page read from across a room. **The colour is positional, not
+semantic**: nothing about "50 tickets waiting" is a warning until somebody
+decides it is, and toning it amber would be the platform inventing an opinion —
+so the tones cycle by position and the status vocabulary keeps its meaning.
+
+**A destination with children keeps its row and gains a chevron.** Flattening
+the filters into the dropdown buried the six ordinary destinations under
+seventeen filters; they open beside the menu now, which is the shape every
+panel this product replaces uses. The row itself is still a link to the whole
+list.
+
+**The shop has image slots and this installation has no images.**
+`StorefrontImagery` looks for `public/storefront/hero.{webp,png,avif,jpg}` and
+`public/storefront/products/<slug>.…`, and answers null when they are absent —
+no placeholder frame, no grey rectangle, no gradient standing in for a
+photograph. A tile composed for an image reads perfectly well as a typographic
+tile without one; a picture of a missing picture does not. The convention is a
+path rather than a column on purpose: an operator drops a file in and the shop
+picks it up, with no migration and no upload screen. `img-src` is `'self'
+data: blob:`, so an external image host is refused by the installation's own
+CSP — the files have to be local.

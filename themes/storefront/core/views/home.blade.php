@@ -32,7 +32,7 @@
 
         `dvh`, not `vh`: on a phone the address bar moves and `vh` does not.
     --}}
-    <section class="flex min-h-[72dvh] items-center bg-surface-primary px-6 py-20 text-center sm:py-24">
+    <section class="on-chrome flex min-h-[72dvh] items-center bg-surface-chrome px-6 py-20 text-center sm:py-24">
         <div class="mx-auto flex max-w-[680px] flex-col items-center">
             <h1 class="text-display text-balance font-semibold sm:text-hero">
                 @if ($hasCatalog)
@@ -60,9 +60,9 @@
                     </a>
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center text-title text-brand transition-opacity duration-(--duration-fast) hover:opacity-80"
+                        class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
                     >
-                        {{ __('storefront.client_area') }} <span aria-hidden="true" class="ml-1">&rsaquo;</span>
+                        {{ __('storefront.client_area') }}
                     </a>
                 @else
                     <a
@@ -73,12 +73,30 @@
                     </a>
                     <a
                         href="{{ url('/admin') }}"
-                        class="pressable inline-flex items-center text-title text-brand transition-opacity duration-(--duration-fast) hover:opacity-80"
+                        class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
                     >
-                        {{ __('storefront.admin') }} <span aria-hidden="true" class="ml-1">&rsaquo;</span>
+                        {{ __('storefront.admin') }}
                     </a>
                 @endif
             </div>
+
+            {{--
+                The product, resting on the tile, carrying the one shadow this
+                system has. Absent until somebody puts a file in
+                `public/storefront/`, and the tile is composed to read as a
+                typographic hero when it is - a picture of a missing picture
+                is worse than no picture.
+            --}}
+            @if (! empty($heroImage))
+                <img
+                    src="{{ $heroImage }}"
+                    alt=""
+                    width="2000"
+                    height="1200"
+                    fetchpriority="high"
+                    class="product-shadow mt-14 w-full max-w-[52rem] object-contain"
+                >
+            @endif
         </div>
     </section>
 
