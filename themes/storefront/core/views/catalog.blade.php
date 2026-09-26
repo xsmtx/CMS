@@ -44,11 +44,18 @@
                     @endif
                 </div>
 
-                {{-- Grid, not flex percentages: cards keep equal height and
-                     wrap without arithmetic. --}}
-                <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {{--
+                    `auto-fit` rather than a fixed column count, and centred:
+                    a group with one product in a three-column grid puts that
+                    product in the first column and leaves two thirds of the
+                    tile empty, which reads as a page that failed to load
+                    rather than as a shop with one plan.
+                --}}
+                <div class="mt-10 grid justify-center gap-5 [grid-template-columns:repeat(auto-fit,minmax(17rem,21rem))]">
                     @foreach ($group['products'] as $product)
-                        <article class="flex flex-col rounded-[var(--radius-xl)] border border-line bg-surface-primary p-6">
+                        {{-- Centred, like every tile on the page: the card is
+                             a small composition rather than a row of facts. --}}
+                        <article class="flex flex-col rounded-[var(--radius-xl)] border border-line bg-surface-primary p-8 text-center">
                             <h3 class="text-title font-semibold">{{ $product['name'] }}</h3>
 
                             @if ($product['tagline'])
@@ -56,7 +63,7 @@
                             @endif
 
                             @if ($product['startingPrice'])
-                                <p class="mt-6 flex items-baseline gap-1.5">
+                                <p class="mt-6 flex items-baseline justify-center gap-1.5">
                                     <span class="text-content-subtle text-chrome">
                                         {{ __('catalog.storefront.starting_at') }}
                                     </span>
@@ -70,12 +77,12 @@
                             @endif
 
                             @if (! empty($product['features']))
-                                <ul class="mt-5 space-y-2 text-body text-content-muted">
+                                {{-- No bullet marks: a centred list with
+                                     leading dots reads as ragged on both
+                                     edges at once. --}}
+                                <ul class="mt-6 space-y-1.5 text-body text-content-muted">
                                     @foreach (array_slice($product['features'], 0, 5) as $feature)
-                                        <li class="flex gap-2">
-                                            <span aria-hidden="true" class="text-content-subtle">&middot;</span>
-                                            <span>{{ $feature }}</span>
-                                        </li>
+                                        <li>{{ $feature }}</li>
                                     @endforeach
                                 </ul>
                             @endif
@@ -83,7 +90,7 @@
                             {{-- Pushed to the bottom so every card in a row
                                  puts its action on the same line, whatever
                                  the copy above it did. --}}
-                            <div class="mt-auto pt-6">
+                            <div class="mt-auto pt-8">
                                 @if ($product['soldOut'])
                                     <span class="inline-flex items-center rounded-full border border-line px-5 py-2.5 text-body text-content-subtle">
                                         {{ __('catalog.products.sold_out') }}

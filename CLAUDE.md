@@ -417,6 +417,24 @@ Domains keep their own menus. `AdminLayout.test.ts` covers the map, the
 order and the dropdown behaviour; a new destination goes in the map and in
 that test.
 
+It became a left rail for a while and is back across the top (2026-09-26), in
+the two bars DESIGN.md names: `global-nav` (black, 44px, 12px links, and
+translucent, because a bar that never scrolls away has to let the page show
+through) and `sub-nav-frosted` under it carrying the breadcrumb. The group
+order is the handoff's sections flattened — Clients, Orders, Billing,
+Infrastructure, Support, Utilities — which is how WHMCS's words and §3's
+structure are both true.
+
+**A destination with children is a heading and its rows.** The rail hid each
+filtered list behind a second press; the dropdown lists them under their
+parent's name, because a menu that is already open has nothing to gain by
+hiding half of itself — and the parent's own href was always the first
+child's. `openItem` is gone with it.
+
+The dropdown is teleported and `fixed` for a new reason as well as the old
+one: `backdrop-filter` creates a containing block, so a panel left inside the
+translucent bar would be clipped by the very thing that makes it glass.
+
 An addon is not a service and not just an order line (ADR 0035). A
 `service_addons` row has its own price, cycle, renewal date and status, and
 follows the service it hangs off — `TransitionService` is the one place that

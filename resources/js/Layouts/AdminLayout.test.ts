@@ -8,15 +8,13 @@ import { ref } from 'vue'
  * to be where they reach. These tests exist so that a later refactor cannot
  * quietly rename or re-nest a group.
  *
- * The rail has two shapes and both are covered, because they are where a
- * sidebar actually goes wrong: collapsed it must open a flyout (72px has
- * nowhere to put a nested list), expanded it must open in place and stay
- * open when somebody clicks the page.
+ * The menu is across the top, in the two bars DESIGN.md names: `global-nav`
+ * carries the destinations and `sub-nav-frosted` carries where you are.
  *
- * The collapsed flyout is **teleported to the body**, so the assertions
- * about it read `document` rather than the wrapper. That is the whole point
- * of it: a panel still inside the bar is a panel the bar's own `overflow`
- * cuts off at 72px, which is exactly the bug this shape shipped with.
+ * The dropdown is **teleported to the body**, so the assertions about it read
+ * `document` rather than the wrapper. That is the whole point of it: the bar
+ * is translucent, `backdrop-filter` creates a containing block, and a panel
+ * left inside it would be clipped by the very thing that makes it glass.
  */
 const navigateHandlers: Array<() => void> = []
 
@@ -97,20 +95,12 @@ function render() {
   })
 }
 
-/** The rail's own groups, in the order the rail draws them. */
-function groupsOf(wrapper: ReturnType<typeof render>) {
-  return wrapper.findAll('[data-admin-nav] nav ul > li')
-}
-
+/** The group buttons, in the order the bar draws them. */
 function groupTriggers(wrapper: ReturnType<typeof render>) {
-  return wrapper.findAll('[data-admin-nav] nav ul > li > button')
+  return wrapper.findAll('[data-admin-nav] nav button')
 }
 
-async function expandRail(wrapper: ReturnType<typeof render>): Promise<void> {
-  await wrapper.find('[data-admin-nav] [data-rail-toggle]').trigger('click')
-}
-
-/** The teleported flyout, wherever in the document it landed. */
+/** The teleported dropdown, wherever in the document it landed. */
 function flyout(): HTMLElement | null {
   return document.querySelector('[data-rail-flyout]')
 }
@@ -136,7 +126,7 @@ describe('AdminLayout navigation', () => {
     window.localStorage.clear()
   })
 
-  it('lists the WHMCS groups in WHMCS order, under the handoff sections', async () => {
+  it('lists the WHMCS groups in WHMCS order, across the top', () => {
     const wrapper = render()
 
     expect(groupTriggers(wrapper).map((button) => button.text().trim())).toEqual([
@@ -150,38 +140,10 @@ describe('AdminLayout navigation', () => {
       'Utilities',
     ])
 
-    // Setup is not in the rail at all: everything that was in it lives on one
+    // Setup is not in the bar at all: everything that was in it lives on one
     // page, and that page hangs off the spanner with the other things somebody
-    // configures once. The rail is for the screens an operator works in.
-    expect(groupsOf(wrapper).map((row) => row.text().trim())).not.toContain('Setup')
-
-    // The handoff's categories are the headings those groups sit under, which
-    // is how WHMCS's words and §3's structure can both be true.
-    await expandRail(wrapper)
-
-    const sections = wrapper
-      .findAll('[data-admin-nav] nav p')
-      .map((heading) => heading.text().trim())
-
-    expect(sections).toEqual(['Business', 'Operations', 'Support', 'System'])
-  })
-
-  /**
-   * Collapsed is the default: 72px of icons, and the width goes to the data.
-   * An operator who wants labels presses once and it is remembered.
-   */
-  it('ships collapsed and remembers being opened', async () => {
-    const wrapper = render()
-
-    expect(wrapper.find('[data-rail="closed"]').exists()).toBe(true)
-
-    await expandRail(wrapper)
-
-    expect(wrapper.find('[data-rail="open"]').exists()).toBe(true)
-    expect(window.localStorage.getItem('admin.rail')).toBe('open')
-
-    // A second shell, mounted fresh, finds the preference.
-    expect(render().find('[data-rail="open"]').exists()).toBe(true)
+    // configures once. The bar is for the screens an operator works in.
+    expect(groupTriggers(wrapper).map((button) => button.text().trim())).not.toContain('Setup')
   })
 
   it('keeps every group shut until it is asked for', () => {
@@ -216,25 +178,6 @@ describe('AdminLayout navigation', () => {
    * long enough to scroll, which made it findable only by somebody who
    * already knew it was there. It belongs in the header, at both widths.
    */
-  it('puts the collapse control in the rail header, at both widths', async () => {
-    const wrapper = render()
-    const toggles = wrapper.findAll('[data-admin-nav] [data-rail-toggle]')
-
-    expect(toggles).toHaveLength(1)
-    expect(toggles[0]?.attributes('aria-label')).toBe('Expand the sidebar')
-
-    // Above the scrolling list rather than after it.
-    const nav = wrapper.find('[data-admin-nav] nav').element
-    const toggle = toggles[0]?.element as HTMLElement
-
-    expect(nav.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
-
-    await expandRail(wrapper)
-
-    expect(wrapper.find('[data-admin-nav] [data-rail-toggle]').attributes('aria-label')).toBe(
-      'Collapse the sidebar',
-    )
-  })
 
   it('opens a group on click and closes it when another opens', async () => {
     const wrapper = render()
@@ -364,12 +307,12 @@ describe('AdminLayout navigation', () => {
   })
 
   it('marks the group the current page belongs to', () => {
-    const groups = groupsOf(render())
+    const marked = groupTriggers(render()).filter((button) =>
+      button.classes().includes('font-medium'),
+    )
 
     // `/admin/invoices` lives under Billing, so Billing reads as the one you
-    // are on even though it is shut.
-    const marked = groups.filter((group) => group.find('[class*="bg-surface-selected"]').exists())
-
+    // are on even though its menu is shut.
     expect(marked).toHaveLength(1)
     expect(marked[0]?.text()).toContain('Billing')
   })
@@ -378,49 +321,33 @@ describe('AdminLayout navigation', () => {
    * Expanded, the group you are in is already open. A rail that made somebody
    * press their own section to see where they are is a rail that forgot.
    */
-  it('opens the current group when the rail is already expanded', async () => {
-    window.localStorage.setItem('admin.rail', 'open')
-
-    const wrapper = render()
-
-    // `onMounted` decides this, so the render that shows it is the next one.
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.find('[data-admin-nav] a[href="/admin/invoices"]').exists()).toBe(true)
-  })
 
   /**
    * Two levels, and the second opens beside the row that owns it rather than
    * pushing the rows below it down.
    */
-  it('opens a submenu without moving what was under it', async () => {
+  it('lists a filtered destination under its own heading, with nothing to expand', async () => {
     const wrapper = render()
 
-    window.localStorage.setItem('admin.rail', 'open')
+    await groupTriggers(wrapper)[0]?.trigger('click')
 
-    const expanded = render()
+    // The whole list and one of its filters, both reachable in one press.
+    expect(flyoutLink('/admin/services')).not.toBeNull()
+    expect(flyoutLink('/admin/services?product_type=vps')).not.toBeNull()
 
-    await groupTriggers(expanded)[0]?.trigger('click')
-
-    // The parent is a link in its own right: an operator who wanted the whole
-    // list should not have to pick a filter first.
-    expect(expanded.find('[data-admin-nav] a[href="/admin/services"]').exists()).toBe(true)
-    expect(
-      expanded.find('[data-admin-nav] a[href="/admin/services?product_type=vps"]').exists(),
-    ).toBe(false)
-
-    await expanded
-      .find('[data-admin-nav] button[aria-label="Products/Services submenu"]')
-      .trigger('click')
-
-    expect(
-      expanded.find('[data-admin-nav] a[href="/admin/services?product_type=vps"]').exists(),
-    ).toBe(true)
-
-    wrapper.unmount()
+    // And nothing to open: a menu that is already open has nothing to gain
+    // by hiding half of itself.
+    expect(flyout()?.querySelector('button')).toBeNull()
   })
 
-  it('lists a group flat, one level, until a submenu is opened', async () => {
+  /**
+   * Every destination in the group, one press away.
+   *
+   * The rail listed the parents and hid each filtered list behind a second
+   * press; the bar lists them under their own heading, because a menu that is
+   * already open has nothing to gain by hiding half of itself.
+   */
+  it('lists every destination in a group, filters included', async () => {
     const wrapper = render()
 
     await groupTriggers(wrapper)[2]?.trigger('click')
@@ -430,16 +357,38 @@ describe('AdminLayout navigation', () => {
     )
 
     expect(rows).toEqual([
-      'Transactions List',
+      'All transactions',
+      'Amount in',
+      'Amount out',
       'Add Transaction',
-      'Invoices',
+      'All invoices',
+      'Paid',
+      'Draft',
+      'Unpaid',
+      'Overdue',
+      'Partially paid',
+      'Cancelled',
+      'Refunded',
       'Gateway Log',
       'Unpaid invoice sequence',
       'Currencies',
       // Phase 16 added the monthly review here, because an operator looking
-      // for money looks under Billing.
-      'Reports',
+      // for money looks under Billing. Its own two screens are rows now
+      // rather than a row that expands.
+      'Monthly review',
+      'Reseller performance',
     ])
+
+    // The headings those filters sit under are the parents, and they are
+    // headings rather than rows: `Transactions List` names the group of
+    // three above, it is not a fourth destination.
+    const headings = [...(flyout()?.querySelectorAll('p') ?? [])].map((row) =>
+      (row.textContent ?? '').trim(),
+    )
+
+    expect(headings).toContain('Transactions List')
+    expect(headings).toContain('Invoices')
+    expect(headings).toContain('Reports')
   })
 
   it('makes the wordmark the way to the dashboard', () => {
@@ -511,12 +460,19 @@ describe('AdminLayout navigation', () => {
     expect(wrapper.find('button[aria-label="Help"]').exists()).toBe(true)
   })
 
-  it('puts the session controls on the topbar, not in the rail', () => {
+  /**
+   * One bar carries both now, so the rule is about the menu rather than about
+   * the rail: what belongs to the session is in the bar, and a group's
+   * dropdown holds destinations and nothing else.
+   */
+  it('puts the session controls in the bar and nothing else in the menu', async () => {
     const wrapper = render()
-    const topbar = wrapper.find('header')
 
-    expect(topbar.find('kbd').exists()).toBe(true)
-    expect(wrapper.find('[data-admin-nav] kbd').exists()).toBe(false)
+    expect(wrapper.find('header').find('kbd').exists()).toBe(true)
+
+    await groupTriggers(wrapper)[0]?.trigger('click')
+
+    expect(flyout()?.querySelector('kbd')).toBeNull()
   })
 
   /**

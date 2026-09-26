@@ -675,10 +675,6 @@ const destinations = computed<Destination[]>(() =>
   ),
 )
 
-// Which row inside an open group has its own submenu showing. One at a
-// time: two flyouts overlapping is how a menu stops being readable.
-const openItem = ref<string | null>(null)
-
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
 
 function hrefsOf(group: NavGroup): string[] {
@@ -733,7 +729,7 @@ const mobileOpen = ref(false)
  */
 const SECTIONS: NavSection[] = ['Business', 'Operations', 'Support', 'System', 'Extensions']
 
-const railSections = computed(() =>
+const navSections = computed(() =>
   SECTIONS.map((section) => ({
     section,
     // The heading an operator reads, rather than the discriminator the type
@@ -819,47 +815,15 @@ const breadcrumbs = computed(() => {
 })
 
 /**
- * The rail's width, remembered per browser.
+ * The nav's dropdown, teleported out of the bar.
  *
- * `localStorage` rather than the account: this is a per-viewer convenience,
- * not a setting, and an operator who opens the panel on a laptop and a
- * 34-inch monitor wants a different answer on each.
+ * `fixed`, against the trigger's own rectangle, outside every ancestor's
+ * overflow — because the bar is translucent and `backdrop-filter` creates a
+ * containing block, so an `absolute` panel inside it would be clipped by the
+ * very thing that makes it look like glass. `useAnchoredPanel` is the one
+ * place that rule lives.
  */
-const RAIL_KEY = 'admin.rail'
-
-const railOpen = ref(readRail())
-
-function readRail(): boolean {
-  try {
-    return window.localStorage.getItem(RAIL_KEY) === 'open'
-  } catch {
-    // Storage blocked. Collapsed is the default, which is also the answer
-    // that needs no storage to be right.
-    return false
-  }
-}
-
-function toggleRail(): void {
-  railOpen.value = !railOpen.value
-  close()
-
-  try {
-    window.localStorage.setItem(RAIL_KEY, railOpen.value ? 'open' : 'closed')
-  } catch {
-    // Losing the preference is not worth an error.
-  }
-}
-
-/**
- * The collapsed rail's flyout, teleported out of the bar.
- *
- * It used to be `absolute left-full` inside the nav — and the nav scrolls,
- * so the nav clips, so the flyout opened *inside* a 72px bar and was cut off
- * at its edge. The same bug the row menus had, for the same reason, fixed
- * the same way: `fixed`, against the button's own rectangle, outside every
- * ancestor's overflow. `useAnchoredPanel` is that one place.
- */
-const flyout = useAnchoredPanel({ side: 'right', width: '15.5rem' })
+const flyout = useAnchoredPanel({ side: 'bottom', width: '15.5rem' })
 
 // Template refs and bindings want a setup-scope name, so the pieces the
 // template touches are named here rather than reached through `flyout.`.
@@ -867,7 +831,7 @@ const flyoutOpen = flyout.open
 const flyoutPanel = flyout.panel
 const flyoutStyle = flyout.style
 
-/** The group the flyout is showing, or null when it is shut. */
+/** The group the dropdown is showing, or null when it is shut. */
 const flyoutGroup = computed(
   () => visibleGroups.value.find((group) => group.label === openGroup.value) ?? null,
 )
@@ -875,18 +839,9 @@ const flyoutGroup = computed(
 // Click rather than hover: a hover menu is unreachable on a touch screen and
 // unforgiving with a trackpad.
 function toggle(label: string, event?: Event): void {
-  openItem.value = null
-
   const next = openGroup.value === label ? null : label
 
   openGroup.value = next
-
-  // Expanded, the group opens in place and there is no panel to place.
-  if (railOpen.value) {
-    flyout.open.value = false
-
-    return
-  }
 
   if (next !== null && event?.currentTarget instanceof HTMLElement) {
     flyout.trigger.value = event.currentTarget
@@ -917,13 +872,6 @@ function onKeydown(event: KeyboardEvent): void {
 let stopNavigation: (() => void) | null = null
 
 onMounted(() => {
-  // Expanded, the group you are in is already open: a rail that made
-  // somebody press their own section to see where they are is a rail that
-  // forgot.
-  if (railOpen.value) {
-    openGroup.value = visibleGroups.value.find(isCurrentGroup)?.label ?? null
-  }
-
   document.addEventListener('keydown', onKeydown)
 
   // A menu still hanging open over the page it has just navigated to is the
@@ -941,11 +889,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    class="text-content min-h-dvh"
-    :style="{ '--rail-w': railOpen ? '248px' : '72px' }"
-    :data-rail="railOpen ? 'open' : 'closed'"
-  >
+  <div class="text-content min-h-dvh">
     <a
       href="#main"
       class="focus:bg-surface-elevated sr-only rounded-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-40 focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
@@ -953,197 +897,53 @@ onBeforeUnmount(() => {
       {{ t('ui.shell.skip', {}, 'Skip to content') }}
     </a>
 
-    <!-- The scrim exists only below lg, where the rail is a drawer. -->
+    <!--
+      Below `lg` the groups do not fit on a line, so they become one sheet
+      under the bar: every group, every destination, nothing hidden behind a
+      second press. It is a long list and that is correct - a phone scrolls.
+    -->
     <div
       v-if="mobileOpen"
-      class="bg-background/70 fixed inset-0 z-30 lg:hidden"
+      class="bg-background/70 fixed inset-0 z-20 lg:hidden"
       @click="mobileOpen = false"
     />
 
-    <!--
-      The rail.
-
-      `fixed` rather than sticky: a rail that scrolled away would take the
-      navigation with it on exactly the long list where somebody wants to
-      leave. Its own scroll, because Setup is long.
-    -->
-    <aside
-      data-admin-nav
-      class="on-chrome border-line bg-surface-chrome fixed inset-y-0 left-0 z-40 flex w-(--rail-w) flex-col border-r transition-transform duration-(--duration-fast) ease-(--ease-out) lg:translate-x-0"
-      :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
-      :aria-label="t('ui.shell.sections', {}, 'Sections')"
+    <div
+      v-if="mobileOpen"
+      class="on-chrome bg-surface-chrome fixed inset-x-0 top-11 z-30 max-h-[80dvh] overflow-y-auto px-4 pt-2 pb-6 lg:hidden"
     >
-      <!--
-        Collapsed, the header stacks: the mark, and the control that opens
-        the bar directly under it. Side by side they do not fit in 72px, and
-        a control that does not fit is a control that gets dropped.
-      -->
-      <div
-        class="border-line flex h-14 shrink-0 border-b"
-        :class="
-          railOpen ? 'items-center gap-2 px-3' : 'flex-col items-center justify-center gap-0.5 px-1'
-        "
-      >
-        <!-- The way home, and the only one. -->
-        <Link
-          href="/admin"
-          :aria-current="currentPath === '/admin' ? 'page' : undefined"
-          :title="`${brand.name} dashboard`"
-          class="pressable flex min-w-0 items-center gap-2 rounded-sm"
-        >
-          <img
-            v-if="brand.logoUrl"
-            :src="brand.logoUrl"
-            :alt="brand.name"
-            class="h-6 w-6 shrink-0 rounded-[5px] object-contain"
-          />
-          <span
-            v-else
-            class="bg-brand text-content-inverse grid size-6 shrink-0 place-items-center rounded-[5px] text-[11px] font-bold"
-            aria-hidden="true"
-          >
-            {{ brand.name.slice(0, 1).toUpperCase() }}
-          </span>
-          <span v-if="railOpen" class="text-title truncate font-semibold">{{ brand.name }}</span>
-          <span v-else class="sr-only">{{ brand.name }} dashboard</span>
-        </Link>
-
-        <!--
-          The collapse control, in the rail's header.
-
-          It used to sit at the foot of the bar, under a list long enough to
-          scroll — findable only by somebody who already knew it was there,
-          which is the same as not being collapsible. Here it is the first
-          thing in the rail after the way home, at both widths.
-        -->
-        <button
-          type="button"
-          data-rail-toggle
-          class="pressable text-content-subtle hover:bg-surface-hover hover:text-content shrink-0 rounded-sm transition-colors duration-(--duration-fast)"
-          :class="railOpen ? 'ml-auto p-1.5' : 'p-0.5'"
-          :aria-expanded="railOpen"
-          :aria-label="railOpen ? 'Collapse the sidebar' : 'Expand the sidebar'"
-          :title="railOpen ? 'Collapse the sidebar' : 'Expand the sidebar'"
-          @click="toggleRail"
-        >
-          <span
-            class="block transition-transform duration-(--duration-base) ease-(--ease-out)"
-            :class="railOpen ? 'rotate-180' : ''"
-          >
-            <AppIcon name="chevronRight" :size="railOpen ? 16 : 13" />
-          </span>
-        </button>
+      <div v-for="entry in navSections" :key="entry.section" class="mb-5 last:mb-0">
+        <p class="text-content-subtle text-label px-1 pb-1.5 uppercase">{{ entry.label }}</p>
+        <ul class="space-y-0.5">
+          <li v-for="item in entry.groups.flatMap((group) => group.items)" :key="item.label">
+            <Link
+              :href="item.href"
+              :aria-current="isCurrent(item.href) ? 'page' : undefined"
+              class="pressable text-body block rounded-sm px-2 py-2 transition-colors duration-(--duration-fast)"
+              :class="
+                isCurrent(item.href)
+                  ? 'bg-surface-hover text-content font-medium'
+                  : 'text-content-muted hover:bg-surface-hover hover:text-content'
+              "
+            >
+              {{ item.label }}
+            </Link>
+          </li>
+        </ul>
       </div>
-
-      <nav class="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-        <div v-for="entry in railSections" :key="entry.section" class="mb-3 last:mb-0">
-          <!-- The heading only exists when the rail has room for it. Collapsed,
-               a hairline is what separates one category from the next. -->
-          <p v-if="railOpen" class="text-content-subtle text-label px-2 pt-2 pb-1 uppercase">
-            {{ entry.label }}
-          </p>
-          <div v-else class="bg-line mx-2 mt-2 mb-1 h-px" aria-hidden="true" />
-
-          <ul class="space-y-0.5">
-            <li v-for="group in entry.groups" :key="group.label" class="relative">
-              <button
-                type="button"
-                class="pressable text-body flex w-full items-center gap-2.5 rounded-sm px-2 py-1.5 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out)"
-                :class="[
-                  isCurrentGroup(group)
-                    ? 'bg-surface-selected text-content'
-                    : 'text-content-muted hover:bg-surface-hover hover:text-content',
-                  railOpen ? '' : 'justify-center',
-                ]"
-                :aria-expanded="openGroup === group.label"
-                :title="railOpen ? undefined : group.label"
-                @click="toggle(group.label, $event)"
-              >
-                <AppIcon :name="group.icon" :size="17" />
-                <template v-if="railOpen">
-                  <span class="flex-1 truncate text-left">{{ group.label }}</span>
-                  <span
-                    class="text-content-subtle transition-transform duration-(--duration-fast) ease-(--ease-out)"
-                    :class="openGroup === group.label ? 'rotate-180' : ''"
-                  >
-                    <AppIcon name="chevronDown" :size="12" />
-                  </span>
-                </template>
-                <span v-else class="sr-only">{{ group.label }}</span>
-              </button>
-
-              <!-- Expanded: in place. The rows sit under their group, indented
-                   past the glyph so the column of labels is one column. -->
-              <ul
-                v-if="railOpen && openGroup === group.label"
-                class="border-line-subtle mt-0.5 mb-1 ml-4 space-y-0.5 border-l pl-2"
-              >
-                <li v-for="item in group.items" :key="item.label">
-                  <div class="flex items-stretch">
-                    <Link
-                      :href="item.href"
-                      :aria-current="isCurrent(item.href) ? 'page' : undefined"
-                      class="pressable text-body block flex-1 truncate rounded-sm px-2 py-1 transition-colors duration-(--duration-fast)"
-                      :class="
-                        isCurrent(item.href)
-                          ? 'text-content font-medium'
-                          : 'text-content-muted hover:bg-surface-hover hover:text-content'
-                      "
-                    >
-                      {{ item.label }}
-                    </Link>
-                    <button
-                      v-if="item.children"
-                      type="button"
-                      class="pressable text-content-subtle hover:text-content rounded-sm px-1"
-                      :aria-expanded="openItem === item.label"
-                      :aria-label="
-                        t('ui.shell.submenu', { name: item.label }, `${item.label} submenu`)
-                      "
-                      @click.stop="openItem = openItem === item.label ? null : item.label"
-                    >
-                      <AppIcon name="chevronDown" :size="11" />
-                    </button>
-                  </div>
-
-                  <ul
-                    v-if="item.children && openItem === item.label"
-                    class="border-line-subtle mt-0.5 ml-2 space-y-0.5 border-l pl-2"
-                  >
-                    <li v-for="child in item.children" :key="child.href">
-                      <Link
-                        :href="child.href"
-                        :aria-current="isCurrent(child.href) ? 'page' : undefined"
-                        class="pressable text-chrome block truncate rounded-sm px-2 py-1 transition-colors duration-(--duration-fast)"
-                        :class="
-                          isCurrent(child.href)
-                            ? 'text-content font-medium'
-                            : 'text-content-subtle hover:bg-surface-hover hover:text-content'
-                        "
-                      >
-                        {{ child.label }}
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </aside>
+    </div>
 
     <!--
-      Collapsed, a group opens as a flyout, because 72px has nowhere to put a
-      list. One panel rather than one per group: only one can be open, and a
-      panel per row would be seven hidden panels on every page load.
+      A group opens as a dropdown under its button. One panel rather than one
+      per group: only one can be open, and a panel per button would be seven
+      hidden panels on every page load.
 
       Teleported to the body and positioned `fixed`, which is the only
       placement no ancestor's `overflow` can clip.
     -->
     <Teleport to="body">
       <div
-        v-if="flyoutOpen && !railOpen && flyoutGroup"
+        v-if="flyoutOpen && flyoutGroup"
         ref="flyoutPanel"
         data-rail-flyout
         :style="flyoutStyle"
@@ -1152,149 +952,235 @@ onBeforeUnmount(() => {
         <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
           {{ flyoutGroup.label }}
         </p>
+        <!--
+          A destination with children is a heading and its rows, not a row
+          that expands. The rail made somebody press twice to reach a
+          filtered list; a menu that is already open has nothing to gain by
+          hiding half of itself, and the parent's own href is always the
+          first child's anyway.
+        -->
         <ul class="max-h-[70dvh] space-y-0.5 overflow-y-auto">
-          <li v-for="item in flyoutGroup.items" :key="item.label">
-            <Link
-              :href="item.href"
-              :aria-current="isCurrent(item.href) ? 'page' : undefined"
-              class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
-              :class="
-                isCurrent(item.href)
-                  ? 'bg-surface-hover text-content border-accent font-medium'
-                  : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
-              "
-            >
-              {{ item.label }}
-            </Link>
-          </li>
+          <template v-for="item in flyoutGroup.items" :key="item.label">
+            <li v-if="item.children">
+              <p class="text-content-subtle text-label px-2.5 pt-2 pb-1 uppercase">
+                {{ item.label }}
+              </p>
+              <ul class="space-y-0.5">
+                <li v-for="child in item.children" :key="child.href">
+                  <Link
+                    :href="child.href"
+                    :aria-current="isCurrent(child.href) ? 'page' : undefined"
+                    class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
+                    :class="
+                      isCurrent(child.href)
+                        ? 'bg-surface-hover text-content border-accent font-medium'
+                        : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
+                    "
+                  >
+                    {{ child.label }}
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            <li v-else>
+              <Link
+                :href="item.href"
+                :aria-current="isCurrent(item.href) ? 'page' : undefined"
+                class="pressable text-body block rounded-sm border-l-2 px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast)"
+                :class="
+                  isCurrent(item.href)
+                    ? 'bg-surface-hover text-content border-accent font-medium'
+                    : 'text-content-muted hover:bg-surface-hover hover:text-content border-transparent'
+                "
+              >
+                {{ item.label }}
+              </Link>
+            </li>
+          </template>
         </ul>
       </div>
     </Teleport>
 
-    <div class="flex min-h-dvh flex-col lg:ml-(--rail-w)">
+    <div class="flex min-h-dvh flex-col">
       <!--
-        The topbar carries where you are and what belongs to the session.
-        Nothing on it is page content, which is what keeps it from becoming a
-        second header.
+        `global-nav`: where you can go, and what belongs to the session.
+        Black, 44px, 12px links, and translucent — the bar is the one piece of
+        chrome that never scrolls away, so it has to let the page show through
+        rather than sit on top of it like a lid.
       -->
       <header
-        class="on-chrome border-line bg-surface-chrome sticky top-0 z-20 flex h-14 items-center gap-3 border-b px-4 sm:px-6"
+        data-admin-nav
+        class="on-chrome bg-surface-chrome/85 sticky top-0 z-30 h-11 backdrop-blur-xl"
+        :aria-label="t('ui.shell.sections', {}, 'Sections')"
       >
-        <button
-          type="button"
-          class="pressable text-content-muted hover:text-content rounded-sm p-1.5 lg:hidden"
-          :aria-expanded="mobileOpen"
-          :aria-label="t('ui.shell.sections', {}, 'Sections')"
-          @click="mobileOpen = !mobileOpen"
-        >
-          <AppIcon name="more" :size="18" />
-        </button>
+        <div class="mx-auto flex h-full max-w-[1600px] items-center gap-1 px-4 sm:px-6">
+          <!-- The way home, and the only one. -->
+          <Link
+            href="/admin"
+            :aria-current="currentPath === '/admin' ? 'page' : undefined"
+            :title="`${brand.name} dashboard`"
+            class="pressable mr-2 flex shrink-0 items-center gap-2 rounded-sm"
+          >
+            <img
+              v-if="brand.logoUrl"
+              :src="brand.logoUrl"
+              :alt="brand.name"
+              class="h-4 w-auto max-w-[8rem] object-contain"
+            />
+            <span v-else class="text-chrome font-semibold">{{ brand.name }}</span>
+          </Link>
 
-        <nav :aria-label="t('ui.shell.breadcrumb', {}, 'Breadcrumb')" class="min-w-0 flex-1">
-          <ol class="text-chrome flex items-center gap-1.5">
-            <li v-for="crumb in breadcrumbs" :key="crumb.label" class="flex items-center gap-1.5">
-              <component
-                :is="crumb.href ? Link : 'span'"
-                :href="crumb.href"
-                class="text-content-subtle hover:text-content truncate transition-colors duration-(--duration-fast)"
-              >
-                {{ crumb.label }}
-              </component>
-              <AppIcon name="chevronRight" :size="11" class="text-content-subtle" />
-            </li>
-            <li class="text-content min-w-0 truncate font-medium">{{ heading }}</li>
-          </ol>
-        </nav>
+          <button
+            type="button"
+            class="pressable text-content-muted hover:text-content rounded-sm p-1.5 lg:hidden"
+            :aria-expanded="mobileOpen"
+            :aria-label="t('ui.shell.sections', {}, 'Sections')"
+            @click="mobileOpen = !mobileOpen"
+          >
+            <AppIcon name="more" :size="16" />
+          </button>
 
-        <div class="flex shrink-0 items-center gap-1 sm:gap-2">
-          <CommandPalette :destinations="destinations" />
+          <!--
+            The groups. Below `lg` they collapse into the sheet, because
+            seven of them on one line is a nav that wraps, and a two-line nav
+            at desktop is broken design.
+          -->
+          <nav class="hidden min-w-0 flex-1 items-center gap-0.5 lg:flex">
+            <button
+              v-for="group in navSections.flatMap((entry) => entry.groups)"
+              :key="group.label"
+              type="button"
+              class="pressable text-chrome rounded-sm px-2.5 py-1.5 whitespace-nowrap transition-colors duration-(--duration-fast) ease-(--ease-out)"
+              :class="
+                isCurrentGroup(group)
+                  ? 'text-content font-medium'
+                  : 'text-content-muted hover:text-content'
+              "
+              :aria-expanded="openGroup === group.label"
+              @click="toggle(group.label, $event)"
+            >
+              {{ group.label }}
+            </button>
+          </nav>
 
-          <!-- What the platform is doing, and what went wrong (§8). It draws
+          <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+            <CommandPalette :destinations="destinations" />
+
+            <!-- What the platform is doing, and what went wrong (§8). It draws
                nothing at all for somebody who may not see operations. -->
-          <OperationsDrawer />
+            <OperationsDrawer />
 
-          <LanguageSwitch url="/admin/locale" />
-          <ThemeSwitch />
+            <LanguageSwitch url="/admin/locale" />
+            <ThemeSwitch />
 
-          <!-- The spanner: what an installation is configured to be, rather
+            <!-- The spanner: what an installation is configured to be, rather
                than what somebody works in. Drawn only when there is something
                on it, because each row now answers for itself. -->
-          <AppMenu
-            v-if="tools.length > 0"
-            :label="t('ui.shell.tools', {}, 'Tools')"
-            align="end"
-            width="15rem"
-            icon="utilities"
-          >
-            <Link
-              v-for="tool in tools"
-              :key="tool.href"
-              :href="tool.href"
-              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
-              role="menuitem"
+            <AppMenu
+              v-if="tools.length > 0"
+              :label="t('ui.shell.tools', {}, 'Tools')"
+              align="end"
+              width="15rem"
+              icon="utilities"
             >
-              {{ tool.label }}
-            </Link>
-          </AppMenu>
+              <Link
+                v-for="tool in tools"
+                :key="tool.href"
+                :href="tool.href"
+                class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
+                role="menuitem"
+              >
+                {{ tool.label }}
+              </Link>
+            </AppMenu>
 
-          <!-- Where to get help. Every link is configurable, because a
+            <!-- Where to get help. Every link is configurable, because a
                white-label installation sends its operators to its own
                documentation, not to ours. -->
-          <AppMenu :label="t('ui.shell.help', {}, 'Help')" align="end" width="15rem" icon="help">
-            <a
-              v-for="(url, key) in help"
-              :key="key"
-              :href="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
-              role="menuitem"
-            >
-              {{ helpLabels[key] ?? key }}
-            </a>
-            <p
-              v-if="Object.keys(help).length === 0"
-              class="text-content-muted text-chrome px-2 py-1.5"
-            >
-              {{ t('ui.shell.no_help', {}, 'No help links are configured for this installation.') }}
-            </p>
-          </AppMenu>
+            <AppMenu :label="t('ui.shell.help', {}, 'Help')" align="end" width="15rem" icon="help">
+              <a
+                v-for="(url, key) in help"
+                :key="key"
+                :href="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
+                role="menuitem"
+              >
+                {{ helpLabels[key] ?? key }}
+              </a>
+              <p
+                v-if="Object.keys(help).length === 0"
+                class="text-content-muted text-chrome px-2 py-1.5"
+              >
+                {{
+                  t('ui.shell.no_help', {}, 'No help links are configured for this installation.')
+                }}
+              </p>
+            </AppMenu>
 
-          <!-- A face rather than an address. An email read across the top of
+            <!-- A face rather than an address. An email read across the top of
                every page is somebody's identifier on a screen other people
                walk past, and it told an operator nothing they did not
                already know. -->
-          <AppMenu v-if="user" :label="initials" align="end" width="14rem" avatar>
-            <p class="border-line mb-1 border-b px-2 pb-2">
-              <span class="text-body block truncate font-medium">{{ user.name }}</span>
-              <span class="text-content-muted text-chrome block truncate">{{ user.email }}</span>
-            </p>
-            <Link
-              href="/admin/security"
-              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
-              role="menuitem"
-            >
-              {{ t('ui.shell.my_account', {}, 'My Account') }}
-            </Link>
-            <a
-              href="/client"
-              class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
-              role="menuitem"
-            >
-              {{ t('ui.shell.client_area', {}, 'Visit Client Area') }}
-            </a>
-            <Link
-              href="/admin/logout"
-              method="post"
-              as="button"
-              class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
-              role="menuitem"
-            >
-              {{ t('ui.shell.sign_out', {}, 'Sign out') }}
-            </Link>
-          </AppMenu>
+            <AppMenu v-if="user" :label="initials" align="end" width="14rem" avatar>
+              <p class="border-line mb-1 border-b px-2 pb-2">
+                <span class="text-body block truncate font-medium">{{ user.name }}</span>
+                <span class="text-content-muted text-chrome block truncate">{{ user.email }}</span>
+              </p>
+              <Link
+                href="/admin/security"
+                class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
+                role="menuitem"
+              >
+                {{ t('ui.shell.my_account', {}, 'My Account') }}
+              </Link>
+              <a
+                href="/client"
+                class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
+                role="menuitem"
+              >
+                {{ t('ui.shell.client_area', {}, 'Visit Client Area') }}
+              </a>
+              <Link
+                href="/admin/logout"
+                method="post"
+                as="button"
+                class="pressable hover:bg-surface-secondary text-body block w-full rounded-sm px-2 py-1.5 text-left"
+                role="menuitem"
+              >
+                {{ t('ui.shell.sign_out', {}, 'Sign out') }}
+              </Link>
+            </AppMenu>
+          </div>
         </div>
       </header>
+
+      <!--
+        `sub-nav-frosted`: where you are. A second bar rather than a line in
+        the first, because the first one is a fixed set of destinations and
+        this one changes on every page - and putting both in one bar is how a
+        nav ends up two lines tall.
+      -->
+      <div class="bg-background/80 sticky top-11 z-20 backdrop-blur-xl">
+        <div class="mx-auto flex h-13 max-w-[1600px] items-center px-4 sm:px-6">
+          <nav :aria-label="t('ui.shell.breadcrumb', {}, 'Breadcrumb')" class="min-w-0">
+            <ol class="text-chrome flex items-center gap-1.5">
+              <li v-for="crumb in breadcrumbs" :key="crumb.label" class="flex items-center gap-1.5">
+                <component
+                  :is="crumb.href ? Link : 'span'"
+                  :href="crumb.href"
+                  class="text-content-subtle hover:text-content truncate transition-colors duration-(--duration-fast)"
+                >
+                  {{ crumb.label }}
+                </component>
+                <AppIcon name="chevronRight" :size="11" class="text-content-subtle" />
+              </li>
+              <li class="text-content min-w-0 truncate font-medium">{{ heading }}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
 
       <main id="main" class="flex-1 px-4 pt-5 pb-10 sm:px-6">
         <div class="mx-auto max-w-[110rem]">
