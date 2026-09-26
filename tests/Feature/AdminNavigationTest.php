@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use App\Application\Access\SyncPermissions;
+use App\Application\Infrastructure\ResourceGraph;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Infrastructure\ResourceKind;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\StaffUser;
+use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Provisioning\Models\Service;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
@@ -142,4 +145,36 @@ it('searches everything from one box', function (): void {
             // One term, two kinds of record, without the operator choosing
             // a screen first.
             ->has('groups', 2));
+});
+
+/**
+ * And whatever the graph knows about (Phase B).
+ *
+ * An operator with an IP address or a hostname out of somebody else's ticket
+ * has a fact that belongs to no screen in this panel: the thing it names may
+ * be a server this platform provisioned, a switch port a module discovered,
+ * or a machine nobody here has ever touched. Making them guess which screen
+ * to try first is exactly what this box exists to stop.
+ */
+it('finds a resource by the key its own source calls it', function (): void {
+    $provider = Organization::query()
+        ->withoutGlobalScope('organization')
+        ->whereNull('parent_id')
+        ->sole();
+
+    app(ResourceGraph::class)->upsertNode(
+        $provider->id,
+        ResourceKind::Server,
+        'web-07.dc2',
+        'Web 07',
+    );
+
+    $this->actingAs($this->owner, 'staff')
+        ->get('/admin/search?q=web-07')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->component('Admin/Search/Index')
+            ->has('groups', 1)
+            ->where('groups.0.key', 'resources')
+            ->where('groups.0.rows.0.subtitle', 'web-07.dc2'));
 });

@@ -1578,6 +1578,9 @@ return [
         'back' => 'Güvenliğe dön',
     ],
     'search' => [
+        'field' => 'Her şeyde ara',
+        'wildcard_hint' => '% bir terimi sabitler: Zeyn% veya %nep. Tam ad da çalışır.',
+        'see_all' => 'Tümünü gör',
         'title' => 'Arama',
         'subtitle' => 'Bir müşteri, bir alan adı, bir sunucu adı, bir fatura numarası — telefonda size ne verildiyse.',
         'action' => 'Ara',

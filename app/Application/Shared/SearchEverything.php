@@ -10,6 +10,7 @@ use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Ordering\Models\Order;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Resources\Models\ResourceNode;
 use App\Infrastructure\Support\Models\Ticket;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -25,6 +26,10 @@ use Illuminate\Database\Eloquent\Builder;
  * paging, no scoring: this is a way to reach a record, not a report. Each
  * group links to the list that does support paging, carrying the same term,
  * so "there are more" has somewhere to go.
+ *
+ * The group headings are the nav map's own nouns, read through `__()`: the
+ * box answers with the same words the rail uses, in the language the operator
+ * reads the panel in.
  *
  * Every query runs inside the organization boundary, like everything else.
  * A reseller searching finds their own customers and nobody else's, without
@@ -48,12 +53,26 @@ final readonly class SearchEverything
         $like = SearchPattern::like($term);
 
         return array_values(array_filter([
-            $this->group('clients', 'Clients', '/admin/customers?search='.rawurlencode($term), $this->clients($like)),
-            $this->group('services', 'Products and services', '/admin/services?domain='.rawurlencode($term), $this->services($like)),
-            $this->group('domains', 'Domains', '/admin/domains', $this->domains($like)),
-            $this->group('invoices', 'Invoices', '/admin/invoices', $this->invoices($like)),
-            $this->group('orders', 'Orders', '/admin/orders', $this->orders($like)),
-            $this->group('tickets', 'Tickets', '/admin/support', $this->tickets($like)),
+            $this->group('clients', (string) __('ui.nav.clients'), '/admin/customers?search='.rawurlencode($term), $this->clients($like)),
+            $this->group('services', (string) __('ui.nav.products_services'), '/admin/services?domain='.rawurlencode($term), $this->services($like)),
+            $this->group('domains', (string) __('ui.nav.domain_registrations'), '/admin/domains', $this->domains($like)),
+            $this->group('invoices', (string) __('ui.nav.invoices'), '/admin/invoices', $this->invoices($like)),
+            $this->group('orders', (string) __('ui.nav.orders'), '/admin/orders', $this->orders($like)),
+            $this->group('tickets', (string) __('ui.nav.support_tickets'), '/admin/support', $this->tickets($like)),
+            /*
+             * And whatever the graph knows about (Phase B). An operator with
+             * an IP address or a hostname from somebody else's ticket has a
+             * fact that belongs to no screen in the panel — the resource it
+             * names may be a server this platform provisioned, a switch port
+             * a module discovered, or a machine nobody here has ever touched.
+             * The Explorer is the one screen that can answer either way.
+             */
+            $this->group(
+                'resources',
+                (string) __('ui.nav.infrastructure'),
+                '/admin/resources?q='.rawurlencode($term),
+                $this->resources($like),
+            ),
         ], static fn (?array $group): bool => $group !== null));
     }
 
@@ -181,6 +200,35 @@ final readonly class SearchEverything
                 'title' => $order->number,
                 'subtitle' => $order->customer?->displayName() ?? '',
                 'href' => '/admin/orders/'.$order->id,
+            ])
+            ->values()
+            ->all());
+    }
+
+    /**
+     * Resources in the graph, by the key the source calls them or by the
+     * label this platform cached.
+     *
+     * The key matters more than the label: an operator pasting `10.0.0.9` or
+     * `web-07.dc2` has what the *source* calls the thing, and the label is
+     * this platform's own name for it.
+     *
+     * @return list<array<string, string>>
+     */
+    private function resources(string $like): array
+    {
+        return array_values(ResourceNode::query()
+            ->where(function (Builder $query) use ($like): void {
+                $query->where('node_key', 'like', $like)->orWhere('label', 'like', $like);
+            })
+            ->whereNull('retired_at')
+            ->orderBy('label')
+            ->limit(self::PER_GROUP)
+            ->get()
+            ->map(static fn (ResourceNode $node): array => [
+                'title' => $node->label,
+                'subtitle' => $node->node_key,
+                'href' => '/admin/resources?q='.rawurlencode($node->node_key),
             ])
             ->values()
             ->all());

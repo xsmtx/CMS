@@ -1583,6 +1583,9 @@ return [
         'back' => 'Back to security',
     ],
     'search' => [
+        'field' => 'Search everything',
+        'wildcard_hint' => '% anchors a term: Zeyn% or %nep. A whole name works.',
+        'see_all' => 'See all',
         'title' => 'Search',
         'subtitle' => 'A client, a domain, a hostname, an invoice number — whatever the call gave you.',
         'action' => 'Search',

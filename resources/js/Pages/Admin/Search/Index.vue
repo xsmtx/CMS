@@ -46,12 +46,12 @@ function submit(): void {
     <form class="mb-7 max-w-xl" @submit.prevent="submit">
       <div class="flex items-end gap-2">
         <div class="flex-1">
-          <AppInput v-model="term" label="Search everything" />
+          <AppInput v-model="term" :label="t('ui.search.field')" />
         </div>
         <AppButton type="submit" variant="primary">{{ t('ui.search.action') }}</AppButton>
       </div>
       <p class="text-content-muted text-chrome mt-2">
-        % anchors a term: Zeyn% or %nep. A whole name works.
+        {{ t('ui.search.wildcard_hint') }}
       </p>
     </form>
 
@@ -62,7 +62,7 @@ function submit(): void {
             :href="group.more"
             class="text-content-muted text-chrome underline-offset-4 hover:underline"
           >
-            See all
+            {{ t('ui.search.see_all') }}
           </Link>
         </template>
 
