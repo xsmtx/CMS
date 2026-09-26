@@ -47,6 +47,8 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'verified',
     'issued',
     'allow',
+    // An IP address doing its job: somebody is using it.
+    'assigned',
   ],
   info: [
     'running',
@@ -80,6 +82,9 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'review',
     'partially_fulfilled',
     'full',
+    // An address that has been released and is cooling off. Not free yet and
+    // not a failure - somebody should wait rather than act.
+    'quarantined',
   ],
   critical: [
     'critical',
@@ -97,7 +102,9 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'failing',
     'unreachable',
   ],
-  maintenance: ['maintenance'],
+  // Down on purpose - which is exactly what a reserved address is: an
+  // operator set it aside, and it must not look like a free one.
+  maintenance: ['maintenance', 'reserved'],
   neutral: [
     'closed',
     'cancelled',
@@ -115,6 +122,9 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'retired',
     'withdrawn',
     'unbilled',
+    // A free address is not in play. It is distinct from reserved on the
+    // screen because the difference is the whole point of having both.
+    'available',
   ],
 }
 

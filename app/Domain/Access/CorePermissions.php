@@ -70,6 +70,21 @@ final class CorePermissions
              */
             new PermissionDefinition('infrastructure.adapters.manage', 'infrastructure', RoleScope::Staff, highRisk: true),
 
+            /*
+             * Addressing. Reading it is ordinary for the same reason reading
+             * the graph is: a support agent looking at an abuse report needs to
+             * know which service held an address, and that question is the
+             * whole point of keeping the history.
+             *
+             * Managing it is not high risk, and that is deliberate: handing out
+             * an address is routine work a network operator does all day, and a
+             * password challenge on routine work is a challenge people learn to
+             * type through. The destructive end - deleting a prefix - refuses
+             * while anything is in it.
+             */
+            new PermissionDefinition('network.ipam.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('network.ipam.manage', 'infrastructure', RoleScope::Staff),
+
             // Turning the storefront off is not a settings change.
             new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
 

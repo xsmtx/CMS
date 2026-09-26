@@ -165,6 +165,13 @@ waiting for data.
 
 ## 5. Not in this phase
 
+**The `placement-scoring` module seam.** The umbrella table offers "*core*
+extension + `placement-scoring`", and what shipped is the core extension: a
+strategy, the factors and the weights. There is no extension point for somebody
+else's scorer, and there should not be one until a second scorer exists to shape
+it — a seam nobody has used is a seam that is wrong in a way only its first
+caller discovers, which is the same reason the vault was not Phase A.
+
 Everything in C through J. Specifically: no IPAM, no device adapters, no topology
 beyond the graph's own containment, no incidents, no alerting, no backup coverage,
 no reconciliation. JIT access is C; the vault contract it needs is here.

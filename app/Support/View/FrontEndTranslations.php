@@ -155,6 +155,10 @@ final class FrontEndTranslations
         'infrastructure.adapters',
         'infrastructure.telemetry',
 
+        // Addressing is operator vocabulary end to end - no customer sees a
+        // prefix - so the whole group is published rather than leaf paths.
+        'network',
+
         /*
          * The tax screen's own vocabulary. Operator words only, and it names no
          * jurisdiction — there is no list of countries in either language's

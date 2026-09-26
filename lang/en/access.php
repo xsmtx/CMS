@@ -80,6 +80,14 @@ return [
             'label' => 'Allow an adapter to make changes',
             'description' => 'Let an adapter change firewalls, power or storage rather than only read them.',
         ],
+        'network.ipam.view' => [
+            'label' => 'See IP addressing',
+            'description' => 'Browse pools, networks and addresses, and who has held each address.',
+        ],
+        'network.ipam.manage' => [
+            'label' => 'Manage IP addressing',
+            'description' => 'Add networks, hand out addresses and take them back.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Turn maintenance mode on and off',
             'description' => 'Close the storefront and client area. The admin area stays open.',

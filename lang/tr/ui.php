@@ -693,6 +693,7 @@ return [
         'explorer' => 'Gezgin',
         'telemetry' => 'Telemetri',
         'adapters' => 'Bağdaştırıcılar',
+        'addressing' => 'Adresleme',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

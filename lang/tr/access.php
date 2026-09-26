@@ -79,6 +79,14 @@ return [
             'label' => 'Bir bağdaştırıcıya değişiklik izni ver',
             'description' => 'Bağdaştırıcının güvenlik duvarını, gücü veya depolamayı yalnızca okumak yerine değiştirmesine izin verir.',
         ],
+        'network.ipam.view' => [
+            'label' => 'IP adreslemesini gör',
+            'description' => 'Havuzları, ağları ve adresleri, her adresi kimin tuttuğunu görür.',
+        ],
+        'network.ipam.manage' => [
+            'label' => 'IP adreslemesini yönet',
+            'description' => 'Ağ ekler, adres dağıtır ve geri alır.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Bakım modunu aç ve kapat',
             'description' => 'Mağazayı ve müşteri alanını kapatır. Yönetim alanı açık kalır.',

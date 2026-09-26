@@ -97,7 +97,7 @@ it is a seam.
 | §4 | Smart placement | Provisioning (`PlacementStrategy`) | *core* extension + `placement-scoring` | B |
 | §4 | Capacity planning | Provisioning, Automation | `capacity` | B |
 | §23 | Global search / palette | Crm, Billing, Support, Provisioning | *core* (extends the existing palette) | B |
-| §5 | IPAM | Provisioning, Domains | `ipam` | C |
+| §5 | IPAM | Provisioning, Domains | *core* (see `phase-c-plan.md` §2) | C |
 | §6 | Network & security operations | *new*, correlates Provisioning | `network`, `network-fortigate`, `network-juniper`, `network-snmp` | C |
 | §6 | Guarded configuration workflow | Operations (ADR 0032), Access | `network` (uses core change records) | C |
 | §7 | Routing / flow / DDoS | *new*, correlates Crm + Billing | `flow`, `ddos` | C |

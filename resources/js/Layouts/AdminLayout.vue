@@ -470,6 +470,12 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/resources/adapters',
         permission: 'infrastructure.adapters.view',
       },
+      {
+        // What this installation has decided, next to what it has discovered.
+        label: nav('addressing', 'Addressing'),
+        href: '/admin/network/addressing',
+        permission: 'network.ipam.view',
+      },
     ],
   },
   {

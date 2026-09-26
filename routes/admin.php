@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
+use App\Http\Controllers\Admin\AddressingController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
@@ -375,6 +376,32 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('resources.adapters.update');
     Route::post('resources/adapters/{adapter}/check', [ResourceAdapterController::class, 'check'])
         ->name('resources.adapters.check');
+
+    /*
+     * Addressing — handoff #2, Phase C.
+     *
+     * Under `network/` rather than beside `resources/`, because the graph is
+     * what this installation has discovered and addressing is what it has
+     * decided. The rest of Phase C's screens land in the same group.
+     *
+     * The destructive one is `destroyPrefix`, and it refuses while the prefix
+     * holds anything, so the confirmation on the screen is a level below the
+     * ones that cannot be undone.
+     */
+    Route::get('network/addressing', [AddressingController::class, 'index'])
+        ->name('network.addressing');
+    Route::get('network/addressing/{prefix}', [AddressingController::class, 'show'])
+        ->name('network.addressing.show');
+    Route::post('network/pools', [AddressingController::class, 'storePool'])
+        ->name('network.pools.store');
+    Route::post('network/prefixes', [AddressingController::class, 'storePrefix'])
+        ->name('network.prefixes.store');
+    Route::delete('network/prefixes/{prefix}', [AddressingController::class, 'destroyPrefix'])
+        ->name('network.prefixes.destroy');
+    Route::post('network/prefixes/{prefix}/allocate', [AddressingController::class, 'allocate'])
+        ->name('network.prefixes.allocate');
+    Route::post('network/addresses/{address}/release', [AddressingController::class, 'releaseAddress'])
+        ->name('network.addresses.release');
 
     /*
      * What this installation calls itself. The navigation has pointed here

@@ -84,6 +84,11 @@ final class SystemRoleSeeder extends Seeder
                 // server: the two questions a support agent asks in the middle
                 // of a ticket. Reading the graph, and nothing that touches it.
                 'infrastructure.resources.view',
+                // Which service held 192.0.2.7 on the eleventh: an abuse
+                // report arrives as an address and a date, and answering it is
+                // support's job before it is anybody else's. Reading only -
+                // handing out addresses is not.
+                'network.ipam.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

@@ -698,6 +698,7 @@ return [
         'explorer' => 'Explorer',
         'telemetry' => 'Telemetry',
         'adapters' => 'Adapters',
+        'addressing' => 'Addressing',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

@@ -306,6 +306,32 @@ describe('AdminLayout navigation', () => {
     expect(flyoutLink('/admin/apps/connect')).not.toBeNull()
   })
 
+  /**
+   * Addressing is what this installation has decided, beside the Explorer's
+   * record of what it has discovered — and it is gated on its own permission,
+   * because support reads it and most staff have no reason to.
+   */
+  it('offers Addressing from Infrastructure to anybody holding the permission', async () => {
+    const wrapper = render()
+    const group = groupTriggers(wrapper).find((button) => button.text().trim() === 'Infrastructure')
+
+    await group?.trigger('click')
+
+    expect(flyoutLink('/admin/network/addressing')).not.toBeNull()
+  })
+
+  it('leaves Addressing out for somebody without the permission', async () => {
+    permissionState.superAdmin = false
+    permissionState.can = (slug) => slug !== 'network.ipam.view'
+
+    const wrapper = render()
+    const group = groupTriggers(wrapper).find((button) => button.text().trim() === 'Infrastructure')
+
+    await group?.trigger('click')
+
+    expect(flyoutLink('/admin/network/addressing')).toBeNull()
+  })
+
   it('leaves Connect out for somebody without the permission', async () => {
     permissionState.superAdmin = false
     permissionState.can = (slug) => slug !== 'infrastructure.connect'

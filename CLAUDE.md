@@ -1687,3 +1687,64 @@ inside php-parser on whichever file happened to be next, which kills the worker
 at the *first* test and makes the whole suite look like it failed. `composer
 stan` already carries `--memory-limit=1G` for the same reason; running
 `./vendor/bin/phpstan` bare now crashes.
+
+**Phase C has begun, and addressing is core.** `advanced-operations-plan.md`'s
+table put IPAM in an `ipam` module and that cannot be built: **a module cannot
+draw a screen.** `ExtensionPoint` has `Navigation` and `Widget`, and a
+`NavigationItem` carries a *path* — but nothing registers routes or view paths
+for a module, so the path has to be one core already serves. The worked example
+is the evidence: `modules/example/status-board` points its nav row at
+`/admin/health`. A module ships adapters, calculators, channels and permissions;
+pages are core's. §5 is mostly pages, so IPAM is core and `phase-c-plan.md` §2
+records the correction. The vendor device adapters stay modules, exactly like the
+monitoring ones.
+
+**An assignment is not a graph edge**, although the graph is already append-only
+with a closing timestamp and "who had this in March" is already a `where` clause
+there. An edge belongs to its container's organization and the graph refuses one
+whose ends are in different subtrees (ADR 0043) — an address belongs to the
+seller's range and the service holding it belongs to the customer, so "service
+contains address" is exactly the refused edge, and inverting it would let a
+customer walk up to the seller's prefix. `ip_assignments` is its own append-only
+table, owned by the seller. The graph still gets prefixes and devices when
+topology lands, because those are all on the provider's side.
+
+**Every address is sixteen bytes and the text is derived from them.** IPv4 is
+mapped into the IPv6 space, so one column and one index sort and compare both
+families and "is this inside that prefix" is a range query rather than a loop.
+`2001:db8::1` and `2001:0db8:0000:0000:0000:0000:0000:0001` are one address
+written twice; storing what was typed would hold two rows for it, assign it
+twice, and be unable to say who had it. `IpAddress::parse()` and `inet_ntop`
+decide what an address is called — an operator's spelling decides nothing.
+
+**A free address has no row.** A /64 holds eighteen quintillion of them, so a
+row appears when an address is assigned, reserved, quarantined or given a
+reverse-DNS name, and *free* is the prefix's range minus the rows. It also means
+a capacity figure is sometimes honestly unavailable: a /64's is larger than a PHP
+integer, so `addressCount()` answers null above 2^62 and the screen prints "too
+large to count" rather than a bar reading 0.0000000001%.
+
+**Releasing an address quarantines it by default.** One handed to a new customer
+the morning after a spammer left it arrives on blocklists the new holder never
+earned, and their mail fails for a month for reasons nothing in this platform can
+explain. An operator can put it straight back deliberately.
+
+**A prefix's parent is computed, not typed.** The nearest containing network,
+worked out on write, and a new shorter prefix adopts the ones that were hanging
+off its own parent — a parent somebody chose by hand goes stale the moment a /16
+is added above a /24. Deleting a supernet re-parents its subnets rather than
+taking them with it.
+
+**`192.0.2.5/24` is refused rather than masked**, and the refusal names
+`192.0.2.0/24`. It is somebody's address typed where a network was wanted;
+accepting it quietly files the address under a network nobody named, and the
+mistake surfaces months later as an address that is missing. The form request
+validates by *parsing* rather than by a regex, so the value object's sentence is
+what the operator reads — a second answer to "what is an address" in a regex is a
+second answer that disagrees.
+
+**Concurrency again, at the guard.** `AllocateAddress` locks the prefix row
+rather than the address rows, because the address being allocated has no row yet
+— there is nothing else two callers could both hold. The test does not race
+threads: it asserts the unique index on `(ip_prefix_id, address_bytes)` refuses
+the second row whatever the lock did.
