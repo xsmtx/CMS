@@ -4,12 +4,12 @@
 @section('robots', 'noindex')
 
 @section('content')
-    <h1 class="text-3xl leading-[1.1] font-semibold tracking-tighter sm:text-4xl">
+    <h1 class="text-page leading-[1.1] font-semibold tracking-tighter sm:text-display">
         {{ __('ordering.checkout.title') }}
     </h1>
 
     @if ($errors->any())
-        <div role="alert" class="mt-5 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-sm text-danger">
+        <div role="alert" class="mt-5 rounded-[var(--radius-sm)] border border-danger/30 bg-surface-secondary px-3 py-2 text-body text-danger">
             {{ $errors->first() }}
         </div>
     @endif
@@ -23,10 +23,10 @@
         <input type="hidden" name="expected_total" value="{{ $cart['totalMinor'] }}">
 
         <div class="lg:col-span-7">
-            <h2 class="text-sm font-semibold">{{ __('ordering.checkout.account') }}</h2>
+            <h2 class="text-body font-semibold">{{ __('ordering.checkout.account') }}</h2>
 
             @if ($contact)
-                <div class="mt-3 rounded-[var(--radius-md)] border border-line bg-surface-primary px-4 py-3 text-sm">
+                <div class="mt-3 rounded-[var(--radius-md)] border border-line bg-surface-primary px-4 py-3 text-body">
                     <p class="font-medium">{{ $contact['name'] }}</p>
                     <p class="text-content-muted">{{ $contact['email'] }}</p>
                     @if ($contact['company'])
@@ -34,7 +34,7 @@
                     @endif
                 </div>
             @else
-                <p class="mt-1 text-sm text-content-muted">
+                <p class="mt-1 text-body text-content-muted">
                     {{ __('ordering.checkout.existing') }}
                     <a href="{{ url('/login') }}" class="underline underline-offset-4">
                         {{ __('ordering.checkout.sign_in') }}
@@ -56,7 +56,7 @@
                         ['country_code', __('ordering.checkout.country'), 'country', false],
                     ] as [$field, $label, $autocomplete, $required])
                         <div class="flex flex-col gap-2">
-                            <label for="{{ $field }}" class="text-sm font-medium">
+                            <label for="{{ $field }}" class="text-body font-medium">
                                 {{ $label }}
                                 @if ($required)<span class="text-content-subtle" aria-hidden="true">*</span>@endif
                             </label>
@@ -67,10 +67,10 @@
                                 autocomplete="{{ $autocomplete }}"
                                 value="{{ old($field) }}"
                                 @required($required)
-                                class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3 py-2 text-sm"
+                                class="w-full rounded-[var(--radius-sm)] border border-line bg-surface-primary px-3 py-2 text-body"
                             >
                             @error($field)
-                                <p class="text-xs text-danger">{{ $message }}</p>
+                                <p class="text-chrome text-danger">{{ $message }}</p>
                             @enderror
                         </div>
                     @endforeach
@@ -78,18 +78,18 @@
             @endif
 
             <div class="mt-8 flex flex-col gap-3">
-                <label class="flex items-start gap-3 text-sm">
+                <label class="flex items-start gap-3 text-body">
                     <input type="checkbox" name="terms" value="1" class="accent-brand mt-0.5 size-4" required>
                     <span>
                         {{ __('ordering.checkout.terms') }}
-                        <span class="mt-0.5 block text-xs text-content-subtle">
+                        <span class="mt-0.5 block text-chrome text-content-subtle">
                             Version {{ $termsVersion }}
                         </span>
                     </span>
                 </label>
 
                 @unless ($contact)
-                    <label class="flex items-start gap-3 text-sm">
+                    <label class="flex items-start gap-3 text-body">
                         <input type="checkbox" name="marketing_opt_in" value="1" class="accent-brand mt-0.5 size-4">
                         <span class="text-content-muted">Send me occasional product news.</span>
                     </label>
@@ -98,19 +98,19 @@
         </div>
 
         <div class="lg:col-span-5">
-            <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) lg:sticky lg:top-8">
-                <h2 class="text-sm font-semibold">{{ __('ordering.checkout.summary') }}</h2>
+            <div class="rounded-[var(--radius-xl)] border border-line bg-surface-primary p-6 lg:sticky lg:top-8">
+                <h2 class="text-body font-semibold">{{ __('ordering.checkout.summary') }}</h2>
 
                 <ul class="mt-4 divide-y divide-line">
                     @foreach ($cart['lines'] as $line)
-                        <li class="flex items-start justify-between gap-4 py-2.5 text-sm">
+                        <li class="flex items-start justify-between gap-4 py-2.5 text-body">
                             <span>
                                 {{ $line['name'] }}
                                 @if ($line['quantity'] > 1)
                                     <span class="text-content-muted">× {{ $line['quantity'] }}</span>
                                 @endif
                                 @if ($line['cycleLabel'])
-                                    <span class="mt-0.5 block text-xs text-content-muted">{{ $line['cycleLabel'] }}</span>
+                                    <span class="mt-0.5 block text-chrome text-content-muted">{{ $line['cycleLabel'] }}</span>
                                 @endif
                             </span>
                             <span class="tabular-nums whitespace-nowrap">{{ $line['lineTotal'] }}</span>
@@ -118,7 +118,7 @@
                     @endforeach
                 </ul>
 
-                <dl class="mt-2 divide-y divide-line border-t border-line text-sm">
+                <dl class="mt-2 divide-y divide-line border-t border-line text-body">
                     @if ($cart['discount'])
                         <div class="flex justify-between py-2">
                             <dt class="text-content-muted">{{ __('ordering.cart.discount') }}</dt>
@@ -133,26 +133,26 @@
                         </div>
                     @endif
 
-                    <div class="flex justify-between py-3 text-base font-semibold">
+                    <div class="flex justify-between py-3 text-title font-semibold">
                         <dt>{{ __('ordering.cart.total') }}</dt>
                         <dd class="tabular-nums">{{ $cart['total'] }}</dd>
                     </div>
                 </dl>
 
                 @if ($cart['recurringTotal'])
-                    <p class="text-xs text-content-muted">
+                    <p class="text-chrome text-content-muted">
                         {{ __('ordering.cart.recurring', ['amount' => $cart['recurringTotal'], 'suffix' => '']) }}
                     </p>
                 @endif
 
                 <button
                     type="submit"
-                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                    class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-body font-semibold text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                 >
                     {{ __('ordering.checkout.place_order') }}
                 </button>
 
-                <p class="mt-3 text-xs text-content-subtle">
+                <p class="mt-3 text-chrome text-content-subtle">
                     {{ __('ordering.checkout.next_steps') }}
                 </p>
             </div>

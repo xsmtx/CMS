@@ -145,7 +145,7 @@ function confirm(): void {
         :aria-labelledby="titleId"
         :aria-describedby="description ? descriptionId : undefined"
         tabindex="-1"
-        class="panel-enter border-line bg-surface-primary relative w-full max-w-lg origin-top rounded-xl border p-5 shadow-(--shadow-panel)"
+        class="panel-enter floating relative w-full max-w-lg origin-top rounded-xl p-5"
         @keydown="trap"
       >
         <div class="flex items-start gap-3">

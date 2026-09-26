@@ -12,30 +12,30 @@
 
 @section('content')
     <div class="max-w-[52ch]">
-        <h1 class="text-3xl leading-[1.1] font-semibold tracking-tighter sm:text-4xl">
+        <h1 class="text-page leading-[1.1] font-semibold tracking-tighter sm:text-display">
             {{ __('billing.invoices.number') }} {{ $invoice['number'] }}
         </h1>
 
         @if ($invoice['isOwed'])
-            <p class="mt-6 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-sm leading-relaxed">
+            <p class="mt-6 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-body leading-relaxed">
                 {{ __('billing.payments.checking') }}
             </p>
         @else
-            <p class="mt-6 text-base leading-relaxed text-content-muted">
+            <p class="mt-6 text-title leading-relaxed text-content-muted">
                 {{ $invoice['status'] }} — {{ $invoice['total'] }}
             </p>
         @endif
 
-        <dl class="mt-8 divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary px-5">
-            <div class="flex justify-between gap-4 py-3 text-sm">
+        <dl class="mt-8 divide-y divide-line rounded-[var(--radius-xl)] border border-line bg-surface-primary px-5">
+            <div class="flex justify-between gap-4 py-3 text-body">
                 <dt class="text-content-muted">{{ __('billing.invoices.total') }}</dt>
                 <dd class="tabular-nums">{{ $invoice['total'] }}</dd>
             </div>
-            <div class="flex justify-between gap-4 py-3 text-sm">
+            <div class="flex justify-between gap-4 py-3 text-body">
                 <dt class="text-content-muted">{{ __('billing.invoices.paid') }}</dt>
                 <dd class="tabular-nums">{{ $invoice['paid'] }}</dd>
             </div>
-            <div class="flex justify-between gap-4 py-3 text-sm font-semibold">
+            <div class="flex justify-between gap-4 py-3 text-body font-semibold">
                 <dt>{{ __('billing.invoices.balance') }}</dt>
                 <dd class="tabular-nums">{{ $invoice['balance'] }}</dd>
             </div>
@@ -44,13 +44,13 @@
         <div class="mt-8 flex flex-wrap gap-3">
             <a
                 href="{{ route('storefront.invoice', $invoice['number']) }}"
-                class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold"
+                class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-body font-semibold"
             >
                 {{ __('billing.invoices.number') }}
             </a>
             <a
                 href="{{ url('/client') }}"
-                class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse"
+                class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-body font-semibold text-content-inverse"
             >
                 {{ __('storefront.client_area') }}
             </a>

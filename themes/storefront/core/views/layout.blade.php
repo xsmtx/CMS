@@ -42,7 +42,7 @@
             }
         </style>
     @endif</head>
-<body class="h-full">
+<body class="storefront h-full bg-surface-primary">
     <a
         href="#main"
         class="sr-only rounded-[var(--radius-sm)] focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:bg-surface-primary focus:px-3 focus:py-2 focus:shadow-(--shadow-panel)"
@@ -51,11 +51,16 @@
     </a>
 
     <div class="flex min-h-full flex-col">
-        <header class="border-b border-line">
-            <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-5">
-                <a href="{{ url('/') }}" class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold tracking-tight">
+{{--
+            `global-nav`: surface-black, 44px, 12px links. It is the first
+            thing that makes a page read as this language, and it is the same
+            bar the console wears - the shop and the panel are one product.
+        --}}
+        <header class="on-chrome bg-surface-chrome">
+            <div class="mx-auto flex h-11 w-full max-w-[1024px] items-center justify-between gap-4 px-6">
+                <a href="{{ url('/') }}" class="pressable flex items-center gap-2 rounded-[var(--radius-sm)] text-chrome font-semibold tracking-tight">
                     @if ($branding->logoUrl)
-                        <img src="{{ $branding->logoUrl }}" alt="{{ $brand }}" class="h-8 w-auto max-w-[12rem] object-contain">
+                        <img src="{{ $branding->logoUrl }}" alt="{{ $brand }}" class="h-5 w-auto max-w-[10rem] object-contain">
                     @else
                         {{ $brand }}
                     @endif
@@ -73,7 +78,7 @@
                                 id="currency"
                                 name="currency"
                                 onchange="this.form.submit()"
-                                class="rounded-[var(--radius-sm)] border border-line bg-surface-primary px-2 py-1.5 text-xs font-medium text-content-muted"
+                                class="rounded-[var(--radius-sm)] border border-line bg-surface-primary px-2 py-1 text-chrome font-medium text-content-muted"
                             >
                                 @foreach ($currencies as $code)
                                     <option value="{{ $code }}" @selected($code === ($currency ?? null))>{{ $code }}</option>
@@ -89,7 +94,7 @@
 
                     <a
                         href="{{ url('/store') }}"
-                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                     >
                         {{ __('storefront.plans') }}
                     </a>
@@ -100,7 +105,7 @@
                     @if ($sections['domains'] ?? false)
                         <a
                             href="{{ route('storefront.domains') }}"
-                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                         >
                             {{ __('domains.search.title') }}
                         </a>
@@ -109,7 +114,7 @@
                     @if ($sections['help'] ?? false)
                         <a
                             href="{{ route('storefront.kb') }}"
-                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                         >
                             {{ __('support.kb.title') }}
                         </a>
@@ -118,20 +123,20 @@
                     @if ($sections['announcements'] ?? false)
                         <a
                             href="{{ route('storefront.announcements') }}"
-                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                         >
                             {{ __('support.announcements.title') }}
                         </a>
                     @endif
                     <a
                         href="{{ route('storefront.cart') }}"
-                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                     >
                         {{ __('ordering.cart.title') }}
                     </a>
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
                     >
                         {{ __('storefront.client_area') }}
                     </a>
@@ -139,12 +144,19 @@
             </div>
         </header>
 
-        <main id="main" class="mx-auto w-full max-w-6xl flex-1 px-6 py-14 sm:py-16">
+        {{--
+            No max-width here: a tile is full-bleed and sets its own column,
+            because the edge-to-edge alternation between canvas and parchment
+            is what divides the page. A border would be a second divider
+            saying the same thing.
+        --}}
+        <main id="main" class="flex-1">
             @yield('content')
         </main>
 
-        <footer class="border-t border-line">
-            <div class="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-6 text-xs text-content-subtle sm:flex-row sm:items-center sm:justify-between">
+        {{-- Parchment, not a rule: the colour change is the divider. --}}
+        <footer class="bg-background">
+            <div class="mx-auto flex w-full max-w-[1024px] flex-col gap-3 px-6 py-8 text-chrome text-content-subtle sm:flex-row sm:items-center sm:justify-between">
                 <span>&copy; {{ date('Y') }} {{ $branding->documentName() }}</span>
 
                 @if ($branding->legalLinks !== [])

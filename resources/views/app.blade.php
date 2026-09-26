@@ -1,5 +1,22 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+@php
+    /*
+     * The operator's theme, before the first paint.
+     *
+     * This used to be an inline script reading `localStorage`, and it never
+     * ran once: the CSP is `script-src 'self'` with no exceptions, so every
+     * load refused it and every dark-theme operator got the white flash the
+     * script existed to prevent. The switch writes a cookie as well now, and
+     * the server renders the attribute - no script, no exception.
+     */
+    $theme = request()->cookie('infracms_theme');
+    $theme = in_array($theme, ['light', 'dark'], true) ? $theme : null;
+@endphp
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    class="h-full"
+    @if ($theme) data-theme="{{ $theme }}" @endif
+>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,19 +24,6 @@
     <meta name="color-scheme" content="light dark">
 
     <title inertia>{{ config('app.name') }}</title>
-
-    {{-- Applied before the first paint, so a dark-theme operator never
-         sees a white flash on the way in. --}}
-    <script>
-        try {
-            var theme = localStorage.getItem('infracms.theme');
-            if (theme === 'light' || theme === 'dark') {
-                document.documentElement.dataset.theme = theme;
-            }
-        } catch (error) {
-            // Site data blocked. The media query still applies.
-        }
-    </script>
 
     {{-- Rendered once per document rather than shared on every Inertia
          navigation: the locale does not change between two clicks. --}}

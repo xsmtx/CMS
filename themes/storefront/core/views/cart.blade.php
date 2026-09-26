@@ -4,24 +4,24 @@
 @section('robots', 'noindex')
 
 @section('content')
-    <h1 class="text-3xl leading-[1.1] font-semibold tracking-tighter sm:text-4xl">
+    <h1 class="text-page leading-[1.1] font-semibold tracking-tighter sm:text-display">
         {{ __('ordering.cart.title') }}
     </h1>
 
     @if (session('status'))
-        <p role="status" class="mt-5 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-sm">
+        <p role="status" class="mt-5 rounded-[var(--radius-sm)] border border-line bg-surface-secondary px-3 py-2 text-body">
             {{ session('status') }}
         </p>
     @endif
 
     @if ($cart === null || $cart['empty'])
-        <div class="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6">
-            <p class="text-sm font-medium">{{ __('ordering.cart.empty') }}</p>
-            <p class="mt-1 text-sm text-content-muted">{{ __('ordering.cart.empty_hint') }}</p>
+        <div class="mt-8 rounded-[var(--radius-xl)] border border-line bg-surface-primary p-6">
+            <p class="text-body font-medium">{{ __('ordering.cart.empty') }}</p>
+            <p class="mt-1 text-body text-content-muted">{{ __('ordering.cart.empty_hint') }}</p>
 
             <a
                 href="{{ route('storefront.catalog') }}"
-                class="pressable mt-5 inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-4 py-2 text-sm font-semibold text-content-inverse"
+                class="pressable mt-5 inline-flex items-center rounded-full bg-brand px-5 py-2.5 text-body font-semibold text-content-inverse"
             >
                 {{ __('ordering.cart.continue') }}
             </a>
@@ -29,19 +29,19 @@
     @else
         <div class="mt-8 grid gap-10 lg:grid-cols-12 lg:gap-14">
             <div class="lg:col-span-7">
-                <ul class="divide-y divide-line rounded-[var(--radius-lg)] border border-line bg-surface-primary">
+                <ul class="divide-y divide-line rounded-[var(--radius-xl)] border border-line bg-surface-primary">
                     @foreach ($cart['lines'] as $line)
                         <li class="px-5 py-4">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
-                                    <p class="text-sm font-medium">{{ $line['name'] }}</p>
-                                    <p class="mt-0.5 text-xs text-content-muted">
+                                    <p class="text-body font-medium">{{ $line['name'] }}</p>
+                                    <p class="mt-0.5 text-chrome text-content-muted">
                                         @if ($line['cycleLabel']){{ $line['cycleLabel'] }}@endif
                                         @if ($line['domain']) · {{ $line['domain'] }}@endif
                                     </p>
 
                                     @foreach ($line['options'] as $option)
-                                        <p class="mt-1 text-xs text-content-muted">
+                                        <p class="mt-1 text-chrome text-content-muted">
                                             {{ $option['group'] }}: {{ $option['label'] }}
                                             @if ($option['amount'])
                                                 <span class="tabular-nums">({{ $option['amount'] }})</span>
@@ -51,7 +51,7 @@
 
                                     @foreach ($cart['addonLines'] as $addon)
                                         @if ($addon['parentId'] === $line['id'])
-                                            <p class="mt-1 text-xs text-content-muted">
+                                            <p class="mt-1 text-chrome text-content-muted">
                                                 + {{ $addon['name'] }}
                                                 <span class="tabular-nums">{{ $addon['lineTotal'] }}</span>
                                             </p>
@@ -60,14 +60,14 @@
                                 </div>
 
                                 <div class="text-right whitespace-nowrap">
-                                    <p class="text-sm font-semibold tabular-nums">{{ $line['lineTotal'] }}</p>
+                                    <p class="text-body font-semibold tabular-nums">{{ $line['lineTotal'] }}</p>
                                     @if ($line['lineSetup'])
-                                        <p class="text-xs text-content-subtle">
+                                        <p class="text-chrome text-content-subtle">
                                             {{ __('catalog.storefront.setup_fee', ['amount' => $line['lineSetup']]) }}
                                         </p>
                                     @endif
                                     @if ($line['lineDiscount'])
-                                        <p class="text-xs text-success">−{{ $line['lineDiscount'] }}</p>
+                                        <p class="text-chrome text-success">−{{ $line['lineDiscount'] }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -84,9 +84,9 @@
                                         value="{{ $line['quantity'] }}"
                                         min="1"
                                         max="100"
-                                        class="w-20 rounded-[var(--radius-sm)] border border-line bg-background px-2 py-1 text-sm tabular-nums"
+                                        class="w-20 rounded-[var(--radius-sm)] border border-line bg-background px-2 py-1 text-body tabular-nums"
                                     >
-                                    <button type="submit" class="pressable text-xs text-content-muted underline underline-offset-4 hover:text-content">
+                                    <button type="submit" class="pressable text-chrome text-content-muted underline underline-offset-4 hover:text-content">
                                         {{ __('ordering.cart.update_line') }}
                                     </button>
                                 </form>
@@ -96,7 +96,7 @@
                                 <form method="POST" action="{{ route('storefront.cart.remove', $line['id']) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="pressable text-xs text-danger underline underline-offset-4">
+                                    <button type="submit" class="pressable text-chrome text-danger underline underline-offset-4">
                                         {{ __('ordering.cart.remove') }}
                                     </button>
                                 </form>
@@ -107,15 +107,15 @@
 
                 <a
                     href="{{ route('storefront.catalog') }}"
-                    class="mt-4 inline-block text-sm text-content-muted underline underline-offset-4 hover:text-content"
+                    class="mt-4 inline-block text-body text-content-muted underline underline-offset-4 hover:text-content"
                 >
                     {{ __('ordering.cart.continue') }}
                 </a>
             </div>
 
             <div class="lg:col-span-5">
-                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel)">
-                    <dl class="divide-y divide-line text-sm">
+                <div class="rounded-[var(--radius-xl)] border border-line bg-surface-primary p-6">
+                    <dl class="divide-y divide-line text-body">
                         <div class="flex justify-between py-2 first:pt-0">
                             <dt class="text-content-muted">{{ __('ordering.cart.subtotal') }}</dt>
                             <dd class="tabular-nums">{{ $cart['subtotal'] }}</dd>
@@ -132,7 +132,7 @@
                             <div class="flex justify-between py-2">
                                 <dt class="text-content-muted">
                                     {{ __('ordering.cart.discount') }}
-                                    <span class="font-mono text-xs">{{ $cart['promotionCode'] }}</span>
+                                    <span class="font-mono text-chrome">{{ $cart['promotionCode'] }}</span>
                                 </dt>
                                 <dd class="tabular-nums text-success">−{{ $cart['discount'] }}</dd>
                             </div>
@@ -145,21 +145,21 @@
                             </div>
                         @endif
 
-                        <div class="flex justify-between py-3 text-base font-semibold">
+                        <div class="flex justify-between py-3 text-title font-semibold">
                             <dt>{{ __('ordering.cart.total') }}</dt>
                             <dd class="tabular-nums">{{ $cart['total'] }}</dd>
                         </div>
                     </dl>
 
                     @if ($cart['recurringTotal'])
-                        <p class="text-xs text-content-muted">
+                        <p class="text-chrome text-content-muted">
                             {{ __('ordering.cart.recurring', ['amount' => $cart['recurringTotal'], 'suffix' => '']) }}
                         </p>
                     @endif
 
                     <form method="POST" action="{{ route('storefront.cart.code') }}" class="mt-5 flex flex-col gap-2">
                         @csrf
-                        <label for="code" class="text-xs font-medium text-content-muted">
+                        <label for="code" class="text-chrome font-medium text-content-muted">
                             {{ __('ordering.cart.promo_code') }}
                         </label>
                         <div class="flex gap-2">
@@ -169,28 +169,28 @@
                                 type="text"
                                 value="{{ $cart['promotionCode'] }}"
                                 autocomplete="off"
-                                class="w-full rounded-[var(--radius-sm)] border border-line bg-background px-3 py-2 font-mono text-sm uppercase"
+                                class="w-full rounded-[var(--radius-sm)] border border-line bg-background px-3 py-2 font-mono text-body uppercase"
                             >
                             <button
                                 type="submit"
-                                class="pressable shrink-0 rounded-[var(--radius-sm)] border border-line-strong px-3 py-2 text-sm font-semibold"
+                                class="pressable shrink-0 rounded-[var(--radius-sm)] border border-line-strong px-3 py-2 text-body font-semibold"
                             >
                                 {{ __('ordering.cart.promo_apply') }}
                             </button>
                         </div>
 
                         @error('code')
-                            <p class="text-xs text-danger">{{ $message }}</p>
+                            <p class="text-chrome text-danger">{{ $message }}</p>
                         @enderror
 
                         @if ($cart['promotionRefusal'])
-                            <p class="text-xs text-danger">{{ $cart['promotionRefusal'] }}</p>
+                            <p class="text-chrome text-danger">{{ $cart['promotionRefusal'] }}</p>
                         @endif
                     </form>
 
                     <a
                         href="{{ route('storefront.checkout') }}"
-                        class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                        class="pressable mt-6 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-body font-semibold text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('ordering.cart.checkout') }}
                     </a>

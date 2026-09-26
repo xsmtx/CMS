@@ -22,6 +22,27 @@ record of what was covered and as the place a new page joins: a screen added
 after this date gets a row, and it is ticked the same way — the gates, then
 the browser.
 
+## 2026-09-26 — the language changed under all of them
+
+Every page in this file was converted to the enterprise design system and
+then **re-skinned to `DESIGN.md`** (`Apple-design-analysis`) at the token
+layer: palette, type scale, radii, spacing ladder, the black `global-nav`,
+the frosted floating layer and the one product shadow. No page was converted
+again — that is what ADR 0040 bought, and it is the evidence for it.
+
+Three components changed shape rather than colour: `AppButton` (primary and
+danger are pills, utility keeps the 8px corner), `AppBadge` (12px, and the
+brand tone shifts by `--badge-ink-shift`), and the four floating layers
+(`.floating` instead of a shadow that no longer exists).
+
+The storefront's fourteen Blade views moved to the marketing register —
+full-bleed tiles alternating canvas and parchment, a hero that fills a
+viewport, `store-utility-card` for products.
+
+Verified by `tools/design-review.mjs`: 168 renders, both appearances, axe on
+each. See `CLAUDE.md` for what it found.
+
+
 ## Reference screens (done)
 
 | Done | Page | Type | cards | padded td | solid danger | arbitrary type | i18n |

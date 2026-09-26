@@ -29,113 +29,192 @@
  * A brand supplies its own face through `--font-sans`.
  */
 :root {
+  /*
+   * Every value below is DESIGN.md's (`Apple-design-analysis`). Where that
+   * document is silent - status colours, a hover fill, a selected row - the
+   * value is derived from one it does state, and the derivation is written
+   * beside it. Nothing here is a colour somebody liked.
+   */
+
   /* ---- Backgrounds ---------------------------------------------------- */
-  --background: #f8fafc;
-  --background-subtle: #f1f5f9;
+  /*
+   * Parchment is the page and canvas is the surface, which is the way round
+   * a macOS window is: the white is the thing you read and the grey is the
+   * wall behind it. Apple's marketing pages invert this (white page,
+   * parchment section) and a console is not a marketing page - it has a
+   * thousand surfaces and needs the wall to recede.
+   */
+  --background: #f5f5f7; /* canvas-parchment */
+  --background-subtle: #f0f0f0; /* divider-soft */
 
   /* ---- Surfaces ------------------------------------------------------- */
-  --surface-primary: #ffffff;
-  --surface-secondary: #f1f5f9;
-  --surface-elevated: #ffffff;
-  --surface-hover: #f1f5f9;
-  --surface-selected: #dbeafe;
+  --surface-primary: #ffffff; /* canvas */
+  --surface-secondary: #fafafc; /* surface-pearl */
+  --surface-elevated: #ffffff; /* canvas */
+  --surface-hover: #f5f5f7; /* canvas-parchment */
+  /* Action Blue at 8%. DESIGN.md names no selected state, and a selected row
+     tinted with anything but the interactive colour would be a second way of
+     saying "this one". */
+  --surface-selected: #0066cc14;
 
   /*
-   * Chrome: the sidebar and the header strip.
+   * Chrome: the rail and the header strip.
    *
-   * Beyond the handoff's required families, and named because the Core
-   * palette gives the sidebar its own colour in both appearances — white in
-   * light, a shade above the page in dark. `background-subtle` cannot carry
-   * it: in light those are two different colours.
+   * `global-nav` is `surface-black` at 44px with 12px links, and that is the
+   * one place this product is allowed to be black - it is what makes an
+   * Apple page read as an Apple page before anything else has loaded.
    */
-  --surface-chrome: #ffffff;
+  --surface-chrome: #000000; /* surface-black */
 
   /* ---- Borders -------------------------------------------------------- */
-  --border-default: #e2e8f0;
-  --border-subtle: #eef2f7;
-  --border-strong: #cbd5e1;
+  --border-default: #e0e0e0; /* hairline */
+  --border-subtle: #f0f0f0; /* divider-soft */
+  --border-strong: #d2d2d7; /* surface-chip-translucent */
 
   /* ---- Text ----------------------------------------------------------- */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-inverse: #ffffff;
+  --text-primary: #1d1d1f; /* ink */
+  --text-secondary: #333333; /* ink-muted-80 */
+  /* ink-muted-48 is 4.6:1 on canvas and 3.94:1 on parchment, and the page is
+     parchment - which axe found at 12px on eighty-six renders. Apple's own
+     secondary label is the nearest value in the family that passes on both. */
+  --text-muted: #6e6e73; /* secondaryLabel, 5.0:1 on parchment */
+  --text-inverse: #ffffff; /* on-primary */
 
   /* ---- Brand ---------------------------------------------------------- */
-  --brand-primary: #2563eb;
-  --brand-primary-hover: #1d4ed8;
-  /* The second hue, and the only one. Never a second way of saying
-     "click here". */
-  --brand-accent: #0891b2;
+  --brand-primary: #0066cc; /* primary, the single Action Blue */
+  --brand-primary-hover: #0071e3; /* primary-focus */
+  /* The second hue, and the only one: DESIGN.md's on-dark blue, used where
+     something marks where you are rather than what to click. */
+  --brand-accent: #2997ff; /* primary-on-dark */
 
   /* ---- Status --------------------------------------------------------- */
-  --status-success: #059669;
-  --status-warning: #d97706;
-  --status-danger: #dc2626;
-  --status-info: #0284c7;
+  /*
+   * DESIGN.md has no status palette, because a marketing page has no failed
+   * job. These are Apple's own system colours in their accessible
+   * light-appearance variants, which is the only source that stays inside
+   * the language rather than reaching for another vendor's red.
+   */
+  /*
+   * Apple's own accessible-light variants, **darkened until 12px of them
+   * passes AA on a 14% tint of themselves over the parchment page** - which
+   * is where a badge actually sits. They do not, unmodified: systemGreen
+   * measures 4.40:1 on plain white before any tint is involved, and the
+   * whole set failed on eighty-six renders. Hue and saturation are Apple's;
+   * only lightness moved, and only as far as it had to.
+   */
+  --status-success: #1d7031; /* systemGreen, 7% darker */
+  --status-warning: #9e4700; /* systemOrange, 4% darker */
+  --status-danger: #be0013; /* systemRed, 4% darker */
+  --status-info: #005ebd; /* primary-focus, 6% darker */
   /*
    * Maintenance and unknown are statuses, not shades of warning. "We took it
    * down on purpose" and "the check did not answer" are the two things an
    * operator most needs to tell apart from "it is broken", and colouring
    * either as a warning taught every previous panel's users to ignore both.
    */
-  --status-maintenance: #2563eb;
-  --status-unknown: #64748b;
+  --status-maintenance: #3634a3; /* systemIndigo, dark enough already */
+  --status-unknown: #616166; /* secondaryLabel, 4% darker */
 
   /* ---- Module accents (§2) -------------------------------------------- */
   /* Accents, never large fills. A module that flooded a page with its own
      colour would be a module competing with status. */
-  --accent-billing: #2563eb;
-  --accent-infrastructure: #0891b2;
-  --accent-network: #4f46e5;
-  --accent-security: #dc2626;
-  --accent-automation: #7c3aed;
-  --accent-dns: #0284c7;
-  --accent-storage: #0d9488;
+  --accent-billing: #005dba; /* primary, 3% darker */
+  --accent-infrastructure: #0a6b66; /* systemMint, 6% darker */
+  --accent-network: #3634a3; /* systemIndigo */
+  --accent-security: #be0013; /* systemRed, 4% darker */
+  --accent-automation: #8542a6; /* systemPurple, 1% darker */
+  --accent-dns: #006796; /* systemCyan, 3% darker */
+  --accent-storage: #006b72; /* systemTeal, 5% darker */
 
   /* ---- Focus ---------------------------------------------------------- */
   /* Its own token because it must survive a rebrand: a brand that set an
      accent nobody can see against the page would otherwise take the focus
      ring with it. */
-  --focus-ring: #2563eb;
+  --focus-ring: #0071e3; /* primary-focus */
+
+  /*
+   * Which way a tinted badge pulls its own text.
+   *
+   * The Action Blue is the one tone that stays exactly as DESIGN.md names
+   * it, so on a 14% tint of itself it is the one tone that does not clear
+   * AA - 4.19:1 in light. The badge darkens it there and lightens it on a
+   * dark tile, which is the same correction in opposite directions, so it
+   * is one token rather than two rules.
+   */
+  --badge-ink-shift: black;
 
   /* ---- Geometry (§3) -------------------------------------------------- */
-  --radius-control: 8px;
-  --radius-card: 10px;
-  --radius-badge: 6px;
-  --radius-modal: 12px;
+  /*
+   * DESIGN.md's `rounded` ladder, and its own rule about which shape goes
+   * where: `button-dark-utility` is 8px, `store-utility-card` is 18px,
+   * `button-primary` is a pill. The system is mixed on purpose, so the rule
+   * is written down - badges 5, controls and inputs 8, cards 11, dialogs 18,
+   * primary and secondary actions pill.
+   */
+  --radius-badge: 5px; /* rounded.xs */
+  --radius-control: 8px; /* rounded.sm */
+  --radius-card: 11px; /* rounded.md */
+  --radius-modal: 18px; /* rounded.lg */
+  --radius-pill: 9999px; /* rounded.pill */
 
   /* ---- Space (§6) ----------------------------------------------------- */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
+  /*
+   * DESIGN.md's ladder is 4, 8, 12, 17, 24, 32, 48, 80. The names below are
+   * this product's and the values are that ladder; 20, 40 and 64 are not in
+   * it and are left where they were rather than rounded into a neighbour,
+   * because moving a step nobody named moves a hundred screens for nothing.
+   */
+  --space-1: 4px; /* xxs */
+  --space-2: 8px; /* xs */
+  --space-3: 12px; /* sm */
+  --space-4: 17px; /* md */
   --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
+  --space-6: 24px; /* lg */
+  --space-8: 32px; /* xl */
   --space-10: 40px;
-  --space-12: 48px;
+  --space-12: 48px; /* xxl */
   --space-16: 64px;
+  --space-20: 80px; /* section */
 
   /* ---- Shadow --------------------------------------------------------- */
-  --shadow-raised-token: 0 1px 1px oklch(21% 0.03 255 / 0.04);
-  --shadow-panel-token:
-    0 1px 2px oklch(21% 0.03 255 / 0.06), 0 12px 32px -16px oklch(21% 0.03 255 / 0.18);
+  /*
+   * **Exactly one shadow in the system**, and it is for photography: a
+   * product render resting on a surface. Never a card, never a button, never
+   * text. Elevation in the interface comes from the surface changing colour
+   * and from a frosted layer over content, which is what the two tokens
+   * below it are for.
+   */
+  --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --shadow-raised-token: none;
+  --shadow-panel-token: none;
+
+  /*
+   * A floating layer is frosted rather than lifted: parchment at 80% with a
+   * blur behind it, which is `sub-nav-frosted` and `floating-sticky-bar`. A
+   * menu over a table still has to be readable, so the fallback under
+   * `prefers-reduced-transparency` is the solid surface.
+   */
+  --panel-surface: #f5f5f7cc;
+  --panel-blur: blur(20px) saturate(180%);
 
   /* ---- Density (§6) --------------------------------------------------- */
   /*
    * Three presets, applied by `data-density` on the root. A row height is
    * the one measurement that decides whether a panel feels like a tool, and
    * it is not the same answer for a NOC wallboard and a customer portal.
+   *
+   * The default moved with the type: 14px `caption` on 20px leading plus
+   * 8px either side is a 36px row, which is Apple's own list-row height.
    */
   --row-y: 8px;
   --control-y: 8px;
-  --card-p: 20px;
-  /* Control heights. A button, an input and a select in one row are the
-     same height because they read the same token, not because somebody
-     matched paddings by eye. */
-  --control-h: 2rem;
-  --control-h-sm: 1.75rem;
+  --card-p: 24px; /* spacing.lg */
+  /* Control heights. A button, an input and a select in one row are the same
+     height because they read the same token, not because somebody matched
+     paddings by eye. `button-dark-utility` is 8px over 14px text, which is
+     34px; 36 is the same figure on the 4px ladder. */
+  --control-h: 2.25rem;
+  --control-h-sm: 1.875rem;
 }
 
 :root[data-density='compact'] {
@@ -176,98 +255,158 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --background: #080d17;
-    --background-subtle: #0c1424;
+    /*
+     * Dark is DESIGN.md's tile stack, which is how an Apple page goes dark:
+     * black behind, and the surfaces are the three tile greys rather than a
+     * tinted version of the light palette.
+     */
+    --background: #000000; /* surface-black */
+    --background-subtle: #1d1d1f; /* ink, used as the well */
 
-    --surface-primary: #111c2e;
-    --surface-secondary: #17243a;
-    --surface-elevated: #17243a;
-    --surface-hover: #1c2b44;
-    --surface-selected: #1b2e52;
-    --surface-chrome: #0c1424;
+    --surface-primary: #1d1d1f; /* ink */
+    --surface-secondary: #252527; /* surface-tile-3 */
+    --surface-elevated: #272729; /* surface-tile-1 */
+    --surface-hover: #2a2a2c; /* surface-tile-2 */
+    /* The on-dark blue at 14%: the same rule as light, in the colour this
+       appearance uses to mean interactive. */
+    --surface-selected: #2997ff24;
+    --surface-chrome: #000000; /* surface-black, as in light */
 
-    --border-default: #253550;
-    --border-subtle: #1b2942;
-    --border-strong: #334869;
+    /* A hairline on black is the tile above it, not a grey line. */
+    --border-default: #333333; /* ink-muted-80 */
+    --border-subtle: #252527; /* surface-tile-3 */
+    --border-strong: #48484a; /* systemGray4 dark */
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    /* Dark, not white: #3b82f6 against white is 3.7:1 and fails AA for body
-       text, which a button label is. */
-    --text-inverse: #080d17;
+    --text-primary: #ffffff; /* body-on-dark */
+    --text-secondary: #cccccc; /* body-muted */
+    /* Not ink-muted-48: #7a7a7a on ink is 3.6:1 and fails AA for body text.
+       Apple's own dark secondary label is the nearest value that passes. */
+    --text-muted: #98989d;
+    /*
+     * Black, and that is not an inversion of the light rule - it is what a
+     * light fill on a dark page requires. Every filled tone in this
+     * appearance is a bright one (#2997ff, #ff453a, #30d158), and white on
+     * any of them fails: white on the dark systemRed measures 3.05:1.
+     */
+    --text-inverse: #000000;
 
-    --brand-primary: #3b82f6;
-    --brand-primary-hover: #60a5fa;
-    --brand-accent: #22d3ee;
+    /*
+     * `primary-on-dark`, exactly as DESIGN.md says, and the reason is
+     * measurable: #0071e3 as text on a #1d1d1f tile is 3.58:1. It was, on
+     * twenty renders, until axe counted them.
+     */
+    --brand-primary: #2997ff; /* primary-on-dark */
+    --brand-primary-hover: #64b5ff;
+    --brand-accent: #2997ff; /* primary-on-dark */
 
-    --status-success: #10b981;
-    --status-warning: #f59e0b;
-    --status-danger: #ef4444;
-    --status-info: #38bdf8;
-    --status-maintenance: #3b82f6;
-    --status-unknown: #64748b;
+    /* Apple's system colours, dark-appearance variants. */
+    --status-success: #30d158; /* systemGreen dark */
+    --status-warning: #ff9f0a; /* systemOrange dark */
+    --status-danger: #ff453a; /* systemRed dark */
+    --status-info: #2997ff; /* primary-on-dark */
+    --status-maintenance: #5e5ce6; /* systemIndigo dark */
+    --status-unknown: #98989d;
 
-    --accent-billing: #3b82f6;
-    --accent-infrastructure: #22d3ee;
-    --accent-network: #818cf8;
-    --accent-security: #ef4444;
-    --accent-automation: #8b5cf6;
-    --accent-dns: #38bdf8;
-    --accent-storage: #2dd4bf;
+    --accent-billing: #2997ff;
+    --accent-infrastructure: #66d4cf; /* systemMint dark */
+    --accent-network: #5e5ce6; /* systemIndigo dark */
+    --accent-security: #ff453a;
+    --accent-automation: #bf5af2; /* systemPurple dark */
+    --accent-dns: #64d2ff; /* systemCyan dark */
+    --accent-storage: #40c8e0; /* systemTeal dark */
 
-    --focus-ring: #60a5fa;
+    --focus-ring: #2997ff;
 
-    /* Almost nothing. A dark panel is defined by its hairline; a drop
-       shadow on near-black is a smudge. */
-    --shadow-raised-token: 0 0 0 0 transparent;
-    --shadow-panel-token: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
+    --badge-ink-shift: white;
+
+    /* Still exactly one shadow, and still only for photography. On black it
+       is nearly invisible, which is the point: the tile carries the
+       elevation. */
+    --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+    --shadow-raised-token: none;
+    --shadow-panel-token: none;
+
+    /* The frosted layer, in the dark appearance's own tile. */
+    --panel-surface: #1d1d1fcc;
+    --panel-blur: blur(20px) saturate(180%);
   }
 }
 
 :root[data-theme='dark'] {
-  --background: #080d17;
-  --background-subtle: #0c1424;
+  /*
+   * Dark is DESIGN.md's tile stack, which is how an Apple page goes dark:
+   * black behind, and the surfaces are the three tile greys rather than a
+   * tinted version of the light palette.
+   */
+  --background: #000000; /* surface-black */
+  --background-subtle: #1d1d1f; /* ink, used as the well */
 
-  --surface-primary: #111c2e;
-  --surface-secondary: #17243a;
-  --surface-elevated: #17243a;
-  --surface-hover: #1c2b44;
-  --surface-selected: #1b2e52;
-  --surface-chrome: #0c1424;
+  --surface-primary: #1d1d1f; /* ink */
+  --surface-secondary: #252527; /* surface-tile-3 */
+  --surface-elevated: #272729; /* surface-tile-1 */
+  --surface-hover: #2a2a2c; /* surface-tile-2 */
+  /* The on-dark blue at 14%: the same rule as light, in the colour this
+     appearance uses to mean interactive. */
+  --surface-selected: #2997ff24;
+  --surface-chrome: #000000; /* surface-black, as in light */
 
-  --border-default: #253550;
-  --border-subtle: #1b2942;
-  --border-strong: #334869;
+  /* A hairline on black is the tile above it, not a grey line. */
+  --border-default: #333333; /* ink-muted-80 */
+  --border-subtle: #252527; /* surface-tile-3 */
+  --border-strong: #48484a; /* systemGray4 dark */
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #080d17;
+  --text-primary: #ffffff; /* body-on-dark */
+  --text-secondary: #cccccc; /* body-muted */
+  /* Not ink-muted-48: #7a7a7a on ink is 3.6:1 and fails AA for body text.
+     Apple's own dark secondary label is the nearest value that passes. */
+  --text-muted: #98989d;
+  /*
+   * Black, and that is not an inversion of the light rule - it is what a
+   * light fill on a dark page requires. Every filled tone in this
+   * appearance is a bright one (#2997ff, #ff453a, #30d158), and white on
+   * any of them fails: white on the dark systemRed measures 3.05:1.
+   */
+  --text-inverse: #000000;
 
-  --brand-primary: #3b82f6;
-  --brand-primary-hover: #60a5fa;
-  --brand-accent: #22d3ee;
+  /*
+   * `primary-on-dark`, exactly as DESIGN.md says, and the reason is
+   * measurable: #0071e3 as text on a #1d1d1f tile is 3.58:1. It was, on
+   * twenty renders, until axe counted them.
+   */
+  --brand-primary: #2997ff; /* primary-on-dark */
+  --brand-primary-hover: #64b5ff;
+  --brand-accent: #2997ff; /* primary-on-dark */
 
-  --status-success: #10b981;
-  --status-warning: #f59e0b;
-  --status-danger: #ef4444;
-  --status-info: #38bdf8;
-  --status-maintenance: #3b82f6;
-  --status-unknown: #64748b;
+  /* Apple's system colours, dark-appearance variants. */
+  --status-success: #30d158; /* systemGreen dark */
+  --status-warning: #ff9f0a; /* systemOrange dark */
+  --status-danger: #ff453a; /* systemRed dark */
+  --status-info: #2997ff; /* primary-on-dark */
+  --status-maintenance: #5e5ce6; /* systemIndigo dark */
+  --status-unknown: #98989d;
 
-  --accent-billing: #3b82f6;
-  --accent-infrastructure: #22d3ee;
-  --accent-network: #818cf8;
-  --accent-security: #ef4444;
-  --accent-automation: #8b5cf6;
-  --accent-dns: #38bdf8;
-  --accent-storage: #2dd4bf;
+  --accent-billing: #2997ff;
+  --accent-infrastructure: #66d4cf; /* systemMint dark */
+  --accent-network: #5e5ce6; /* systemIndigo dark */
+  --accent-security: #ff453a;
+  --accent-automation: #bf5af2; /* systemPurple dark */
+  --accent-dns: #64d2ff; /* systemCyan dark */
+  --accent-storage: #40c8e0; /* systemTeal dark */
 
-  --focus-ring: #60a5fa;
+  --focus-ring: #2997ff;
 
-  --shadow-raised-token: 0 0 0 0 transparent;
-  --shadow-panel-token: 0 16px 40px -20px oklch(0% 0 0 / 0.8);
+  --badge-ink-shift: white;
+
+  /* Still exactly one shadow, and still only for photography. On black it
+     is nearly invisible, which is the point: the tile carries the
+     elevation. */
+  --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --shadow-raised-token: none;
+  --shadow-panel-token: none;
+
+  /* The frosted layer, in the dark appearance's own tile. */
+  --panel-surface: #1d1d1fcc;
+  --panel-blur: blur(20px) saturate(180%);
 }
 
 /*
@@ -278,8 +417,16 @@
  * stylesheet is regenerated.
  */
 @theme {
+  /*
+   * DESIGN.md names SF Pro Text and SF Pro Display. Neither ships with this
+   * product and neither is fetched: on an Apple machine `-apple-system`
+   * already resolves to them, and everywhere else the system face is what an
+   * operator's own OS renders best. A brand supplies its own through this
+   * property, and no installation acquires a CDN dependency by upgrading.
+   */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', system-ui,
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo, monospace;
 
   --color-background: var(--background);
@@ -323,29 +470,42 @@
   --color-storage: var(--accent-storage);
 
   /*
-   * The type scale, because an operator panel lives or dies by it.
+   * The type scale, taken from DESIGN.md's own members.
    *
-   * Four sizes and two weights, chosen for a screen somebody reads for eight
-   * hours: 13px is the working size, 12px is chrome, 11px is a label, and
-   * anything larger is a heading. A fifth size is how a product ends up with
-   * nine.
+   * That document has two ends. The marketing end (56 / 40 / 28) builds a
+   * gallery; the utility end (`caption` 14, `fine-print` 12, `micro-legal`
+   * 10, `button-utility` 14) builds the store's chrome, its search field and
+   * its legal type. A console reads from the utility end and a shop reads
+   * from the other, which is why the storefront layout declares the display
+   * members itself and these five are what every operator screen gets.
    *
-   * Tracking tightens as size grows, which is what optical sizing does by
-   * hand: 28px at default tracking reads loose and amateur.
+   * Negative tracking is Apple's, not a preference: every SF Pro Text member
+   * in DESIGN.md carries it, and it is what stops 14px reading loose.
    */
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1rem;
-  --text-label--letter-spacing: 0.04em;
-  --text-chrome: 0.75rem;
-  --text-chrome--line-height: 1.125rem;
-  --text-body: 0.8125rem;
+  --text-label: 0.625rem; /* micro-legal 10 */
+  --text-label--line-height: 0.8125rem;
+  --text-label--letter-spacing: 0.06em;
+  --text-chrome: 0.75rem; /* fine-print 12 */
+  --text-chrome--line-height: 1rem;
+  --text-chrome--letter-spacing: -0.01em;
+  --text-body: 0.875rem; /* caption 14 */
   --text-body--line-height: 1.25rem;
-  --text-title: 0.9375rem;
-  --text-title--line-height: 1.375rem;
-  --text-title--letter-spacing: -0.01em;
-  --text-page: 1.1875rem;
-  --text-page--line-height: 1.625rem;
-  --text-page--letter-spacing: -0.015em;
+  --text-body--letter-spacing: -0.016em;
+  --text-title: 1.0625rem; /* body-strong 17 */
+  --text-title--line-height: 1.3125rem;
+  --text-title--letter-spacing: -0.022em;
+  /* `lead` is 28 at 400. A page heading carries 600, and 600 at 28 needs the
+     tracking pulled back in - which is what `display-md` does at 34. */
+  --text-page: 1.75rem; /* lead 28 */
+  --text-page--line-height: 2rem;
+  --text-page--letter-spacing: -0.022em;
+  /* The marketing end, for the storefront and nothing else. */
+  --text-display: 2.5rem; /* display-lg 40 */
+  --text-display--line-height: 2.75rem;
+  --text-display--letter-spacing: -0.01em;
+  --text-hero: 3.5rem; /* hero-display 56 */
+  --text-hero--line-height: 3.75rem;
+  --text-hero--letter-spacing: -0.005em;
 
   /* Geometry, resolved from the tokens above so a theme changes it in one
      place (§3: cards 10, controls 8, badges 6, modals 12). */
@@ -353,6 +513,7 @@
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius-card);
   --radius-xl: var(--radius-modal);
+  --radius-full: var(--radius-pill);
 
   /* Resolved from the tokens, so a theme moves them with everything else. */
   --shadow-raised: var(--shadow-raised-token);
@@ -360,6 +521,8 @@
 
   /* Motion. The built-in CSS easings are too weak to read as intentional. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* What Apple's own interface uses for a panel arriving. */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --duration-press: 120ms;
   --duration-fast: 160ms;
@@ -397,6 +560,122 @@
 }
 
 @layer components {
+  /*
+   * The global nav is black, and everything inside it re-reads the tokens.
+   *
+   * DESIGN.md's `global-nav` is `surface-black` with on-dark text, and it is
+   * the first thing that makes a page read as this language. The rail, the
+   * topbar and the portal header sit on it in both appearances - which would
+   * normally mean every descendant needing an on-dark variant of every
+   * colour it uses.
+   *
+   * It does not, because the custom properties are the API (ADR 0040): this
+   * class re-points the same names at the dark appearance's values for its
+   * own subtree, so `text-content`, `border-line` and `hover:bg-surface-hover`
+   * keep working and no markup inside the chrome knows it is on black. One
+   * class instead of forty conditional utilities, and a theme that overrides
+   * a token still moves the chrome with it.
+   */
+  .on-chrome {
+    /* The page tokens too, and they are the ones that matter most: a
+       segmented control reads `--background`, so without these the theme
+       switch and the language switch render as parchment boxes stuck on a
+       black bar. It is the first thing this class got wrong. */
+    --background: #000000;
+    --background-subtle: #1d1d1f;
+
+    --surface-primary: #1d1d1f;
+    --surface-secondary: #252527;
+    --surface-elevated: #272729;
+    --surface-hover: #1d1d1f;
+    --surface-selected: #2997ff24;
+
+    --border-default: #333333;
+    --border-subtle: #1d1d1f;
+    --border-strong: #48484a;
+
+    /* Brighter than the dark appearance's own text, because this sits on
+       pure black rather than on a tile: 12px of #86868b on #000 is 4.6:1,
+       which passes and still reads as switched off. */
+    --text-primary: #f5f5f7;
+    --text-secondary: #c7c7cc;
+    --text-muted: #98989d;
+    --text-inverse: #000000;
+
+    --brand-primary: #2997ff;
+    --brand-primary-hover: #64b5ff;
+    --focus-ring: #2997ff;
+
+    /*
+     * And the Tailwind spellings of the same names, which is not belt and
+     * braces - it is the only half that works.
+     *
+     * `@theme` declares `--color-content: var(--text-primary)` on `:root`,
+     * and a custom property whose value contains `var()` is substituted
+     * where it is **declared**, not where it is used. So a descendant that
+     * redefines `--text-primary` changes nothing a utility reads: the
+     * breadcrumb kept `#1d1d1f` on a black bar at 1.24:1, and the only
+     * reason anybody knew is that axe counted it on seventy-seven renders.
+     *
+     * The canonical tokens above stay because stylesheets read them
+     * directly; these are what `text-content` and `border-line` resolve.
+     */
+    --color-background: #000000;
+    --color-background-subtle: #1d1d1f;
+    --color-surface-primary: #1d1d1f;
+    --color-surface-secondary: #252527;
+    --color-surface-elevated: #272729;
+    --color-surface-hover: #1d1d1f;
+    --color-surface-selected: #2997ff24;
+    --color-line: #333333;
+    --color-line-subtle: #1d1d1f;
+    --color-line-strong: #48484a;
+    --color-content: #f5f5f7;
+    --color-content-muted: #c7c7cc;
+    --color-content-subtle: #98989d;
+    --color-content-inverse: #000000;
+    --color-brand: #2997ff;
+    --color-brand-hover: #64b5ff;
+    --color-accent: #2997ff;
+
+    color: var(--color-content);
+  }
+
+  /*
+   * A floating layer is frosted, not lifted.
+   *
+   * DESIGN.md allows exactly one drop-shadow in the whole system and spends
+   * it on product photography, so a menu cannot borrow it. Elevation here is
+   * what `sub-nav-frosted` and `floating-sticky-bar` use: the parchment at
+   * 80% with a blur behind it, over a hairline.
+   *
+   * The fallback is not decoration either. `prefers-reduced-transparency` is
+   * somebody telling the OS that translucency makes text hard to read, and a
+   * menu over a table is exactly where that bites - so it goes solid.
+   */
+  .floating {
+    background-color: var(--panel-surface);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    border: 1px solid var(--border-default);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .floating {
+      background-color: var(--surface-elevated);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  /*
+   * The one shadow, for the one thing that gets it: a product render resting
+   * on a surface. Never a card, never a button, never text.
+   */
+  .product-shadow {
+    box-shadow: var(--shadow-product);
+  }
+
   /*
      * Pressable surfaces.
      *

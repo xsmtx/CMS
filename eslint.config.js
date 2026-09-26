@@ -37,4 +37,17 @@ export default defineConfigWithVueTs(
       'vue/define-macros-order': 'error',
     },
   },
+
+  {
+    /*
+     * A command-line tool's whole job is printing. `no-console` exists so a
+     * debug statement cannot reach a release build, and nothing under
+     * `tools/` is bundled - it is run by hand and by CI.
+     */
+    name: 'infracms/tools',
+    files: ['tools/**/*.mjs', 'tools/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 )

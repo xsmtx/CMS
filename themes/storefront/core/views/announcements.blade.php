@@ -3,24 +3,24 @@
 @section('title', __('support.announcements.title') . ' — ' . $brand)
 
 @section('content')
-    <h1 class="text-4xl leading-[1.05] font-semibold tracking-tighter text-balance sm:text-5xl">
+    <h1 class="text-display font-semibold text-balance">
         {{ __('support.announcements.title') }}
     </h1>
 
     @forelse ($announcements as $announcement)
         <article class="mt-10 max-w-[70ch] border-t border-line pt-6 first:border-t-0">
-            <h2 class="text-lg font-semibold tracking-tight">
+            <h2 class="text-title font-semibold">
                 {{ $announcement['title'] }}
             </h2>
-            <p class="mt-1 text-xs text-content-subtle">
+            <p class="mt-1 text-chrome text-content-subtle">
                 {{ \Illuminate\Support\Carbon::parse($announcement['publishedAt'])->toFormattedDateString() }}
             </p>
 
-            <div class="prose-article mt-4 text-base leading-relaxed">
+            <div class="prose-article mt-4 text-title leading-relaxed">
                 {!! $announcement['body'] !!}
             </div>
         </article>
     @empty
-        <p class="mt-10 text-sm text-content-muted">{{ __('support.announcements.none_public') }}</p>
+        <p class="mt-10 text-body text-content-muted">{{ __('support.announcements.none_public') }}</p>
     @endforelse
 @endsection

@@ -40,7 +40,15 @@ const classes = computed(() => [
   // Height is the control token, not padding: a button, an input and a
   // select in one row are the same height because they read one number,
   // and `data-density` moves all three together.
-  'pressable inline-flex items-center justify-center gap-1.5 rounded-md',
+  //
+  // **Shape carries meaning here, and the rule is DESIGN.md's own.** That
+  // document gives `button-primary` and `button-secondary-pill` a pill and
+  // `button-dark-utility` an 8px corner, which is not an inconsistency: the
+  // pill is the thing the page is asking you to do, and the 8px square is a
+  // control in a row of controls. So primary and danger are pills; the
+  // toolbar variants keep the control radius that the input beside them has.
+  'pressable inline-flex items-center justify-center gap-1.5',
+  props.variant === 'primary' || props.variant === 'danger' ? 'rounded-full' : 'rounded-md',
   // A border on every variant (transparent where the variant has none), so
   // a button is exactly as tall as the input beside it. The colour belongs
   // to the variant: a `border-transparent` here in the base used to win over
@@ -52,7 +60,16 @@ const classes = computed(() => [
   'border font-medium whitespace-nowrap',
   'transition-[color,background-color,border-color,opacity] duration-(--duration-fast) ease-(--ease-out)',
   'disabled:pointer-events-none disabled:opacity-55',
-  props.size === 'sm' ? 'text-chrome h-(--control-h-sm) px-2.5' : 'text-body h-(--control-h) px-3',
+  props.size === 'sm' ? 'text-chrome h-(--control-h-sm)' : 'text-body h-(--control-h)',
+  // 22px against 15px, which is what the spec pads a pill and a utility
+  // button: a pill with square padding reads as a squashed capsule.
+  props.variant === 'primary' || props.variant === 'danger'
+    ? props.size === 'sm'
+      ? 'px-4'
+      : 'px-5'
+    : props.size === 'sm'
+      ? 'px-2.5'
+      : 'px-3',
   {
     primary: 'bg-brand text-content-inverse hover:bg-brand-hover border-transparent',
     // The line, not the strong line: a secondary button outlined in the

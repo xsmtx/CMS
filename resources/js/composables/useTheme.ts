@@ -19,6 +19,9 @@ export type ThemeChoice = 'system' | 'light' | 'dark'
 
 const STORAGE_KEY = 'infracms.theme'
 
+/** Read by `app.blade.php` before the first paint. */
+const COOKIE_KEY = 'infracms_theme'
+
 const choice = ref<ThemeChoice>('system')
 
 function isChoice(value: unknown): value is ThemeChoice {
@@ -60,6 +63,24 @@ export function useTheme() {
     } catch {
       // A browser that refuses to remember it still honours it for this
       // page, which is better than refusing to switch at all.
+    }
+
+    /*
+     * And a cookie, which is the half the server can read.
+     *
+     * The document used to apply the theme from an inline script so that a
+     * dark-theme operator never saw a white flash. It never ran: this
+     * product's CSP is `script-src 'self'` with no exceptions, so the
+     * browser refused it on every load and the flash happened anyway - for
+     * as long as both have existed, with only the console saying so.
+     *
+     * A cookie needs no script and no exception. `SameSite=Lax` because it
+     * is a display preference, not a credential.
+     */
+    try {
+      document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=31536000; samesite=lax`
+    } catch {
+      // Same as above: the page still switched.
     }
   }
 

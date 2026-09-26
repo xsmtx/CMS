@@ -104,7 +104,7 @@ onBeforeUnmount(() => {
           aria-modal="true"
           :aria-labelledby="titleId"
           tabindex="-1"
-          class="drawer-panel border-line bg-surface-primary relative flex h-full w-full max-w-full flex-col border-l shadow-(--shadow-panel) outline-none sm:max-w-[26rem]"
+          class="drawer-panel floating relative flex h-full w-full max-w-full flex-col outline-none sm:max-w-[26rem]"
           @keydown="trap"
         >
           <header class="border-line flex items-start gap-3 border-b px-4 py-3">

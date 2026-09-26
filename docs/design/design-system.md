@@ -2,10 +2,27 @@
 
 The contract between the product and anything that themes it.
 
-**Source of record:** `INFRACMS_UI_UX_THEME_HANDOFF_3.md`. Where this
-document and the handoff disagree, the handoff wins and this document is
-wrong. Where this document says *more* than the handoff, it is recording a
-decision the handoff left open — each of those says so.
+**Sources of record, in order.** `DESIGN.md` at the repository root is the
+**visual language** (`Apple-design-analysis`): it holds the palette, the type
+scale, the radii, the spacing ladder and the component specifications, and
+every value in `resources/css/app.css` is one of its or a derivation from one
+of its, with the derivation written beside it.
+`INFRACMS_UI_UX_THEME_HANDOFF_3.md` remains the record for **structure** —
+which tokens exist, what a theme may override, what a screen owes an
+operator. Where the two disagree about a *value*, DESIGN.md wins; where they
+disagree about a *name*, the handoff wins, because a token name is an API
+somebody else's theme is written against.
+
+Where this document says *more* than either, it is recording a decision they
+left open — each of those says so.
+
+**DESIGN.md has two registers and both are used.** Its marketing members
+(`hero-display` 56, `display-lg` 40, `lead` 28) build the storefront, where a
+tile occupies roughly one viewport. Its utility members (`caption` 14,
+`fine-print` 12, `micro-legal` 10, `button-utility`, `button-dark-utility`)
+build the console, where a screen carries forty controls. Both are that
+document's; the mapping between surface and register is this one's, and it is
+in §3 and §4.
 
 **How to apply it:** the Claude Code skills in `.claude/skills/` —
 `enterprise-design-system`, `enterprise-cms-ux`, `frontend-architecture`,
@@ -61,16 +78,29 @@ spellings, and this is the table:
 | `--status-unknown` | `unknown` | `text-unknown` |
 | `--accent-billing` … `--accent-storage` | `billing` … `storage` | `text-automation` |
 | `--focus-ring` | — | `outline` in `:focus-visible` |
-| `--radius-badge/control/card/modal` | `--radius-sm/md/lg/xl` | `rounded-sm` (6) · `rounded-md` (8) · `rounded-lg` (10) · `rounded-xl` (12) |
+| `--radius-badge/control/card/modal/pill` | `--radius-sm/md/lg/xl/full` | `rounded-sm` (5) · `rounded-md` (8) · `rounded-lg` (11) · `rounded-xl` (18) · `rounded-full` |
+| `--panel-surface`, `--panel-blur` | — | `.floating` — every menu, dialog, drawer and the palette |
+| `--shadow-product` | — | `.product-shadow` — storefront product imagery, and nothing else |
 | `--control-h`, `--control-h-sm` | — | `h-(--control-h)` — every button, input and select |
 | `--row-y` | — | table cell padding (automatic on `.data-table` cells) |
-| `--space-1` … `--space-16` | — | the 4/8/12/16/20/24/32/40/48/64 scale |
+| `--space-1` … `--space-20` | — | DESIGN.md's 4/8/12/17/24/32/48/80 ladder, plus 20/40/64 which it does not name |
 
 † **`--surface-chrome` is an addition** beyond the handoff's required
-families. The Core palette gives the sidebar its own colour in both
-appearances — white in light, a shade above the page in dark — and
-`background-subtle` cannot carry it, because in light those are two
-different colours.
+families, and it is `surface-black` in both appearances: DESIGN.md's
+`global-nav` is black with on-dark text, and it is the first thing that makes
+a page read as this language.
+
+**Everything inside the chrome re-reads the tokens**, through `.on-chrome`.
+That class redefines the same names for its own subtree, so `text-content`
+and `border-line` keep working and no markup inside the rail knows it is on
+black — one class instead of forty conditional utilities.
+
+It redefines **both spellings**, and that is the only half that works: `@theme`
+declares `--color-content: var(--text-primary)` on `:root`, and a custom
+property whose value contains `var()` is substituted where it is *declared*,
+not where it is used. Overriding `--text-primary` on a descendant therefore
+changes nothing a Tailwind utility reads. The breadcrumb sat at 1.24:1 on the
+black bar until axe counted it on seventy-seven renders.
 
 ### Rules
 
@@ -126,19 +156,29 @@ its users to ignore amber.
 
 ## 3. Type
 
-Five sizes, two weights. Body is 13px because that is what a screen somebody
-reads for eight hours wants: larger is a document, smaller is a spreadsheet.
+The system face, and seven sizes: five for the console and two more the
+storefront uses. Every one is a DESIGN.md member.
 
-| Token | Size | For |
-| --- | --- | --- |
-| `text-label` | 11px, +0.04em | Column heads, micro-labels, uppercase. |
-| `text-chrome` | 12px | Secondary lines, help text, footers. |
-| `text-body` | 13px | The working size. `<body>` is set to it. |
-| `text-title` | 15px, −0.01em | Card and section headings. |
-| `text-page` | 19px, −0.015em | One per screen. |
+| Token | Size | DESIGN.md member | For |
+| --- | --- | --- | --- |
+| `text-label` | 10px, +0.06em | `micro-legal` | Column heads and micro-labels, uppercase. |
+| `text-chrome` | 12px, −0.01em | `fine-print` | Secondary lines, help text, badges, footers. |
+| `text-body` | 14px, −0.016em | `caption` | The working size. `<body>` is set to it. |
+| `text-title` | 17px, −0.022em | `body-strong` | Card and section headings. |
+| `text-page` | 28px, −0.022em | `lead` | One per screen. |
+| `text-display` | 40px | `display-lg` | Storefront tile headings. |
+| `text-hero` | 56px | `hero-display` | The storefront hero, once. |
 
-Tracking tightens as size grows — what optical sizing does by hand. A sixth
-size is how a product ends up with nine.
+Tracking is negative and that is not a preference: every SF Pro Text member
+in DESIGN.md carries it, and it is what stops 14px reading loose.
+
+**A badge is `fine-print`, not `micro-legal`.** The 10px member is what that
+document spends on the legal line at the foot of a page. A badge is a word
+somebody reads to know what a row is, and at 10px on a 14% tint of its own
+colour it measures 4.19:1, which fails AA — which is how it was found.
+
+**The console does not use the marketing register.** A 28px page heading is
+`lead`; a 56px one would be a gallery where an operator wants a list.
 
 **Tailwind's own sizes are not used.** `text-xs`/`text-sm` appeared 578 times
 before the enterprise pass, and `text-sm` is 14px — larger than body — so
@@ -154,9 +194,25 @@ numbers — those get `tabular-nums`, which is the `.numeric` cell on a table.
 
 ## 4. Geometry, space, density
 
-Radii (§3): controls 8, cards 10, badges 6, modals 12. Nothing is a pill
-except a true toggle. A pill-shaped badge in a table cell reads as
-decoration, which is what a status must not be.
+Radii are DESIGN.md's ladder: badges 5 (`xs`), controls and inputs 8
+(`sm`), cards 11 (`md`), dialogs 18 (`lg`), and the pill.
+
+**The system is mixed on purpose and the rule is written down**, because
+DESIGN.md's own is: `button-primary` and `button-secondary-pill` are pills,
+`button-dark-utility` is 8px. A pill is the thing the page is asking you to
+do; the 8px square is a control in a row of controls. So primary and danger
+buttons are pills, every other button keeps the control radius that the input
+beside it has, and a badge is still not a pill — a pill-shaped badge in a
+table cell reads as decoration, which is what a status must not be.
+
+**Elevation is not a shadow.** DESIGN.md allows exactly one drop-shadow in
+the whole system and spends it on product photography
+(`--shadow-product`, storefront only). In the interface, elevation is the
+surface changing colour, and a floating layer — menu, dialog, drawer,
+palette — is *frosted*: `.floating` puts the parchment at 80% behind a
+`blur(20px)`, with a solid fallback under `prefers-reduced-transparency`,
+because that preference is somebody saying translucency makes text hard to
+read and a menu over a table is where that bites.
 
 Spacing is the handoff's scale — 4, 8, 12, 16, 20, 24, 32, 40, 48, 64 — as
 `--space-1` … `--space-16`.

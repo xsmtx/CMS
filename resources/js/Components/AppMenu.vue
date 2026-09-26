@@ -113,7 +113,7 @@ defineExpose({ close })
         v-if="open"
         ref="panel"
         role="menu"
-        class="panel-enter border-line bg-surface-primary z-50 origin-top-right rounded-lg border p-1 text-left shadow-(--shadow-panel)"
+        class="panel-enter floating z-50 origin-top-right rounded-lg p-1 text-left"
         :style="style"
       >
         <slot :close="close" />

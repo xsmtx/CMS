@@ -969,7 +969,7 @@ onBeforeUnmount(() => {
     -->
     <aside
       data-admin-nav
-      class="border-line bg-surface-chrome fixed inset-y-0 left-0 z-40 flex w-(--rail-w) flex-col border-r transition-transform duration-(--duration-fast) ease-(--ease-out) lg:translate-x-0"
+      class="on-chrome border-line bg-surface-chrome fixed inset-y-0 left-0 z-40 flex w-(--rail-w) flex-col border-r transition-transform duration-(--duration-fast) ease-(--ease-out) lg:translate-x-0"
       :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
       :aria-label="t('ui.shell.sections', {}, 'Sections')"
     >
@@ -1147,7 +1147,7 @@ onBeforeUnmount(() => {
         ref="flyoutPanel"
         data-rail-flyout
         :style="flyoutStyle"
-        class="panel-enter border-line bg-surface-elevated text-content z-50 rounded-lg border p-1.5 shadow-(--shadow-panel)"
+        class="panel-enter floating text-content z-50 rounded-lg p-1.5"
       >
         <p class="text-content-subtle text-label px-2 pt-1 pb-1.5 uppercase">
           {{ flyoutGroup.label }}
@@ -1178,7 +1178,7 @@ onBeforeUnmount(() => {
         second header.
       -->
       <header
-        class="border-line bg-surface-chrome sticky top-0 z-20 flex h-14 items-center gap-3 border-b px-4 sm:px-6"
+        class="on-chrome border-line bg-surface-chrome sticky top-0 z-20 flex h-14 items-center gap-3 border-b px-4 sm:px-6"
       >
         <button
           type="button"

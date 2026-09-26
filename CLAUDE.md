@@ -1748,3 +1748,63 @@ rather than the address rows, because the address being allocated has no row yet
 — there is nothing else two callers could both hold. The test does not race
 threads: it asserts the unique index on `(ip_prefix_id, address_bytes)` refuses
 the second row whatever the lock did.
+
+**The product wears `DESIGN.md` now** (`Apple-design-analysis`), across all
+113 screens: the console, the portal and the storefront. It was done at the
+**token layer**, which is what ADR 0040 bought — re-valuing
+`resources/css/app.css` moved every screen at once, and the only components
+that needed touching were the ones whose *shape* changed.
+
+**Every value is DESIGN.md's or a derivation with the derivation written
+beside it.** Action Blue `#0066cc`, ink `#1d1d1f`, canvas white, parchment
+`#f5f5f7`, hairline `#e0e0e0`, the dark tiles `#1d1d1f/#252527/#272729` on
+black, radii 5/8/11/18/pill, the 4-8-12-17-24-32-48-80 ladder. Where that
+document is silent — status colours, a selected row, a hover fill — the value
+comes from Apple's own system palette or from a colour DESIGN.md does state,
+and says so in a comment. Nothing in the file is a colour somebody liked.
+
+**It has two registers and both are used.** The marketing members (56 / 40 /
+28) build the storefront, where a tile occupies roughly one viewport; the
+utility members (`caption` 14, `fine-print` 12, `micro-legal` 10,
+`button-dark-utility`) build the console, where a screen carries forty
+controls. Applying the marketing end to a table would have been reading half
+the document.
+
+**`--surface-chrome` is black in both appearances** (`global-nav`), and
+`.on-chrome` re-points the tokens for its subtree so the rail, the topbar and
+the portal header need no on-dark variant of anything.
+
+**A custom property containing `var()` is substituted where it is declared,
+not where it is used.** `@theme` sets `--color-content: var(--text-primary)`
+on `:root`, so a descendant redefining `--text-primary` changes nothing a
+Tailwind utility reads — `.on-chrome` had to redefine `--color-*` as well.
+Until it did, the breadcrumb sat at **1.24:1** on the black bar and looked
+fine in a screenshot, because #1d1d1f on #000 is invisible rather than wrong.
+
+**There is exactly one shadow and it is for photography.** `--shadow-product`
+on storefront imagery; `--shadow-raised` and `--shadow-panel` are `none`.
+Elevation is the surface changing colour, and a floating layer is `.floating`
+— parchment at 80% behind `blur(20px)`, solid under
+`prefers-reduced-transparency`, because that preference is somebody telling
+the OS that translucency makes text hard to read.
+
+**`tools/design-review.mjs` is the browser pass, mechanised.** It signs in,
+walks every parameterless page in both appearances, captures each one, checks
+for horizontal overflow at 1440/1280/1366/1920 and runs axe over it. It does
+not decide whether a screen *looks* right — "the heading says the same thing
+twice" is not machine-checkable and never will be — but it found, in one run,
+what nobody had looked for:
+
+- **86 renders failing colour contrast.** Two causes: the breadcrumb above,
+  and `ink-muted-48` (`#7a7a7a`), which is 4.6:1 on canvas and **3.94:1 on
+  parchment** — and the page is parchment.
+- **A textarea with no label on every ticket form.** `AppRichText` drew a
+  `<label>` beside the control rather than *for* it, so every screen reader
+  announced an unlabelled edit box. It had been there since the component was
+  written.
+- **`/admin/network/addressing` answering 500** — the development database had
+  never been migrated for the IPAM tables. `migrate --env=testing` is not
+  `migrate`, and that is the second time (the `secrets` table was the first).
+
+Run it with `DESIGN_EMAIL=… DESIGN_PASS=… node tools/design-review.mjs`. It
+needs a staff account; create a throwaway one, and delete it afterwards.

@@ -167,7 +167,7 @@ function isCurrent(href: string): boolean {
       </button>
     </div>
 
-    <header class="border-line bg-surface-chrome border-b">
+    <header class="on-chrome border-line bg-surface-chrome border-b">
       <!-- Who. The brand first, because on a white-label installation this
            page belongs to the reseller and not to us. -->
       <div class="mx-auto flex w-full max-w-5xl items-center gap-4 px-5 pt-4 sm:px-8">

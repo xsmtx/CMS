@@ -290,9 +290,7 @@ defineExpose({ show })
            the browser repaints on every keystroke. -->
       <div class="bg-background/70 absolute inset-0" @click="hide" />
 
-      <div
-        class="border-line bg-surface-primary relative w-full max-w-xl overflow-hidden rounded-lg border shadow-(--shadow-panel)"
-      >
+      <div class="floating relative w-full max-w-xl overflow-hidden rounded-lg">
         <div class="border-line flex items-center gap-2.5 border-b px-3.5 py-2.5">
           <AppIcon name="search" :size="16" class="text-content-subtle" />
           <input

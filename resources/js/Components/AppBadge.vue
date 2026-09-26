@@ -37,7 +37,13 @@ const classes = computed(
     ({
       neutral: 'bg-surface-secondary text-content-muted ring-line',
       brand:
-        'bg-[color-mix(in_oklab,var(--brand-primary)_14%,transparent)] text-brand ring-[color-mix(in_oklab,var(--brand-primary)_30%,transparent)]',
+        // The one place the Action Blue is shifted, and the only one: it is
+        // the only place the brand colour sits as 12px text on a tint of
+        // itself, where it measures 4.19:1 in light and 3.34:1 on a dark
+        // tile. `--badge-ink-shift` is the direction - toward black on a
+        // light page, toward white on a dark one. The button, the link and
+        // the focus ring keep the colour DESIGN.md names.
+        'bg-[color-mix(in_oklab,var(--brand-primary)_14%,transparent)] text-[color-mix(in_oklab,var(--brand-primary)_88%,var(--badge-ink-shift))] ring-[color-mix(in_oklab,var(--brand-primary)_30%,transparent)]',
       success:
         'bg-[color-mix(in_oklab,var(--color-success)_14%,transparent)] text-success ring-[color-mix(in_oklab,var(--color-success)_30%,transparent)]',
       warning:
@@ -60,8 +66,17 @@ const classes = computed(
 </script>
 
 <template>
+  <!--
+    `fine-print`, not `micro-legal`.
+
+    The 10px member is what DESIGN.md spends on the legal line at the foot of
+    a page - type nobody is expected to read twice. A badge is a word
+    somebody reads to know what a row is, and at 10px on a 14% tint of its
+    own colour it measured 4.19:1, which fails AA. 12px does not, and it is
+    still the smallest thing on the screen.
+  -->
   <span
-    class="text-label inline-flex items-center rounded-sm px-1.5 py-0.5 font-medium ring-1 ring-inset"
+    class="text-chrome inline-flex items-center rounded-sm px-2 py-0.5 font-medium ring-1 ring-inset"
     :class="classes"
   >
     <slot />

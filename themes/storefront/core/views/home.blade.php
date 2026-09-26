@@ -16,9 +16,25 @@
 @section('robots', $hasCatalog ? 'index,follow' : 'noindex')
 
 @section('content')
-    <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
-        <div class="lg:col-span-7">
-            <h1 class="text-4xl leading-[1.05] font-semibold tracking-tighter text-balance sm:text-5xl lg:text-6xl">
+    {{--
+        A hero tile and, where there is nothing for sale yet, a second tile
+        that says what to do about it.
+
+        Centred, because DESIGN.md's tiles are centred stacks - the product
+        is the composition and the copy frames it. The console is
+        left-aligned for the opposite reason: there, the eye starts at a
+        column of data.
+    --}}
+    {{--
+        "Each tile occupies roughly one viewport." A hero that stops at its
+        own copy leaves the rest of the screen as an accident; one that fills
+        the viewport makes the same emptiness the composition.
+
+        `dvh`, not `vh`: on a phone the address bar moves and `vh` does not.
+    --}}
+    <section class="flex min-h-[72dvh] items-center bg-surface-primary px-6 py-20 text-center sm:py-24">
+        <div class="mx-auto flex max-w-[680px] flex-col items-center">
+            <h1 class="text-display text-balance font-semibold sm:text-hero">
                 @if ($hasCatalog)
                     {{ __('catalog.storefront.title') }}
                 @else
@@ -26,7 +42,7 @@
                 @endif
             </h1>
 
-            <p class="mt-6 max-w-[52ch] text-base leading-relaxed text-content-muted sm:text-lg">
+            <p class="mt-4 max-w-[46ch] text-title font-normal text-content-muted">
                 @if ($hasCatalog)
                     {{ __('catalog.storefront.subtitle') }}
                 @else
@@ -34,61 +50,58 @@
                 @endif
             </p>
 
-            <div class="mt-10 flex flex-wrap items-center gap-3">
+            <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
                 @if ($hasCatalog)
                     <a
                         href="{{ route('storefront.catalog') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                        class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('storefront.plans') }}
                     </a>
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-secondary"
+                        class="pressable inline-flex items-center text-title text-brand transition-opacity duration-(--duration-fast) hover:opacity-80"
                     >
-                        {{ __('storefront.client_area') }}
+                        {{ __('storefront.client_area') }} <span aria-hidden="true" class="ml-1">&rsaquo;</span>
                     </a>
                 @else
                     <a
                         href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] bg-brand px-5 py-2.5 text-sm font-semibold text-content-inverse shadow-(--shadow-raised) transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                        class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
                     >
                         {{ __('storefront.client_area') }}
                     </a>
                     <a
                         href="{{ url('/admin') }}"
-                        class="pressable inline-flex items-center rounded-[var(--radius-sm)] border border-line-strong px-5 py-2.5 text-sm font-semibold text-content transition-colors duration-(--duration-fast) hover:bg-surface-secondary"
+                        class="pressable inline-flex items-center text-title text-brand transition-opacity duration-(--duration-fast) hover:opacity-80"
                     >
-                        {{ __('storefront.admin') }}
+                        {{ __('storefront.admin') }} <span aria-hidden="true" class="ml-1">&rsaquo;</span>
                     </a>
                 @endif
             </div>
         </div>
+    </section>
 
-        @unless ($hasCatalog)
-            <div class="lg:col-span-5">
-                <div class="rounded-[var(--radius-lg)] border border-line bg-surface-primary p-6 shadow-(--shadow-panel) sm:p-7">
-                    <h2 class="text-sm font-semibold">{{ __('storefront.next_steps_title') }}</h2>
-                    <p class="mt-1.5 text-sm leading-relaxed text-content-muted">
-                        {{ __('storefront.next_steps_body') }}
-                    </p>
+    @unless ($hasCatalog)
+        {{-- The second tile, on parchment: the alternation is the divider. --}}
+        <section class="bg-background px-6 py-20 sm:py-24">
+            <div class="mx-auto max-w-[680px] text-center">
+                <h2 class="text-page font-semibold">{{ __('storefront.next_steps_title') }}</h2>
+                <p class="mx-auto mt-3 max-w-[52ch] text-title font-normal text-content-muted">
+                    {{ __('storefront.next_steps_body') }}
+                </p>
 
-                    <ol class="mt-6 space-y-5">
-                        @foreach (__('storefront.next_steps') as $index => $step)
-                            <li class="flex gap-4">
-                                <span
-                                    class="mt-px flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-secondary font-mono text-[11px] font-medium text-content-muted"
-                                    aria-hidden="true"
-                                >{{ $index + 1 }}</span>
-                                <span class="text-sm leading-relaxed">
-                                    <span class="font-medium">{{ $step['title'] }}</span>
-                                    <span class="mt-0.5 block text-content-muted">{{ $step['body'] }}</span>
-                                </span>
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
+                <ol class="mt-10 grid gap-4 text-left sm:grid-cols-3">
+                    @foreach (__('storefront.next_steps') as $step)
+                        {{-- `store-utility-card`: canvas, hairline, 18px, 24px padding. --}}
+                        <li class="rounded-[var(--radius-xl)] border border-line bg-surface-primary p-6">
+                            <span class="block text-title font-semibold">{{ $step['title'] }}</span>
+                            <span class="mt-2 block text-body text-content-muted">{{ $step['body'] }}</span>
+                        </li>
+                    @endforeach
+                </ol>
             </div>
-        @endunless
-    </div>
+        </section>
+    @endunless
+
 @endsection

@@ -13,7 +13,7 @@
  * every time somebody pressed it by accident would be worse than no
  * toolbar at all.
  */
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -39,14 +39,23 @@ interface Tool {
   prefix?: string
 }
 
+/*
+ * The label was beside the control rather than for it, so every screen
+ * reader announced an unlabelled edit box - which axe found the first time
+ * anything drove this screen.
+ */
+const id = useId()
+
 const TOOLS: Tool[] = [
   { key: 'bold', label: 'B', title: 'Bold', wrap: ['**', '**'] },
   { key: 'italic', label: 'I', title: 'Italic', wrap: ['_', '_'] },
   { key: 'code', label: '</>', title: 'Code', wrap: ['`', '`'] },
-  { key: 'quote', label: '❝', title: 'Quote', prefix: '> ' },
+  // Typographic marks, not emoji: an emoji renders in a different family on
+  // every platform and lands as a colour picture in a monochrome toolbar.
+  { key: 'quote', label: '“', title: 'Quote', prefix: '> ' },
   { key: 'list', label: '•', title: 'Bulleted list', prefix: '- ' },
   { key: 'ordered', label: '1.', title: 'Numbered list', prefix: '1. ' },
-  { key: 'link', label: '🔗', title: 'Link', wrap: ['[', '](https://)'] },
+  { key: 'link', label: '↗', title: 'Link', wrap: ['[', '](https://)'] },
 ]
 
 const characters = computed(() => model.value.length)
@@ -114,7 +123,7 @@ defineExpose({ insert })
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label class="text-body font-medium">{{ props.label }}</label>
+    <label :for="id" class="text-body font-medium">{{ props.label }}</label>
 
     <div
       class="border-line focus-within:border-brand overflow-hidden rounded-sm border transition-colors duration-(--duration-fast)"
@@ -141,6 +150,7 @@ defineExpose({ insert })
       </div>
 
       <textarea
+        :id="id"
         ref="field"
         v-model="model"
         :rows="props.rows"
