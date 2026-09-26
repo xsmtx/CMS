@@ -2212,3 +2212,47 @@ hours) is a permission with extra steps, and this product has roles for those.
 **An expiry has no actor, and the audit row says so.** `AccessGrants::revoke()`
 takes a nullable staff user and writes `bySystem()` when there is none — a
 record whose author was invented would be a record that lied about who acted.
+
+**Phase C is complete.** IPAM, the device contracts and the FortiGate module,
+topology discovery, the guarded change workflow, just-in-time access and DDoS
+events. `docs/architecture/phase-c-plan.md` records each decision; D to J are
+not started.
+
+**An attack is attributed through `ip_assignments`, at the moment it
+started.** Every scrubbing vendor can say an address was hit with 40 Gbps of
+NTP reflection; only this platform can say whose hosting account was on that
+address *at the time* — and "at the time" is the part that needs the
+append-only table rather than the current holder. An attack last Tuesday on an
+address since handed to somebody else must not be attributed to its new
+holder, which is exactly what a lookup of the present assignment would do.
+That is what §5 made `ip_assignments` append-only for, and this is the first
+thing that reads it.
+
+**An attack on an address nobody held is kept**, with both attributions null.
+A misconfigured scrubber, a range nobody recorded, a neighbour's address being
+reported to us: each is a finding, and dropping the row would drop the
+finding. The screen says so in words rather than drawing a dash, which would
+read as missing data.
+
+**An address is matched on its bytes, never on its text.** `2001:db8::1` and
+`2001:0db8:0000:0000:0000:0000:0000:0001` are one address, and a text
+comparison would attribute neither — the bug that makes an abuse report
+unanswerable.
+
+**`ddos_events` peaks are `decimal`, not float**, and that is not the money
+rule bending: they are measurements, but a float answering 11.699999999 for a
+reported 11.7 is a figure an operator cannot reconcile with the invoice for
+the transit that carried it.
+
+**A sweep's window comes from the rows.** `CollectDdosEvents` asks each source
+for everything since the latest event it already reported, less a ten-minute
+overlap — never "the last five minutes", which loses an afternoon permanently
+the first time a worker is down for one. Re-reporting is free because the row
+is keyed on the provider's own reference, and that is also how a running
+attack's end and true peak arrive.
+
+**`compact` on an `AppStatus` hides the word from everything but a screen
+reader**, which is right where the label is already beside the mark and wrong
+where the mark is the whole cell. The attacks screen drew a bare amber
+triangle in its Customer column until it was looked at — "status is never
+colour alone" applies to a glyph on its own too.

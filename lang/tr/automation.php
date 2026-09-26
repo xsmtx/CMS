@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'ddos' => [
+            'label' => 'Saldırılar',
+            'description' => 'Her DDoS kaynağına ne gördüğünü sorar ve adresin arkasında kimin hizmeti olduğunu bulur.',
+        ],
         'access_grants' => [
             'label' => 'Geçici erişim',
             'description' => 'Süresi dolan geçici erişimleri kayda geçirir. Hiçbir şey bunun çalışmasına bağlı değildir: kontrol doğrudan erişimin kendisine sorar.',

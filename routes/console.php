@@ -129,6 +129,20 @@ Schedule::command('platform:run telemetry')
  * a question about its own timestamps, asked when somebody uses it. This is
  * how quickly the record catches up with what is already true.
  */
+/*
+ * Attacks, from whatever is mitigating them.
+ *
+ * Every five minutes, and the window comes from the rows rather than from the
+ * clock: the sweep asks each source about everything since the last event it
+ * reported, less an overlap. A worker that was down for an afternoon catches
+ * up rather than losing an afternoon of attacks permanently.
+ */
+Schedule::command('platform:run ddos')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run access-grants')
     ->everyFiveMinutes()
     ->withoutOverlapping()

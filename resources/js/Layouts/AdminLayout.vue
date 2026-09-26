@@ -481,6 +481,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/network/changes',
         permission: 'network.devices.view',
       },
+      {
+        label: nav('attacks', 'Attacks'),
+        href: '/admin/network/attacks',
+        permission: 'network.ddos.view',
+      },
     ],
   },
   {

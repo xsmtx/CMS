@@ -69,6 +69,16 @@ enum AutomationTask: string
     case AccessGrants = 'access-grants';
 
     /**
+     * Asking every DDoS source what it has seen (§7).
+     *
+     * Separate from `Telemetry` because it is not a measurement: an attack is
+     * an event with a beginning, an end and a customer behind it, and the one
+     * thing this platform adds to what a scrubbing vendor already knows is
+     * the last of those.
+     */
+    case Ddos = 'ddos';
+
+    /**
      * Asking every adapter whether the thing on the other end is still there.
      *
      * Separate from `Telemetry` because they answer different questions and
@@ -137,6 +147,10 @@ enum AutomationTask: string
             // timestamps — so this is only how quickly the list catches up
             // with what is already true.
             self::AccessGrants => 5,
+            // Five minutes. An attack that is still running is re-reported
+            // with a later end and a higher peak each time, so this is also
+            // how quickly a running event's figures catch up.
+            self::Ddos => 5,
             // Five minutes as well, and for the same reason it is not one:
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.

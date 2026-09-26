@@ -695,6 +695,7 @@ return [
         'adapters' => 'Bağdaştırıcılar',
         'addressing' => 'Adresleme',
         'device_changes' => 'Cihaz değişiklikleri',
+        'attacks' => 'Saldırılar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

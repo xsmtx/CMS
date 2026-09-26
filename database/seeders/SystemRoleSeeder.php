@@ -93,6 +93,9 @@ final class SystemRoleSeeder extends Seeder
                 // is a network operator's job and applying one is nobody's
                 // until an operator says so.
                 'network.devices.view',
+                // An abuse report and "my site was down last night" arrive at
+                // the same desk, and the answer to both is on that screen.
+                'network.ddos.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

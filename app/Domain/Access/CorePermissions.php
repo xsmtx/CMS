@@ -99,6 +99,13 @@ final class CorePermissions
              * It carries the password challenge on the route as well.
              */
             new PermissionDefinition('network.devices.view', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Reading attacks (§7). Support holds it: an abuse report and a
+             * "my site was down last night" arrive at the same desk, and the
+             * answer to both is on this screen.
+             */
+            new PermissionDefinition('network.ddos.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

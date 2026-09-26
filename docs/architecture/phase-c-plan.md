@@ -1,6 +1,6 @@
 # Phase C — Network Plan
 
-Status: planned
+Status: complete (2026-09-26)
 Date: 2026-09-26
 Previous: `phase-b-result.md`
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` §5, §6, §7, §17, §28
@@ -308,7 +308,34 @@ Four decisions:
   somebody is about to give again; over the installation's maximum (twelve
   hours by default) is a permission with extra steps.
 
-What is left of the phase is DDoS events (§7).
+**DDoS events are in** (2026-09-26), and with them **Phase C is complete**:
+`ddos_events`, `DdosProvider`, `DdosAttack`, `DdosVector`, `RecordDdosEvent`,
+the `ddos` sweep and a read-only screen at `/admin/network/attacks`.
+
+The flow series stays outside, as §7 and §14 both require. What is kept is
+the event and the one thing no scrubbing vendor can supply:
+
+- **The attribution goes through `ip_assignments`**, and specifically through
+  the assignment that was open *when the attack started*. That is what §5
+  made the table append-only for — an attack last Tuesday on an address since
+  handed to somebody else must not be attributed to its new holder, which is
+  exactly what a lookup of the present assignment would do.
+- **An address nobody held is kept**, with both attributions null. A
+  misconfigured scrubber, a range nobody recorded, a neighbour's address
+  being reported to us: each is a finding, and dropping the row would drop
+  the finding.
+- **The sweep's window comes from the rows**, not from the clock: everything
+  since the latest event this source reported, less a ten-minute overlap. A
+  worker that was down for an afternoon catches up. Re-reporting is free
+  because the row is keyed on the provider's own reference, which is also how
+  a running attack's end and true peak arrive.
+- **Matching is on the bytes.** `2001:db8::1` and the long spelling are one
+  address, and a text comparison would attribute neither.
+
+`DdosMitigationWrite` exists in `Capability` and has no method on the
+contract: asking somebody else's scrubbing service to start or stop diverting
+a customer's traffic is a change with consequences, and it belongs behind a
+workflow rather than behind a method anything could call.
 
 **IPAM is in** (2026-09-26): `IpAddress` and `IpPrefix` as value objects with
 the arithmetic, five tables, `AllocateAddress`, `AssignAddress`, `SavePrefix`,

@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'ddos' => [
+            'label' => 'Attacks',
+            'description' => 'Asks every DDoS source what it has seen, and works out whose service was behind the address.',
+        ],
         'access_grants' => [
             'label' => 'Temporary access',
             'description' => 'Writes down that a just-in-time grant has run out. Nothing depends on it running: the gate asks the grant itself.',

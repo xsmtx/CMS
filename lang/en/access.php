@@ -104,6 +104,10 @@ return [
             'label' => 'Apply a device change',
             'description' => 'Push an approved configuration to the device. The most consequential thing this platform can do.',
         ],
+        'network.ddos.view' => [
+            'label' => 'See attacks',
+            'description' => 'Browse the attacks something has reported, and which customer was behind the address.',
+        ],
         'network.access.grant' => [
             'label' => 'Grant temporary access',
             'description' => 'Give somebody a capability for a window. It runs out on its own, and never to yourself.',

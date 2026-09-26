@@ -179,4 +179,51 @@ return [
             'revoked' => 'The access has ended.',
         ],
     ],
+
+    /*
+     * Attacks (§7).
+     *
+     * The event and the attribution, never the flow series — a NetFlow
+     * collector inside a billing database is a time-series store nobody sized.
+     */
+    'ddos' => [
+        'title' => 'Attacks',
+        'intro' => 'What something reported hitting an address here, and whose service was behind it.',
+        'empty' => 'Nothing has been reported',
+        'empty_detail' => 'Attacks arrive from an adapter that watches for them. Until one is enabled there is nothing to show, which is not the same as nothing having happened.',
+        'running' => 'Still running',
+        'unattributed' => 'Nobody was holding this address',
+        'unattributed_detail' => 'An attack on an address this installation does not recognise, or one nobody held at the time. Worth looking at either way.',
+        'impact' => 'What was behind the addresses',
+        'impact_intro' => 'The services attacked in this period, and what they bill. From the services themselves, never from the graph.',
+        'services' => 'Services hit',
+        'customers' => 'Customers affected',
+        'recurring' => 'Recurring value',
+        'columns' => [
+            'target' => 'Address',
+            'customer' => 'Customer',
+            'started' => 'Started',
+            'duration' => 'Lasted',
+            'peak' => 'Peak',
+            'vectors' => 'Shape',
+            'mitigation' => 'Mitigation',
+        ],
+        'filters' => [
+            'all' => 'Show everything',
+            'running' => 'Show what is running',
+        ],
+        'vectors' => [
+            'udp_flood' => 'UDP flood',
+            'icmp_flood' => 'ICMP flood',
+            'dns_reflection' => 'DNS reflection',
+            'ntp_reflection' => 'NTP reflection',
+            'memcached_reflection' => 'Memcached reflection',
+            'ssdp_reflection' => 'SSDP reflection',
+            'syn_flood' => 'SYN flood',
+            'ack_flood' => 'ACK flood',
+            'http_flood' => 'HTTP flood',
+            'tls_handshake' => 'TLS handshake',
+            'other' => 'Something else',
+        ],
+    ],
 ];

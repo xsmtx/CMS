@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerUserController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DdosEventController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\GatewayLogController;
 use App\Http\Controllers\Admin\HealthController;
@@ -414,6 +415,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * controller, somebody who may not apply is asked to confirm a password
      * and *then* refused. Rude, and a small oracle.
      */
+    /*
+     * Attacks (§7). Read-only: mitigation is somebody else's control plane,
+     * and asking it to divert a customer's traffic is a change with
+     * consequences — it belongs behind a workflow rather than behind a button
+     * this phase ships.
+     */
+    Route::get('network/attacks', [DdosEventController::class, 'index'])
+        ->name('network.attacks');
+
     Route::get('network/changes', [NetworkChangeController::class, 'index'])
         ->name('network.changes');
     Route::get('network/changes/{change}', [NetworkChangeController::class, 'show'])

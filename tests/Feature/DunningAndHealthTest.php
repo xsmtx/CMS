@@ -172,14 +172,14 @@ it('shows staff the tasks even before any of them has run', function (): void {
             ->component('Admin/Automation/Index')
             // A list of past runs alone cannot answer "is the renewal sweep
             // working", because the answer there is an absence.
-            // Fourteen now: Phase 14 added the licence heartbeat, Phase A the
+            // Fifteen now: Phase 14 added the licence heartbeat, Phase A the
             // resource projection and the telemetry sweep, Phase B the adapter
-            // health check, and Phase C the topology discovery and the grant
-            // expiry. A count rather than a list on purpose: the screen has to
-            // offer every task the command can run, and a new one joins both
-            // or neither — which is exactly what this has caught five phases
-            // running.
-            ->has('tasks', 14)
+            // health check, and Phase C the topology discovery, the grant
+            // expiry and the attack collection. A count rather than a list on
+            // purpose: the screen has to offer every task the command can run,
+            // and a new one joins both or neither — which is exactly what this
+            // has caught six phases running.
+            ->has('tasks', 15)
             ->where('tasks.0.lastRun', null));
 });
 

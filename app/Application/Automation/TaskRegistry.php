@@ -6,6 +6,7 @@ namespace App\Application\Automation;
 
 use App\Application\Automation\Runs\CheckAdapterHealth;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
+use App\Application\Automation\Runs\CollectDdosEvents;
 use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\ExpireAccessGrants;
@@ -50,6 +51,7 @@ final readonly class TaskRegistry
             AutomationTask::Telemetry => CollectTelemetry::class,
             AutomationTask::Topology => DiscoverTopology::class,
             AutomationTask::AccessGrants => ExpireAccessGrants::class,
+            AutomationTask::Ddos => CollectDdosEvents::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

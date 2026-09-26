@@ -700,6 +700,7 @@ return [
         'adapters' => 'Adapters',
         'addressing' => 'Addressing',
         'device_changes' => 'Device changes',
+        'attacks' => 'Attacks',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',
