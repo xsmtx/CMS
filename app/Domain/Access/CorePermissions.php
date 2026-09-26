@@ -106,6 +106,15 @@ final class CorePermissions
              * answer to both is on this screen.
              */
             new PermissionDefinition('network.ddos.view', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Alerting (§15). Reading is Support's — the person answering "is
+             * it just me?" is the person who should see what is on fire — and
+             * writing a rule is not, because a threshold somebody chose badly
+             * wakes everybody at three in the morning for a fortnight.
+             */
+            new PermissionDefinition('reliability.alerts.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('reliability.alerts.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

@@ -24,6 +24,9 @@ return [
         'unknown' => 'Bilinmiyor',
         'any' => 'Tümü',
         'nothing_in_period' => 'Bu dönemde hiçbir şey yok.',
+        'enable' => 'Etkinleştir',
+        'disable' => 'Devre dışı bırak',
+        'disabled' => 'Devre dışı',
     ],
 
     'shell' => [
@@ -696,6 +699,7 @@ return [
         'addressing' => 'Adresleme',
         'device_changes' => 'Cihaz değişiklikleri',
         'attacks' => 'Saldırılar',
+        'alerts' => 'Uyarılar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

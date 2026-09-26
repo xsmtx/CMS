@@ -9,6 +9,7 @@ use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectDdosEvents;
 use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\DiscoverTopology;
+use App\Application\Automation\Runs\EvaluateAlerts;
 use App\Application\Automation\Runs\ExpireAccessGrants;
 use App\Application\Automation\Runs\GenerateRenewalInvoices;
 use App\Application\Automation\Runs\MarkInvoicesOverdue;
@@ -52,6 +53,7 @@ final readonly class TaskRegistry
             AutomationTask::Topology => DiscoverTopology::class,
             AutomationTask::AccessGrants => ExpireAccessGrants::class,
             AutomationTask::Ddos => CollectDdosEvents::class,
+            AutomationTask::Alerts => EvaluateAlerts::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

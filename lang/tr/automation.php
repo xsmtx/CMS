@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'alerts' => [
+            'label' => 'Uyarılar',
+            'description' => 'Etkin her kurala doğru olup olmadığını sorar; yanlış olanı açar, düzelen kapanır.',
+        ],
         'ddos' => [
             'label' => 'Saldırılar',
             'description' => 'Her DDoS kaynağına ne gördüğünü sorar ve adresin arkasında kimin hizmeti olduğunu bulur.',

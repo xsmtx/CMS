@@ -103,6 +103,14 @@ return [
             'label' => 'Cihaz değişikliğini uygula',
             'description' => 'Onaylanmış yapılandırmayı cihaza gönderir. Bu platformun yapabileceği en ağır sonuçlu iş.',
         ],
+        'reliability.alerts.view' => [
+            'label' => 'Uyarıları gör',
+            'description' => 'Şu anda neyin yanlış olduğunu ve buna karar veren kuralları görüntüler.',
+        ],
+        'reliability.alerts.manage' => [
+            'label' => 'Uyarı kuralı yaz',
+            'description' => 'Bu kurulumun neyi birini uyandırmaya değer saydığına karar verir.',
+        ],
         'network.ddos.view' => [
             'label' => 'Saldırıları gör',
             'description' => 'Bildirilen saldırıları ve adresin arkasındaki müşteriyi görüntüler.',

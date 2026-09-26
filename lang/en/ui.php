@@ -29,6 +29,9 @@ return [
         'unknown' => 'Unknown',
         'any' => 'Any',
         'nothing_in_period' => 'Nothing in this period.',
+        'enable' => 'Enable',
+        'disable' => 'Disable',
+        'disabled' => 'Disabled',
     ],
 
     'shell' => [
@@ -701,6 +704,7 @@ return [
         'addressing' => 'Addressing',
         'device_changes' => 'Device changes',
         'attacks' => 'Attacks',
+        'alerts' => 'Alerts',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

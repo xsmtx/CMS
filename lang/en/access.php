@@ -104,6 +104,14 @@ return [
             'label' => 'Apply a device change',
             'description' => 'Push an approved configuration to the device. The most consequential thing this platform can do.',
         ],
+        'reliability.alerts.view' => [
+            'label' => 'See alerts',
+            'description' => 'Browse what is currently wrong, and the rules that decide it.',
+        ],
+        'reliability.alerts.manage' => [
+            'label' => 'Write alert rules',
+            'description' => 'Decide what this installation considers worth waking somebody for.',
+        ],
         'network.ddos.view' => [
             'label' => 'See attacks',
             'description' => 'Browse the attacks something has reported, and which customer was behind the address.',

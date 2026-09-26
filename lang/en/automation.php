@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'alerts' => [
+            'label' => 'Alerts',
+            'description' => 'Asks every enabled rule whether it is true, raises what is wrong and clears what has stopped being wrong.',
+        ],
         'ddos' => [
             'label' => 'Attacks',
             'description' => 'Asks every DDoS source what it has seen, and works out whose service was behind the address.',

@@ -79,6 +79,15 @@ enum AutomationTask: string
     case Ddos = 'ddos';
 
     /**
+     * Asking every enabled alert rule whether it is true (§15).
+     *
+     * A sweep rather than listeners, for the reason every run here is one: an
+     * event-driven alerter misses exactly the events that happen while it is
+     * broken, which is when they matter most.
+     */
+    case Alerts = 'alerts';
+
+    /**
      * Asking every adapter whether the thing on the other end is still there.
      *
      * Separate from `Telemetry` because they answer different questions and
@@ -151,6 +160,11 @@ enum AutomationTask: string
             // with a later end and a higher peak each time, so this is also
             // how quickly a running event's figures catch up.
             self::Ddos => 5,
+            // Every minute, and it is the only task here that runs that
+            // often. An alert an operator hears about nine minutes late is an
+            // alert they find out about from a customer instead; the run is
+            // cheap because it reads rows this installation already holds.
+            self::Alerts => 1,
             // Five minutes as well, and for the same reason it is not one:
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.

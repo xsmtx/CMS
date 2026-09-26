@@ -84,6 +84,10 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     // The device did not keep the configuration and the backup went back on.
     // Not a failure - the box is where it started - and not success either.
     'rolled_back',
+    // An alert that is open. Deliberately not `critical`: the severity
+    // column beside it already carries how bad, and toning the state by
+    // badness would say the same thing twice in two columns.
+    'raised',
     'customer_reply',
     'installed',
     'expiring',
@@ -129,6 +133,9 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'duplicate',
     // Somebody said no, which is a decision rather than a fault.
     'rejected',
+    // An alert that stopped being true. Out of play, like everything else
+    // in this list.
+    'cleared',
     'on_hold',
     'hidden',
     'retired',

@@ -137,6 +137,20 @@ Schedule::command('platform:run telemetry')
  * reported, less an overlap. A worker that was down for an afternoon catches
  * up rather than losing an afternoon of attacks permanently.
  */
+/*
+ * Alert rules.
+ *
+ * Every minute, and the only task on this page that runs that often: an alert
+ * an operator hears about nine minutes late is one they find out about from a
+ * customer instead. It is cheap because every subject but `metric` reads a
+ * table this installation already holds.
+ */
+Schedule::command('platform:run alerts')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run ddos')
     ->everyFiveMinutes()
     ->withoutOverlapping()

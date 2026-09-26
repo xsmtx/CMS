@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AddressingController;
+use App\Http\Controllers\Admin\AlertController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
@@ -415,6 +416,23 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * controller, somebody who may not apply is asked to confirm a password
      * and *then* refused. Rude, and a small oracle.
      */
+    /*
+     * Alerts (§15).
+     *
+     * Reading and writing rules are separate permissions, because a threshold
+     * somebody chose badly wakes everybody at three in the morning for a
+     * fortnight — and the person answering "is it just me?" should see the
+     * list without being able to rewrite it.
+     */
+    Route::get('reliability/alerts', [AlertController::class, 'index'])
+        ->name('reliability.alerts');
+    Route::post('reliability/alert-rules', [AlertController::class, 'store'])
+        ->name('reliability.rules.store');
+    Route::put('reliability/alert-rules/{rule}', [AlertController::class, 'update'])
+        ->name('reliability.rules.update');
+    Route::delete('reliability/alert-rules/{rule}', [AlertController::class, 'destroy'])
+        ->name('reliability.rules.destroy');
+
     /*
      * Attacks (§7). Read-only: mitigation is somebody else's control plane,
      * and asking it to divert a customer's traffic is a change with

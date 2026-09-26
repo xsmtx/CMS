@@ -2256,3 +2256,70 @@ reader**, which is right where the label is already beside the mark and wrong
 where the mark is the whole cell. The attacks screen drew a bare amber
 triangle in its Customer column until it was looked at — "status is never
 colour alone" applies to a glyph on its own too.
+
+**Phase D has begun** (`docs/architecture/phase-d-plan.md`). Alerts are in;
+incidents, the status page, SLA credits, postmortems, maintenance windows and
+push are not.
+
+**An alert is not an incident, and neither is a ticket.** An alert is a machine
+observation with no opinion — it raises itself and clears itself, and nobody is
+assigned to one. An incident is a human saying "this is a thing", with a state
+somebody moves and a timeline somebody writes. A ticket is a conversation with
+a customer (ADR 0030). Merging any two would either make the platform decide
+when an observation becomes a human problem — which it cannot — or ask somebody
+to acknowledge four hundred disk warnings a week, which is how people learn to
+acknowledge without reading.
+
+**There is deliberately no `acknowledged` state**, for that second reason. The
+human act in this product is opening an incident, and an alert that never
+became one is an alert nobody thought was worth one — which is a true and
+useful thing for the list to say.
+
+**Core raises alerts with no adapter configured at all.** Every
+`AlertSubject` but `Metric` reads a table this platform has had since handoff
+#1: the health checks, the adapter rows, the automation runs, the operations.
+An operator who installs nothing still gets told when the queue backs up, a
+provisioning job fails or the scheduler stops.
+
+**Core ships no rules**, the same decision tax, dunning and placement got. An
+installation that woke somebody at three in the morning because of a threshold
+nobody chose is an installation whose alerts get turned off in a fortnight.
+
+**`alerts.dedupe_token` exists because MariaDB treats nulls in a unique index
+as distinct.** A key of `(rule, subject, cleared_at)` would allow two open rows
+— both hold null there, and null never collides with null — so the index would
+look as though it were doing the work and would not be. The token is `''` while
+open and the alert's own id once cleared.
+
+**Clearing is the half people forget.** A rule that only ever raised fills a
+screen with things that stopped being true days ago, and an operator who has
+learned the list is stale is one who does not read it. Every evaluation closes
+the open alerts whose subject is no longer bad, and the row is kept.
+
+**`for_minutes` is honoured without storing a series.** The alert's own
+`first_seen_at` is the history: the row is created on the first bad observation
+and only becomes `Raised` rather than `Suppressed` once it has been bad long
+enough. That is why a spike lasting nine seconds reaches nobody.
+
+**A stale reading is skipped, never alerted on.** A machine that stopped
+reporting is a monitoring problem, not a disk that is 94% full, and raising the
+last known value for ever would be this platform asserting something it no
+longer knows.
+
+**A severity scale must not wear another scale's words.** `AlertSeverity`'s
+three members are distinguished by *when somebody deals with it* — "During the
+day", "Now", "Customers affected" — and the first draft said "Worth a look",
+which is already `health.states.degraded`. The severity column and the reading
+column then sat side by side saying the same words about two different things.
+Found by looking at the screen.
+
+**`raised` and `cleared` had to join `status.ts`**, like every status word
+before them: `statusTone()` drew the unknown mark (○) on an open alert until
+they did. `raised` is `warning` rather than `critical` on purpose — the
+severity column beside it already carries how bad, and toning the state by
+badness would say the same thing twice in two columns.
+
+**`:count times` reads as "1 times".** `useTranslations()` has no
+`trans_choice`, so a count in the browser is a bare number under a column
+header that says what it counts — the header does the work the sentence was
+doing badly.
