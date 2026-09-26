@@ -2402,3 +2402,67 @@ column, each right-aligned and each empty until the figure is frozen. And a
 severity word answers *when* — "Now", "During the day" — so it needs the column
 header that asks the question: the incident's alert list is an `AppTable`
 rather than a row of words for exactly that reason.
+
+**The status page is in** (`/status`, `themes/storefront/core/views/status.blade.php`).
+A banner, what is open, and ninety days behind it. Four decisions:
+
+- **It is outside `EnforceMaintenanceMode`.** Maintenance mode closes the shop
+  and the client area; closing the status page with them would take down the
+  one page whose entire purpose is to be readable while something is wrong. A
+  customer who goes there to ask whether anything is down, and is told the site
+  is down for maintenance, has learned nothing they could not already see.
+- **`PublicStatus` presents as well as reads, which is not the usual
+  division.** Everywhere else the query fetches and a presenter drops what the
+  reader should not see; here they are one class, because the reader is
+  *everybody* and a field that escapes has escaped to the internet. It returns
+  arrays rather than models so no template can reach through to a relation
+  nobody meant to publish, and the private updates are filtered **in the
+  query** — loading them and skipping them in a `@foreach` is one edit away
+  from the page.
+- **What is published is short and the test asserts the absences.** Not the
+  impact — "47 customers, 12,400 EUR a month" tells the internet the size of
+  the business and which outage was the expensive one. Not the alerts, which
+  name hostnames. Not the operator who wrote the update, who did not agree to
+  be named. Not even the reference, which is the seller's document number.
+- **`PublicStatusLevel` is about the service, not the incident.** "All systems
+  operational / Some systems are affected / A major outage is in progress" —
+  derived from what is open, never stored. `AlertSeverity`'s words answer *when
+  somebody deals with it*, which is the operator's question; printing
+  "Customers affected" as a public headline would be operator vocabulary on a
+  customer surface, the storefront's old mistake through a new door.
+
+`noindex,follow` on it, because a status page that ranks for the company's own
+name puts "major outage" at the top of a search result for months after the
+outage ended.
+
+**The good state is a sentence, not a blank space.** "All systems operational"
+and "Nothing has gone wrong in the last 90 days" — a page whose healthy state
+is an empty area is a page a customer cannot tell from one that failed to load.
+
+**`latest()` is not an order when a second holds several rows.** `Incident::updates()`
+ordered on `created_at` alone, which has a resolution of one second — and
+several updates inside one minute is exactly what a busy incident looks like.
+Two written in the same second came back in whatever order the database felt
+like, which on a status page is a timeline that reads backwards. The id is a
+ULID, so `orderByDesc('created_at')->orderByDesc('id')` settles the tie with
+the truth rather than with luck. The browser found it; no test had ever written
+two updates in one second.
+
+**A public time needs its zone, and needs it once.** A customer in another
+country reading "9:07 PM" does not know whose nine o'clock it is. It is said in
+the banner — "As of 26 September 2026 22:01 UTC" — and every other time on the
+page is on that clock; repeating it on nine lines was noise that stopped being
+read by the third one. `app()->setLocale()` does not move Carbon's, so the
+formatting goes through `->locale(app()->getLocale())` like `RenderTemplate`
+does, or a Turkish page prints English month names.
+
+**The state beside an incident's title said what the update under it said, word
+for word.** `note()` moves the incident's state and writes the update in one
+act, so the two can never differ — and the section heading already says whether
+this is happening now or is over. The state that earns its place is the one on
+each update, because that is the part that changed.
+
+**`@php` belongs in no theme template.** The rule is "no raw PHP", and a
+`@php` block is not refused by it — but a tone-to-class map written in one is a
+colour chosen outside the design system, in a file a theme author may replace.
+The controller hands the two class names over; the template only prints.

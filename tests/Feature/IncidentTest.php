@@ -182,6 +182,27 @@ it('separates when it started from when anybody noticed', function (): void {
         ->and($incident->durationSeconds())->toBeNull();
 });
 
+/**
+ * Several updates inside one minute is what a busy incident looks like, and
+ * `created_at` has a resolution of one second — so a timeline ordered on it
+ * alone came back in whatever order the database felt like. On a status page
+ * that reads as a timeline running backwards.
+ */
+it('keeps the timeline in order when two updates share a second', function (): void {
+    CarbonImmutable::setTestNow('2026-09-26 14:00:00');
+
+    $incident = Incident::factory()->create(['organization_id' => $this->provider->id]);
+
+    foreach (['First', 'Second', 'Third'] as $body) {
+        app(Incidents::class)->note($incident, $body, IncidentState::Identified, $this->admin);
+    }
+
+    $bodies = $incident->updates()->pluck('body')->all();
+
+    // Newest first, which is what somebody refreshing the page wants.
+    expect($bodies)->toBe(['Third', 'Second', 'First']);
+});
+
 it('moves the state and writes the sentence in one act', function (): void {
     $incident = Incident::factory()->create(['organization_id' => $this->provider->id]);
 

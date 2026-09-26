@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StorefrontCartController;
 use App\Http\Controllers\StorefrontCatalogController;
 use App\Http\Controllers\StorefrontCheckoutController;
@@ -23,6 +24,19 @@ use Illuminate\Support\Facades\Route;
 | and routes/client.php, from bootstrap/app.php.
 |
 */
+
+/*
+ * The status page, and it is **outside maintenance mode** (§15).
+ *
+ * Maintenance mode closes the shop and the client area. Closing the status
+ * page with them would take down the one page whose entire purpose is to be
+ * readable while something is wrong — a customer who goes there to find out
+ * whether anything is down, and is told the site is down for maintenance, has
+ * learned nothing they could not already see.
+ */
+Route::middleware([ResolveStorefrontOrganization::class])
+    ->get('/status', StatusController::class)
+    ->name('storefront.status');
 
 // Public pages get their organization boundary from the installation rather
 // than from an actor, so the catalog they show is one brand's, not everyone's.

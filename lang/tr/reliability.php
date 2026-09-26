@@ -159,4 +159,19 @@ return [
             'recurring' => 'Yinelenen',
         ],
     ],
+
+    'status_page' => [
+        'title' => 'Hizmet durumu',
+        'levels' => [
+            'operational' => 'Tüm sistemler çalışıyor',
+            'disrupted' => 'Bazı sistemler etkileniyor',
+            'outage' => 'Büyük bir kesinti sürüyor',
+        ],
+        'checked_at' => ':at itibarıyla.',
+        'happening_now' => 'Şu anda olanlar',
+        'history' => 'Geçmiş olaylar',
+        'no_history' => 'Son :days günde ters giden bir şey olmadı.',
+        'started' => ':at itibarıyla başladı.',
+        'ran' => ':from - :to arası.',
+    ],
 ];

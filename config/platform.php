@@ -714,6 +714,21 @@ return [
         'max_grant_minutes' => env('NETWORK_MAX_GRANT_MINUTES', 720),
     ],
 
+    'reliability' => [
+        /*
+         * Whether this installation serves its own status page (§15).
+         *
+         * On by default: an operator who has never published an incident
+         * still has a true page to point at, and "all systems operational" is
+         * a statement worth being able to make. An operator who runs their
+         * status page somewhere else turns it off, and then the route answers
+         * 404 and the header stops linking to it — because a link to a page
+         * that refuses is worse than no link, which is the rule
+         * self-registration already follows.
+         */
+        'status_page' => env('STATUS_PAGE', true),
+    ],
+
     'licensing' => [
         'api_url' => env('LICENSE_API_URL'),
         'key' => env('LICENSE_KEY'),

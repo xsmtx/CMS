@@ -6,6 +6,7 @@ namespace App\Support\Branding;
 
 use App\Application\Content\VisibleContent;
 use App\Application\Domains\TldCatalog;
+use App\Application\Reliability\PublicStatus;
 use App\Domain\Branding\Surface;
 use App\Domain\Licensing\Contracts\Entitlements;
 use App\Domain\Licensing\Feature;
@@ -33,6 +34,7 @@ final readonly class StorefrontComposer
         private Entitlements $entitlements,
         private TldCatalog $tlds,
         private VisibleContent $content,
+        private PublicStatus $status,
     ) {}
 
     public function compose(View $view): void
@@ -75,6 +77,10 @@ final readonly class StorefrontComposer
             'domains' => $this->tlds->sellable()->isNotEmpty(),
             'help' => $this->content->articles(signedIn: false, limit: 1)->isNotEmpty(),
             'announcements' => $this->content->announcements(signedIn: false, limit: 1)->isNotEmpty(),
+            // Not "has anything happened" — a status page saying nothing has
+            // is the page's best day, and hiding it then would mean the link
+            // appeared only during an outage. It follows the switch instead.
+            'status' => $this->status->isPublished(),
         ]);
     }
 

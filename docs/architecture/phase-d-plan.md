@@ -140,8 +140,8 @@ Alerts first, because an incident with nothing to attach is a form. Then
 incidents and their timeline, then impact, then the status page, then credits
 and postmortems, then maintenance windows, then push.
 
-**Alerts and incidents are in** (2026-09-26) — see the result note at the end
-of this document.
+**Alerts and incidents are in** (2026-09-26), and **the status page is in**
+(2026-09-27) — see the result note at the end of this document.
 
 ## 6. Not in this phase
 

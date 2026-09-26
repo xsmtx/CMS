@@ -183,4 +183,28 @@ return [
             'recurring' => 'Recurring',
         ],
     ],
+
+    /*
+     * The public status page (§15).
+     *
+     * Customer vocabulary, not operator vocabulary: the levels are about the
+     * *service* — what somebody standing outside can expect — rather than
+     * about how urgently an engineer deals with it. Printing "Customers
+     * affected" as the headline of a public page would be the storefront's
+     * old mistake through a new door.
+     */
+    'status_page' => [
+        'title' => 'Service status',
+        'levels' => [
+            'operational' => 'All systems operational',
+            'disrupted' => 'Some systems are affected',
+            'outage' => 'A major outage is in progress',
+        ],
+        'checked_at' => 'As of :at.',
+        'happening_now' => 'Happening now',
+        'history' => 'Past incidents',
+        'no_history' => 'Nothing has gone wrong in the last :days days.',
+        'started' => 'Started :at.',
+        'ran' => 'From :from to :to.',
+    ],
 ];

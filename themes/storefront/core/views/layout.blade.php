@@ -134,6 +134,15 @@
                             {{ __('support.announcements.title') }}
                         </a>
                     @endif
+                    @if ($sections['status'] ?? false)
+                        <a
+                            href="{{ route('storefront.status') }}"
+                            class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"
+                        >
+                            {{ __('reliability.status_page.title') }}
+                        </a>
+                    @endif
+
                     <a
                         href="{{ route('storefront.cart') }}"
                         class="pressable rounded-[var(--radius-sm)] px-3 py-2 text-chrome text-content-muted transition-colors duration-(--duration-fast) hover:text-content"

@@ -37,7 +37,10 @@ brand tone shifts by `--badge-ink-shift`), and the four floating layers
 
 The storefront's fourteen Blade views moved to the marketing register —
 full-bleed tiles alternating canvas and parchment, a hero that fills a
-viewport, `store-utility-card` for products.
+viewport, `store-utility-card` for products. `status.blade.php` joined them
+on 2026-09-27 and is the one that does **not** fill a viewport: a status page
+is read in ten seconds, on a phone, by somebody who is already annoyed, so it
+is a 52rem column of type with nothing full-bleed in it.
 
 Verified by `tools/design-review.mjs`: 168 renders, both appearances, axe on
 each. See `CLAUDE.md` for what it found.

@@ -86,7 +86,19 @@ final class Incident extends Model implements AuditLabel
      */
     public function updates(): HasMany
     {
-        return $this->hasMany(IncidentUpdate::class)->latest();
+        /*
+         * Newest first, and **tie-broken on the id**.
+         *
+         * `latest()` alone orders by `created_at`, which has a resolution of
+         * one second — and several updates inside one minute is exactly what
+         * a busy incident looks like. Two written in the same second then
+         * came back in whatever order the database felt like, which on a
+         * status page is a timeline that reads backwards. The id is a ULID,
+         * so it sorts by the moment it was made and settles the tie with the
+         * truth rather than with luck.
+         */
+        return $this->hasMany(IncidentUpdate::class)->latest()
+            ->orderByDesc('id');
     }
 
     /**
