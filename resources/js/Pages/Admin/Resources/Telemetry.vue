@@ -21,7 +21,9 @@ import AppPagination from '../../../Components/AppPagination.vue'
 import AppStat from '../../../Components/AppStat.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
+import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
 
@@ -37,6 +39,20 @@ interface NodeRow {
   kind: string
   kindLabel: string
   key: string
+}
+
+interface CapacityRow {
+  id: string
+  node: string
+  nodeKey: string
+  metric: string
+  metricLabel: string
+  /** How full it is now, as a ratio of the ceiling. */
+  utilisation: number
+  daysRemaining: number | null
+  fullOn: string | null
+  /** How many daily points the line was drawn through. */
+  days: number
 }
 
 interface MetricRow {
@@ -64,6 +80,7 @@ const props = defineProps<{
   sources: { value: string; label: string; count: number }[]
   stats: { measurements: number; sources: number; stale: number; unwatched: number }
   unwatched: NodeRow[]
+  capacity: CapacityRow[]
 }>()
 
 const { t } = useTranslations()
@@ -83,6 +100,32 @@ const columns = [
   { key: 'sampled', label: t('infrastructure.telemetry.columns.sampled') },
   { key: 'source', label: t('infrastructure.telemetry.columns.source'), optional: true },
 ]
+
+const CAPACITY_COLUMNS: TableColumn[] = [
+  { key: 'resource', label: t('infrastructure.telemetry.columns.resource') },
+  { key: 'metric', label: t('infrastructure.telemetry.columns.metric') },
+  { key: 'now', label: t('infrastructure.capacity.now'), numeric: true },
+  { key: 'left', label: t('infrastructure.capacity.days_left'), numeric: true },
+  { key: 'when', label: t('infrastructure.capacity.full_on') },
+]
+
+/**
+ * How loudly to say it.
+ *
+ * A fortnight is when ordering something starts to be urgent and a quarter is
+ * when it is merely worth knowing — the thresholds are about procurement
+ * rather than about the numbers.
+ */
+function capacityTone(row: CapacityRow): 'critical' | 'warning' | 'info' {
+  if (row.daysRemaining !== null && row.daysRemaining <= 14) return 'critical'
+  if (row.daysRemaining !== null && row.daysRemaining <= 90) return 'warning'
+
+  return 'info'
+}
+
+function percent(ratio: number): string {
+  return `${(ratio * 100).toFixed(1)}%`
+}
 
 function reading(metric: MetricRow): string {
   if (metric.unit === 'ratio') return `${(metric.value * 100).toFixed(1)}%`
@@ -140,6 +183,45 @@ function when(value: string): string {
           :tone="stats.unwatched > 0 ? 'warning' : 'neutral'"
         />
       </div>
+
+      <!--
+        What is running out, before what is arriving: an operator who opens
+        this screen because a graph looked quiet still needs to know that a
+        disk fills in nine days. Drawn only when something is actually
+        filling — a list that said "not filling" forty times is a list nobody
+        reads to the bottom.
+      -->
+      <DetailSection
+        v-if="capacity.length > 0"
+        :title="t('infrastructure.capacity.title')"
+        :description="t('infrastructure.capacity.intro')"
+        :divided="false"
+      >
+        <AppTable name="capacity" :columns="CAPACITY_COLUMNS">
+          <AppTableRow v-for="row in capacity" :key="row.id">
+            <td data-col="resource">
+              <span class="font-medium">{{ row.node }}</span>
+              <span class="text-content-subtle text-chrome block font-mono">{{ row.nodeKey }}</span>
+            </td>
+            <td data-col="metric">{{ row.metricLabel }}</td>
+            <td data-col="now" class="numeric tabular-nums">{{ percent(row.utilisation) }}</td>
+            <td data-col="left" class="numeric tabular-nums">
+              <AppStatus
+                :tone="capacityTone(row)"
+                :label="t('infrastructure.capacity.in_days', { days: row.daysRemaining ?? 0 })"
+              />
+            </td>
+            <td data-col="when" class="text-content-muted text-chrome">
+              {{ row.fullOn === null ? '—' : new Date(row.fullOn).toLocaleDateString() }}
+              <!-- Said out loud: a date from eight points and a date from
+                   ninety deserve different amounts of belief. -->
+              <span class="text-content-subtle block">
+                {{ t('infrastructure.capacity.from_days', { days: row.days }) }}
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
 
       <EmptyState
         v-if="metrics.data.length === 0"

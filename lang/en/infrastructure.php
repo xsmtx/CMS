@@ -205,6 +205,15 @@ return [
         ],
     ],
 
+    'capacity' => [
+        'title' => 'Running out',
+        'intro' => 'A straight line through the daily averages, and nothing more. What it cannot answer honestly it leaves out.',
+        'now' => 'Now',
+        'days_left' => 'Time left',
+        'full_on' => 'Full on',
+        'in_days' => ':days days',
+        'from_days' => 'from :days days',
+    ],
     'telemetry' => [
         'title' => 'Telemetry',
         'intro' => 'What is arriving, from where, and what has stopped.',

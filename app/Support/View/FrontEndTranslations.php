@@ -150,6 +150,7 @@ final class FrontEndTranslations
         'infrastructure.areas',
         'infrastructure.units',
         'infrastructure.metrics',
+        'infrastructure.capacity',
         'infrastructure.explorer',
         'infrastructure.adapters',
         'infrastructure.telemetry',

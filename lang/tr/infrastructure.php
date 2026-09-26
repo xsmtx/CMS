@@ -199,6 +199,15 @@ return [
         ],
     ],
 
+    'capacity' => [
+        'title' => 'Doluyor',
+        'intro' => 'Günlük ortalamalardan geçen düz bir çizgi, fazlası değil. Dürüstçe cevaplayamadığını listeye almaz.',
+        'now' => 'Şimdi',
+        'days_left' => 'Kalan süre',
+        'full_on' => 'Dolma tarihi',
+        'in_days' => ':days gün',
+        'from_days' => ':days günden',
+    ],
     'telemetry' => [
         'title' => 'Telemetri',
         'intro' => 'Ne geliyor, nereden geliyor ve ne kesildi.',
