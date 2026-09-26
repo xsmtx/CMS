@@ -89,6 +89,10 @@ final class SystemRoleSeeder extends Seeder
                 // support's job before it is anybody else's. Reading only -
                 // handing out addresses is not.
                 'network.ipam.view',
+                // The devices behind a ticket, read-only. Asking for a change
+                // is a network operator's job and applying one is nobody's
+                // until an operator says so.
+                'network.devices.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

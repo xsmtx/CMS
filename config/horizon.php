@@ -204,7 +204,11 @@ return [
             // `provisioning` first: a customer waiting for an account to
             // be created is a worse wait than anything on the default
             // queue, and a job left unlisted here is a job nobody runs.
-            'queue' => ['provisioning', 'domains', 'webhooks', 'default'],
+            // `network` is on this supervisor rather than its own: an apply
+            // is rare, short and the operator is watching it. A queue left
+            // unlisted here is a queue whose jobs sit in Redis and whose
+            // failure is silent.
+            'queue' => ['provisioning', 'domains', 'webhooks', 'network', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,

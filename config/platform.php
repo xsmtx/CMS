@@ -688,6 +688,23 @@ return [
         'whmcs_connection' => env('IMPORT_WHMCS_CONNECTION', 'legacy'),
     ],
 
+    /*
+     * Changing a network device.
+     *
+     * `require_approval` is the one decision an installation makes about the
+     * guarded workflow, and the default is the safe one. Turning it off is for
+     * an installation where one person is the whole network team: with it on,
+     * `DecideNetworkChange` refuses a decision from the person who asked, so a
+     * single operator could request changes and never apply one.
+     *
+     * The value is copied onto each change when it is requested, like an
+     * issued invoice's bill-to party — relaxing the setting overnight must not
+     * thereby have approved yesterday's requests.
+     */
+    'network' => [
+        'require_approval' => env('NETWORK_REQUIRE_APPROVAL', true),
+    ],
+
     'licensing' => [
         'api_url' => env('LICENSE_API_URL'),
         'key' => env('LICENSE_KEY'),

@@ -85,6 +85,29 @@ final class CorePermissions
             new PermissionDefinition('network.ipam.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.ipam.manage', 'infrastructure', RoleScope::Staff),
 
+            /*
+             * Changing a device's configuration, as three permissions rather
+             * than one.
+             *
+             * `request` and `approve` are separate because a change that one
+             * person can both ask for and agree to is a change nobody agreed
+             * to - and `RequestNetworkChange` refuses a decision from the
+             * person who asked, which a single permission could not express.
+             *
+             * `apply` is separate again and is the high-risk one: approving is
+             * a sentence in a record, and applying is a firewall reloading.
+             * It carries the password challenge on the route as well.
+             */
+            new PermissionDefinition('network.devices.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition(
+                'network.changes.apply',
+                'infrastructure',
+                RoleScope::Staff,
+                highRisk: true,
+            ),
+
             // Turning the storefront off is not a settings change.
             new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
 

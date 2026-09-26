@@ -694,6 +694,7 @@ return [
         'telemetry' => 'Telemetri',
         'adapters' => 'Bağdaştırıcılar',
         'addressing' => 'Adresleme',
+        'device_changes' => 'Cihaz değişiklikleri',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

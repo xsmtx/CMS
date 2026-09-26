@@ -2114,3 +2114,68 @@ nobody asked.
 guard rather than a chore.** It has now caught four phases in a row adding a
 task to `AutomationTask` and not to the screen — the screen has to offer every
 task the command can run, and a new one joins both or neither.
+
+**The guarded configuration workflow is in** (`network_changes`,
+`/admin/network/changes`). A change is a record before it is an action: who
+asked, why, which ticket, the exact diff, who agreed, what the device said.
+Four permissions — `network.devices.view`, `.changes.request`, `.approve`,
+`.apply` — and the last carries the password challenge, with the permission
+**above** `auth.recent` on the route (Phase 17's rule, now learned four
+times).
+
+**A change one person both asked for and agreed to is a change nobody agreed
+to**, and that cannot be a permission: a permission says who may approve and
+cannot say *whose* change. `DecideNetworkChange` refuses it, the screen does
+not offer the button, and a single-operator installation turns approval off
+with `platform.network.require_approval` — which is copied onto the row when
+the change is requested, like an issued invoice's bill-to party, so relaxing
+the setting overnight does not retroactively approve yesterday.
+
+**The apply refuses in §6's order and the order is the feature.** Something
+must be permitted to write; back up first, because a backup that failed is a
+change that does not happen; the device's fingerprint must still be the one
+the diff was read against — a diff approved an hour ago is a diff against a
+box somebody else may have edited, and applying it would silently revert
+their work; then apply, then **read it back**, because a device that accepted
+a configuration and did not keep it is the failure worth catching and no
+adapter can report it; a failed verify puts the backup on and the record says
+`rolled_back` rather than `failed`.
+
+**Every reason an apply does not go ahead belongs on the change**, so the
+refusals are caught inside `ApplyNetworkChange` and written to the row. One
+thrown out of it would leave the record saying `authorized` while the
+operation beside it said failed — two rows disagreeing about one event. The
+state check is the exception, because "you may not apply a rejected change"
+is a caller's mistake rather than an outcome.
+
+**`ApplyNetworkChangeJob` has `tries = 1`, the opposite of every other job
+here.** Provisioning retries because creating an account twice is harmless
+(ADR 0026); a device configuration is not idempotent that way, and a retry
+after a timeout might push a configuration that already went on, to a box the
+verify step has since rolled back.
+
+**`ConfigurationDiff` is bounded.** LCS is O(n·m), a device configuration is
+thousands of lines, and two eight-thousand-line configurations would be
+sixty-four million cells. Above two thousand lines a side it answers a
+summary — a screen that hung for a minute and then printed six thousand lines
+nobody would read is worse than one that says how many lines moved.
+
+**`AppTableRow` has no `href` prop, and two screens passed one.** An unknown
+prop falls through to the root element as an attribute, silently; on a `<tr>`
+that renders perfectly and does nothing — so `/admin/network/addressing/{prefix}`
+was a routed, tested, rendered screen that **nothing in the product linked
+to**. A `<tr>` cannot be wrapped in an anchor, so the convention is a link in
+the identity cell. `tests/Feature/ComponentPropsTest.php` refuses the mistake
+now; a list of every prop of every primitive would rot, so it names only the
+components where an ignored attribute is invisible.
+
+**`class="font-mono"` on an `AppTextarea` lands on the wrapper**, so the
+device-change form asked for "The configuration it should have" in monospace,
+label and hint included. The primitive has a `mono` prop now. Same cascade
+trap as `class="block"` on an `AppStatus`: a utility aimed at a primitive's
+inside hits its outside — wrap, or give the primitive the prop.
+
+**`['defaults'] + $attributes` in a test helper silently ignores every
+override**, because `+` keeps the **left** operand's key. It made a helper
+that looked parameterised and was not, and the symptom was a `can` flag that
+would not go false.

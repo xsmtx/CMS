@@ -59,6 +59,9 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'queued',
     'transfer_pending',
     'transferring',
+    // A device change on its way to the box. Not a warning - it is doing
+    // exactly what somebody asked it to.
+    'applying',
   ],
   warning: [
     'warning',
@@ -74,6 +77,13 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'partially_paid',
     'awaiting_payment',
     'open',
+    // A device change that has been written down and is waiting on a person:
+    // somebody has to look, which is what warning means here.
+    'awaiting_approval',
+    'authorized',
+    // The device did not keep the configuration and the backup went back on.
+    // Not a failure - the box is where it started - and not success either.
+    'rolled_back',
     'customer_reply',
     'installed',
     'expiring',
@@ -117,6 +127,8 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
     'suppressed',
     'ignored',
     'duplicate',
+    // Somebody said no, which is a decision rather than a fault.
+    'rejected',
     'on_hold',
     'hidden',
     'retired',

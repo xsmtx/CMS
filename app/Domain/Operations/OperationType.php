@@ -26,6 +26,16 @@ enum OperationType: string
     case DomainRenew = 'domain.renew';
     case DomainSync = 'domain.sync';
 
+    /**
+     * Pushing a configuration to a network device.
+     *
+     * Watched like the rest and for the sharpest version of ADR 0032's
+     * reason: an apply that never reached a worker is a firewall change an
+     * operator believes went out. The operation row opens before the job is
+     * handed to the queue, so the wait is visible from the first second.
+     */
+    case NetworkChangeApply = 'network_change.apply';
+
     public function labelKey(): string
     {
         return 'operations.types.'.str_replace('.', '_', $this->value);

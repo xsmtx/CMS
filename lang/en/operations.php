@@ -29,6 +29,7 @@ return [
         'domain_transfer' => 'Transfer domain',
         'domain_renew' => 'Renew domain',
         'domain_sync' => 'Sync domain',
+        'network_change_apply' => 'Apply a device change',
     ],
 
     'attempt' => 'Attempt :attempt of :max',

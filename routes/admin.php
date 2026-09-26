@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\LicenceController;
 use App\Http\Controllers\Admin\MarketplaceController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\NetworkChangeController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
 use App\Http\Controllers\Admin\OptionGroupController;
@@ -402,6 +403,28 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('network.prefixes.allocate');
     Route::post('network/addresses/{address}/release', [AddressingController::class, 'releaseAddress'])
         ->name('network.addresses.release');
+
+    /*
+     * The guarded configuration workflow (Phase C §6).
+     *
+     * `apply` is the one endpoint in this product that can reload a firewall,
+     * and it carries the password challenge. The permission goes **above**
+     * `auth.recent` on purpose - Phase 17's rule, learned on the Licence
+     * screen and then on the fleet routes: with the check only inside the
+     * controller, somebody who may not apply is asked to confirm a password
+     * and *then* refused. Rude, and a small oracle.
+     */
+    Route::get('network/changes', [NetworkChangeController::class, 'index'])
+        ->name('network.changes');
+    Route::get('network/changes/{change}', [NetworkChangeController::class, 'show'])
+        ->name('network.changes.show');
+    Route::post('network/changes', [NetworkChangeController::class, 'store'])
+        ->name('network.changes.store');
+    Route::post('network/changes/{change}/decide', [NetworkChangeController::class, 'decide'])
+        ->name('network.changes.decide');
+    Route::post('network/changes/{change}/apply', [NetworkChangeController::class, 'apply'])
+        ->middleware(['can:network.changes.apply', 'auth.recent'])
+        ->name('network.changes.apply');
 
     /*
      * What this installation calls itself. The navigation has pointed here

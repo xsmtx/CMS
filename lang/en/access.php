@@ -88,6 +88,22 @@ return [
             'label' => 'Manage IP addressing',
             'description' => 'Add networks, hand out addresses and take them back.',
         ],
+        'network.devices.view' => [
+            'label' => 'See network devices',
+            'description' => 'Browse the devices discovery has found, their ports and their configuration changes.',
+        ],
+        'network.changes.request' => [
+            'label' => 'Request a device change',
+            'description' => 'Write down a configuration change, with a reason. Asking is not applying.',
+        ],
+        'network.changes.approve' => [
+            'label' => 'Approve a device change',
+            'description' => "Agree to somebody else's change, or refuse it. Never your own.",
+        ],
+        'network.changes.apply' => [
+            'label' => 'Apply a device change',
+            'description' => 'Push an approved configuration to the device. The most consequential thing this platform can do.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Turn maintenance mode on and off',
             'description' => 'Close the storefront and client area. The admin area stays open.',

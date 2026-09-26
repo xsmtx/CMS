@@ -79,4 +79,71 @@ return [
         'reuse_now' => 'Put it straight back in the pool',
         'free_left' => ':count free',
     ],
+
+    /*
+     * The guarded configuration workflow (§6).
+     *
+     * The wording carries the workflow's own rules, because a screen that
+     * showed the buttons and not the reasons would be a screen an operator
+     * clicks through. "A backup is taken first" and "refused if the device has
+     * moved" are sentences the dialog says out loud.
+     */
+    'changes' => [
+        'title' => 'Device changes',
+        'intro' => 'Configuration changes waiting on somebody, and what happened to the rest.',
+        'empty' => 'Nothing is waiting',
+        'empty_detail' => 'No change has been asked for. One is written down before it is applied, and applied only after somebody else has agreed.',
+        'no_devices' => 'No devices have been found yet',
+        'no_devices_detail' => 'Topology discovery writes a device onto the graph when an adapter answers for one. Until then there is nothing a change could be asked about.',
+        'request' => 'Request a change',
+        'request_intro' => 'Write down what should change and why. Asking is not applying.',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+        'about' => 'The request',
+        'reason' => 'Why',
+        'reason_hint' => 'What this is for. It is read by whoever has to agree to it, and it stays on the record.',
+        'ticket' => 'Ticket',
+        'ticket_hint' => 'Optional. Whichever system the conversation is in.',
+        'intended' => 'The configuration it should have',
+        'intended_hint' => 'The whole configuration, not a fragment. The diff is computed against what the device has now, so a fragment would read as everything else being deleted.',
+        'diff' => 'What changes',
+        'diff_intro' => 'Against the device as it was when this was asked for. It is read again immediately before it is applied.',
+        'no_diff' => 'Nothing differs from what the device already has.',
+        'decided' => 'Decided',
+        'note' => 'Note',
+        'approval_required' => 'Needs somebody else to agree',
+        'approval_not_required' => 'No approval needed on this installation',
+        'backed_up' => 'Backed up :at',
+        'approve' => 'Approve',
+        'approve_body' => 'The change becomes ready to apply. It is not applied by agreeing to it.',
+        'reject' => 'Reject',
+        'reject_body' => 'The change is refused and nothing goes to the device. The requester can ask again.',
+        'cancel' => 'Withdraw',
+        'cancel_body' => 'The change is withdrawn. Nothing goes to the device and the record stays.',
+        'apply' => 'Apply to the device',
+        'apply_body' => 'The configuration is backed up first, and the change is refused if the device is no longer the one this diff was read against. If the device does not keep it, the backup goes back on.',
+        'columns' => [
+            'summary' => 'Change',
+            'device' => 'Device',
+            'state' => 'State',
+            'requester' => 'Asked by',
+            'requested' => 'Asked',
+        ],
+        'states' => [
+            'requested' => 'Written down',
+            'awaiting_approval' => 'Waiting for approval',
+            'authorized' => 'Ready to apply',
+            'applying' => 'Applying',
+            'completed' => 'Applied',
+            'failed' => 'Failed',
+            'rolled_back' => 'Rolled back',
+            'rejected' => 'Rejected',
+            'cancelled' => 'Withdrawn',
+        ],
+        'flash' => [
+            'requested' => 'The change is written down.',
+            'decided' => 'The change is decided.',
+            'applying' => 'The change is on its way to the device.',
+        ],
+    ],
 ];

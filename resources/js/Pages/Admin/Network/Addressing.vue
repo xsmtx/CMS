@@ -12,7 +12,7 @@
  * says nothing while looking like it says something — so those rows carry a count
  * and the words "too large to count".
  */
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { computed, nextTick, reactive, ref } from 'vue'
 
 import AppBadge from '../../../Components/AppBadge.vue'
@@ -314,13 +314,22 @@ function submitPrefix(): void {
 
         <template v-else>
           <AppTable name="prefixes" :columns="COLUMNS">
-            <AppTableRow
-              v-for="row in prefixes.data"
-              :key="row.id"
-              :href="`/admin/network/addressing/${row.id}`"
-            >
+            <AppTableRow v-for="row in prefixes.data" :key="row.id">
+              <!--
+                The link is in the identity cell, not on the row.
+                `AppTableRow` has no `href` prop, so one passed to it fell
+                through as an attribute on a `<tr>` and did nothing — which
+                made the prefix screen a page nothing in the product linked
+                to. A `<tr>` cannot be wrapped in an anchor, which is why the
+                convention here is the first cell.
+              -->
               <td data-col="cidr">
-                <span class="font-mono font-medium">{{ row.cidr }}</span>
+                <Link
+                  :href="`/admin/network/addressing/${row.id}`"
+                  class="text-brand font-mono font-medium hover:underline"
+                >
+                  {{ row.cidr }}
+                </Link>
                 <span class="text-content-subtle text-chrome block">{{ row.familyLabel }}</span>
               </td>
               <td data-col="pool">

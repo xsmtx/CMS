@@ -87,6 +87,22 @@ return [
             'label' => 'IP adreslemesini yönet',
             'description' => 'Ağ ekler, adres dağıtır ve geri alır.',
         ],
+        'network.devices.view' => [
+            'label' => 'Ağ cihazlarını gör',
+            'description' => 'Keşfin bulduğu cihazları, portlarını ve yapılandırma değişikliklerini görüntüler.',
+        ],
+        'network.changes.request' => [
+            'label' => 'Cihaz değişikliği talep et',
+            'description' => 'Bir yapılandırma değişikliğini gerekçesiyle yazar. Talep etmek uygulamak değildir.',
+        ],
+        'network.changes.approve' => [
+            'label' => 'Cihaz değişikliğini onayla',
+            'description' => 'Başkasının değişikliğini onaylar veya reddeder. Asla kendininkini.',
+        ],
+        'network.changes.apply' => [
+            'label' => 'Cihaz değişikliğini uygula',
+            'description' => 'Onaylanmış yapılandırmayı cihaza gönderir. Bu platformun yapabileceği en ağır sonuçlu iş.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Bakım modunu aç ve kapat',
             'description' => 'Mağazayı ve müşteri alanını kapatır. Yönetim alanı açık kalır.',

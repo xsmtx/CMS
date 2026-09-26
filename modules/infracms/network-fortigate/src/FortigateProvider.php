@@ -10,6 +10,7 @@ use App\Domain\Infrastructure\Capability;
 use App\Domain\Infrastructure\CapabilitySet;
 use App\Domain\Infrastructure\Contracts\FirewallProvider;
 use App\Domain\Infrastructure\Contracts\NetworkDeviceProvider;
+use App\Domain\Infrastructure\Contracts\NetworkDeviceWriter;
 use App\Domain\Infrastructure\Contracts\RoutingProvider;
 use App\Domain\Infrastructure\Contracts\SwitchProvider;
 use App\Domain\Infrastructure\Exceptions\DeviceUnreachable;
@@ -62,7 +63,7 @@ use Throwable;
  * here is tested against faked HTTP, which proves the code and not the
  * integration.
  */
-final readonly class FortigateProvider implements FirewallProvider, NetworkDeviceProvider, RoutingProvider, SwitchProvider
+final readonly class FortigateProvider implements FirewallProvider, NetworkDeviceProvider, NetworkDeviceWriter, RoutingProvider, SwitchProvider
 {
     /**
      * How many rows to take from a list endpoint.
@@ -109,6 +110,16 @@ final readonly class FortigateProvider implements FirewallProvider, NetworkDevic
         return CapabilitySet::of([
             Capability::DeviceInventoryRead,
             Capability::DeviceConfigRead,
+            /*
+             * The one write, and declaring it grants nothing.
+             * `resource_adapters.writes_enabled` is false until an operator
+             * turns it on deliberately and audibly, and the registry makes an
+             * unenabled capability *absent* rather than refused — so a screen
+             * cannot offer a button this platform would then decline. The only
+             * caller is `ApplyNetworkChange`, from a change somebody other
+             * than its requester approved and which has been backed up.
+             */
+            Capability::DeviceConfigWrite,
             Capability::FirewallPolicyRead,
             Capability::FirewallSessionRead,
             Capability::SwitchPortRead,
@@ -393,6 +404,16 @@ final readonly class FortigateProvider implements FirewallProvider, NetworkDevic
         return $sessions;
     }
 
+    public function applyConfiguration(string $target, string $configuration): void
+    {
+        $this->restore($target, $configuration);
+    }
+
+    public function restoreConfiguration(string $target, DeviceConfiguration $backup): void
+    {
+        $this->restore($target, $backup->text);
+    }
+
     /**
      * One GET that must answer, decoded.
      *
@@ -486,6 +507,35 @@ final readonly class FortigateProvider implements FirewallProvider, NetworkDevic
             ($row['status'] ?? null) === 'up' => PortState::Up,
             default => PortState::Unknown,
         };
+    }
+
+    /**
+     * Both writes are the same endpoint on this vendor, and the contract is
+     * still right to keep them apart.
+     *
+     * FortiOS takes a whole configuration through `config/restore` whether it
+     * is a new one or an old one, so here the two collapse into one call. A
+     * device that took its configuration in fragments would have a restore
+     * that is genuinely a different operation — which is why the interface has
+     * two methods rather than one `write()` that every vendor after the first
+     * would have to lie about.
+     */
+    private function restore(string $target, string $configuration): void
+    {
+        try {
+            $response = $this->request()
+                ->asMultipart()
+                ->attach('file', $configuration, 'config.conf')
+                ->post('/api/v2/monitor/system/config/restore', [
+                    'source' => 'upload',
+                    'scope' => 'global',
+                    'vdom' => $this->vdom,
+                ]);
+        } catch (Throwable) {
+            throw DeviceUnreachable::noAnswer($target);
+        }
+
+        $this->refuseUnlessAnswered($target, $response->status());
     }
 
     /**

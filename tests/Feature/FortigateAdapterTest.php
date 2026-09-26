@@ -8,6 +8,7 @@ use App\Domain\Infrastructure\Exceptions\DeviceUnreachable;
 use App\Domain\Infrastructure\Network\BgpState;
 use App\Domain\Infrastructure\Network\FirewallAction;
 use App\Domain\Infrastructure\Network\PortState;
+use App\Infrastructure\Resources\Models\ResourceAdapter;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use InfraCMS\NetworkFortigate\FortigateProvider;
@@ -45,15 +46,43 @@ function fortiBody(array $results): array
     return ['results' => $results, 'vdom' => 'root', 'status' => 'success'];
 }
 
-it('declares the reads and none of the writes the device would accept', function (): void {
+it('declares one write, and none of the others the device would accept', function (): void {
     $capabilities = ($this->provider)()->capabilities();
 
     expect($capabilities->has(Capability::FirewallPolicyRead))->toBeTrue()
         ->and($capabilities->has(Capability::RouteRead))->toBeTrue()
-        // The one that matters. FortiOS takes a policy write over this same
-        // API; it arrives behind the guarded workflow, not before it.
+        /*
+         * The whole configuration, which is what the guarded workflow pushes,
+         * and which grants nothing on its own: `resource_adapters.writes_enabled`
+         * is false until an operator turns it on, and the registry then makes
+         * the capability *absent* rather than refusing it later.
+         */
+        ->and($capabilities->has(Capability::DeviceConfigWrite))->toBeTrue()
+        /*
+         * And nothing narrower. FortiOS would take a single policy rule over
+         * the same API, and a capability with no workflow behind it is a
+         * button core would be allowed to offer.
+         */
         ->and($capabilities->has(Capability::FirewallPolicyWrite))->toBeFalse()
-        ->and($capabilities->has(Capability::DeviceConfigWrite))->toBeFalse();
+        ->and($capabilities->has(Capability::SwitchPortWrite))->toBeFalse()
+        ->and($capabilities->has(Capability::DeviceFirmwareWrite))->toBeFalse();
+});
+
+/**
+ * Declaring it is not being allowed to use it. `narrow()` is where the
+ * installation's decision lives, and a read-only row makes the write vanish
+ * rather than refusing it at the moment somebody presses a button.
+ */
+it('loses the write on a row nobody enabled writes on', function (): void {
+    $row = new ResourceAdapter([
+        'enabled' => true,
+        'writes_enabled' => false,
+    ]);
+
+    $permitted = $row->narrow(($this->provider)()->capabilities());
+
+    expect($permitted->has(Capability::DeviceConfigRead))->toBeTrue()
+        ->and($permitted->has(Capability::DeviceConfigWrite))->toBeFalse();
 });
 
 it('says what the device is without saying where it is', function (): void {

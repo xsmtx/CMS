@@ -254,7 +254,35 @@ box says it is actually wearing. The whole value of discovery is being able to
 say they disagree, which is impossible once one has overwritten the other;
 reconciling the two is a screen, and a screen is not in this step.
 
-What is left of §6 is the change records.
+**The guarded workflow is in** (2026-09-26): `network_changes`,
+`NetworkChangeState`, `RequestNetworkChange`, `DecideNetworkChange`,
+`ApplyNetworkChange`, `ApplyNetworkChangeJob`, four permissions and two
+screens under `/admin/network/changes`.
+
+The refusals are the feature, and they happen in §6's order:
+
+1. **Something must be permitted to write.** `AdapterRegistry` narrows an
+   unenabled capability away entirely, so a device nobody turned writes on for
+   is a refusal here and a button that was never offered.
+2. **Back up first.** A backup that failed is a change that does not happen.
+   The text is stored on the change, so a rollback does not have to ask a
+   device that may by then be unreachable.
+3. **The device must be where the diff left it.** The fingerprint is
+   recomputed from what the box says *now*. This is the whole point: a diff
+   somebody approved an hour ago is a diff against a device somebody else may
+   have edited since, and applying it would silently revert their work.
+4. **Apply, then read it back.** Verification is a second read rather than the
+   adapter's word — a device that accepted a configuration and did not keep it
+   is the failure worth catching, and no adapter can report it.
+5. **A failed verify rolls back**, and the record says `rolled_back` rather
+   than `failed`: an operator arriving at three in the morning needs to know
+   whether the box is where it started.
+
+`FortigateProvider` now declares `DeviceConfigWrite`, which is what §6
+anticipated — "a module that claims one is narrowed by its row until an
+operator turns it on deliberately". It has still never spoken to a FortiGate.
+
+What is left of the phase is JIT access (§17) and DDoS events (§7).
 
 **IPAM is in** (2026-09-26): `IpAddress` and `IpPrefix` as value objects with
 the arithmetic, five tables, `AllocateAddress`, `AssignAddress`, `SavePrefix`,

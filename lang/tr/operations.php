@@ -29,6 +29,7 @@ return [
         'domain_transfer' => 'Alan adını transfer et',
         'domain_renew' => 'Alan adını yenile',
         'domain_sync' => 'Alan adını eşitle',
+        'network_change_apply' => 'Cihaz değişikliğini uygula',
     ],
 
     'attempt' => ':max denemeden :attempt. deneme',
