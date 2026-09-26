@@ -57,6 +57,18 @@ enum AutomationTask: string
     case Topology = 'topology';
 
     /**
+     * Writing down that a just-in-time grant has run out (§17).
+     *
+     * The record, not the enforcement. Whether a grant is live is a question
+     * about its own two timestamps, asked when somebody uses it — so a
+     * scheduler that was down for three hours leaves nobody holding access
+     * they should not have. This sweep exists so an operator reading the
+     * list sees that a grant ended, with a time and a reason, rather than
+     * inferring it from a date in the past.
+     */
+    case AccessGrants = 'access-grants';
+
+    /**
      * Asking every adapter whether the thing on the other end is still there.
      *
      * Separate from `Telemetry` because they answer different questions and
@@ -121,6 +133,10 @@ enum AutomationTask: string
             // asking a firewall's management plane to enumerate itself twelve
             // times an hour is how an inventory job starts dropping packets.
             self::Topology => 60,
+            // Every five minutes. Nothing depends on it — the gate asks the
+            // timestamps — so this is only how quickly the list catches up
+            // with what is already true.
+            self::AccessGrants => 5,
             // Five minutes as well, and for the same reason it is not one:
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.

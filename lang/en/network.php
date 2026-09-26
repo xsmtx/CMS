@@ -146,4 +146,37 @@ return [
             'applying' => 'The change is on its way to the device.',
         ],
     ],
+
+    /*
+     * Just-in-time access (§17).
+     *
+     * The wording carries the rule, because a screen that showed the form and
+     * not the reason would be a screen somebody fills in out of habit: a grant
+     * runs out on its own, and it is never given to the person giving it.
+     */
+    'access' => [
+        'title' => 'Temporary access',
+        'intro' => 'Capabilities somebody holds for a window rather than permanently. Each one ends on its own.',
+        'empty' => 'Nobody currently holds temporary access.',
+        'grant' => 'Grant access',
+        'grant_intro' => 'Give somebody one more thing than they usually have, until a time. Never to yourself.',
+        'holder' => 'For',
+        'granter' => 'Given by',
+        'capability' => 'What they may do',
+        'minutes' => 'For how long, in minutes',
+        'minutes_hint' => 'At least five, and at most what this installation allows. Longer than that is a permission with extra steps.',
+        'reason' => 'Why',
+        'ticket' => 'Ticket',
+        'expires' => 'Ends',
+        'revoke' => 'End it now',
+        'revoke_title' => 'End this access now?',
+        'revoke_body' => 'They lose the capability immediately. The record of who had it, and why, is kept.',
+        'capabilities' => [
+            'infrastructure_connect' => 'Open a panel session from Connect',
+        ],
+        'flash' => [
+            'granted' => 'The access is granted, and it ends on its own.',
+            'revoked' => 'The access has ended.',
+        ],
+    ],
 ];

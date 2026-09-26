@@ -282,7 +282,33 @@ The refusals are the feature, and they happen in §6's order:
 anticipated — "a module that claims one is narrowed by its row until an
 operator turns it on deliberately". It has still never spoken to a FortiGate.
 
-What is left of the phase is JIT access (§17) and DDoS events (§7).
+**JIT access is in** (2026-09-26): `access_grants`, `GrantableCapability`,
+`AccessGrants`, the `access-grants` sweep, and a section on Connect — the
+screen it extends, because Connect is already the answer to "somebody needs
+into a panel without being handed a root password" and this is the answer to
+"and they do not hold the permission".
+
+Four decisions:
+
+- **There is no state column.** Whether a grant is live is a question about
+  its own two timestamps, asked at the moment somebody uses it. A column
+  saying `active` would have to be kept true by something running on time,
+  and a scheduler that was down for three hours would leave an expired grant
+  standing. The sweep still writes `revoked_at` with a reason, because an
+  operator reading the list wants to see that a grant *ended* — but nothing
+  depends on it having run.
+- **A grant only ever adds.** There is no member of `GrantableCapability`
+  that takes something away and there must not be one: a mechanism that
+  could remove a permission for a window is a mechanism for locking an
+  operator out, and roles already decide what people may do.
+- **Nobody grants themselves anything**, which a permission cannot express —
+  a permission says who may grant and cannot say to whom. The select leaves
+  the person asking out, and the server refuses it anyway.
+- **The window is bounded at both ends.** Under five minutes is a grant
+  somebody is about to give again; over the installation's maximum (twelve
+  hours by default) is a permission with extra steps.
+
+What is left of the phase is DDoS events (§7).
 
 **IPAM is in** (2026-09-26): `IpAddress` and `IpPrefix` as value objects with
 the arithmetic, five tables, `AllocateAddress`, `AssignAddress`, `SavePrefix`,

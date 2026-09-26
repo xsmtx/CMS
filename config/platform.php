@@ -703,6 +703,15 @@ return [
      */
     'network' => [
         'require_approval' => env('NETWORK_REQUIRE_APPROVAL', true),
+
+        /*
+         * How long a just-in-time grant may run for (§17).
+         *
+         * Twelve hours: longer than a shift and shorter than a habit. A grant
+         * that can be given for a fortnight is a permission with extra steps,
+         * and this platform has roles for those.
+         */
+        'max_grant_minutes' => env('NETWORK_MAX_GRANT_MINUTES', 720),
     ],
 
     'licensing' => [

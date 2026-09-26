@@ -104,6 +104,10 @@ return [
             'label' => 'Apply a device change',
             'description' => 'Push an approved configuration to the device. The most consequential thing this platform can do.',
         ],
+        'network.access.grant' => [
+            'label' => 'Grant temporary access',
+            'description' => 'Give somebody a capability for a window. It runs out on its own, and never to yourself.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Turn maintenance mode on and off',
             'description' => 'Close the storefront and client area. The admin area stays open.',

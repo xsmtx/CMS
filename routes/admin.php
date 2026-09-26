@@ -547,6 +547,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
     // the panel, expires, and is audited — none of which is true of
     // revealing a stored password, which this platform does not do.
     Route::get('apps/connect', [ConnectController::class, 'index'])->name('apps.connect');
+    /*
+     * Just-in-time access (§17), on the screen it extends.
+     *
+     * `network.access.grant` is high risk and carries the password challenge,
+     * with the permission above it on the route — the ordering rule this
+     * product has now learned four times.
+     */
+    Route::post('apps/connect/grants', [ConnectController::class, 'grant'])
+        ->middleware(['can:network.access.grant', 'auth.recent'])
+        ->name('apps.connect.grants.store');
+    Route::delete('apps/connect/grants/{grant}', [ConnectController::class, 'revokeGrant'])
+        ->middleware('can:network.access.grant')
+        ->name('apps.connect.grants.destroy');
+
     Route::post('apps/connect/servers/{server}/session', [ConnectController::class, 'openSession'])
         ->name('apps.connect.session');
 

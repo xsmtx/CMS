@@ -11,14 +11,19 @@
  * A server whose panel cannot do that says so rather than offering a button
  * that fails.
  */
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
+import AppInput from '../../../Components/AppInput.vue'
+import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
 import DetailSection from '../../../Components/DetailSection.vue'
+import AppTextarea from '../../../Components/AppTextarea.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
@@ -38,13 +43,79 @@ interface ServerRow {
   hasSecret: boolean
 }
 
+interface GrantRow {
+  id: string
+  holder: string | null
+  granter: string | null
+  capability: string
+  capabilityLabel: string
+  reason: string
+  ticket: string | null
+  expiresAt: string
+}
+
+interface Option {
+  value: string
+  label: string
+}
+
 const props = defineProps<{
   brandName: string
   platform: { version: string; entitlements: { key: string; label: string; allowed: boolean }[] }
   servers: ServerRow[]
+  grants: GrantRow[]
+  grantable: Option[]
+  staff: Option[]
+  can: { grant: boolean }
 }>()
 
 const { t } = useTranslations()
+
+const granting = ref(false)
+const ending = ref<GrantRow | null>(null)
+
+const grantForm = useForm({
+  staff: props.staff[0]?.value ?? '',
+  capability: props.grantable[0]?.value ?? '',
+  minutes: 120,
+  reason: '',
+  ticket: '',
+})
+
+const GRANT_COLUMNS: TableColumn[] = [
+  { key: 'holder', label: t('network.access.holder') },
+  { key: 'capability', label: t('network.access.capability') },
+  { key: 'reason', label: t('network.access.reason') },
+  { key: 'granter', label: t('network.access.granter') },
+  { key: 'expires', label: t('network.access.expires') },
+  { key: 'actions', label: '' },
+]
+
+function submitGrant(): void {
+  grantForm.post('/admin/apps/connect/grants', {
+    preserveScroll: true,
+    onSuccess: () => {
+      grantForm.reset('reason', 'ticket')
+      granting.value = false
+    },
+  })
+}
+
+function endGrant(): void {
+  const grant = ending.value
+
+  if (grant === null) return
+
+  router.delete(`/admin/apps/connect/grants/${grant.id}`, {
+    preserveScroll: true,
+    onFinish: () => (ending.value = null),
+  })
+}
+
+/** An instant the server sent, read where the operator is. */
+function when(value: string): string {
+  return new Date(value).toLocaleString()
+}
 
 const COLUMNS: TableColumn[] = [
   { key: 'server', label: t('provisioning.connect.columns.server') },
@@ -140,6 +211,114 @@ function openSession(server: ServerRow): void {
       <p class="text-content-muted text-chrome max-w-[74ch] leading-relaxed">
         {{ t('provisioning.connect.footnote') }}
       </p>
+
+      <!--
+        Just-in-time access, on the screen it extends. Connect is already the
+        answer to "somebody needs into a panel without being handed a root
+        password"; this is the answer to "and they do not hold the permission".
+      -->
+      <DetailSection :title="t('network.access.title')" :description="t('network.access.intro')">
+        <template #actions>
+          <AppButton
+            v-if="can.grant && staff.length > 0"
+            variant="secondary"
+            icon="add"
+            @click="granting = !granting"
+          >
+            {{ t('network.access.grant') }}
+          </AppButton>
+        </template>
+
+        <form
+          v-if="granting && can.grant"
+          class="border-line mb-6 flex flex-col gap-4 border-b pb-6"
+          @submit.prevent="submitGrant"
+        >
+          <p class="text-content-muted text-chrome max-w-[74ch]">
+            {{ t('network.access.grant_intro') }}
+          </p>
+
+          <div class="grid gap-4 md:grid-cols-3">
+            <AppSelect
+              v-model="grantForm.staff"
+              :label="t('network.access.holder')"
+              :options="staff"
+              :error="grantForm.errors.staff"
+            />
+            <AppSelect
+              v-model="grantForm.capability"
+              :label="t('network.access.capability')"
+              :options="grantable"
+              :error="grantForm.errors.capability"
+            />
+            <AppInput
+              v-model.number="grantForm.minutes"
+              type="number"
+              :label="t('network.access.minutes')"
+              :hint="t('network.access.minutes_hint')"
+              :error="grantForm.errors.minutes"
+            />
+          </div>
+
+          <AppTextarea
+            v-model="grantForm.reason"
+            :label="t('network.access.reason')"
+            :rows="2"
+            :error="grantForm.errors.reason"
+          />
+
+          <AppInput
+            v-model="grantForm.ticket"
+            :label="t('network.access.ticket')"
+            :error="grantForm.errors.ticket"
+          />
+
+          <div>
+            <AppButton type="submit" variant="primary" :loading="grantForm.processing">
+              {{ t('network.access.grant') }}
+            </AppButton>
+          </div>
+        </form>
+
+        <AppTable v-if="grants.length > 0" name="access-grants" :columns="GRANT_COLUMNS">
+          <AppTableRow v-for="grant in grants" :key="grant.id">
+            <td data-col="holder" class="font-medium">{{ grant.holder ?? '—' }}</td>
+            <td data-col="capability">{{ grant.capabilityLabel }}</td>
+            <td data-col="reason" class="text-content-muted max-w-[32rem] truncate">
+              {{ grant.reason }}
+              <span v-if="grant.ticket" class="text-content-subtle">· {{ grant.ticket }}</span>
+            </td>
+            <td data-col="granter" class="text-content-muted">{{ grant.granter ?? '—' }}</td>
+            <td data-col="expires" class="text-content-muted text-chrome tabular-nums">
+              {{ when(grant.expiresAt) }}
+            </td>
+            <td data-col="actions" class="text-right whitespace-nowrap">
+              <span class="row-actions">
+                <AppButton
+                  v-if="can.grant"
+                  size="sm"
+                  variant="danger-subtle"
+                  @click="ending = grant"
+                >
+                  {{ t('network.access.revoke') }}
+                </AppButton>
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
+
+        <p v-else class="text-content-muted text-body">{{ t('network.access.empty') }}</p>
+      </DetailSection>
     </div>
+
+    <AppConfirm
+      :open="ending !== null"
+      level="consequential"
+      :title="t('network.access.revoke_title')"
+      :description="t('network.access.revoke_body')"
+      :confirm-label="t('network.access.revoke')"
+      @close="ending = null"
+      @confirm="endGrant"
+    />
   </AdminLayout>
 </template>

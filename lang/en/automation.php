@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'access_grants' => [
+            'label' => 'Temporary access',
+            'description' => 'Writes down that a just-in-time grant has run out. Nothing depends on it running: the gate asks the grant itself.',
+        ],
         'topology' => [
             'label' => 'Topology',
             'description' => 'Asks every network device what it is, and records its ports and VLANs on the graph.',

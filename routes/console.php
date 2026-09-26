@@ -122,6 +122,19 @@ Schedule::command('platform:run telemetry')
  * firewall's management plane to enumerate itself twelve times an hour is how
  * an inventory job starts making the firewall drop packets.
  */
+/*
+ * Just-in-time grants that have run out.
+ *
+ * Every five minutes, and nothing depends on it: whether a grant is live is
+ * a question about its own timestamps, asked when somebody uses it. This is
+ * how quickly the record catches up with what is already true.
+ */
+Schedule::command('platform:run access-grants')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run topology')
     ->hourly()
     ->withoutOverlapping()

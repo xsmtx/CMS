@@ -138,4 +138,30 @@ return [
             'applying' => 'Değişiklik cihaza gönderiliyor.',
         ],
     ],
+
+    'access' => [
+        'title' => 'Geçici erişim',
+        'intro' => 'Birinin kalıcı olarak değil, belirli bir süre için taşıdığı yetkiler. Her biri kendiliğinden biter.',
+        'empty' => 'Şu anda kimsede geçici erişim yok.',
+        'grant' => 'Erişim ver',
+        'grant_intro' => 'Birine her zamankinden bir fazlasını, bir süreliğine verin. Asla kendinize değil.',
+        'holder' => 'Kime',
+        'granter' => 'Veren',
+        'capability' => 'Ne yapabilir',
+        'minutes' => 'Ne kadar süre, dakika',
+        'minutes_hint' => 'En az beş, en fazla bu kurulumun izin verdiği kadar. Daha uzunu, zahmetli bir izinden başka bir şey değildir.',
+        'reason' => 'Neden',
+        'ticket' => 'Talep kaydı',
+        'expires' => 'Bitiş',
+        'revoke' => 'Şimdi bitir',
+        'revoke_title' => 'Bu erişim şimdi bitirilsin mi?',
+        'revoke_body' => 'Yetkiyi anında kaybeder. Kimin, neden taşıdığının kaydı durur.',
+        'capabilities' => [
+            'infrastructure_connect' => "Connect'ten panel oturumu açmak",
+        ],
+        'flash' => [
+            'granted' => 'Erişim verildi ve kendiliğinden bitecek.',
+            'revoked' => 'Erişim bitti.',
+        ],
+    ],
 ];

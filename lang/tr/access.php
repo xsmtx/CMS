@@ -103,6 +103,10 @@ return [
             'label' => 'Cihaz değişikliğini uygula',
             'description' => 'Onaylanmış yapılandırmayı cihaza gönderir. Bu platformun yapabileceği en ağır sonuçlu iş.',
         ],
+        'network.access.grant' => [
+            'label' => 'Geçici erişim ver',
+            'description' => 'Birine belirli bir süre için bir yetki verir. Süresi dolunca kendiliğinden biter, ve asla kendinize veremezsiniz.',
+        ],
         'platform.maintenance.manage' => [
             'label' => 'Bakım modunu aç ve kapat',
             'description' => 'Mağazayı ve müşteri alanını kapatır. Yönetim alanı açık kalır.',

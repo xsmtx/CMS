@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'access_grants' => [
+            'label' => 'Geçici erişim',
+            'description' => 'Süresi dolan geçici erişimleri kayda geçirir. Hiçbir şey bunun çalışmasına bağlı değildir: kontrol doğrudan erişimin kendisine sorar.',
+        ],
         'topology' => [
             'label' => 'Topoloji',
             'description' => "Her ağ cihazına ne olduğunu sorar, portlarını ve VLAN'larını grafiğe yazar.",

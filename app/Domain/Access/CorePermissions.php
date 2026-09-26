@@ -108,6 +108,22 @@ final class CorePermissions
                 highRisk: true,
             ),
 
+            /*
+             * Handing somebody a capability for a window (§17).
+             *
+             * High risk, because it is the one permission whose whole purpose
+             * is to let somebody else exceed theirs. `AccessGrants` refuses a
+             * grant to the person giving it, which a permission cannot
+             * express — a permission says who may grant and cannot say to
+             * whom.
+             */
+            new PermissionDefinition(
+                'network.access.grant',
+                'infrastructure',
+                RoleScope::Staff,
+                highRisk: true,
+            ),
+
             // Turning the storefront off is not a settings change.
             new PermissionDefinition('platform.maintenance.manage', 'platform', RoleScope::Staff, highRisk: true),
 

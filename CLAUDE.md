@@ -2179,3 +2179,36 @@ inside hits its outside — wrap, or give the primitive the prop.
 override**, because `+` keeps the **left** operand's key. It made a helper
 that looked parameterised and was not, and the symptom was a `can` flag that
 would not go false.
+
+**Just-in-time access is in** (`access_grants`, a section on Connect). A grant
+is somebody holding one more thing than usual until a time, and it is read in
+exactly one place: `ConnectController::authorizeConnect()` passes on the
+permission **or** on a live grant.
+
+**There is no state column, and that is the design.** Whether a grant is live
+is a question about its own two timestamps, asked when somebody uses it — so a
+scheduler that was down for three hours leaves nobody holding access they
+should not have. The `access-grants` sweep still writes `revoked_at` with a
+reason, because an operator reading the list wants to see that a grant *ended*
+rather than infer it from a date; nothing depends on it having run. ADR 0031
+applied to a permission rather than to an invoice.
+
+**A grant only ever adds.** `GrantableCapability` has no member that takes
+something away and must not gain one: a mechanism that could remove a
+permission for a window is a mechanism for locking an operator out, and roles
+already decide what people may do. That is also what makes asking the gate
+everywhere safe — somebody who holds the permission never touches the table.
+
+**Nobody grants themselves anything**, enforced in `AccessGrants` rather than
+by the permission: a permission says who may grant and cannot say *to whom*.
+The same rule `DecideNetworkChange` needed for approvals, for the same reason,
+and the select on the screen leaves the person asking out so the form cannot
+fail after being filled in.
+
+**The window is bounded at both ends.** Under five minutes is a grant somebody
+is about to give again; over `platform.network.max_grant_minutes` (twelve
+hours) is a permission with extra steps, and this product has roles for those.
+
+**An expiry has no actor, and the audit row says so.** `AccessGrants::revoke()`
+takes a nullable staff user and writes `bySystem()` when there is none — a
+record whose author was invented would be a record that lied about who acted.
