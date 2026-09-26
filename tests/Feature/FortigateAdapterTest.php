@@ -188,6 +188,33 @@ it('reads a port that is up with nothing plugged into it as down', function (): 
 });
 
 /**
+ * FortiOS writes `ip` and `mask` as separate dotted quads, so the notation is
+ * built rather than read — and `0.0.0.0` is what an unconfigured interface
+ * answers, not an address.
+ */
+it('builds the cidr notation from the address and the netmask', function (): void {
+    Http::fake([
+        'fw1.test/api/v2/monitor/system/interface*' => Http::response(fortiBody([
+            ['name' => 'port1', 'status' => 'up', 'ip' => '198.51.100.1', 'mask' => '255.255.255.0'],
+            ['name' => 'port2', 'status' => 'up', 'ip' => '10.0.0.1', 'mask' => '255.255.255.252'],
+            // Nothing configured on it.
+            ['name' => 'port3', 'status' => 'up', 'ip' => '0.0.0.0', 'mask' => '0.0.0.0'],
+            // A mask that is not contiguous is a device answering nonsense,
+            // and nonsense comes back as no length rather than as a plausible
+            // number.
+            ['name' => 'port4', 'status' => 'up', 'ip' => '10.1.0.1', 'mask' => '255.0.255.0'],
+        ])),
+    ]);
+
+    $ports = ($this->provider)()->ports('fw1.dc2');
+
+    expect($ports[0]->addresses)->toBe(['198.51.100.1/24'])
+        ->and($ports[1]->addresses)->toBe(['10.0.0.1/30'])
+        ->and($ports[2]->addresses)->toBe([])
+        ->and($ports[3]->addresses)->toBe(['10.1.0.1']);
+});
+
+/**
  * A FortiGate has no VLAN table: a VLAN there *is* a subinterface. So two
  * interfaces on one tag are one VLAN with two ports, and an adapter that
  * assigned rather than accumulated would report the last one and lose the

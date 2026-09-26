@@ -18,6 +18,10 @@ return [
         'server' => 'Sunucu',
         'service' => 'Hizmet',
         'customer' => 'Müşteri',
+        'network_device' => 'Ağ cihazı',
+        'device_port' => 'Port',
+        'vlan' => 'VLAN',
+        'ip_address' => 'Adres',
     ],
 
     'relations' => [

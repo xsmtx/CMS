@@ -287,6 +287,7 @@ final readonly class FortigateProvider implements FirewallProvider, NetworkDevic
                 speedMbps: $this->number($row, 'speed'),
                 macAddress: $this->mac($this->text($row, 'mac')),
                 untaggedVlan: $this->number($row, 'vlanid'),
+                addresses: $this->addresses($row),
             );
         }
 
@@ -485,6 +486,59 @@ final readonly class FortigateProvider implements FirewallProvider, NetworkDevic
             ($row['status'] ?? null) === 'up' => PortState::Up,
             default => PortState::Unknown,
         };
+    }
+
+    /**
+     * The addresses configured on an interface, in CIDR notation.
+     *
+     * FortiOS writes `ip` and `mask` as separate dotted quads and keeps IPv6
+     * somewhere else entirely, which is why this builds the notation rather
+     * than reading it: a platform that stored `255.255.255.0` beside an
+     * address would be a platform that could not answer "is this inside that
+     * prefix" without doing the arithmetic anyway.
+     *
+     * `0.0.0.0` is what an unconfigured interface answers, not an address.
+     *
+     * @param  array<array-key, mixed>  $row
+     * @return list<string>
+     */
+    private function addresses(array $row): array
+    {
+        $ip = $this->text($row, 'ip');
+
+        if ($ip === null || $ip === '0.0.0.0') {
+            return [];
+        }
+
+        $mask = $this->text($row, 'mask');
+        $length = $mask === null ? null : $this->prefixLength($mask);
+
+        return [$length === null ? $ip : $ip.'/'.$length];
+    }
+
+    /**
+     * A dotted-quad netmask as a prefix length.
+     *
+     * Counting the set bits rather than matching a table: a table would have
+     * to be right about all thirty-three of them, and a mask that is not
+     * contiguous is a device answering nonsense, which comes back as null
+     * rather than as a plausible number.
+     */
+    private function prefixLength(string $mask): ?int
+    {
+        $packed = inet_pton($mask);
+
+        if ($packed === false) {
+            return null;
+        }
+
+        $bits = '';
+
+        foreach (str_split($packed) as $byte) {
+            $bits .= str_pad(decbin(ord($byte)), 8, '0', STR_PAD_LEFT);
+        }
+
+        return preg_match('/^1*0*$/', $bits) === 1 ? substr_count($bits, '1') : null;
     }
 
     private function bgpState(?string $state): BgpState

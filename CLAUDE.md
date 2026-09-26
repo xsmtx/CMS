@@ -2075,3 +2075,42 @@ JSON, and the module simply did not appear on disk — the same class of failure
 as the doubled backslash `OfficialModulesTest` caught once before, through the
 other door. Anything containing a backslash or an escaped quote goes through
 the Write or Edit tool, not a heredoc.
+
+**Topology discovery is in** (`DiscoverTopology`, `AutomationTask::Topology`,
+hourly). It asks each network-device adapter to describe itself and writes a
+`network_device` node, a `device_port` under it, an `ip_address` under each
+port and a `vlan` where the same box also answers as a switch — so the
+containment walk reaches Router → Port → Address.
+
+**An adapter is one device.** A network-device module is configured with one
+address and speaks to one box, so `describe()` is handed the adapter's own key
+rather than a list of node keys the way `CollectTelemetry` is. There is no
+inventory of devices to draw the list from, and inventing one would be core
+guessing at hardware it has never seen.
+
+**The serial is the identity, and the fallback is the adapter key — never the
+hostname.** A hostname is changed by whoever last configured the box, and a
+node key that moved would leave the old node behind as a device that had
+apparently vanished.
+
+**A discovery run retires only what it wrote**, scoped by `source`. Retiring by
+kind would take a second adapter's ports with it every time this one ran. That
+is `source`'s whole reason for being on a node, and it is the same rule
+`ProjectCoreResources` states about never believing it owns rows it has never
+seen.
+
+**An `ip_address` node is not an `ip_addresses` row**, and merging them would
+destroy the only thing discovery is for. The table is the seller's plan — what
+somebody intends to hand out — and the node is what a box says it is actually
+wearing; the value is being able to say they disagree. The same applies to
+`VlanDescriptor` against the `vlans` table.
+
+**A port's VLAN is an attribute, not an edge.** A VLAN does not physically
+contain a port, and `Relation` is a closed list on purpose — inventing a
+semantic to carry a number is how a traversal starts answering questions
+nobody asked.
+
+**`DunningAndHealthTest` counts the automation tasks, and that count is a
+guard rather than a chore.** It has now caught four phases in a row adding a
+task to `AutomationTask` and not to the screen — the screen has to offer every
+task the command can run, and a new one joins both or neither.

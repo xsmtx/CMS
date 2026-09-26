@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'topology' => [
+            'label' => 'Topology',
+            'description' => 'Asks every network device what it is, and records its ports and VLANs on the graph.',
+        ],
         'webhooks' => [
             'label' => 'Webhook deliveries',
             'description' => 'Retries the deliveries an endpoint has not accepted yet.',

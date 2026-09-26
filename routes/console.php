@@ -114,6 +114,20 @@ Schedule::command('platform:run telemetry')
  * only the adapters whose own declared pace says they are due, so this is how
  * often the platform *considers* asking.
  */
+/*
+ * Topology discovery.
+ *
+ * Hourly, beside the projection rather than beside telemetry. A chassis does
+ * not grow a port between one five-minute sweep and the next, and asking a
+ * firewall's management plane to enumerate itself twelve times an hour is how
+ * an inventory job starts making the firewall drop packets.
+ */
+Schedule::command('platform:run topology')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run adapter-health')
     ->everyFiveMinutes()
     ->withoutOverlapping()

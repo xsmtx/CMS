@@ -24,6 +24,13 @@ return [
         'server' => 'Server',
         'service' => 'Service',
         'customer' => 'Customer',
+        // Written by topology discovery rather than by the projection, which
+        // is why they sit here and not in `ResourceKind::Core`: core owns the
+        // wording and an adapter owns the rows.
+        'network_device' => 'Network device',
+        'device_port' => 'Port',
+        'vlan' => 'VLAN',
+        'ip_address' => 'Address',
     ],
 
     'relations' => [

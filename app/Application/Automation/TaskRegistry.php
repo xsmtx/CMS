@@ -7,6 +7,7 @@ namespace App\Application\Automation;
 use App\Application\Automation\Runs\CheckAdapterHealth;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectTelemetry;
+use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\GenerateRenewalInvoices;
 use App\Application\Automation\Runs\MarkInvoicesOverdue;
 use App\Application\Automation\Runs\NotifyExpiringDomains;
@@ -46,6 +47,7 @@ final readonly class TaskRegistry
             AutomationTask::Cleanup => CleanUpExpiredRecords::class,
             AutomationTask::Resources => ProjectCoreResources::class,
             AutomationTask::Telemetry => CollectTelemetry::class,
+            AutomationTask::Topology => DiscoverTopology::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

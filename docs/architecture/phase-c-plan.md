@@ -223,8 +223,38 @@ Three decisions worth keeping:
   fingerprint differently, or the diff step would refuse every apply on that
   box as "somebody else has edited it".
 
-What is left of §6 is topology — the contracts writing device, port and VLAN
-nodes into the graph — and then the change records.
+**Topology is in** (2026-09-26): `DiscoverTopology`, the
+`AutomationTask::Topology` member and an hourly schedule. It asks each
+network-device adapter to describe itself and writes a `network_device` node,
+a `device_port` under it, an `ip_address` under each port and a `vlan` where
+the same box also answers as a switch.
+
+Four decisions:
+
+- **An adapter is one device**, so `describe()` is handed the adapter's own key
+  rather than a list of node keys the way `CollectTelemetry` is. There is no
+  inventory of devices to draw a list from, and inventing one would be this
+  platform guessing at hardware it has never seen.
+- **The serial is the identity**, falling back to the adapter key rather than
+  to the hostname. A hostname is changed by whoever last configured the box,
+  and a node key that moved would leave the old node behind as a device that
+  had apparently vanished.
+- **An address hangs off the port, not the device**, which is what makes the
+  spine §2 draws reach all the way down — and is the honest direction, since a
+  box with two interfaces on one subnet is a box where knowing which one
+  matters.
+- **It retires only what it wrote**, scoped by `source`. Retiring by kind
+  would take a second adapter's ports with it every time this one ran, which
+  is the rule `ProjectCoreResources` already states about never believing it
+  owns rows it has never seen.
+
+An `ip_address` node is deliberately **not** an `ip_addresses` row. That table
+is the seller's plan — what somebody intends to hand out — and a node is what a
+box says it is actually wearing. The whole value of discovery is being able to
+say they disagree, which is impossible once one has overwritten the other;
+reconciling the two is a screen, and a screen is not in this step.
+
+What is left of §6 is the change records.
 
 **IPAM is in** (2026-09-26): `IpAddress` and `IpPrefix` as value objects with
 the arithmetic, five tables, `AllocateAddress`, `AssignAddress`, `SavePrefix`,

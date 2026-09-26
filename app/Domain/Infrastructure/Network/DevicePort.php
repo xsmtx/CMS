@@ -30,6 +30,17 @@ final readonly class DevicePort
      *                                  device reports trunking. Empty means
      *                                  either an access port or a device that
      *                                  did not say.
+     * @param  list<string>  $addresses  The addresses configured on this
+     *                                   interface, in CIDR notation, as the
+     *                                   device wrote them. Not parsed here:
+     *                                   `IpPrefix` refuses a host address
+     *                                   where a network was wanted, which is
+     *                                   correct for something an operator
+     *                                   typed and wrong for something a
+     *                                   device said — and a device answering
+     *                                   something this platform's parser
+     *                                   rejects is a finding rather than a
+     *                                   value to swallow.
      */
     public function __construct(
         public string $name,
@@ -39,5 +50,6 @@ final readonly class DevicePort
         public ?string $macAddress = null,
         public ?int $untaggedVlan = null,
         public array $taggedVlans = [],
+        public array $addresses = [],
     ) {}
 }

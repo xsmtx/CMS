@@ -45,6 +45,18 @@ enum AutomationTask: string
     case Telemetry = 'telemetry';
 
     /**
+     * Asking every network device what it is, and writing it into the graph.
+     *
+     * The third of the graph's three tasks, and separate from `Resources` for
+     * the reason that one is separate from `Telemetry`: a projection reads
+     * rows this installation owns and cannot fail because somebody else's
+     * equipment is down. This one is entirely at the mercy of a device
+     * answering, so a run that failed means a box is unreachable rather than
+     * that the inventory is stale.
+     */
+    case Topology = 'topology';
+
+    /**
      * Asking every adapter whether the thing on the other end is still there.
      *
      * Separate from `Telemetry` because they answer different questions and
@@ -104,6 +116,11 @@ enum AutomationTask: string
             // adapter declares its own rate limits and the run respects them, so
             // this is how often the platform *asks*, not how hard it pushes.
             self::Telemetry => 5,
+            // Hourly, like the projection it belongs beside. A chassis does
+            // not grow a port between one five-minute sweep and the next, and
+            // asking a firewall's management plane to enumerate itself twelve
+            // times an hour is how an inventory job starts dropping packets.
+            self::Topology => 60,
             // Five minutes as well, and for the same reason it is not one:
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.
