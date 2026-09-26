@@ -1,6 +1,7 @@
 # Advanced Operations — plan of record
 
-Status: plan. Phase A complete; Phases B to J not started.
+Status: plan. Phase A complete; **Phase B started** (2026-09-26); C to J not
+started.
 Date: 2026-09-24
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` (all sections)
 Required by: handoff #2 §30
@@ -442,6 +443,34 @@ Ordering principles, so that a later phase can be resequenced without guessing:
 - **Mobile is last but one**, because a phone app over a changing API is two
   migrations, and because the staff API is a security decision that benefits from
   every guarded action already existing.
+
+## 9a. Phase B, what is in so far (2026-09-26)
+
+Four of B's items are in, and they landed in the order §9 requires — the vault
+first, because the first adapter is its first caller.
+
+- **`SecretStore`**, with `SecretReference` (area/kind/owner) and
+  `EncryptedDatabaseSecrets`. Writes audited, reads not; writing over a value
+  is a rotation; the audit row names the reference and never the value. A
+  `vault-hashicorp` module can answer the same contract later.
+- **`monitoring-prometheus`**, the first adapter family that reads a real
+  system. Address in module configuration, token in the vault, read at the
+  moment of the call. Four instant queries across every target rather than one
+  query per host.
+- **The credential UI** on the Adapters screen: write-only, behind the
+  password challenge, saying only whether one is stored and when it changed.
+- **The health sweep** Phase A deferred, pacing itself by each adapter's own
+  declared limits and asking a question about rows rather than about the clock.
+- **The daily point** (`resource_metric_days`) and `CapacityForecast`, which
+  answers when a resource runs out and declines whenever the honest answer is
+  that it cannot know.
+- **Global search reaches the graph**: a hostname or an IP out of somebody
+  else's ticket now finds the resource.
+
+Still open in B: placement scoring over real metrics, the Infrastructure
+Center views, and a screen for the capacity answer. Nothing in C, F or the
+rest has been started, and the standing limitation is unchanged — no real
+monitoring system has ever answered this code.
 
 ## 10. Phase A, precisely
 
