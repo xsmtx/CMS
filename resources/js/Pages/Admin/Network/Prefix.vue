@@ -239,10 +239,10 @@ function when(value: string | null): string {
       :open="releasing !== null"
       level="consequential"
       :title="t('network.addresses.release_title')"
-      :body="t('network.addresses.release_body')"
+      :description="t('network.addresses.release_body')"
       :confirm-label="t('network.addresses.release_confirm')"
-      :loading="releaseForm.processing"
-      @cancel="releasing = null"
+      :busy="releaseForm.processing"
+      @close="releasing = null"
       @confirm="release"
     >
       <AppCheckbox
@@ -256,9 +256,9 @@ function when(value: string | null): string {
       :open="removing"
       level="high-risk"
       :title="t('network.prefixes.delete_title')"
-      :body="t('network.prefixes.delete_body')"
+      :description="t('network.prefixes.delete_body')"
       :confirm-label="t('network.prefixes.delete_confirm')"
-      @cancel="removing = false"
+      @close="removing = false"
       @confirm="remove"
     />
   </AdminLayout>

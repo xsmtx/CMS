@@ -111,6 +111,14 @@ return [
             'label' => 'Uyarı kuralı yaz',
             'description' => 'Bu kurulumun neyi birini uyandırmaya değer saydığına karar verir.',
         ],
+        'reliability.incidents.view' => [
+            'label' => 'Olayları gör',
+            'description' => 'Neyin ters gittiğini, zaman çizelgesini ve altında ne olduğunu okur.',
+        ],
+        'reliability.incidents.manage' => [
+            'label' => 'Olay aç ve güncelle',
+            'description' => 'Bir şeyin ters gittiğini ilan eder, ne olduğunu yazar ve bitirir.',
+        ],
         'network.ddos.view' => [
             'label' => 'Saldırıları gör',
             'description' => 'Bildirilen saldırıları ve adresin arkasındaki müşteriyi görüntüler.',

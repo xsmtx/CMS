@@ -147,6 +147,16 @@ const VOCABULARY: Record<Exclude<StatusTone, 'unknown'>, readonly string[]> = {
   ],
 }
 
+const TONES = [
+  'healthy',
+  'info',
+  'warning',
+  'critical',
+  'maintenance',
+  'neutral',
+  'unknown',
+] as const satisfies readonly StatusTone[]
+
 const LOOKUP = new Map<string, StatusTone>(
   Object.entries(VOCABULARY).flatMap(([tone, words]) =>
     words.map((word) => [word, tone as StatusTone] as const),
@@ -163,6 +173,26 @@ export function statusTone(status: string | null | undefined): StatusTone {
     .replace(/[\s-]+/g, '_')
 
   return LOOKUP.get(key) ?? 'unknown'
+}
+
+/**
+ * A tone the **server** already decided, checked rather than re-mapped.
+ *
+ * `statusTone()` maps a status *word* to a tone, and a tone is not a word:
+ * `info` and `maintenance` and `neutral` are not in the vocabulary above, so
+ * running an already-decided tone through it silently returns `unknown`. The
+ * incident screens found it — `IncidentState::Monitoring` is `info` on the
+ * server and drew the unknown mark (○) on a real state, which is the same
+ * bug orders, tickets and payments each made through a different door.
+ *
+ * Where a `*Tone` field crosses from PHP — `AlertSeverity::tone()`,
+ * `IncidentState::tone()` — this is what reads it. Anything unrecognised is
+ * `unknown` visibly, for the same reason as above.
+ */
+export function asTone(tone: string | null | undefined): StatusTone {
+  return tone !== null && tone !== undefined && (TONES as readonly string[]).includes(tone)
+    ? (tone as StatusTone)
+    : 'unknown'
 }
 
 /**

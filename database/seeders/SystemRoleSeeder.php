@@ -99,6 +99,11 @@ final class SystemRoleSeeder extends Seeder
                 // "Is it just me?" is a support question before it is
                 // anybody else's, and the answer is on the alerts screen.
                 'reliability.alerts.view',
+                // And opening an incident, which is the point: the person who
+                // finds out first should not have to go and find somebody
+                // senior to press the button.
+                'reliability.incidents.view',
+                'reliability.incidents.manage',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

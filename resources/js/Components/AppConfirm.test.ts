@@ -1,5 +1,6 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
+import { defineComponent, ref } from 'vue'
 
 import AppConfirm from './AppConfirm.vue'
 
@@ -174,5 +175,44 @@ describe('AppConfirm', () => {
     // A reason left over from the last thing somebody nearly did would be
     // written to the audit record of this one.
     expect(dialog()?.querySelector('textarea')?.value).toBe('')
+  })
+  /*
+   * The way a page actually wires this, which is not the way the tests above
+   * mount it.
+   *
+   * Every screen writes `:open="removing !== null"` beside
+   * `@close="removing = null"`. `close` was never emitted, so backing out left
+   * the page pointing at the record while the dialog's own model said shut —
+   * and because the prop never changed, the dialog could not be opened again
+   * without reloading. Press Cancel on a delete, and delete stops working, on
+   * roughly forty screens.
+   *
+   * Mounting a parent is the only way to see it: props set by hand always
+   * agree with themselves.
+   */
+  it('can be opened again after somebody backs out', async () => {
+    const Parent = defineComponent({
+      components: { AppConfirm },
+      setup: () => ({ removing: ref<string | null>(null) }),
+      template:
+        '<AppConfirm :open="removing !== null" title="Delete this?" @close="removing = null" />',
+    })
+
+    const wrapper = mount(Parent)
+
+    wrapper.vm.removing = 'web-01'
+    await wrapper.vm.$nextTick()
+    expect(dialog()).not.toBeNull()
+
+    dialog()?.querySelectorAll('button')[0]?.click()
+    await wrapper.vm.$nextTick()
+
+    // The page's own state goes back too, not only the dialog's.
+    expect(wrapper.vm.removing).toBeNull()
+    expect(dialog()).toBeNull()
+
+    wrapper.vm.removing = 'web-02'
+    await wrapper.vm.$nextTick()
+    expect(dialog()).not.toBeNull()
   })
 })

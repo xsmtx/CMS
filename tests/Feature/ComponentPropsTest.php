@@ -45,6 +45,58 @@ function silentlyIgnoringProps(): array
 }
 
 /**
+ * HTML attributes a primitive is entitled to pass through to whatever it
+ * wraps. `AppInput` forwarding `type` and `placeholder` to its `<input>` is
+ * the design, not a mistake.
+ *
+ * @return list<string>
+ */
+function htmlAttributes(): array
+{
+    return [
+        'accept', 'autocomplete', 'checked', 'cols', 'disabled', 'for', 'form',
+        'href', 'id', 'label', 'list', 'max', 'maxlength', 'min', 'minlength',
+        'multiple', 'name', 'open', 'pattern', 'placeholder', 'readonly',
+        'required', 'rows', 'size', 'src', 'step', 'target', 'title', 'type',
+        'value', 'width', 'height',
+    ];
+}
+
+/**
+ * Every prop each primitive actually declares, read out of its own
+ * `defineProps` and `defineModel` calls rather than listed here — a list kept
+ * by hand is a list that is wrong within a month.
+ *
+ * @return array<string, list<string>>
+ */
+function declaredProps(): array
+{
+    $components = [];
+
+    foreach (vueSources() as $path => $contents) {
+        if (! str_contains($path, DIRECTORY_SEPARATOR.'Components'.DIRECTORY_SEPARATOR)) {
+            continue;
+        }
+
+        if (preg_match('/defineProps<\s*\{(.*?)\}\s*>\s*\(/s', $contents, $match) !== 1) {
+            continue;
+        }
+
+        preg_match_all('/(?:^|[\{;
+])\s*(\w+)\??\s*:/', $match[1], $props);
+
+        $names = array_values(array_unique($props[1]));
+
+        // A `defineModel()` is `v-model`, and a named one is `v-model:name`.
+        preg_match_all('/defineModel<[^>]*>\(\s*[\'"](\w+)[\'"]/', $contents, $models);
+
+        $components[basename($path, '.vue')] = array_merge($names, $models[1], ['modelValue']);
+    }
+
+    return $components;
+}
+
+/**
  * @return array<string, string>
  */
 function vueSources(): array
@@ -88,6 +140,66 @@ it('never passes a primitive a prop it does not have', function (): void {
 
                     $offences[] = basename($path).' passes '.$attribute.' to '.$component;
                 }
+            }
+        }
+    }
+
+    expect($offences)->toBe([], implode('; ', $offences));
+});
+
+/**
+ * The same mistake, found without a hand-written list.
+ *
+ * `AppCheckbox` takes `description` and two screens passed it `hint` — the
+ * name every *other* input primitive uses for that sentence. The prop fell
+ * through onto a `<div>`, so the explanation under the checkbox simply never
+ * appeared, on a form asking whether to publish an incident to customers.
+ *
+ * The rule generalises without becoming noise: a name is suspicious only when
+ * some primitive in this design system declares it as a prop **and** it is not
+ * a real HTML attribute. `hint`, `tone`, `variant` and `loading` are ours;
+ * `type`, `disabled` and `placeholder` are the browser's and are meant to fall
+ * through to whatever a primitive wraps.
+ */
+it('never passes a primitive the prop of another primitive', function (): void {
+    $declared = declaredProps();
+
+    // Our own vocabulary: names a component declares that a browser would
+    // make no sense of.
+    $ours = [];
+
+    foreach ($declared as $props) {
+        foreach ($props as $prop) {
+            if (! in_array($prop, htmlAttributes(), strict: true)) {
+                $ours[$prop] = true;
+            }
+        }
+    }
+
+    $offences = [];
+
+    foreach (vueSources() as $path => $contents) {
+        preg_match_all('/<(App[A-Z]\w*|[A-Z]\w*)\b([^>]*)>/s', $contents, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as [, $component, $attributes]) {
+            if (! isset($declared[$component])) {
+                continue;
+            }
+
+            preg_match_all('/(?:^|\s)(?::|v-bind:)?([a-zA-Z][\w-]*)=/', $attributes, $found);
+
+            foreach ($found[1] as $attribute) {
+                $normalised = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $attribute))));
+
+                if (! isset($ours[$normalised])) {
+                    continue;
+                }
+
+                if (in_array($normalised, $declared[$component], strict: true)) {
+                    continue;
+                }
+
+                $offences[] = basename($path).' passes '.$attribute.' to '.$component;
             }
         }
     }

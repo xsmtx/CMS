@@ -59,7 +59,18 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{ confirm: [reason: string | null] }>()
+/*
+ * `close` as well as `confirm`, and it is not decoration.
+ *
+ * Every page in this product wires `:open="removing !== null"` alongside
+ * `@close="removing = null"`, and `close` was never emitted — so backing out
+ * of a confirmation left the page's own state pointing at the record while
+ * the dialog's model said shut. The prop never changed, so **the dialog could
+ * not be opened again** without reloading the page: press Cancel on a delete,
+ * and delete stops working. It was invisible because a test mounts this
+ * component with props of its own and a browser pass presses Confirm.
+ */
+const emit = defineEmits<{ confirm: [reason: string | null]; close: [] }>()
 
 const { t } = useTranslations()
 
@@ -118,6 +129,7 @@ function cancel(): void {
   if (props.busy) return
 
   open.value = false
+  emit('close')
 }
 
 function confirm(): void {

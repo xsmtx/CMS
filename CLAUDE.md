@@ -2323,3 +2323,82 @@ badness would say the same thing twice in two columns.
 `trans_choice`, so a count in the browser is a bare number under a column
 header that says what it counts — the header does the work the sentence was
 doing badly.
+
+**Incidents are in** (`phase-d-plan.md` §15). An alert is a machine noticing;
+an incident is a person saying so, and the two are deliberately different
+records. Four things about it are the design rather than the implementation:
+
+- **Opening one is Support's** (`reliability.incidents.manage`). The person
+  answering "is it just me?" finds out first, and a platform where they had to
+  go and find somebody senior to press the button is a platform where the first
+  ten minutes of an outage are spent looking for that person.
+- **An incident always has at least one update**, because opening writes it. A
+  postmortem is written from the timeline, and a timeline that begins in the
+  middle is a postmortem with a hole in it.
+- **The state and the sentence are one act.** There is no route that moves an
+  incident to `identified` without saying what was identified — that move is
+  what makes a status page useless. `resolve()` is separate from `note()` for
+  the opposite reason: it has a figure to freeze and a timestamp to write, and
+  a second way to end an incident would be the one that forgot.
+- **Resolving freezes the impact, and then the evidence stops moving too.** The
+  figure is computed from the incident's own alerts through `ImpactSummary` and
+  written to `incident_impacts`; attaching or detaching afterwards is refused,
+  because a stored number beside rows it was not computed from is a number
+  nobody can reconcile. The customer count is the **largest** single answer
+  rather than a sum — two nodes under one customer would otherwise be counted
+  twice. `started_at` is when the customer's world broke and `detected_at` is
+  when anybody found out; the gap between them is what a postmortem is usually
+  about, and `durationSeconds()` measures from the first because that is what
+  an SLA measures from.
+
+**A tone is not a status word, and `statusTone()` cannot read one.** The
+vocabulary in `status.ts` maps *words* — `active`, `failed`, `raised` — and
+`info`, `maintenance`, `neutral` and `unknown` are **tones**, in no list. So
+`statusTone('info')` is `unknown`, and `IncidentState::Monitoring` drew ○ on a
+real state. `asTone()` is the reader for a `*Tone` field the server already
+decided (`AlertSeverity::tone()`, `IncidentState::tone()`); `statusTone()` stays
+the reader for a status. The alerts screen had the same line and only worked
+because `warning` and `critical` happen to be both.
+
+**`AppCheckbox` takes `description`, and two screens passed it `hint`** — the
+name every other input primitive uses for that sentence. Vue dropped it on a
+`<div>`, so the explanation under the checkbox never appeared, on a form asking
+whether to publish an incident to customers. `ComponentPropsTest` now derives
+every primitive's props from its own `defineProps` and refuses a caller that
+passes one primitive the prop of another, where the name is ours rather than
+the browser's (`hint`, `tone`, `variant`, `loading` are ours; `type`,
+`disabled` and `placeholder` are meant to fall through).
+
+**It found a worse one immediately: `AppConfirm` never emitted `close`.** Every
+screen in the product wires `:open="removing !== null"` beside
+`@close="removing = null"`, and the component declared only `confirm` — so
+backing out of a confirmation left the page pointing at the record while the
+dialog's own model said shut, and because the prop never changed **the dialog
+could not be opened again without reloading the page.** Press Cancel on a
+delete, and delete stops working, on roughly forty screens. Nothing saw it: the
+component's own tests mount it with props they control, and a browser pass
+presses Confirm. `AppConfirm.test.ts` now mounts a *parent* wired the way a page
+wires it — which is the only place the bug exists. The same sweep found the
+prefix screen passing `:body`, `:loading` and `@cancel` where the component
+takes `description`, `busy` and `close`: a release dialog with no sentence in
+it, no busy state, and a Cancel that half worked.
+
+**A `\b` in a regex written through a Bash heredoc becomes a backspace
+character** (0x08), and the test still passes — matching nothing, silently. The
+backslash-eating trap has produced a broken JSON manifest, an unterminated
+comment and now a guard that guarded nothing. Anything with a backslash goes
+through Write or Edit, and a new scanning test is worth running once against a
+known offender before trusting a green result.
+
+**A button is labelled with what it does** — found twice more here. "Post an
+update" under a heading reading *Post an update* says nothing, and reading it
+on a button that opens a *Resolve* dialog is a surprise: the label follows the
+state that was chosen. On the list, the toggle, the heading and the submit all
+said "Open an incident", so the submit is "Open it".
+
+**A column of two bare numbers under one word is operator shorthand nobody
+defined.** "0 / 0" under *Underneath* became a Customers column and a Recurring
+column, each right-aligned and each empty until the figure is frozen. And a
+severity word answers *when* — "Now", "During the day" — so it needs the column
+header that asks the question: the incident's alert list is an `AppTable`
+rather than a row of words for exactly that reason.

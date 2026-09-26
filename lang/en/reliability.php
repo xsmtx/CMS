@@ -98,4 +98,89 @@ return [
         'failed_items' => ':count failed',
         'days_left' => ':days days left',
     ],
+
+    /*
+     * Incidents (§15).
+     *
+     * The four states are statuspage.io's, deliberately: an operator who has
+     * run anything knows what "identified" implies about the next update, and
+     * a customer has seen these words on every status page they have looked
+     * at. Inventing a private language during an outage helps nobody.
+     */
+    'incident_states' => [
+        'investigating' => 'Investigating',
+        'identified' => 'Identified',
+        'monitoring' => 'Monitoring',
+        'resolved' => 'Resolved',
+    ],
+
+    'incidents' => [
+        'title' => 'Incidents',
+        'intro' => 'What went wrong, what was said about it, and what was underneath.',
+        'empty' => 'Nothing is going wrong',
+        'empty_detail' => 'No incident is open. An empty list here is the good outcome.',
+        'open' => 'Open an incident',
+        // The submit button, not the heading above it: with the toggle, the
+        // heading and the button all reading "Open an incident", the page says
+        // one thing three times and none of them says what pressing does.
+        'open_it' => 'Open it',
+        'open_intro' => 'Declaring that something is wrong. An alert is a machine noticing; this is a person saying so.',
+        'incident_title' => 'What is wrong',
+        'first_update' => 'What is known so far',
+        'first_update_hint' => 'The timeline starts here, and a postmortem is written from the timeline.',
+        'severity' => 'How urgent',
+        'started_at' => 'When it started',
+        'started_at_hint' => "When the customer's world broke, which is usually earlier than anybody noticed. Leave empty for now.",
+        'is_public' => 'Show it on the status page',
+        'is_public_hint' => 'Off by default. An incident is public because somebody said so.',
+        'opened' => 'The incident is open.',
+        'noted' => 'The update is posted.',
+        'attached' => 'The alert is attached.',
+        'detached' => 'The alert is detached.',
+        'about' => 'About this incident',
+        'detected' => 'Noticed',
+        'opened_by' => 'Opened by',
+        'timeline' => 'Timeline',
+        'timeline_intro' => 'Append-only. What was believed at half past two is what a postmortem is written from.',
+        'post_update' => 'Post an update',
+        // The button, not the heading: a button labelled with the section
+        // above it says nothing, and one reading "Post an update" that opens
+        // a Resolve dialog is a surprise.
+        'post' => 'Post it',
+        'resolve' => 'Resolve the incident',
+        'resolve_title' => 'Resolve this incident?',
+        'resolve_body' => 'The incident ends and what was underneath it is worked out and frozen — that figure is what somebody quotes weeks later, so it is taken now rather than recomputed from a graph that has moved. Nothing reopens a resolved incident; a new one is opened instead.',
+        'update_body' => 'What is happening',
+        'update_state' => 'Where it is now',
+        'update_public' => 'Publish this update',
+        'internal' => 'Internal',
+        'published' => 'Published',
+        'alerts' => 'Alerts',
+        'alerts_intro' => 'The machine observations this incident is about. The impact is computed from these.',
+        'attach' => 'Attach',
+        'detach' => 'Detach',
+        'no_alerts' => 'No alerts are attached. Half of all incidents start with a phone call, so this is a normal thing to see.',
+        'unattached' => 'Open alerts nobody has attached',
+        'impact' => 'What was underneath',
+        'impact_intro' => 'Frozen when the incident was resolved. The graph moves, and an impact recomputed in March is not the one anybody acted on.',
+        'impact_pending' => 'Computed when the incident is resolved.',
+        'services' => 'Services',
+        'customers' => 'Customers',
+        'recurring' => 'Recurring value',
+        'duration' => 'Lasted',
+        'still_going' => 'Still going',
+        'detected_after' => 'Noticed :duration after it started',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+        'columns' => [
+            'reference' => 'Incident',
+            'state' => 'State',
+            'severity' => 'Urgency',
+            'started' => 'Started',
+            'duration' => 'Lasted',
+            'alerts' => 'Alerts',
+            'customers' => 'Customers',
+            'recurring' => 'Recurring',
+        ],
+    ],
 ];

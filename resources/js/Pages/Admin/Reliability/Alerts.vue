@@ -34,7 +34,7 @@ import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
-import { statusTone } from '../../../status'
+import { asTone, statusTone } from '../../../status'
 
 interface PaginationLink {
   url: string | null
@@ -286,7 +286,7 @@ function asks(rule: RuleRow): string {
           <AppCheckbox
             v-model="form.notify"
             :label="t('reliability.rules.notify')"
-            :hint="t('reliability.rules.notify_hint')"
+            :description="t('reliability.rules.notify_hint')"
           />
 
           <div>
@@ -324,7 +324,7 @@ function asks(rule: RuleRow): string {
             </span>
           </td>
           <td data-col="severity">
-            <AppStatus :tone="statusTone(alert.severityTone)" :label="alert.severityLabel" />
+            <AppStatus :tone="asTone(alert.severityTone)" :label="alert.severityLabel" />
           </td>
           <td data-col="observed" class="tabular-nums">{{ alert.observed ?? '—' }}</td>
           <td data-col="rule" class="text-content-muted">{{ alert.rule ?? '—' }}</td>

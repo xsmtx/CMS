@@ -705,6 +705,7 @@ return [
         'device_changes' => 'Device changes',
         'attacks' => 'Attacks',
         'alerts' => 'Alerts',
+        'incidents' => 'Incidents',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

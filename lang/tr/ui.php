@@ -700,6 +700,7 @@ return [
         'device_changes' => 'Cihaz değişiklikleri',
         'attacks' => 'Saldırılar',
         'alerts' => 'Uyarılar',
+        'incidents' => 'Olaylar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\GatewayLogController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ImportController;
+use App\Http\Controllers\Admin\IncidentController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
@@ -432,6 +433,26 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('reliability.rules.update');
     Route::delete('reliability/alert-rules/{rule}', [AlertController::class, 'destroy'])
         ->name('reliability.rules.destroy');
+
+    /*
+     * Incidents (§15).
+     *
+     * There is no route that changes the state alone: moving to "identified"
+     * without saying what was identified is the move that makes a status page
+     * useless, so the update carries both.
+     */
+    Route::get('reliability/incidents', [IncidentController::class, 'index'])
+        ->name('reliability.incidents');
+    Route::get('reliability/incidents/{incident}', [IncidentController::class, 'show'])
+        ->name('reliability.incidents.show');
+    Route::post('reliability/incidents', [IncidentController::class, 'store'])
+        ->name('reliability.incidents.store');
+    Route::post('reliability/incidents/{incident}/updates', [IncidentController::class, 'update'])
+        ->name('reliability.incidents.update');
+    Route::post('reliability/incidents/{incident}/alerts', [IncidentController::class, 'attach'])
+        ->name('reliability.incidents.attach');
+    Route::delete('reliability/alerts/{alert}/incident', [IncidentController::class, 'detach'])
+        ->name('reliability.incidents.detach');
 
     /*
      * Attacks (§7). Read-only: mitigation is somebody else's control plane,

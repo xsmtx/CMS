@@ -112,6 +112,14 @@ return [
             'label' => 'Write alert rules',
             'description' => 'Decide what this installation considers worth waking somebody for.',
         ],
+        'reliability.incidents.view' => [
+            'label' => 'See incidents',
+            'description' => 'Read what went wrong, the timeline and what was underneath.',
+        ],
+        'reliability.incidents.manage' => [
+            'label' => 'Open and update incidents',
+            'description' => 'Declare that something is wrong, say what is happening, and end it.',
+        ],
         'network.ddos.view' => [
             'label' => 'See attacks',
             'description' => 'Browse the attacks something has reported, and which customer was behind the address.',

@@ -115,6 +115,17 @@ final class CorePermissions
              */
             new PermissionDefinition('reliability.alerts.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('reliability.alerts.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Incidents (§15). **Opening one is Support's**, and that is the
+             * decision worth stating: the person answering "is it just me?"
+             * finds out first, and a platform where they had to go and find
+             * somebody senior to press the button is a platform where the
+             * first ten minutes of an outage are spent looking for that
+             * person.
+             */
+            new PermissionDefinition('reliability.incidents.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('reliability.incidents.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

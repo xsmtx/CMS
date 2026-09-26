@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { httpTone, statusTone } from './status'
+import { asTone, httpTone, statusTone } from './status'
 
 describe('statusTone', () => {
   it('maps every status word the pages send', () => {
@@ -50,6 +50,39 @@ describe('statusTone', () => {
     expect(statusTone('sideways')).toBe('unknown')
     expect(statusTone(null)).toBe('unknown')
     expect(statusTone(undefined)).toBe('unknown')
+  })
+})
+
+describe('asTone', () => {
+  /*
+   * The bug this exists to stop: a tone is not a status word. `info`,
+   * `maintenance` and `neutral` are tones and are in no vocabulary list, so
+   * `statusTone('info')` is `unknown` — which is how `IncidentState::Monitoring`
+   * came to draw ○ on a real state.
+   */
+  it('keeps a tone the server already decided', () => {
+    for (const tone of [
+      'healthy',
+      'info',
+      'warning',
+      'critical',
+      'maintenance',
+      'neutral',
+      'unknown',
+    ] as const) {
+      expect(asTone(tone), tone).toBe(tone)
+    }
+  })
+
+  it('is not the same function as statusTone', () => {
+    expect(statusTone('info')).toBe('unknown')
+    expect(asTone('info')).toBe('info')
+  })
+
+  it('says unknown for anything else', () => {
+    expect(asTone('vaguely bad')).toBe('unknown')
+    expect(asTone(null)).toBe('unknown')
+    expect(asTone(undefined)).toBe('unknown')
   })
 })
 
