@@ -78,15 +78,53 @@ function barLinks(wrapper: ReturnType<typeof render>): string[] {
     .filter(Boolean)
 }
 
+/**
+ * Every destination in the bar, links and dropdown triggers alike.
+ *
+ * A section with several screens is a trigger rather than a link now, so a
+ * test that only counted anchors would report the bar as having lost Billing
+ * and Support the day they gained a second page.
+ */
+function barDestinations(wrapper: ReturnType<typeof render>): string[] {
+  return wrapper
+    .findAll('header nav a, header nav button')
+    .map((node) => (node.text() ?? '').trim())
+    .filter(Boolean)
+}
+
+/** The section marked as the one being looked at. */
+function currentSection(wrapper: ReturnType<typeof render>): string[] {
+  return wrapper
+    .findAll('header nav a, header nav button')
+    .filter(
+      (node) =>
+        node.attributes('aria-current') === 'page' || node.classes().includes('border-brand'),
+    )
+    .map((node) => (node.text() ?? '').trim())
+}
+
 describe('ClientLayout navigation', () => {
   it('puts what a customer came for in the bar, in order', () => {
+    // Billing and Support are triggers rather than links: each has several
+    // screens behind it, and a customer aiming at "my invoices" should not
+    // have to choose between three pages before arriving.
+    // The shell is mounted with no translations, which is deliberate
+    // elsewhere in this file too: the key is what a missing string renders
+    // as, and the order is what is being pinned.
+    expect(barDestinations(render())).toEqual([
+      'portal.nav.overview',
+      'portal.nav.services',
+      'portal.nav.domains',
+      'portal.nav.orders',
+      'portal.nav.billing',
+      'portal.nav.support',
+    ])
+
     expect(barLinks(render())).toEqual([
       '/client',
       '/client/services',
       '/client/domains',
       '/client/orders',
-      '/client/billing',
-      '/client/support',
     ])
   })
 
@@ -126,12 +164,9 @@ describe('ClientLayout navigation', () => {
   it('does not call Overview current on a screen under it', () => {
     pageState.url = '/client/billing/invoices/INV-000042'
 
-    const current = render()
-      .findAll('header nav a')
-      .filter((link) => link.attributes('aria-current') === 'page')
-      .map((link) => link.attributes('href'))
-
-    expect(current).toEqual(['/client/billing'])
+    // One section marked, and it is the one the screen belongs to - not
+    // Overview, whose href every path begins with.
+    expect(currentSection(render())).toEqual(['portal.nav.billing'])
 
     pageState.url = '/client'
   })

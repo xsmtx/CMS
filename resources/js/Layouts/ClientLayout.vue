@@ -2,6 +2,8 @@
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
+import AppButton from '../Components/AppButton.vue'
+import AppCard from '../Components/AppCard.vue'
 import AppMenu from '../Components/AppMenu.vue'
 import LanguageSwitch from '../Components/LanguageSwitch.vue'
 import ThemeSwitch from '../Components/ThemeSwitch.vue'
@@ -35,7 +37,7 @@ import { useTranslations } from '../composables/useTranslations'
  *
  * No page transitions, for the same reason as the admin shell.
  */
-defineProps<{ heading: string; description?: string }>()
+const props = defineProps<{ heading: string; description?: string }>()
 
 const page = usePage()
 
@@ -78,15 +80,25 @@ interface Destination {
   label: string
   href: string
   permission: string | null
+  /** The rows behind a dropdown, where the section has more than one screen. */
+  items?: Destination[]
 }
 
 function allowed(items: Destination[]): Destination[] {
-  return items.filter((item) => item.permission === null || can.value.has(item.permission))
+  return items
+    .filter((item) => item.permission === null || can.value.has(item.permission))
+    .map((item) => (item.items ? { ...item, items: allowed(item.items) } : item))
 }
 
-// What they came for. Destinations land with the phases that build them: a
-// row is here when the screen behind it exists, because a nav item that
-// leads to "coming soon" teaches a customer that the navigation lies.
+/*
+ * What they came for, grouped the way the reference groups it.
+ *
+ * A section with one screen is a link; a section with several is a dropdown,
+ * which is how a customer who wants "my invoices" finds it without learning
+ * that Billing has three pages. Destinations land with the phases that build
+ * them: a row is here when the screen behind it exists, because a nav item
+ * that leads to "coming soon" teaches a customer that the navigation lies.
+ */
 const destinations = computed(() =>
   allowed([
     { label: t('portal.nav.overview'), href: '/client', permission: null },
@@ -101,8 +113,53 @@ const destinations = computed(() =>
       permission: 'portal.domains.view',
     },
     { label: t('portal.nav.orders'), href: '/client/orders', permission: 'portal.orders.view' },
-    { label: t('portal.nav.billing'), href: '/client/billing', permission: 'portal.billing.view' },
-    { label: t('portal.nav.support'), href: '/client/support', permission: 'portal.tickets.view' },
+    {
+      label: t('portal.nav.billing'),
+      href: '/client/billing',
+      permission: 'portal.billing.view',
+      items: [
+        { label: t('portal.nav.invoices'), href: '/client/billing', permission: null },
+        {
+          label: t('portal.nav.transactions'),
+          href: '/client/billing/transactions',
+          permission: null,
+        },
+        {
+          label: t('portal.nav.billing_details'),
+          href: '/client/billing/details',
+          permission: null,
+        },
+      ],
+    },
+    {
+      label: t('portal.nav.support'),
+      href: '/client/support',
+      permission: 'portal.tickets.view',
+      items: [
+        { label: t('portal.nav.tickets'), href: '/client/support', permission: null },
+        { label: t('portal.nav.new_ticket'), href: '/client/support/new', permission: null },
+      ],
+    },
+  ]),
+)
+
+/**
+ * The panel beside the page.
+ *
+ * The reference keeps the customer's own details and a short list of things
+ * they came to start on the left of every screen, and it is the one piece of
+ * chrome that makes a portal feel like an account rather than a website. The
+ * rows are all destinations that exist.
+ */
+const shortcuts = computed(() =>
+  allowed([
+    { label: t('portal.shell.order_services'), href: '/store', permission: null },
+    { label: t('portal.shell.register_domain'), href: '/domains', permission: null },
+    {
+      label: t('portal.nav.new_ticket'),
+      href: '/client/support/new',
+      permission: 'portal.tickets.view',
+    },
   ]),
 )
 
@@ -131,6 +188,27 @@ const accountLinks = computed(() =>
 )
 
 const currentPath = computed(() => page.url.split('?')[0] ?? '/')
+
+/**
+ * The trail the reference prints above every page.
+ *
+ * It names the **section**, never the page's own sentence. An overview headed
+ * "Hello, Design." would otherwise put that in the breadcrumb, where it reads
+ * as a bug rather than as a greeting - the h1 is the place for a sentence and
+ * the trail is the place for a noun.
+ */
+const breadcrumb = computed(() => {
+  const section =
+    destinations.value.find(
+      (item) => item.href !== '/client' && currentPath.value.startsWith(item.href),
+    ) ?? destinations.value.find((item) => item.href === '/client')
+
+  if (!section) return []
+
+  // A screen under a section adds its own name; the section's own landing
+  // page does not repeat it.
+  return section.label === props.heading ? [section.label] : [section.label, props.heading]
+})
 
 function isCurrent(href: string): boolean {
   return href === '/client' ? currentPath.value === '/client' : currentPath.value.startsWith(href)
@@ -167,10 +245,27 @@ function isCurrent(href: string): boolean {
       </button>
     </div>
 
-    <header class="on-chrome border-line bg-surface-chrome border-b">
+    <!--
+      The utility strip: who is signed in, and nothing else.
+
+      The reference puts it above everything at 26px in the dark, and it earns
+      that because a portal is the one surface where somebody may be looking at
+      an account that is not theirs - a staff member mid-impersonation, or a
+      contact on a company account with four other people on it.
+    -->
+    <div class="on-chrome bg-background">
+      <div
+        class="text-chrome mx-auto flex w-full max-w-[1200px] items-center justify-end gap-2 px-5 py-1.5 sm:px-8"
+      >
+        <span class="text-content-subtle">{{ t('portal.shell.signed_in_as') }}</span>
+        <span class="text-content truncate font-medium">{{ user?.name }}</span>
+      </div>
+    </div>
+
+    <header class="border-line bg-surface-primary border-b">
       <!-- Who. The brand first, because on a white-label installation this
            page belongs to the reseller and not to us. -->
-      <div class="mx-auto flex w-full max-w-5xl items-center gap-4 px-5 pt-4 sm:px-8">
+      <div class="mx-auto flex w-full max-w-[1200px] items-center gap-4 px-5 py-4 sm:px-8">
         <Link
           href="/client"
           class="pressable text-title flex min-w-0 items-center gap-2 rounded-sm font-semibold tracking-tight"
@@ -228,13 +323,44 @@ function isCurrent(href: string): boolean {
         which is a link a customer cannot see and cannot scroll to without
         noticing the bar.
       -->
+      <!--
+        Where. Underlined rather than filled: a tab bar is what a customer
+        reads as "the sections of my account", and the accent under the
+        current one is the only brand colour on the page that is not a link.
+
+        A section with several screens is a dropdown rather than a row, so
+        Billing is one destination a customer can aim at instead of three
+        they have to choose between before they have arrived.
+
+        Wrapping, not scrolling. `overflow-x-auto` drew a scrollbar under the
+        portal nav on every desktop and still clipped the last destination.
+      -->
       <nav
         :aria-label="t('portal.shell.destinations')"
-        class="mx-auto w-full max-w-5xl px-5 sm:px-8"
+        class="mx-auto w-full max-w-[1200px] px-5 sm:px-8"
       >
         <ul class="-mb-px flex flex-wrap items-center gap-x-1">
           <li v-for="item in destinations" :key="item.href">
+            <AppMenu
+              v-if="item.items && item.items.length > 1"
+              :label="item.label"
+              width="13rem"
+              align="start"
+              tab
+              :current="isCurrent(item.href)"
+            >
+              <Link
+                v-for="row in item.items"
+                :key="row.href"
+                :href="row.href"
+                class="pressable hover:bg-surface-secondary text-body block rounded-sm px-2 py-1.5"
+                role="menuitem"
+              >
+                {{ row.label }}
+              </Link>
+            </AppMenu>
             <Link
+              v-else
               :href="item.href"
               :aria-current="isCurrent(item.href) ? 'page' : undefined"
               class="pressable text-body -mb-px block border-b-2 px-3 py-3 transition-colors duration-(--duration-fast) ease-(--ease-out)"
@@ -251,31 +377,96 @@ function isCurrent(href: string): boolean {
       </nav>
     </header>
 
-    <main id="main" class="mx-auto w-full max-w-5xl flex-1 px-5 py-8 sm:px-8">
-      <!-- Title and actions on one line, the explanation under it in chrome
-           type — the same rule the admin header follows. A customer reading
-           their own invoices wants the name of the screen, not a masthead. -->
-      <div class="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div class="min-w-0">
-          <h1 class="text-page font-semibold">{{ heading }}</h1>
-          <p v-if="description" class="text-content-muted text-chrome mt-1 max-w-[80ch]">
-            {{ description }}
-          </p>
-        </div>
-        <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
-          <slot name="actions" />
-        </div>
-      </div>
+    <!-- The trail. One line, and it names the section rather than repeating
+         the page: "Billing > Invoices" where the two differ, and nothing at
+         all where they do not. -->
+    <div class="border-line bg-background-subtle border-b">
+      <nav
+        :aria-label="t('portal.shell.trail')"
+        class="text-chrome mx-auto flex w-full max-w-[1200px] items-center gap-1.5 px-5 py-2 sm:px-8"
+      >
+        <Link href="/client" class="text-content-muted hover:text-content">
+          {{ t('portal.shell.home') }}
+        </Link>
+        <span aria-hidden="true" class="text-content-subtle">/</span>
+        <template v-for="(crumb, index) in breadcrumb" :key="crumb">
+          <span v-if="index < breadcrumb.length - 1" class="text-content-muted truncate">{{
+            crumb
+          }}</span>
+          <span v-else class="text-content truncate font-medium">{{ crumb }}</span>
+          <span v-if="index < breadcrumb.length - 1" aria-hidden="true" class="text-content-subtle"
+            >/</span
+          >
+        </template>
+      </nav>
+    </div>
 
-      <slot />
-    </main>
+    <div class="mx-auto flex w-full max-w-[1200px] flex-1 gap-6 px-5 py-6 sm:px-8">
+      <!--
+        The account, beside the page.
+
+        Below `lg` it goes under the content rather than above it: on a phone
+        the thing somebody opened the page for should not be pushed off the
+        screen by a panel that says their own name back to them.
+      -->
+      <aside class="order-2 w-full shrink-0 lg:order-1 lg:w-60">
+        <div class="flex flex-col gap-4">
+          <AppCard v-if="user" :title="t('portal.shell.your_info')" icon="clients" tone="brand">
+            <p class="text-body font-medium">{{ user.name }}</p>
+            <p class="text-content-muted text-chrome truncate">{{ user.email }}</p>
+
+            <AppButton href="/client/profile" variant="secondary" size="sm" class="mt-4 w-full">
+              {{ t('portal.shell.update_details') }}
+            </AppButton>
+          </AppCard>
+
+          <AppCard
+            v-if="shortcuts.length > 0"
+            :title="t('portal.shell.shortcuts')"
+            icon="add"
+            tone="neutral"
+            flush
+          >
+            <ul class="divide-line divide-y">
+              <li v-for="row in shortcuts" :key="row.href">
+                <Link
+                  :href="row.href"
+                  class="pressable hover:bg-surface-hover text-body block px-5 py-2.5 transition-colors duration-(--duration-fast)"
+                >
+                  {{ row.label }}
+                </Link>
+              </li>
+            </ul>
+          </AppCard>
+        </div>
+      </aside>
+
+      <main id="main" class="order-1 min-w-0 flex-1 lg:order-2">
+        <!-- Title and actions on one line, the explanation under it in chrome
+             type — the same rule the admin header follows. A customer reading
+             their own invoices wants the name of the screen, not a masthead. -->
+        <div class="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <div class="min-w-0">
+            <h1 class="text-page font-semibold">{{ heading }}</h1>
+            <p v-if="description" class="text-content-muted text-chrome mt-1 max-w-[80ch]">
+              {{ description }}
+            </p>
+          </div>
+          <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
+            <slot name="actions" />
+          </div>
+        </div>
+
+        <slot />
+      </main>
+    </div>
 
     <!-- Whose shop this is. The admin footer says the same thing for the
          same reason: on a white-label installation the name at the bottom
          of the page is the one the customer has a contract with. -->
     <footer class="border-line mt-8 border-t">
       <div
-        class="text-content-subtle text-label mx-auto w-full max-w-5xl px-5 py-4 sm:px-8"
+        class="text-content-subtle text-label mx-auto w-full max-w-[1200px] px-5 py-4 sm:px-8"
         data-portal-footer
       >
         &copy; {{ year }} {{ brand.name }}

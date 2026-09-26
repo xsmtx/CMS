@@ -1869,3 +1869,41 @@ path rather than a column on purpose: an operator drops a file in and the shop
 picks it up, with no migration and no upload screen. `img-src` is `'self'
 data: blob:`, so an external image host is refused by the installation's own
 CSP — the files have to be local.
+
+**The portal wears `whmcs-clientarea.png`.** Four bands and a column: a dark
+utility strip saying who is signed in, a white header carrying the brand, the
+tab bar, and a trail band — then the account beside the page.
+
+**The trail names the section, never the page's own sentence.** The overview
+is headed "Hello, Ayşe." and a breadcrumb repeating that reads as a bug rather
+than as a greeting: the `h1` is where a sentence belongs and the trail is where
+a noun does. It is also where a contrast trap lives — the band is
+`divider-soft`, which is darker than the page, and `--text-muted` on it is
+4.45:1 at 12px.
+
+**A section with several screens is a dropdown in the bar**, which is what
+`AppMenu`'s `tab` variant exists for: a trigger the height and weight of the
+tabs beside it, rather than a button of a different shape sitting in a row of
+them.
+
+**`AppCard` takes a `tone`** — a coloured rule along the top and the glyph
+beside the title — and the portal uses it where the admin keeps its hairline.
+That is not inconsistency: a customer's overview is eight panels of unrelated
+things and the colour is how they tell "you owe money" from "here is some
+news" before reading either; an operator's screen has forty regions, and forty
+colours would be none.
+
+**`PortalStats` is the customer's count strip and `StatBlocks` is the
+operator's.** Same idea, different register: solid saturated tiles for a
+dashboard read from across a room, a white panel with one coloured rule for
+somebody reading their own three services on a laptop. The portal's figures
+come from the rows already on the page, so a count cannot disagree with the
+list under it.
+
+**`tools/design-review.mjs` can sign into the portal** (`DESIGN_PORTAL=1` with
+`DESIGN_CLIENT_EMAIL`/`DESIGN_CLIENT_PASS`). Impersonation is how a *person*
+reaches the client area and a poor thing for a script to drive: the control is
+a row action on a contact, revealed on hover, inside a menu, behind a
+confirmation — four places for a selector to break. A throwaway contact created
+for the run and deleted after it is deterministic and involves no real
+customer's password.

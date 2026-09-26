@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 return [
     'nav' => [
+        'invoices' => 'Faturalar',
+        'transactions' => 'İşlemler',
+        'billing_details' => 'Fatura bilgileri',
+        'tickets' => 'Talepler',
+        'new_ticket' => 'Talep aç',
         'notifications' => 'Bildirimler',
         'overview' => 'Genel bakış',
         'services' => 'Hizmetler',
@@ -19,6 +24,14 @@ return [
     ],
 
     'shell' => [
+        'signed_in_as' => 'Oturum sahibi',
+        'home' => 'Ana sayfa',
+        'trail' => 'Bulunduğunuz yer',
+        'your_info' => 'Bilgileriniz',
+        'update_details' => 'Bilgileri güncelle',
+        'shortcuts' => 'Kısayollar',
+        'order_services' => 'Hizmet satın al',
+        'register_domain' => 'Alan adı kaydet',
         'skip' => 'İçeriğe geç',
         'sign_out' => 'Çıkış yap',
         'destinations' => 'Hesabınız',

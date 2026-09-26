@@ -8,13 +8,16 @@
  * want rather than something they came for.
  */
 import { Head, Link } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
 import AppStatus from '../../Components/AppStatus.vue'
 import AppTable from '../../Components/AppTable.vue'
 import AppTableRow from '../../Components/AppTableRow.vue'
 import AppCard from '../../Components/AppCard.vue'
+import PortalStats from '../../Components/PortalStats.vue'
 import EmptyState from '../../Components/EmptyState.vue'
 import { type TableColumn } from '../../Components/tableContext'
+import { type IconName } from '../../icons'
 import { useTranslations } from '../../composables/useTranslations'
 import ClientLayout from '../../Layouts/ClientLayout.vue'
 import { statusTone } from '../../status'
@@ -51,7 +54,7 @@ interface RecentOrder {
   placedAt: string | null
 }
 
-defineProps<{
+const props = defineProps<{
   name: string
   unpaid: UnpaidInvoice[]
   credit: { balance: string } | null
@@ -90,6 +93,72 @@ const ORDER_COLUMNS: TableColumn[] = [
 function formatDate(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleDateString()
 }
+
+/**
+ * The four counts, from what the page already has.
+ *
+ * Nothing new is fetched for them: the tables below are the same rows, so a
+ * figure that disagreed with the list under it would be a bug nobody could
+ * explain. A section the customer may not see takes its figure with it.
+ */
+const stats = computed(() => {
+  const rows: {
+    key: string
+    label: string
+    value: string
+    href?: string
+    icon: IconName
+    tone?: 'brand' | 'success' | 'warning' | 'danger'
+  }[] = []
+
+  if (props.can.services) {
+    rows.push({
+      key: 'services',
+      label: t('portal.dashboard.services_title'),
+      value: String(props.services.length),
+      href: '/client/services',
+      icon: 'services',
+      tone: 'brand',
+    })
+  }
+
+  if (props.can.domains) {
+    rows.push({
+      key: 'domains',
+      label: t('portal.dashboard.domains_title'),
+      value: String(props.domains.length),
+      href: '/client/domains',
+      icon: 'domains',
+      tone: 'success',
+    })
+  }
+
+  if (props.can.billing) {
+    rows.push({
+      key: 'unpaid',
+      label: t('portal.dashboard.unpaid_title'),
+      value: String(props.unpaid.length),
+      href: '/client/billing',
+      icon: 'billing',
+      // Red only when there is something owed: a zero in red teaches a
+      // customer to ignore the colour by the second visit.
+      tone: props.unpaid.length > 0 ? 'danger' : 'brand',
+    })
+  }
+
+  if (props.can.orders) {
+    rows.push({
+      key: 'orders',
+      label: t('portal.dashboard.orders_title'),
+      value: String(props.orders.length),
+      href: '/client/orders',
+      icon: 'orders',
+      tone: 'warning',
+    })
+  }
+
+  return rows
+})
 </script>
 
 <template>
@@ -100,6 +169,8 @@ function formatDate(value: string | null): string {
     :description="t('portal.dashboard.description')"
   >
     <div class="flex flex-col gap-8">
+      <PortalStats v-if="stats.length > 0" :items="stats" />
+
       <AppCard
         v-if="can.services"
         :flush="services.length > 0"

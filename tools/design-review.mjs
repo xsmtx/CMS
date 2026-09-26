@@ -16,7 +16,9 @@
  *   DESIGN_EMAIL=… DESIGN_PASS=… node tools/design-review.mjs
  *
  * Optional: DESIGN_BASE (default http://infracms.test), DESIGN_OUT,
- * DESIGN_WIDTHS, DESIGN_ONLY (a substring filter over the paths).
+ * DESIGN_WIDTHS, DESIGN_ONLY (a substring filter over the paths), and
+ * DESIGN_PORTAL=1 with DESIGN_CLIENT_EMAIL / DESIGN_CLIENT_PASS to drive the
+ * client area instead of the admin.
  */
 import { chromium } from 'playwright'
 import AxeBuilder from '@axe-core/playwright'
@@ -28,6 +30,9 @@ const BASE = process.env.DESIGN_BASE ?? 'http://infracms.test'
 const OUT = process.env.DESIGN_OUT ?? path.join(os.tmpdir(), 'infracms-design')
 const EMAIL = process.env.DESIGN_EMAIL
 const PASS = process.env.DESIGN_PASS
+
+/** Sign in to the client area rather than the admin, for the portal's screens. */
+const PORTAL = process.env.DESIGN_PORTAL === '1'
 
 /**
  * The widths `responsive-enterprise-ui` names. The first is the one every
@@ -58,12 +63,38 @@ const PATHS = JSON.parse(process.env.DESIGN_PATHS ?? '[]').filter(
 
 const report = { base: BASE, generatedAt: new Date().toISOString(), pages: [] }
 
+/**
+ * Sign in, to whichever area the run is about.
+ *
+ * The portal cannot be reached from a staff session: the guard is resolved
+ * per area and only one account is signed in on each, so `/client` answers
+ * with its own sign-in screen - correct of the product, and useless as a
+ * screenshot.
+ *
+ * An operator drives the portal through impersonation, which is right for a
+ * person and poor for a script: the control is a row action on a contact,
+ * revealed on hover, inside a menu, behind a confirmation. A run that has to
+ * find it breaks the first time somebody moves it. So the tool signs in as a
+ * contact instead, with credentials the caller passes - which for a review
+ * pass means a throwaway account created for the run and deleted after it.
+ */
 async function signIn(page) {
-  if (!EMAIL || !PASS) throw new Error('DESIGN_EMAIL and DESIGN_PASS are required.')
+  const email = PORTAL ? process.env.DESIGN_CLIENT_EMAIL : EMAIL
+  const password = PORTAL ? process.env.DESIGN_CLIENT_PASS : PASS
 
-  await page.goto(`${BASE}/admin/login`, { waitUntil: 'domcontentloaded' })
-  await page.fill('input[type="email"]', EMAIL)
-  await page.fill('input[type="password"]', PASS)
+  if (!email || !password) {
+    throw new Error(
+      PORTAL
+        ? 'DESIGN_CLIENT_EMAIL and DESIGN_CLIENT_PASS are required for the portal.'
+        : 'DESIGN_EMAIL and DESIGN_PASS are required.',
+    )
+  }
+
+  await page.goto(`${BASE}${PORTAL ? '/login' : '/admin/login'}`, {
+    waitUntil: 'domcontentloaded',
+  })
+  await page.fill('input[type="email"]', email)
+  await page.fill('input[type="password"]', password)
   await Promise.all([
     page.waitForURL((url) => !url.pathname.endsWith('/login'), { timeout: 20000 }),
     page.click('button[type="submit"]'),

@@ -40,8 +40,19 @@ const props = withDefaults(
      * announce as "button".
      */
     icon?: IconName | null
+    /**
+     * Draw the trigger as a row in a tab bar rather than as a button.
+     *
+     * The portal's nav is underlined tabs, and a section with several screens
+     * is a dropdown - so one of those tabs opens a menu. Without this it
+     * would be a button of a different height and weight sitting in a row of
+     * tabs, which is the thing a design system exists to stop.
+     */
+    tab?: boolean
+    /** Whether that tab is the section being looked at. */
+    current?: boolean
   }>(),
-  { align: 'end', width: '15rem', avatar: false, icon: null },
+  { align: 'end', width: '15rem', avatar: false, icon: null, tab: false, current: false },
 )
 
 const { t } = useTranslations()
@@ -87,6 +98,29 @@ defineExpose({ close })
     @click="toggle"
   >
     {{ label }}
+  </button>
+
+  <button
+    v-else-if="tab"
+    ref="trigger"
+    type="button"
+    class="pressable text-body -mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 transition-colors duration-(--duration-fast) ease-(--ease-out)"
+    :class="
+      current
+        ? 'border-brand text-content font-medium'
+        : 'text-content-muted hover:border-line-strong hover:text-content border-transparent'
+    "
+    :aria-expanded="open"
+    aria-haspopup="menu"
+    @click="toggle"
+  >
+    {{ label }}
+    <span
+      class="text-content-subtle transition-transform duration-150"
+      :class="open ? 'rotate-180' : ''"
+    >
+      <AppIcon name="chevronDown" :size="12" />
+    </span>
   </button>
 
   <button

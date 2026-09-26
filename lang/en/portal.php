@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 return [
     'nav' => [
+        'invoices' => 'Invoices',
+        'transactions' => 'Transactions',
+        'billing_details' => 'Billing details',
+        'tickets' => 'Tickets',
+        'new_ticket' => 'Open a ticket',
         'notifications' => 'Notifications',
         'overview' => 'Overview',
         'services' => 'Services',
@@ -19,6 +24,14 @@ return [
     ],
 
     'shell' => [
+        'signed_in_as' => 'Signed in as',
+        'home' => 'Home',
+        'trail' => 'Where you are',
+        'your_info' => 'Your details',
+        'update_details' => 'Update details',
+        'shortcuts' => 'Shortcuts',
+        'order_services' => 'Order a service',
+        'register_domain' => 'Register a domain',
         'skip' => 'Skip to content',
         'sign_out' => 'Sign out',
         'destinations' => 'Your account',
