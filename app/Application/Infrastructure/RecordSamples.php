@@ -9,6 +9,7 @@ use App\Domain\Infrastructure\MetricSample;
 use App\Domain\Infrastructure\RawSample;
 use App\Domain\Infrastructure\SampleBatch;
 use App\Infrastructure\Resources\Models\ResourceMetric;
+use App\Infrastructure\Resources\Models\ResourceMetricDay;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use Carbon\CarbonImmutable;
 
@@ -82,6 +83,7 @@ final readonly class RecordSamples
             }
 
             $this->write($node, $sample, $source);
+            $this->accumulate($node, $sample);
 
             $recorded++;
             $touched[$node->id] = $node;
@@ -150,6 +152,61 @@ final readonly class RecordSamples
                 'source' => $source,
             ],
         );
+    }
+
+    /**
+     * Fold one reading into the day it belongs to.
+     *
+     * Telemetry keeps the present and never the series — Prometheus and
+     * Zabbix own the history — and this is the one exception the plan names
+     * (§14): a daily point per node and metric, which is 365 rows a year for
+     * a thing and the only shape a capacity answer can be built from.
+     *
+     * Accumulated here rather than rolled up at midnight because a nightly
+     * job reading `resource_metrics` would find one value, the last one
+     * written, and call it a day's average. `max` is the peak that was
+     * actually seen, which is the number a capacity question is about.
+     *
+     * The day comes from the reading's own timestamp, not from the clock: a
+     * batch that arrives at 00:00:02 carrying a 23:59 sample belongs to
+     * yesterday.
+     */
+    private function accumulate(ResourceNode $node, MetricSample $sample): void
+    {
+        $day = $sample->sampledAt->toDateString();
+
+        $existing = ResourceMetricDay::query()
+            ->withoutGlobalScope('organization')
+            ->where('resource_node_id', $node->id)
+            ->where('metric', $sample->metric->value)
+            ->whereDate('day', $day)
+            ->first();
+
+        if ($existing instanceof ResourceMetricDay) {
+            $existing->forceFill([
+                'samples' => $existing->samples + 1,
+                'minimum' => min($existing->minimum, $sample->value),
+                'maximum' => max($existing->maximum, $sample->value),
+                'sum' => $existing->sum + $sample->value,
+                'last' => $sample->value,
+                'unit' => $sample->unit()->value,
+            ])->save();
+
+            return;
+        }
+
+        ResourceMetricDay::query()->create([
+            'organization_id' => $node->organization_id,
+            'resource_node_id' => $node->id,
+            'metric' => $sample->metric->value,
+            'unit' => $sample->unit()->value,
+            'day' => $day,
+            'samples' => 1,
+            'minimum' => $sample->value,
+            'maximum' => $sample->value,
+            'sum' => $sample->value,
+            'last' => $sample->value,
+        ]);
     }
 
     private function refreshHealth(ResourceNode $node, CarbonImmutable $at): void

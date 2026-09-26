@@ -1611,3 +1611,28 @@ module loads its classes into the process for the rest of the run**, which
 broke `ExampleFileProbeTest`'s assertion that reading a manifest is not
 consent; a test that needs an enabled adapter should use a package no other
 test asserts is unloaded.
+
+**The daily point is the one series this platform keeps.** Telemetry keeps
+the present and never the history (§14) — Prometheus and Zabbix own that — and
+`resource_metric_days` is the named exception, because a capacity answer
+cannot be built from a single present value. One row per node, metric and day
+is 365 rows a year for a thing, which is bounded by arithmetic rather than by
+hope.
+
+It is **accumulated by the collector as readings arrive**, not rolled up at
+midnight: a nightly job reading `resource_metrics` would find one value, the
+last one written, and call it a day's average. `sum` and `samples` are stored
+rather than an average, because a running average that has lost its
+denominator is a number that drifts. The day comes from the reading's own
+timestamp, so a batch arriving at 00:00:02 with a 23:59 sample belongs to
+yesterday.
+
+`CapacityForecast` answers the only capacity question an operator asks —
+when does this run out — with a straight line through the daily averages and
+no smoothing, because a model an operator cannot check in their head is a
+model they will believe when it is wrong. **It declines more often than it
+answers**: fewer than seven days is a week rather than a trend, a flat or
+falling line is "not the disk to worry about", and a metric whose ceiling
+nothing reported gets no answer at all. A ratio fills at 1.0 and bytes used
+fill at bytes total — the total being a reading the adapter sent, never a
+number this platform chose.
