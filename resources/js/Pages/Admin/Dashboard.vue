@@ -17,9 +17,17 @@
  * 4. **Recent activity** — the audit trail as a table, because it is one:
  *    when, what, to what, by whom.
  *
- * Sections are headings and hairlines, not cards (enterprise-design-system,
- * "Containers"). The only framed surfaces are the strip and the table, which
- * are the two things that are genuinely objects on the page.
+ * **The board is framed and the rest of the admin is not.** Every other
+ * operator screen groups with a heading and a hairline, because a page of
+ * forty rectangles is a page where nothing is more important than anything
+ * else. A dashboard is the one screen that is genuinely a board of unrelated
+ * widgets - revenue, fleet, the audit trail - and the frame is how an
+ * operator tells where one subject ends and the next begins. It is the same
+ * argument the portal's panels won, and `whmcs-admin-dashboard.png` is a grid
+ * of exactly these.
+ *
+ * Attention is the exception and stays a hairline: it is one line when
+ * nothing is wrong, and a rectangle drawn around one line is noise.
  *
  * Every block is `null` when the operator may not see it, rather than empty:
  * a support agent gets tickets and no revenue, and the layout closes up
@@ -29,6 +37,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 import AppBarChart from '../../Components/AppBarChart.vue'
+import AppCard from '../../Components/AppCard.vue'
 import AppIcon from '../../Components/AppIcon.vue'
 import AppStatus, { type StatusTone } from '../../Components/AppStatus.vue'
 import AppTable from '../../Components/AppTable.vue'
@@ -223,7 +232,7 @@ const activityColumns = [
           on the Transactions screen, and what a dashboard is asked is "are
           we growing", which a day cannot answer.
         -->
-        <DetailSection
+        <AppCard
           v-if="revenue"
           :title="t('ui.dashboard.money_in')"
           :description="t('ui.dashboard.money_in_total', { total: revenue.total })"
@@ -234,9 +243,9 @@ const activityColumns = [
             :rows="revenue.months"
             :format="formatMinor"
           />
-        </DetailSection>
+        </AppCard>
 
-        <DetailSection v-if="infrastructure" :title="t('ui.dashboard.infrastructure')">
+        <AppCard v-if="infrastructure" :title="t('ui.dashboard.infrastructure')">
           <template #actions>
             <!-- The health page runs the checks. This block reads rows, so
                  that a dashboard stays openable during the incident it is
@@ -265,16 +274,22 @@ const activityColumns = [
               />
             </template>
           </DescriptionList>
-        </DetailSection>
+        </AppCard>
       </div>
 
-      <DetailSection
+      <!--
+        `AppCard flush` + `AppTable flush`: the card keeps the frame and the
+        table gives its own up, so the result is one rectangle with a header
+        above the column names rather than the card-in-a-card the design
+        system refuses.
+      -->
+      <AppCard
         v-if="activity"
         :title="t('ui.dashboard.activity')"
         :description="t('ui.dashboard.activity_description')"
-        :divided="false"
+        :flush="activity.length > 0"
       >
-        <AppTable v-if="activity.length > 0" :columns="activityColumns">
+        <AppTable v-if="activity.length > 0" flush :columns="activityColumns">
           <tr v-for="entry in activity" :key="entry.id">
             <td data-col="at" class="text-content-muted w-0 whitespace-nowrap tabular-nums">
               {{ formatTime(entry.at) }}
@@ -298,7 +313,7 @@ const activityColumns = [
           :title="t('ui.dashboard.activity_empty')"
           :description="t('ui.dashboard.activity_empty_detail')"
         />
-      </DetailSection>
+      </AppCard>
     </div>
   </AdminLayout>
 </template>

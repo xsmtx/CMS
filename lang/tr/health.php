@@ -66,6 +66,13 @@ return [
         'checked_at' => 'Kontrol',
     ],
 
+    'licence' => [
+        'unreadable' => 'Lisans durumu okunamadı.',
+        'unlicensed' => 'Lisanssız',
+        'not_active' => 'Lisans etkin değil. Sağlayıcı imzası geri geldi; başka hiçbir şey değişmedi.',
+        'in_grace' => 'Sinyal zamanı geçtiğinden beri lisans sunucusuna ulaşılamadı. Ek süre bitene kadar her şey çalışmaya devam eder.',
+    ],
+
     'measurements' => [
         'latency_ms' => 'Gidiş dönüş',
         'failed' => 'Başarısız',
@@ -73,5 +80,10 @@ return [
         'total' => 'Toplam',
         'unreachable' => 'Ulaşılamayan',
         'minutes_ago' => 'Dakika önce',
+        'licence' => 'Lisans',
+        'edition' => 'Sürüm',
+        'status' => 'Durum',
+        'expires_in_days' => 'Bitmesine kalan gün',
+        'last_contact_days_ago' => 'Son bağlantıdan bu yana gün',
     ],
 ];

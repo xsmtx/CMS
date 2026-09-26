@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Lang;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,7 +50,7 @@ final class HealthController extends Controller
                     'state' => $report->state->value,
                     'stateLabel' => (string) __($report->state->labelKey()),
                     'detail' => $report->detail,
-                    'measurements' => $report->measurements,
+                    'measurements' => self::worded($report->measurements),
                 ],
                 $reports,
             ),
@@ -66,5 +67,37 @@ final class HealthController extends Controller
             ],
             'can' => ['manage' => $this->actor->can('platform.maintenance.manage')],
         ]);
+    }
+
+    /**
+     * A measurement's key, said in words.
+     *
+     * The `health` language file has carried a `measurements` group since the
+     * screen was written and nothing read it: the page printed the array key
+     * instead, so an
+     * operator was told `latency_ms 1` and `unreachable 0`. Wording stored
+     * and read by nothing is the same lie as a setting stored and read by
+     * nothing - it looks configured and it does nothing.
+     *
+     * A key with no wording keeps **its own name** rather than becoming
+     * `health.measurements.whatever`. Core's are all named and
+     * `VocabularyTest` fails if one is not; a measurement a module's own
+     * check emits is not core's to name, and its key is more use to the
+     * operator reading it than a path into a language file they do not have.
+     *
+     * @param  array<string, string|int>  $measurements
+     * @return array<string, string|int>
+     */
+    private static function worded(array $measurements): array
+    {
+        $worded = [];
+
+        foreach ($measurements as $key => $value) {
+            $path = 'health.measurements.'.$key;
+
+            $worded[Lang::has($path) ? (string) __($path) : $key] = $value;
+        }
+
+        return $worded;
     }
 }

@@ -96,6 +96,54 @@ it('has wording for every health check that is registered', function (): void {
     app()->setLocale('en');
 });
 
+/**
+ * A check's numbers, said in words.
+ *
+ * `health.measurements` was in both language files from the day the screen
+ * was written and read by nothing: the page printed the array key, so an
+ * operator was told `latency_ms 1` and `unreachable 0`. Wording stored and
+ * read by nothing looks configured and does nothing.
+ *
+ * The keys that must be named are the **static** ones a check hard-codes.
+ * A queue's measurement is keyed by the queue's own name, which whoever
+ * configured this installation chose, and a module's check is not core's to
+ * name - `HealthController` keeps the key itself for both.
+ */
+it('says what a health check measured in words', function (): void {
+    $static = ['latency_ms', 'failed', 'sent', 'total', 'unreachable', 'minutes_ago',
+        'licence', 'edition', 'status', 'expires_in_days', 'last_contact_days_ago'];
+
+    foreach (config('platform.locales', ['en']) as $locale) {
+        app()->setLocale($locale);
+
+        foreach ($static as $measurement) {
+            $key = 'health.measurements.'.$measurement;
+
+            expect((string) __($key))->not->toBe($key, $measurement.' in '.$locale);
+        }
+    }
+
+    app()->setLocale('en');
+});
+
+/**
+ * And the one check that spoke hard-coded English.
+ *
+ * `LicenceCheck` carried three sentences in the source - "The licence is not
+ * active...", and two more - where every other check reads `lang/`. Nothing
+ * caught it because `VocabularyTest` asked for each check's *name*, and the
+ * name was fine.
+ */
+it('has no English in the licence check', function (): void {
+    $source = (string) file_get_contents(
+        base_path('app/Infrastructure/Health/Checks/LicenceCheck.php')
+    );
+
+    // A report's first argument is its key; a sentence is a string literal
+    // long enough to be one, and there should be none left in this file.
+    expect($source)->not->toMatch("/'[A-Z][^']{25,}'/");
+});
+
 it('names every module type in both locales', function (): void {
     /*
      * Asked of the enum, not of a list here. `Infrastructure` was added for

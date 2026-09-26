@@ -49,16 +49,20 @@ final readonly class LicenceCheck implements HealthCheck
         } catch (Throwable) {
             // A malformed state row is not a reason for the health page to
             // fail — it is a reason for this one line to say it cannot tell.
-            return HealthReport::degraded($this->key(), 'The licence state could not be read.');
+            return HealthReport::degraded($this->key(), (string) __('health.licence.unreadable'));
         }
 
         if (! $state->configured) {
-            return HealthReport::ok($this->key(), ['licence' => 'unlicensed']);
+            return HealthReport::ok($this->key(), [
+                'licence' => (string) __('health.licence.unlicensed'),
+            ]);
         }
 
         $measurements = array_filter([
             'edition' => $state->edition,
-            'status' => $state->status->value,
+            // The word, not the enum's value: this is read by an operator,
+            // and `revoked` is a member of an enum rather than a sentence.
+            'status' => (string) __($state->status->labelKey()),
             'expires_in_days' => $this->days($state->expiresAt),
             'last_contact_days_ago' => $this->daysAgo($state->lastContactAt),
         ], static fn (mixed $value): bool => $value !== null);
@@ -66,7 +70,7 @@ final readonly class LicenceCheck implements HealthCheck
         if (! $state->isLive()) {
             return HealthReport::failing(
                 $this->key(),
-                'The licence is not active. The vendor mark has returned; nothing else has changed.',
+                (string) __('health.licence.not_active'),
                 $measurements,
             );
         }
@@ -74,8 +78,7 @@ final readonly class LicenceCheck implements HealthCheck
         if ($state->isInGrace()) {
             return HealthReport::degraded(
                 $this->key(),
-                'The licence server has not been reached since the heartbeat was due. '
-                .'Everything still works until the grace period ends.',
+                (string) __('health.licence.in_grace'),
                 $measurements,
             );
         }

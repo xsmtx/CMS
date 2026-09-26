@@ -226,6 +226,8 @@ return [
             'value' => 'Value',
             'sampled' => 'Taken',
             'source' => 'Source',
+            'kind' => 'Kind',
+            'key' => 'Key',
         ],
         'stats' => [
             'measurements' => 'Measurements',
@@ -235,7 +237,9 @@ return [
         ],
         'stale' => 'Stale',
         'fresh' => 'Fresh',
-        'unwatched_intro' => 'Resources nothing is reporting on:',
+        'unwatched_title' => 'Nothing is reporting on these',
+        'unwatched_intro' => 'No adapter has ever sent a measurement about them.',
+        'unwatched_capped' => 'No adapter has ever sent a measurement about them. Showing :shown of :total.',
     ],
 
     'errors' => [

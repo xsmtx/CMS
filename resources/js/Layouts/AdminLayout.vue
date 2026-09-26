@@ -802,7 +802,12 @@ const breadcrumbs = computed(() => {
 
     if (item === undefined) continue
 
-    trail.push({ label: group.label })
+    // The group's own name is dropped for the same reason the item's is, and
+    // it took the Clients screen to notice: the group is "Clients", the map
+    // row is "View/Search Clients" and the heading is "Clients", so the trail
+    // read "Clients > View/Search Clients > Clients" - one word twice with
+    // something else between the two.
+    if (differs(group.label, props.heading)) trail.push({ label: group.label })
 
     // Case-insensitively: the map says "Review Queue" and the page heading says
     // "Review queue", which is one name and would otherwise be two crumbs.

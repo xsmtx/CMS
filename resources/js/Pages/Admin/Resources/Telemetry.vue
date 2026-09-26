@@ -101,6 +101,12 @@ const columns = [
   { key: 'source', label: t('infrastructure.telemetry.columns.source'), optional: true },
 ]
 
+const UNWATCHED_COLUMNS: TableColumn[] = [
+  { key: 'resource', label: t('infrastructure.telemetry.columns.resource') },
+  { key: 'kind', label: t('infrastructure.telemetry.columns.kind') },
+  { key: 'key', label: t('infrastructure.telemetry.columns.key') },
+]
+
 const CAPACITY_COLUMNS: TableColumn[] = [
   { key: 'resource', label: t('infrastructure.telemetry.columns.resource') },
   { key: 'metric', label: t('infrastructure.telemetry.columns.metric') },
@@ -268,21 +274,43 @@ function when(value: string): string {
 
       <AppPagination :links="metrics.links" :total="metrics.total" />
 
-      <!-- The absences. Capped on the server, because on a fresh installation
-           this is every resource and a list of four thousand is not a finding. -->
-      <div v-if="unwatched.length > 0" class="border-line bg-surface-primary rounded-lg border p-4">
-        <div class="flex flex-col gap-2">
-          <p class="text-content-muted text-body">
-            {{ t('infrastructure.telemetry.unwatched_intro') }}
-          </p>
-          <ul class="flex flex-col gap-1">
-            <li v-for="node in unwatched" :key="node.id" class="text-body flex items-center gap-2">
-              <span>{{ node.label }}</span>
+      <!--
+        The absences, as a table like everything else on this screen.
+
+        It was a framed box holding a colon and a bare list, which is the one
+        region here that did not say what it was - a sentence ending in a
+        colon is a label, and a screen that names its other three regions and
+        not this one reads as though somebody stopped halfway.
+
+        Capped on the server, because on a fresh installation this is every
+        resource and a list of four thousand is not a finding. The count in
+        the description is the real one, so a capped list says so.
+      -->
+      <DetailSection
+        v-if="unwatched.length > 0"
+        :title="t('infrastructure.telemetry.unwatched_title')"
+        :description="
+          unwatched.length < stats.unwatched
+            ? t('infrastructure.telemetry.unwatched_capped', {
+                shown: unwatched.length,
+                total: stats.unwatched,
+              })
+            : t('infrastructure.telemetry.unwatched_intro')
+        "
+        :divided="false"
+      >
+        <AppTable name="unwatched" :columns="UNWATCHED_COLUMNS">
+          <AppTableRow v-for="node in unwatched" :key="node.id">
+            <td data-col="resource" class="font-medium">{{ node.label }}</td>
+            <td data-col="kind">
               <AppBadge tone="neutral">{{ node.kindLabel }}</AppBadge>
-            </li>
-          </ul>
-        </div>
-      </div>
+            </td>
+            <td data-col="key" class="text-content-subtle text-chrome font-mono">
+              {{ node.key }}
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
     </div>
   </AdminLayout>
 </template>

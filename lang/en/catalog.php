@@ -35,7 +35,6 @@ return [
         'empty' => 'No product groups yet.',
         'saved' => 'Group saved.',
         'deleted' => 'Group deleted.',
-        'products_count' => ':count product|:count products',
     ],
 
     'products' => [

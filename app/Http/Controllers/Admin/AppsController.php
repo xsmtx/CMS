@@ -193,7 +193,15 @@ final class AppsController extends Controller
             'permission' => $permission,
             'label' => (string) __('apps.areas.'.$key.'.label'),
             'description' => (string) __('apps.areas.'.$key.'.description'),
-            'unit' => (string) __('apps.areas.'.$key.'.unit'),
+            // `trans_choice`, not `__()`: the unit was always the plural, so
+            // an installation with one product was told "1 products". A unit
+            // with no `|` in it comes back unchanged, which is every unit
+            // that is an adjective ("enabled") or already uncountable
+            // ("staff") - and every Turkish one, since a counted noun there
+            // does not take a plural at all.
+            'unit' => $count === null
+                ? ''
+                : trans_choice('apps.areas.'.$key.'.unit', $count),
             'count' => $count,
         ];
     }

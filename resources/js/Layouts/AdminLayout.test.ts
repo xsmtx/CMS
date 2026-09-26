@@ -429,6 +429,24 @@ describe('AdminLayout navigation', () => {
   })
 
   /**
+   * The group's name is dropped by the same rule, and it is the case that
+   * actually shipped: the Clients group holds a row called "View/Search
+   * Clients" and the screen is headed "Clients", so the trail read
+   * "Clients > View/Search Clients > Clients" — one word twice, with
+   * something else wedged between the two.
+   */
+  it('does not draw the section name when the screen is called that', () => {
+    const trail = mount(AdminLayout, {
+      props: { heading: 'Billing' },
+      global: { stubs: { ThemeSwitch: true, AppAlert: true } },
+    })
+      .findAll('nav[aria-label="Breadcrumb"] li')
+      .map((crumb) => crumb.text().trim())
+
+    expect(trail).toEqual(['Invoices', 'Billing'])
+  })
+
+  /**
    * The one gate that is not a permission. An administrator holds every staff
    * permission by design, so "only the owner of this installation" cannot be
    * expressed as one.

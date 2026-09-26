@@ -66,6 +66,20 @@ return [
         'checked_at' => 'Checked',
     ],
 
+    'licence' => [
+        'unreadable' => 'The licence state could not be read.',
+        'unlicensed' => 'Not licensed',
+        'not_active' => 'The licence is not active. The vendor mark has returned; nothing else has changed.',
+        'in_grace' => 'The licence server has not been reached since the heartbeat was due. Everything still works until the grace period ends.',
+    ],
+
+    /*
+     * What a check's numbers are called.
+     *
+     * Read by `HealthController`, which falls back to the key itself when
+     * there is no wording for it - a queue is named by whoever configured it
+     * and a module's own check is not core's to name.
+     */
     'measurements' => [
         'latency_ms' => 'Round trip',
         'failed' => 'Failed',
@@ -73,5 +87,10 @@ return [
         'total' => 'Total',
         'unreachable' => 'Unreachable',
         'minutes_ago' => 'Minutes ago',
+        'licence' => 'Licence',
+        'edition' => 'Edition',
+        'status' => 'Status',
+        'expires_in_days' => 'Expires in, days',
+        'last_contact_days_ago' => 'Last contact, days ago',
     ],
 ];

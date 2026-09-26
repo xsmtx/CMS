@@ -24,7 +24,7 @@ function storefrontFile(string $relative, string $bytes): void
 
     file_put_contents($path, $bytes);
 
-    test()->beforeApplicationDestroyed(fn () => @unlink($path));
+    test()->beforeApplicationDestroyed(fn (): bool => @unlink($path));
 }
 
 /** The smallest valid PNG there is: 1x1, transparent. */

@@ -63,6 +63,9 @@ const { t } = useTranslations()
 const total = computed(() => props.rows.reduce((sum, row) => sum + row.value, 0))
 const compareTotal = computed(() => (props.compare ?? []).reduce((sum, row) => sum + row.value, 0))
 
+/** Nothing to draw: no bar has a value, on either series. */
+const empty = computed(() => total.value === 0 && compareTotal.value === 0)
+
 function percent(value: number): number {
   return Math.round((value / max.value) * 100)
 }
@@ -88,7 +91,13 @@ const columns = computed(() =>
         {{ title }}
       </h3>
 
-      <div class="text-chrome flex items-center gap-3">
+      <!--
+        The legend is hidden when the sentence below has already said there
+        is nothing. A chart with no data drew "0 tickets" and then "Nothing
+        in this period." under it, which is the same answer twice and reads
+        like a figure that failed to load rather than a quiet month.
+      -->
+      <div v-if="!empty" class="text-chrome flex items-center gap-3">
         <span class="flex items-center gap-1.5">
           <span v-if="compare" class="bg-brand size-2 rounded-full" aria-hidden="true" />
           <span class="text-content-muted tabular-nums">
@@ -106,7 +115,7 @@ const columns = computed(() =>
       </div>
     </div>
 
-    <p v-if="total === 0 && compareTotal === 0" class="text-content-muted text-body">
+    <p v-if="empty" class="text-content-muted text-body">
       {{ t('ui.common.nothing_in_period', {}, 'Nothing in this period.') }}
     </p>
 

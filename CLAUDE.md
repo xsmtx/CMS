@@ -1954,3 +1954,66 @@ of the ones before them — one unit kept coming back wearing a material from tw
 versions ago. `bpy.data.objects.remove` does not care about context. The same
 trap as the `static fn` in a `->map()`: it does not fail, it just does not
 happen.
+
+**The dashboard is the one framed screen in the console.** Every other admin
+page groups with a heading and a hairline; the dashboard's regions are
+`AppCard`, because it is genuinely a board of unrelated widgets — revenue,
+fleet, the audit trail — and the frame is how an operator tells where one
+subject ends and the next begins. `whmcs-admin-dashboard.png` is a grid of
+exactly these. Attention stays a hairline: it is one line when nothing is
+wrong, and a rectangle around one line is noise.
+
+**The breadcrumb drops the section's name too, not only the row's.** The
+Clients group holds a row called "View/Search Clients" and the screen is
+headed "Clients", so the trail read `Clients > View/Search Clients > Clients` —
+one word twice with something else wedged between the two. `/admin/apps` had
+it as well (`Setup > Apps & Integrations > Setup`). Same `differs()` the row
+already used, applied to the group.
+
+**A count needs `trans_choice`, not `__()`.** The Setup page told an
+installation with one product "1 products", one group "1 groups" and one tax
+rule "1 rules", because a unit was stored as the plural and printed beside a
+number. The units that are adjectives (`enabled`, `configured`) and the
+uncountable ones (`staff`) need no singular, and neither does any Turkish one —
+a counted noun there does not take a plural — so the same call is right for all
+of them: a string with no `|` comes back unchanged. `catalog.products_count`
+was the mirror image, a choice string **nothing called `trans_choice` on**, in
+both language files, read by nobody; deleted.
+
+**`health.measurements` was in both language files from the day the screen was
+written and read by nothing.** The page printed the array key, so an operator
+was told `latency_ms 1`, `unreachable 0` and `licence unlicensed`.
+`HealthController::worded()` translates them now and **keeps the key when
+there is no wording**, which is right rather than lazy: `QueueCheck` is keyed
+by the queue's own name, whoever configured this installation chose it, and a
+module's check is not core's to name — `health.measurements.whatever` would be
+less use to the operator reading it than the key.
+
+**`LicenceCheck` was the one check that spoke hard-coded English** — three
+sentences in the source where every other check reads `lang/`, plus
+`'unlicensed'` as a value and a raw enum value for the status.
+`VocabularyTest` never caught it because it asked each check for its *name*,
+and the name was fine. It now also pins every static measurement key in both
+locales and greps that file for a sentence.
+
+**A chart with nothing in it said so twice.** `AppBarChart` drew its legend
+("0 tickets") above the sentence "Nothing in this period.", which reads as a
+figure that failed to load rather than as a quiet month. The legend is hidden
+when the series are empty. The component had no test at all although every
+dashboard and report draws one; it has three now, including that the table
+underneath keeps the zero rows — a series that drops its zeroes is a series
+whose shape is a lie.
+
+**A cached label is only as fresh as the run that wrote it.** The Telemetry
+screen listed four organizations called "Customer" until `platform:run
+resources` was run again: the projector had been fixed, the rows had not. The
+code was right and the data was old, which is the cost ADR 0043 accepted when
+it chose to cache the label — worth knowing before debugging the projector a
+second time.
+
+**`tools/design-review.mjs` over all 68 admin pages is 128 renders, and it
+found none of the above.** Zero axe violations, zero overflow, zero failures —
+and the screens were still telling an operator `latency_ms`, "1 products" and
+"Clients > View/Search Clients > Clients". The mechanical half is a floor, not
+a pass: it proves nothing is broken, and what a human reads is still a human's
+job.

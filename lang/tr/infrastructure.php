@@ -220,6 +220,8 @@ return [
             'value' => 'Değer',
             'sampled' => 'Alındığı an',
             'source' => 'Kaynak',
+            'kind' => 'Tür',
+            'key' => 'Anahtar',
         ],
         'stats' => [
             'measurements' => 'Ölçümler',
@@ -229,7 +231,9 @@ return [
         ],
         'stale' => 'Bayat',
         'fresh' => 'Güncel',
-        'unwatched_intro' => 'Hakkında hiçbir bildirim gelmeyen kaynaklar:',
+        'unwatched_title' => 'Haklarında hiçbir ölçüm gelmiyor',
+        'unwatched_intro' => 'Hiçbir bağdaştırıcı bunlar hakkında ölçüm göndermedi.',
+        'unwatched_capped' => 'Hiçbir bağdaştırıcı bunlar hakkında ölçüm göndermedi. :total kaynaktan :shown tanesi gösteriliyor.',
     ],
 
     'errors' => [

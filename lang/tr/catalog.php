@@ -30,7 +30,6 @@ return [
         'empty' => 'Henüz ürün grubu yok.',
         'saved' => 'Grup kaydedildi.',
         'deleted' => 'Grup silindi.',
-        'products_count' => ':count ürün',
     ],
 
     'products' => [

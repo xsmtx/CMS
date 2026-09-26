@@ -49,7 +49,7 @@ return [
         'tax' => [
             'label' => 'Tax',
             'description' => 'What to charge, where. No rates are shipped: these are yours to state.',
-            'unit' => 'rules',
+            'unit' => 'rule|rules',
         ],
         'billing_settings' => [
             'label' => 'Billing terms',
@@ -69,22 +69,22 @@ return [
         'products' => [
             'label' => 'Products',
             'description' => 'What is for sale, at which price, on which billing cycle.',
-            'unit' => 'products',
+            'unit' => 'product|products',
         ],
         'product_groups' => [
             'label' => 'Product groups',
             'description' => 'How products are arranged on the storefront and in the order form.',
-            'unit' => 'groups',
+            'unit' => 'group|groups',
         ],
         'promotions' => [
             'label' => 'Promotions',
             'description' => 'Discount codes, what they apply to and how often they may be used.',
-            'unit' => 'promotions',
+            'unit' => 'promotion|promotions',
         ],
         'tlds' => [
             'label' => 'Domain extensions',
             'description' => 'The extensions you sell, their registrar and what they cost.',
-            'unit' => 'extensions',
+            'unit' => 'extension|extensions',
         ],
         'staff' => [
             'label' => 'Staff members',
@@ -94,7 +94,7 @@ return [
         'roles' => [
             'label' => 'Roles',
             'description' => 'Who may do what. A role is a set of permissions, not a person.',
-            'unit' => 'roles',
+            'unit' => 'role|roles',
         ],
         'settings' => [
             'label' => 'General settings',
@@ -104,7 +104,7 @@ return [
         'notification_templates' => [
             'label' => 'Notification templates',
             'description' => 'The wording of everything this platform sends. Editing one changes what every customer is told.',
-            'unit' => 'templates',
+            'unit' => 'template|templates',
         ],
     ],
 ];
