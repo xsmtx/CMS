@@ -112,6 +112,10 @@ return [
             'label' => 'Write alert rules',
             'description' => 'Decide what this installation considers worth waking somebody for.',
         ],
+        'reliability.credits.issue' => [
+            'label' => 'Issue SLA credits',
+            'description' => 'Raise a credit note against an invoice because of an outage.',
+        ],
         'reliability.incidents.view' => [
             'label' => 'See incidents',
             'description' => 'Read what went wrong, the timeline and what was underneath.',

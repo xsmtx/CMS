@@ -2466,3 +2466,61 @@ each update, because that is the part that changed.
 `@php` block is not refused by it — but a tone-to-class map written in one is a
 colour chosen outside the design system, in a file a theme author may replace.
 The controller hands the two class names over; the template only prints.
+
+**SLA credits and postmortems are in**, which finishes §15 bar the maintenance
+windows. Four decisions:
+
+- **A credit is a credit note, and there is no second way to move money.**
+  ADR 0023 froze the issued invoice and ADR 0024 made the ledger the truth, so
+  `IssueSlaCredit` delegates every rule about the amount — the currency, the
+  draft, what is left of the invoice — to `IssueCreditNote`, and adds one row
+  saying which incident it was about. `sla_credits` is a link, not a second
+  ledger; the amounts are copied onto it all the same, because a report of
+  what outages cost last quarter must not move when somebody later credits the
+  same invoice for something else.
+- **Core does not work out how much.** An SLA is a contract this platform has
+  never read: 99.9% with a 10% credit is one seller's terms, some credit the
+  day and some the month. A percentage invented here would be a commercial
+  promise made on a seller's behalf — the decision tax and dunning already
+  made. The screen says so in as many words under the amount field.
+- **What core *can* answer is who.** `AffectedCustomers` walks the incident's
+  alerts to their nodes, the nodes to the services under them, and the services
+  to their customers and invoices. That is the one thing in the conversation
+  only this platform can do: every monitoring system can say a machine was
+  down, and none of them knows that eleven services on it belonged to nine
+  customers. It is computed **now** rather than read from the frozen figure,
+  because an operator crediting a week later wants the customer's latest
+  issued invoice; `IncidentImpact` stays frozen and answers *how many*.
+- **A postmortem is the one editable thing on an incident.** The timeline is
+  append-only because what was believed at half past two is evidence; a
+  postmortem is a conclusion somebody revises when the third person reads it.
+  Only once resolved, clearable (and clearing it clears `postmortem_at` — a
+  date saying one was written, beside no postmortem, is a record contradicting
+  itself), and never published: a seller who wants a public version writes it
+  as a final public update.
+
+**`reliability.credits.issue` is not Support's**, unlike opening an incident.
+Finding out first and deciding what an outage is worth are different jobs. The
+list of affected customers is not sent to somebody who cannot act on it either
+— it is a list of who had a bad day.
+
+**Ask for the password *before* a form, not on the way out of it.**
+`auth.recent` redirects with a GET, so being challenged on submit throws away
+the amount and the sentence already typed — and a money form is the worst
+place in the product to lose what somebody wrote. Every other re-challenged
+action here is a bare button press, which is why this had never come up. The
+screen carries `can.confirmed`, and the button goes to a GET route that also
+carries `auth.recent`: stale, and the middleware challenges and returns them;
+fresh, and it redirects straight back. The POST keeps its own `auth.recent`,
+because a page rendered fourteen minutes ago is not a lock.
+
+**A column header names what is in a row, not what a strip counts.** The
+affected-customers table borrowed `incidents.customers` and `incidents.services`
+— the impact strip's labels — and ended up saying "Customers" above one
+customer's name. It has `credit_customer` and `credit_affected` now.
+
+**An escaped apostrophe inside a Bash heredoc is eaten like every other
+backslash**, and `'a customer's invoice'` is then a PHP parse error in a
+language file. Nothing caught it until the tests ran: `pint app` and `phpstan`
+do not read `lang/`, and `pint --test` had last run before the edit. `php -l`
+on a language file after a scripted edit costs nothing.

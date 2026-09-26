@@ -111,6 +111,10 @@ return [
             'label' => 'Uyarı kuralı yaz',
             'description' => 'Bu kurulumun neyi birini uyandırmaya değer saydığına karar verir.',
         ],
+        'reliability.credits.issue' => [
+            'label' => 'SLA kredisi ver',
+            'description' => 'Bir kesinti nedeniyle müşterinin faturasına alacak dekontu keser.',
+        ],
         'reliability.incidents.view' => [
             'label' => 'Olayları gör',
             'description' => 'Neyin ters gittiğini, zaman çizelgesini ve altında ne olduğunu okur.',

@@ -66,6 +66,31 @@ final readonly class ImpactSummary
     }
 
     /**
+     * *Which* services are under a node, rather than how many.
+     *
+     * The same walk `for()` does, answering the question an SLA credit asks:
+     * a figure says how bad an outage was and cannot say whose invoice to
+     * credit. Kept here rather than walked a second time somewhere else,
+     * because two walks with different relation rules would eventually
+     * disagree about what "inside" means — which is the bug ADR 0043 closed
+     * by making `Relation` a closed list.
+     *
+     * @return list<string>
+     */
+    public function serviceIdsUnder(ResourceNode $node, int $maxDepth = ResourceGraph::MaxDepth): array
+    {
+        $ids = [];
+
+        foreach ($this->tree->below($node, $maxDepth, impactOnly: true) as $row) {
+            if ($row->node->kind === ResourceKind::Service && $row->node->subject_id !== null) {
+                $ids[] = $row->node->subject_id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
      * Services, distinct customers, and what they pay.
      *
      * The service count comes from the rows that were readable rather than from

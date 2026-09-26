@@ -174,6 +174,51 @@ final readonly class Incidents
     }
 
     /**
+     * Write or rewrite the postmortem (§15).
+     *
+     * **Only once it is resolved**, because a postmortem written during an
+     * outage is a guess, and the timeline is what it is written from.
+     *
+     * **It is the one thing here that may be edited**, and deliberately so:
+     * the timeline is append-only because what was believed at half past two
+     * is evidence, and a postmortem is the opposite — a conclusion somebody
+     * revises when the third person reads it and remembers something. The
+     * audit row carries the change; `postmortem_at` says when it last did.
+     *
+     * Not published with the incident. A postmortem names what broke and
+     * often who was on, and a seller who wants to publish one writes the
+     * customer-facing version as a final public update.
+     */
+    public function recordPostmortem(
+        Incident $incident,
+        ?string $body,
+        ?StaffUser $actor = null,
+    ): Incident {
+        if ($incident->state !== IncidentState::Resolved) {
+            throw IncidentRefused::notResolvedYet($incident->reference);
+        }
+
+        $body = $body === null || trim($body) === '' ? null : trim($body);
+        $existed = $incident->postmortem !== null;
+
+        $incident->postmortem = $body;
+        // Null when it is cleared: a date saying a postmortem was written,
+        // beside no postmortem, is a record that contradicts itself.
+        $incident->postmortem_at = $body === null ? null : CarbonImmutable::now();
+        $incident->save();
+
+        Audit::action($body === null
+            ? 'reliability.incident.postmortem_cleared'
+            : ($existed ? 'reliability.incident.postmortem_revised' : 'reliability.incident.postmortem_written'))
+            ->by($actor)
+            ->on($incident)
+            ->forOrganization($incident->organization_id)
+            ->write();
+
+        return $incident;
+    }
+
+    /**
      * Attach an alert, or detach it.
      *
      * The direction is deliberate: an alert points at an incident and never

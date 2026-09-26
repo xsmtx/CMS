@@ -4,18 +4,29 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Billing\Exceptions\PaymentRefused;
+use App\Application\Reliability\AffectedCustomers;
 use App\Application\Reliability\Incidents;
+use App\Application\Reliability\IssueSlaCredit;
 use App\Application\Reports\MoneyByCurrency;
 use App\Domain\Reliability\AlertSeverity;
+use App\Domain\Reliability\Exceptions\CreditRefused;
 use App\Domain\Reliability\Exceptions\IncidentRefused;
 use App\Domain\Reliability\IncidentState;
+use App\Domain\Shared\Money;
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\RequireRecentAuthentication;
 use App\Http\Requests\Reliability\IncidentUpdateRequest;
 use App\Http\Requests\Reliability\OpenIncidentRequest;
+use App\Http\Requests\Reliability\PostmortemRequest;
+use App\Http\Requests\Reliability\SlaCreditRequest;
+use App\Infrastructure\Billing\Models\Invoice;
+use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Reliability\Models\Alert;
 use App\Infrastructure\Reliability\Models\Incident;
 use App\Infrastructure\Reliability\Models\IncidentUpdate;
+use App\Infrastructure\Reliability\Models\SlaCredit;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use App\Support\Organizations\OrganizationContext;
@@ -68,16 +79,22 @@ final class IncidentController extends Controller
         ]);
     }
 
-    public function show(Incident $incident, CurrentActor $actor): Response
-    {
+    public function show(
+        Incident $incident,
+        CurrentActor $actor,
+        AffectedCustomers $affected,
+    ): Response {
         $this->refuseUnless($actor, 'reliability.incidents.view');
 
         $incident->load(['opener', 'impact', 'updates.author', 'alerts.rule']);
+
+        $canCredit = $actor->can('reliability.credits.issue');
 
         return Inertia::render('Admin/Reliability/Incident', [
             'incident' => $this->row($incident) + [
                 'summary' => $incident->summary,
                 'postmortem' => $incident->postmortem,
+                'postmortemAt' => $incident->postmortem_at?->toIso8601String(),
                 'updates' => array_values($incident->updates
                     ->map(static fn (IncidentUpdate $update): array => [
                         'id' => $update->id,
@@ -117,8 +134,108 @@ final class IncidentController extends Controller
                     'rule' => $alert->rule?->name,
                 ])
                 ->all()),
-            'can' => ['manage' => $actor->can('reliability.incidents.manage')],
+            // Who it actually hit, and which invoice of theirs to credit.
+            // Computed now rather than read from the frozen figure: an
+            // operator raising a credit a week later wants the customer's
+            // latest issued invoice, not the one that existed that night.
+            // Only for somebody who may act on it — a list of affected
+            // customers is a list of who had a bad day, and a staff member
+            // who cannot credit them has no reason to be handed it.
+            'affected' => $canCredit && $incident->state === IncidentState::Resolved
+                ? $this->affected($affected->forIncident($incident))
+                : [],
+            'can' => [
+                'manage' => $actor->can('reliability.incidents.manage'),
+                'credit' => $canCredit,
+                // Whether the password is still fresh. The screen asks for it
+                // **before** opening the credit form rather than on submit:
+                // `auth.recent` redirects with a GET, so a challenge on the
+                // way out loses the amount and the sentence the operator had
+                // already typed. Every other re-challenged action in this
+                // product is a bare button press; this is the first one with
+                // a form behind it.
+                'confirmed' => $this->recentlyConfirmed(),
+            ],
         ]);
+    }
+
+    /**
+     * Write or rewrite the postmortem.
+     *
+     * The one editable thing on an incident, and `Incidents` says why.
+     */
+    public function postmortem(
+        PostmortemRequest $request,
+        Incident $incident,
+        CurrentActor $actor,
+        Incidents $incidents,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'reliability.incidents.manage');
+
+        try {
+            $incidents->recordPostmortem(
+                $incident,
+                $request->validated()['postmortem'] ?? null,
+                $this->staff($actor),
+            );
+        } catch (IncidentRefused $refusal) {
+            return back()->withErrors(['postmortem' => $refusal->getMessage()]);
+        }
+
+        return back()->with('status', __('reliability.incidents.postmortem_saved'));
+    }
+
+    /**
+     * Raise a credit note against a customer's invoice.
+     *
+     * The amount is the operator's: core has never read this seller's SLA and
+     * a percentage invented here would be a commercial promise made on their
+     * behalf.
+     */
+    public function credit(
+        SlaCreditRequest $request,
+        Incident $incident,
+        CurrentActor $actor,
+        IssueSlaCredit $credits,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'reliability.credits.issue');
+
+        $data = $request->validated();
+
+        $invoice = Invoice::query()->whereKey($data['invoice'])->first();
+
+        if (! $invoice instanceof Invoice) {
+            abort(404);
+        }
+
+        try {
+            $credits->handle(
+                $incident,
+                $invoice,
+                Money::ofMinor((int) $data['amount_minor'], $invoice->currency_code),
+                $data['reason'],
+                $this->staff($actor),
+            );
+        } catch (CreditRefused|PaymentRefused $refusal) {
+            return back()->withErrors(['amount_minor' => $refusal->getMessage()]);
+        }
+
+        return back()->with('status', __('reliability.incidents.credited'));
+    }
+
+    /**
+     * Ask for the password, then come back here.
+     *
+     * Reaching this at all means the password is fresh — `auth.recent` sends
+     * them to the confirmation screen otherwise, having stored this URL, and
+     * returns them to it afterwards. So it has nothing to do but send them
+     * back to the incident with the window open.
+     */
+    public function confirmCredit(Incident $incident, CurrentActor $actor): RedirectResponse
+    {
+        $this->refuseUnless($actor, 'reliability.credits.issue');
+
+        return to_route('admin.reliability.incidents.show', $incident);
     }
 
     public function store(OpenIncidentRequest $request, CurrentActor $actor, Incidents $incidents): RedirectResponse
@@ -196,6 +313,42 @@ final class IncidentController extends Controller
         }
 
         return back()->with('status', __('reliability.incidents.detached'));
+    }
+
+    /**
+     * The affected customers, with the invoices an operator may credit.
+     *
+     * @param  list<array{customer: Customer, services: int, invoices: list<Invoice>, credited: SlaCredit|null}>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function affected(array $rows): array
+    {
+        return array_values(array_map(
+            static fn (array $row): array => [
+                'id' => $row['customer']->id,
+                // `displayName()` falls back through the primary contact, so
+                // the query eager-loaded `displayNameWith()` — the rule that
+                // has bitten orders, invoices and Manage users.
+                'name' => $row['customer']->displayName(),
+                'services' => $row['services'],
+                'invoices' => array_values(array_map(
+                    static fn (Invoice $invoice): array => [
+                        'id' => $invoice->id,
+                        'number' => $invoice->number,
+                        'currency' => $invoice->currency_code,
+                        'total' => $invoice->total->format(app()->getLocale()),
+                        'totalMinor' => $invoice->total->minorUnits,
+                        'issuedOn' => $invoice->issued_on?->toDateString(),
+                    ],
+                    $row['invoices'],
+                )),
+                'credited' => $row['credited'] === null ? null : [
+                    'amount' => $row['credited']->amount()->format(app()->getLocale()),
+                    'at' => $row['credited']->created_at?->toIso8601String(),
+                ],
+            ],
+            $rows,
+        ));
     }
 
     /**
@@ -279,6 +432,21 @@ final class IncidentController extends Controller
         }
 
         return $money->toArray(app()->getLocale());
+    }
+
+    /**
+     * Whether this session confirmed a password inside the window.
+     *
+     * Read here only to decide which of two things a button does. The
+     * middleware still guards the write, because a page rendered fourteen
+     * minutes ago is not a lock.
+     */
+    private function recentlyConfirmed(): bool
+    {
+        $at = session(RequireRecentAuthentication::SESSION_KEY);
+
+        return is_int($at)
+            && $at > time() - ((int) config('platform.security.reauth_minutes', 15) * 60);
     }
 
     private function staff(CurrentActor $actor): ?StaffUser

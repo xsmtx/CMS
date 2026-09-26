@@ -126,6 +126,16 @@ final class CorePermissions
              */
             new PermissionDefinition('reliability.incidents.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('reliability.incidents.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Giving money back (§15). **Not Support's**, unlike opening an
+             * incident: the person who finds out first should be able to say
+             * so, and deciding what an outage is worth is a commercial
+             * decision with an SLA behind it. It is also the one permission
+             * in this context that moves money, which is why the route
+             * carries the password challenge as well.
+             */
+            new PermissionDefinition('reliability.credits.issue', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

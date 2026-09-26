@@ -16,7 +16,7 @@
  * The timeline is newest first and append-only. What was believed at half past
  * two is what a postmortem is written from, so nothing here edits or deletes.
  */
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -32,6 +32,7 @@ import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
 import DetailSection from '../../../Components/DetailSection.vue'
 import MetricStrip from '../../../Components/MetricStrip.vue'
+import MoneyInput from '../../../Components/MoneyInput.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
@@ -68,6 +69,23 @@ interface AttachedAlert {
   severityLabel: string
 }
 
+interface CreditInvoice {
+  id: string
+  number: string
+  currency: string
+  total: string
+  totalMinor: number
+  issuedOn: string | null
+}
+
+interface AffectedCustomer {
+  id: string
+  name: string
+  services: number
+  invoices: CreditInvoice[]
+  credited: { amount: string; at: string | null } | null
+}
+
 interface Incident {
   id: string
   reference: string
@@ -87,6 +105,7 @@ interface Incident {
   alertCount: number
   summary: string | null
   postmortem: string | null
+  postmortemAt: string | null
   updates: TimelineEntry[]
   alerts: AttachedAlert[]
   impact: {
@@ -101,7 +120,8 @@ const props = defineProps<{
   incident: Incident
   states: Option[]
   unattached: { id: string; subject: string; rule: string | null }[]
-  can: { manage: boolean }
+  affected: AffectedCustomer[]
+  can: { manage: boolean; credit: boolean; confirmed: boolean }
 }>()
 
 const { t } = useTranslations()
@@ -120,6 +140,17 @@ const UNATTACHED_COLUMNS: TableColumn[] = [
   { key: 'actions', label: '' },
 ]
 
+// Its own headers rather than the impact strip's: those two words label
+// *counts* of a whole incident, and a column heading names what is in each
+// row. Borrowing one for the other is how a screen ends up saying "Customers"
+// above a single customer's name.
+const AFFECTED_COLUMNS: TableColumn[] = [
+  { key: 'customer', label: t('reliability.incidents.credit_customer') },
+  { key: 'services', label: t('reliability.incidents.credit_affected'), numeric: true },
+  { key: 'state', label: '' },
+  { key: 'actions', label: '' },
+]
+
 const update = useForm({
   body: '',
   state: props.incident.state,
@@ -127,6 +158,19 @@ const update = useForm({
 })
 
 const resolving = ref(false)
+
+const postmortem = useForm({ postmortem: props.incident.postmortem ?? '' })
+
+/**
+ * One form, reused per customer rather than one form each: an operator credits
+ * one customer at a time, and twelve `useForm`s on a screen is twelve sets of
+ * errors that can disagree with each other.
+ */
+const crediting = ref<AffectedCustomer | null>(null)
+
+const credit = useForm({ invoice: '', amount_minor: 0, reason: '' })
+
+const isResolved = computed(() => props.incident.state === 'resolved')
 
 /**
  * Resolving is asked for once, because it freezes the impact figure and writes
@@ -199,6 +243,52 @@ function attach(alertId: string): void {
 function detach(alertId: string): void {
   router.delete(`/admin/reliability/alerts/${alertId}/incident`, { preserveScroll: true })
 }
+
+function savePostmortem(): void {
+  postmortem.put(`/admin/reliability/incidents/${props.incident.id}/postmortem`, {
+    preserveScroll: true,
+  })
+}
+
+/**
+ * Opening the form picks their newest invoice and offers nothing for the
+ * amount. A prefilled figure would be this platform suggesting what an outage
+ * is worth, which is the seller's SLA to read and not ours.
+ */
+function startCredit(customer: AffectedCustomer): void {
+  /*
+   * The password first, if the window has closed. `auth.recent` redirects
+   * with a GET, so being challenged on submit throws away the amount and the
+   * sentence already typed — and a money form is the worst place in the
+   * product to lose what somebody wrote.
+   */
+  if (!props.can.confirmed) {
+    router.get(`/admin/reliability/incidents/${props.incident.id}/credits/confirm`)
+
+    return
+  }
+
+  crediting.value = customer
+  credit.reset()
+  credit.clearErrors()
+  credit.invoice = customer.invoices[0]?.id ?? ''
+}
+
+function submitCredit(): void {
+  const customer = crediting.value
+
+  if (customer === null) return
+
+  credit.post(`/admin/reliability/incidents/${props.incident.id}/credits`, {
+    preserveScroll: true,
+    onSuccess: () => (crediting.value = null),
+  })
+}
+
+/** The currency is the invoice's, never a field somebody can disagree with. */
+const creditCurrency = computed(
+  () => crediting.value?.invoices.find((invoice) => invoice.id === credit.invoice)?.currency ?? '',
+)
 
 function when(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
@@ -389,6 +479,161 @@ function lasted(seconds: number | null): string {
             </td>
           </AppTableRow>
         </AppTable>
+      </DetailSection>
+
+      <!--
+        The postmortem. Only once it has ended, because one written during an
+        outage is a guess and the timeline it comes from is not finished.
+      -->
+      <DetailSection
+        :title="t('reliability.incidents.postmortem')"
+        :description="t('reliability.incidents.postmortem_intro')"
+      >
+        <form
+          v-if="can.manage && isResolved"
+          class="flex max-w-[80ch] flex-col gap-4"
+          @submit.prevent="savePostmortem"
+        >
+          <AppTextarea
+            v-model="postmortem.postmortem"
+            :label="t('reliability.incidents.postmortem_body')"
+            :hint="t('reliability.incidents.postmortem_hint')"
+            :rows="8"
+            :error="postmortem.errors.postmortem"
+          />
+
+          <div class="flex flex-wrap items-center gap-4">
+            <AppButton type="submit" variant="primary" :loading="postmortem.processing">
+              {{ t('reliability.incidents.postmortem_save') }}
+            </AppButton>
+
+            <span v-if="incident.postmortemAt" class="text-content-muted text-chrome">
+              {{
+                t('reliability.incidents.postmortem_written', {
+                  at: when(incident.postmortemAt),
+                })
+              }}
+            </span>
+          </div>
+        </form>
+
+        <p v-else-if="!isResolved" class="text-content-muted text-body">
+          {{ t('reliability.incidents.postmortem_pending') }}
+        </p>
+
+        <p v-else class="text-body max-w-[80ch] whitespace-pre-line">
+          {{ incident.postmortem ?? '—' }}
+        </p>
+      </DetailSection>
+
+      <!--
+        Who it actually hit, and the credit. The server sends this only to
+        somebody who may act on it: a list of affected customers is a list of
+        who had a bad day.
+      -->
+      <DetailSection
+        v-if="can.credit"
+        :title="t('reliability.incidents.credits')"
+        :description="t('reliability.incidents.credits_intro')"
+      >
+        <p v-if="!isResolved" class="text-content-muted text-body">
+          {{ t('reliability.incidents.credits_pending') }}
+        </p>
+
+        <p v-else-if="affected.length === 0" class="text-content-muted text-body max-w-[80ch]">
+          {{ t('reliability.incidents.credits_none') }}
+        </p>
+
+        <AppTable v-else name="affected-customers" :columns="AFFECTED_COLUMNS">
+          <AppTableRow v-for="row in affected" :key="row.id">
+            <td data-col="customer" class="font-medium">
+              <Link :href="`/admin/customers/${row.id}`" class="text-brand hover:underline">
+                {{ row.name }}
+              </Link>
+            </td>
+            <td data-col="services" class="numeric tabular-nums">{{ row.services }}</td>
+            <td data-col="state" class="text-content-muted text-chrome">
+              <span v-if="row.credited">
+                {{
+                  t('reliability.incidents.credited_already', {
+                    amount: row.credited.amount,
+                    at: when(row.credited.at),
+                  })
+                }}
+              </span>
+              <span v-else-if="row.invoices.length === 0">
+                {{ t('reliability.incidents.credit_no_invoice') }}
+              </span>
+            </td>
+            <td data-col="actions" class="text-right whitespace-nowrap">
+              <AppButton
+                v-if="row.credited === null && row.invoices.length > 0"
+                size="sm"
+                variant="ghost"
+                @click="startCredit(row)"
+              >
+                {{ t('reliability.incidents.credit') }}
+              </AppButton>
+            </td>
+          </AppTableRow>
+        </AppTable>
+
+        <!--
+          The form appears under the table rather than in a dialog: it asks
+          for three things, one of which is money, and a confirmation is the
+          wrong shape for a form somebody has to think about.
+        -->
+        <form
+          v-if="crediting"
+          class="border-line mt-6 flex max-w-[80ch] flex-col gap-4 border-t pt-6"
+          @submit.prevent="submitCredit"
+        >
+          <p class="text-body font-medium">{{ crediting.name }}</p>
+
+          <AppSelect
+            v-model="credit.invoice"
+            :label="t('reliability.incidents.credit_invoice')"
+            :options="
+              crediting.invoices.map((invoice) => ({
+                value: invoice.id,
+                label: `${invoice.number} · ${invoice.total}`,
+              }))
+            "
+            :error="credit.errors.invoice"
+          />
+
+          <MoneyInput
+            v-model="credit.amount_minor"
+            :label="t('reliability.incidents.credit_amount')"
+            :exponent="2"
+            :symbol="creditCurrency"
+          />
+
+          <p v-if="credit.errors.amount_minor" class="text-danger text-chrome">
+            {{ credit.errors.amount_minor }}
+          </p>
+
+          <p class="text-content-muted text-chrome max-w-[70ch]">
+            {{ t('reliability.incidents.credit_amount_hint') }}
+          </p>
+
+          <AppTextarea
+            v-model="credit.reason"
+            :label="t('reliability.incidents.credit_reason')"
+            :hint="t('reliability.incidents.credit_reason_hint')"
+            :rows="2"
+            :error="credit.errors.reason"
+          />
+
+          <div class="flex gap-2">
+            <AppButton type="submit" variant="primary" :loading="credit.processing">
+              {{ t('reliability.incidents.credit') }}
+            </AppButton>
+            <AppButton type="button" variant="secondary" @click="crediting = null">
+              {{ t('ui.confirm.cancel') }}
+            </AppButton>
+          </div>
+        </form>
       </DetailSection>
 
       <DetailSection

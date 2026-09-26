@@ -40,6 +40,15 @@ final class IncidentRefused extends RuntimeException
         return new self($reference.' is resolved and its impact is frozen. The alerts it was computed from cannot change.');
     }
 
+    /**
+     * A postmortem written during an outage is a guess, and the timeline it
+     * is written from is not finished yet.
+     */
+    public static function notResolvedYet(string $reference): self
+    {
+        return new self($reference.' has not been resolved. A postmortem is written once it has ended.');
+    }
+
     public static function differentOrganization(): self
     {
         return new self('That alert belongs to a different organization.');

@@ -453,6 +453,31 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('reliability.incidents.attach');
     Route::delete('reliability/alerts/{alert}/incident', [IncidentController::class, 'detach'])
         ->name('reliability.incidents.detach');
+    Route::put('reliability/incidents/{incident}/postmortem', [IncidentController::class, 'postmortem'])
+        ->name('reliability.incidents.postmortem');
+
+    /*
+     * An SLA credit moves money, so the password is asked for again — the
+     * ninth action in this product that does. The permission check is inside
+     * the controller here rather than on the group, which is safe for the
+     * opposite reason to the Licence screen's: this is a POST to a screen the
+     * operator already holds `incidents.view` for, so nobody is challenged
+     * for a password and then told they may not be on this page at all.
+     */
+    Route::post('reliability/incidents/{incident}/credits', [IncidentController::class, 'credit'])
+        ->middleware('auth.recent')
+        ->name('reliability.incidents.credit');
+
+    /*
+     * And a way to be asked for it **before** filling the form in. The
+     * middleware redirects with a GET, so a challenge on submit throws away
+     * the amount and the sentence somebody just typed — every other
+     * re-challenged action in this product is a bare button press, and this
+     * is the first one with a form behind it.
+     */
+    Route::get('reliability/incidents/{incident}/credits/confirm', [IncidentController::class, 'confirmCredit'])
+        ->middleware('auth.recent')
+        ->name('reliability.incidents.credit.confirm');
 
     /*
      * Attacks (§7). Read-only: mitigation is somebody else's control plane,
