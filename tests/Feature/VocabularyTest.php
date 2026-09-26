@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Application\Health\HealthChecks;
 use App\Domain\Automation\AutomationTask;
+use App\Domain\Infrastructure\AdapterArea;
+use App\Domain\Infrastructure\Network\BgpState;
+use App\Domain\Infrastructure\Network\FirewallAction;
+use App\Domain\Infrastructure\Network\PortState;
 use App\Domain\Licensing\Feature;
 use App\Domain\Modules\ModuleType;
 
@@ -53,6 +57,34 @@ function vocabularyKeys(): array
 
     foreach (Feature::cases() as $feature) {
         $keys[] = ['Feature::'.$feature->name, [$feature->labelKey()]];
+    }
+
+    /*
+     * The adapter vocabulary. An area is a heading on the Adapters screen,
+     * and the three device enums are what a topology row will say — a port
+     * that is `disabled` rather than `down`, a rule that drops rather than
+     * rejects, a BGP session that is `active` rather than established. Each
+     * of those distinctions is the difference between two phone calls, and a
+     * screen printing the enum's own value would throw it away.
+     *
+     * They are listed here the day the enums land rather than the day a
+     * screen draws them, which is this file's own rule: adding a case is the
+     * moment to name it.
+     */
+    foreach (AdapterArea::cases() as $area) {
+        $keys[] = ['AdapterArea::'.$area->name, [$area->labelKey()]];
+    }
+
+    foreach (PortState::cases() as $state) {
+        $keys[] = ['PortState::'.$state->name, [$state->labelKey()]];
+    }
+
+    foreach (FirewallAction::cases() as $action) {
+        $keys[] = ['FirewallAction::'.$action->name, [$action->labelKey()]];
+    }
+
+    foreach (BgpState::cases() as $state) {
+        $keys[] = ['BgpState::'.$state->name, [$state->labelKey()]];
     }
 
     return $keys;

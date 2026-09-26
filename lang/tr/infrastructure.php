@@ -56,6 +56,30 @@ return [
         'metering' => 'Kullanım ölçümü',
     ],
 
+    'ports' => [
+        'up' => 'Açık',
+        'down' => 'Kapalı',
+        'disabled' => 'Devre dışı',
+        'unknown' => 'Bildirilmedi',
+    ],
+
+    'firewall_actions' => [
+        'allow' => 'İzin ver',
+        'deny' => 'Sessizce at',
+        'reject' => 'Reddet',
+        'unknown' => 'Bildirilmedi',
+    ],
+
+    'bgp_states' => [
+        'idle' => 'Boşta',
+        'connect' => 'Bağlanıyor',
+        'active' => 'Deniyor',
+        'open_sent' => 'Open gönderildi',
+        'open_confirm' => 'Open onaylandı',
+        'established' => 'Kuruldu',
+        'unknown' => 'Bildirilmedi',
+    ],
+
     'units' => [
         'ratio' => 'oran',
         'percent' => '%',
@@ -116,6 +140,38 @@ return [
         'monitoring.alerts.read' => [
             'label' => 'Uyarıları oku',
             'description' => 'Bu kaynağın şu anda neye uyarı verdiğini gösterir.',
+        ],
+        'network_device.inventory.read' => [
+            'label' => 'Envanteri oku',
+            'description' => 'Cihaza ne olduğunu sorar: model, seri numarası, yazılım sürümü ve arayüzleri.',
+        ],
+        'network_device.config.read' => [
+            'label' => 'Yapılandırmayı oku',
+            'description' => 'Çalışan yapılandırmanın bir kopyasını alır. İçinde anahtarlar ve parolalar olduğu için asla ekrana basılmaz, günlüğe yazılmaz.',
+        ],
+        'firewall.policy.read' => [
+            'label' => 'Politikayı oku',
+            'description' => 'Güvenlik duvarı kurallarını, cihazın işlettiği sırayla listeler.',
+        ],
+        'firewall.session.read' => [
+            'label' => 'Oturum sayılarını oku',
+            'description' => 'Güvenlik duvarının kaç oturum tuttuğunu ve sınırına ne kadar yaklaştığını. Oturum tablosunun kendisini asla.',
+        ],
+        'switching.port.read' => [
+            'label' => 'Portları oku',
+            'description' => 'Hangi portlar var, açık mı, hangi hızda.',
+        ],
+        'switching.vlan.read' => [
+            'label' => "VLAN'ları oku",
+            'description' => "Cihazda gerçekten hangi VLAN'lar var; burada kayıtlı olmayanları böyle bulursunuz.",
+        ],
+        'routing.route.read' => [
+            'label' => 'Rotaları oku',
+            'description' => 'Bir önekin nereye gittiğini, bu platforma değil cihaza göre.',
+        ],
+        'routing.bgp.read' => [
+            'label' => 'BGP oturumlarını oku',
+            'description' => 'Hangi komşular ayakta ve her biri kaç önek gönderiyor.',
         ],
         'monitoring.alerts.write' => [
             'label' => 'Uyarıyı onayla veya sustur',

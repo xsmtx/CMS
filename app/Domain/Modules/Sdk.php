@@ -17,15 +17,23 @@ namespace App\Domain\Modules;
  * in `BaseModule`, or adding a member to an enum modules only read, is a
  * minor bump.
  *
- * 1.3 is such a bump: `NotificationChannel` gained `Sms` and `Chat`, and
+ * 1.3 was such a bump: `NotificationChannel` gained `Sms` and `Chat`, and
  * `NotificationRecipient` gained a phone number with a default. Nothing a
  * module implements changed — `DeliversNotifications` is untouched, which is
  * why two chat providers coexist through a registry key derived from the
- * implementation rather than through a method the interface had to grow. Changing or removing anything a module implements or calls is
- * a major one. A major bump is a decision, not a consequence — it makes
- * every existing module refuse until its author has looked.
+ * implementation rather than through a method the interface had to grow.
+ *
+ * 1.4 is another: four new capability contracts (`NetworkDeviceProvider`,
+ * `FirewallProvider`, `SwitchProvider`, `RoutingProvider`) and the value
+ * objects they speak in. Purely additive — a contract that did not exist
+ * cannot have been implemented, so no existing module has anything to look
+ * at.
+ *
+ * Changing or removing anything a module implements or calls is a major one.
+ * A major bump is a decision, not a consequence — it makes every existing
+ * module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.3';
+    public const string VERSION = '1.4';
 }

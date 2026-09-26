@@ -62,6 +62,38 @@ return [
         'metering' => 'Usage metering',
     ],
 
+    /*
+     * The device vocabulary (phase C §6). A port, a firewall rule's verdict
+     * and a BGP session's state, in words rather than in the protocol's.
+     */
+    'ports' => [
+        'up' => 'Up',
+        // Separate from disabled on purpose: down is a cable, an optic or the
+        // machine at the far end, disabled is a decision somebody made.
+        'down' => 'Down',
+        'disabled' => 'Disabled',
+        'unknown' => 'Not reported',
+    ],
+
+    'firewall_actions' => [
+        'allow' => 'Allow',
+        // The packet vanishes and the client waits for a timeout.
+        'deny' => 'Drop',
+        // The packet comes back refused and the client fails at once.
+        'reject' => 'Reject',
+        'unknown' => 'Not reported',
+    ],
+
+    'bgp_states' => [
+        'idle' => 'Idle',
+        'connect' => 'Connecting',
+        'active' => 'Trying',
+        'open_sent' => 'Open sent',
+        'open_confirm' => 'Open confirmed',
+        'established' => 'Established',
+        'unknown' => 'Not reported',
+    ],
+
     'units' => [
         'ratio' => 'ratio',
         'percent' => '%',
@@ -122,6 +154,38 @@ return [
         'monitoring.alerts.read' => [
             'label' => 'Read alerts',
             'description' => 'See what this source is currently alerting on.',
+        ],
+        'network_device.inventory.read' => [
+            'label' => 'Read the inventory',
+            'description' => 'Ask the device what it is: model, serial, firmware and its interfaces.',
+        ],
+        'network_device.config.read' => [
+            'label' => 'Read the configuration',
+            'description' => 'Take a copy of the running configuration. It carries keys and community strings, so it is never rendered or logged.',
+        ],
+        'firewall.policy.read' => [
+            'label' => 'Read the policy',
+            'description' => 'List the firewall rules in the order the device evaluates them.',
+        ],
+        'firewall.session.read' => [
+            'label' => 'Read session counts',
+            'description' => 'How many sessions the firewall is holding, and how near its limit. Never the session table itself.',
+        ],
+        'switching.port.read' => [
+            'label' => 'Read the ports',
+            'description' => 'Which ports exist, whether they are up, and at what speed.',
+        ],
+        'switching.vlan.read' => [
+            'label' => 'Read the VLANs',
+            'description' => 'Which VLANs the device actually has, which is how you find the ones nobody recorded here.',
+        ],
+        'routing.route.read' => [
+            'label' => 'Read routes',
+            'description' => 'Where a prefix goes, according to the device rather than according to this platform.',
+        ],
+        'routing.bgp.read' => [
+            'label' => 'Read BGP sessions',
+            'description' => 'Which neighbours are up and how many prefixes each is sending.',
         ],
         'monitoring.alerts.write' => [
             'label' => 'Acknowledge or silence alerts',

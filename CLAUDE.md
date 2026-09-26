@@ -2017,3 +2017,61 @@ and the screens were still telling an operator `latency_ms`, "1 products" and
 "Clients > View/Search Clients > Clients". The mechanical half is a floor, not
 a pass: it proves nothing is broken, and what a human reads is still a human's
 job.
+
+**The network device contracts are in, and the write side deliberately is
+not.** `NetworkDeviceProvider`, `FirewallProvider`, `SwitchProvider` and
+`RoutingProvider` (SDK 1.4, additive — a contract that did not exist cannot
+have been implemented), with eleven value objects under
+`app/Domain/Infrastructure/Network`. `Capability::FirewallPolicyWrite` exists
+and **no interface declares a method for it**: FortiOS would take that write
+over the same API, and an interface that let something call `apply()` before
+§6's guarded workflow existed would be the shortcut around the workflow, built
+first.
+
+**`modules/infracms/network-fortigate` implements all four contracts from one
+object**, which is the case `AdapterArea` was split for — one chassis is a
+firewall, a switch and a router. A box that is only a firewall still answers
+the switch and routing reads, with empty lists, which is the truth rather than
+an error.
+
+Four FortiOS particulars that only a careful read of the API turns up, each
+pinned by a test:
+
+- `status` is `enable`/`disable` where JSON has a boolean, and a rule somebody
+  switched off is a decision that must stay visible rather than be filtered out.
+- A **deny is a reject** depending on a second flag (`send-deny-packet`). They
+  are different on the wire and different to diagnose — one hangs and one is
+  refused at once — so the flag decides, not the word.
+- Every address, service and interface on a policy is a list of `{"name": …}`
+  naming an object defined elsewhere. Resolving those would be this platform
+  reimplementing a vendor's object model and showing a policy that does not
+  match the one on the box, so what is shown is what the device said.
+- The configuration backup is the **one endpoint answering text, not JSON**.
+  Reading it as JSON answers null, stores an empty configuration, and the diff
+  step then reads it as "everything has been deleted".
+
+**A port that is administratively up with no cable in it is down.** `status`
+is the administrative state and `link` is the physical one; `PortState` keeps
+`Down` and `Disabled` apart for the same reason, because a rack of failures
+and a night somebody shut eight unused ports must not look alike.
+
+**`DeviceConfiguration::fingerprint()` normalises line endings before
+hashing**, and the fingerprint is computed here rather than asked of the
+adapter. Two adapters that hashed their own configuration could disagree about
+what "unchanged" means, and the guarded workflow's whole safety is that the
+diff was built against what the box says *now*.
+
+**A description nobody renders is dead wording.** `CapabilityNames` has
+carried descriptions since the Adapters screen was written, and only the
+allow-writes dialog drew them — so a read capability's sentence existed and was
+read by nothing. The card draws them now, which also earns its place: an
+operator on that screen is deciding what this installation may know about their
+network, and "how near its limit, never the session table itself" is the
+answer.
+
+**A quoted heredoc in the Bash tool still eats backslashes.** `<<'JSON'` wrote
+`InfraCMS\NetworkFortigate` from `InfraCMS\NetworkFortigate`, which is invalid
+JSON, and the module simply did not appear on disk — the same class of failure
+as the doubled backslash `OfficialModulesTest` caught once before, through the
+other door. Anything containing a backslash or an escaped quote goes through
+the Write or Edit tool, not a heredoc.

@@ -304,9 +304,24 @@ function when(value: string | null): string {
                   {{ area.label }}
                 </AppBadge>
               </div>
-              <ul class="text-content-muted text-chrome mt-1 flex flex-col gap-0.5">
+              <!--
+                The sentence under each read, not only the label.
+
+                `CapabilityNames` has carried descriptions since the screen
+                was written and only the allow-writes dialog rendered them —
+                so a read's description was wording stored and read by
+                nothing, which is the trap this product keeps finding. It
+                also belongs here on its own merits: an operator on this
+                screen is deciding what this installation may know about
+                their network, and "how near its limit, never the session
+                table itself" is the reassurance that answers it.
+              -->
+              <ul class="mt-1 flex flex-col gap-1">
                 <li v-for="capability in adapter.reads" :key="capability.value">
-                  {{ capability.label }}
+                  <span class="text-content-muted text-chrome">{{ capability.label }}</span>
+                  <span v-if="capability.description" class="text-content-subtle text-chrome block">
+                    {{ capability.description }}
+                  </span>
                 </li>
               </ul>
             </div>

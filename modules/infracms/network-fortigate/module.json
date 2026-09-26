@@ -1,0 +1,48 @@
+{
+    "slug": "network-fortigate",
+    "name": "FortiGate",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads a FortiGate's inventory, its firewall policy, its ports and VLANs, and its routing table, so the graph can say which customer is behind which rule.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.4",
+    "platform": "*",
+    "namespace": "InfraCMS\\NetworkFortigate",
+    "entrypoint": "FortigateModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "FortiGate address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the REST API answers, for example https://fw1.dc2.example.com. The management address, not a customer-facing one."
+        },
+        {
+            "key": "vdom",
+            "label": "VDOM",
+            "type": "text",
+            "required": false,
+            "default": "root",
+            "hint": "Which virtual domain to read. Leave as root unless this box is partitioned."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a device using its own self-signed certificate on a management network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "15",
+            "hint": "A firewall that is busy must not become an operator staring at a spinner."
+        }
+    ]
+}

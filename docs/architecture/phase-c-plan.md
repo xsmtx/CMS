@@ -199,6 +199,33 @@ graph), then change records, then JIT, then DDoS events.
 Each step lands with its screens, its translations in both languages, its tests
 and its gates, as every phase does.
 
+**The device contracts and the first vendor module are in** (2026-09-26):
+`NetworkDeviceProvider`, `FirewallProvider`, `SwitchProvider` and
+`RoutingProvider` in `app/Domain/Infrastructure/Contracts`, the eleven value
+objects they speak in under `app/Domain/Infrastructure/Network`, and
+`modules/infracms/network-fortigate` answering all four.
+
+Three decisions worth keeping:
+
+- **Four contracts, one adapter object.** A FortiGate is a firewall, a switch
+  and a router in one chassis, so `FortigateProvider` implements all four —
+  which is the case `AdapterArea` was split for. An installation whose box is
+  only a firewall still gets the switch and routing reads, answering with
+  empty lists, which is the truth rather than an error.
+- **The write side has no method, and that is the design.** FortiOS takes a
+  policy write over the same API. `Capability::FirewallPolicyWrite` exists and
+  no interface declares a method for it, because the write arrives behind the
+  guarded workflow with a backup in front of it — and an interface that let
+  something call `apply()` first would be the shortcut around the workflow,
+  built before the workflow.
+- **`DeviceConfiguration::fingerprint()` normalises line endings before
+  hashing.** The same configuration read over two transports must not
+  fingerprint differently, or the diff step would refuse every apply on that
+  box as "somebody else has edited it".
+
+What is left of §6 is topology — the contracts writing device, port and VLAN
+nodes into the graph — and then the change records.
+
 **IPAM is in** (2026-09-26): `IpAddress` and `IpPrefix` as value objects with
 the arithmetic, five tables, `AllocateAddress`, `AssignAddress`, `SavePrefix`,
 `PrefixUtilisation`, two screens under `/admin/network/addressing`, two
