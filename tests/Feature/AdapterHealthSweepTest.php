@@ -127,8 +127,6 @@ it('records what the adapter says about itself', function (): void {
 
     $row = ResourceAdapter::query()->where('adapter_key', 'prometheus')->sole();
 
-    dump(['health' => $row->health, 'message' => $row->health_message]);
-
     expect($row->health)->toBe(HealthState::Ok->value)
         ->and($row->health_checked_at)->not->toBeNull()
         ->and($summary->examined)->toBe(1);

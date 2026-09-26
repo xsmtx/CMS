@@ -184,7 +184,7 @@
    * and from a frosted layer over content, which is what the two tokens
    * below it are for.
    */
-  --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --shadow-product: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
   --shadow-raised-token: none;
   --shadow-panel-token: none;
 
@@ -322,7 +322,7 @@
     /* Still exactly one shadow, and still only for photography. On black it
        is nearly invisible, which is the point: the tile carries the
        elevation. */
-    --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+    --shadow-product: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
     --shadow-raised-token: none;
     --shadow-panel-token: none;
 
@@ -400,7 +400,7 @@
   /* Still exactly one shadow, and still only for photography. On black it
      is nearly invisible, which is the point: the tile carries the
      elevation. */
-  --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --shadow-product: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
   --shadow-raised-token: none;
   --shadow-panel-token: none;
 
@@ -684,9 +684,15 @@
   /*
    * The one shadow, for the one thing that gets it: a product render resting
    * on a surface. Never a card, never a button, never text.
+   *
+   * `drop-shadow`, not `box-shadow`. The thing wearing this is a transparent
+   * PNG of an object, and a box shadow is cast by the element's **box** - so
+   * the shop drew a soft grey rectangle behind a product that has no corners,
+   * on a tile dark enough to show it. A drop shadow follows the alpha, which
+   * is the shape somebody rendered.
    */
   .product-shadow {
-    box-shadow: var(--shadow-product);
+    filter: var(--shadow-product);
   }
 
   /*

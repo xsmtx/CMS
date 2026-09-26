@@ -1907,3 +1907,50 @@ a row action on a contact, revealed on hover, inside a menu, behind a
 confirmation — four places for a selector to break. A throwaway contact created
 for the run and deleted after it is deterministic and involves no real
 customer's password.
+
+**The shop's artwork is a build output, not a file somebody exported once.**
+`tools/storefront-render.py` builds and renders it in Blender — an anodised
+slab, studio-lit, on transparency — and `public/storefront/` is where
+`StorefrontImagery` looks. The day the brand changes, that script is edited and
+re-run; a PNG in `public/` with no source is a PNG nobody dares touch. Its
+`PRODUCTS` map is keyed by slug because `StorefrontImagery::product()` looks a
+file up by slug and has **no fallback**, so a `default.png` would be a render
+nothing asks for — the same mistake as a setting nothing reads.
+
+**A `box-shadow` behind a transparent product PNG is the element's rectangle.**
+`.product-shadow` drew a soft grey oblong behind a product that has no corners,
+on a tile dark enough to show it. `filter: drop-shadow(…)` follows the alpha,
+which is the shape somebody rendered. The token holds the whole `drop-shadow()`
+function now, not a shadow triple.
+
+**A picture's size comes from the file** (`App\Support\View\Picture`,
+`getimagesize()`), never from two numbers written into a template. The document
+reserves a box from `width`/`height`, and a hard-coded `2000x1200` beside a
+2000x900 render reserves a box a third taller than the artwork — `object-contain`
+then centres the product in it and the empty band under it is in no stylesheet,
+because it is not in one. A file `getimagesize()` cannot read answers false
+rather than throwing, and that reads as **no picture**: the tiles are composed
+to work without one, and a broken `<img>` on a public shop is worse than a tile
+that never mentioned a picture.
+
+**`w-full` of a 680px column is 680px.** The hero image carried a
+`max-w-[52rem]` it could never reach, because it sat inside the column the
+sentences need. Copy and product do not want the same width — the copy column is
+nested inside a wider one now. A `max-w-*` that a parent already caps is a class
+that looks like a decision and is not one.
+
+**Framing is arithmetic, not taste.** The catalog card crops to a **square** so
+a row of plans is a row of equal tiles, and a slab photographed at the hero's
+three-quarter angle is a 2.3:1 shape — centred in a square it leaves the card
+half empty above and below. The product shot is near-overhead and turned on the
+spot, which is roughly 1.1:1. The hero keeps the three-quarter angle and the
+*frame* is cropped to it (2000x900) instead of the composition being floated in
+one.
+
+**`bpy.ops` needs a context an operator would be run from, and silently does
+nothing without one.** Driven from outside Blender's UI, `select_all` +
+`delete` cleared nothing, so three renders were composed against the leftovers
+of the ones before them — one unit kept coming back wearing a material from two
+versions ago. `bpy.data.objects.remove` does not care about context. The same
+trap as the `static fn` in a `->map()`: it does not fail, it just does not
+happen.

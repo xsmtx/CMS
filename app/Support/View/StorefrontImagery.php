@@ -37,22 +37,22 @@ final readonly class StorefrontImagery
     private const array EXTENSIONS = ['webp', 'png', 'avif', 'jpg'];
 
     /**
-     * The hero render: a transparent PNG or WebP, about 2000x1200, resting on
-     * the dark tile.
+     * The hero render: a transparent PNG or WebP resting on the dark tile.
+     * Any shape - the document is told the one the file actually is.
      */
-    public function hero(): ?string
+    public function hero(): ?Picture
     {
         return $this->find('hero');
     }
 
     /**
-     * One product, square, about 800x800 and transparent.
+     * One product, square and transparent - the card crops to a square.
      *
      * Keyed by the product's slug, which is what a URL already uses - so the
      * file for `/store/starter` is `starter.png` and nobody has to look
      * anything up.
      */
-    public function product(string $slug): ?string
+    public function product(string $slug): ?Picture
     {
         return $this->find('products/'.Str::slug($slug));
     }
@@ -68,17 +68,35 @@ final readonly class StorefrontImagery
         return self::ROOT.'/products/'.Str::slug($slug).'.png';
     }
 
-    private function find(string $name): ?string
+    private function find(string $name): ?Picture
     {
         foreach (self::EXTENSIONS as $extension) {
             $relative = self::ROOT.'/'.$name.'.'.$extension;
+            $path = public_path($relative);
 
-            if (is_file(public_path($relative))) {
-                // The modification time busts a cached render when somebody
-                // replaces the file without renaming it, which is what an
-                // operator iterating on artwork does every time.
-                return asset($relative).'?v='.filemtime(public_path($relative));
+            if (! is_file($path)) {
+                continue;
             }
+
+            // The size comes from the file. A format `getimagesize()` cannot
+            // read - or a truncated download - answers false rather than
+            // throwing, and that is a file with no usable artwork in it: the
+            // tile is composed to read without a picture, so the honest
+            // answer is to carry on as though there were none.
+            $size = @getimagesize($path);
+
+            if ($size === false) {
+                continue;
+            }
+
+            // The modification time busts a cached render when somebody
+            // replaces the file without renaming it, which is what an
+            // operator iterating on artwork does every time.
+            return new Picture(
+                asset($relative).'?v='.filemtime($path),
+                $size[0],
+                $size[1],
+            );
         }
 
         return null;

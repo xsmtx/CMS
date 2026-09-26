@@ -58,12 +58,12 @@
                         <article class="flex flex-col rounded-[var(--radius-xl)] border border-line bg-surface-primary p-8 text-center">
                             {{-- A square crop at the top of the card, when the
                                  installation has one. `public/storefront/products/<slug>.png`. --}}
-                            @if (! empty($product['image']))
+                            @if ($product['image'])
                                 <img
-                                    src="{{ $product['image'] }}"
+                                    src="{{ $product['image']->url }}"
                                     alt=""
-                                    width="800"
-                                    height="800"
+                                    width="{{ $product['image']->width }}"
+                                    height="{{ $product['image']->height }}"
                                     loading="lazy"
                                     class="mb-6 aspect-square w-full rounded-[var(--radius-control)] object-contain"
                                 >

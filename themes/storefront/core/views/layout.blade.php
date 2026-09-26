@@ -156,7 +156,15 @@
             is what divides the page. A border would be a second divider
             saying the same thing.
         --}}
-        <main id="main" class="flex-1">
+        {{--
+            `flex` as well as `flex-1`: the main area stretches to the footer
+            whatever is in it, and a page whose only tile is the hero then had
+            a band of empty canvas under it the height of whatever the
+            viewport had left over. A column that stretches hands that height
+            to the tile instead, so a short page is one full tile rather than
+            a tile and an accident.
+        --}}
+        <main id="main" class="flex flex-1 flex-col">
             @yield('content')
         </main>
 

@@ -32,52 +32,61 @@
 
         `dvh`, not `vh`: on a phone the address bar moves and `vh` does not.
     --}}
-    <section class="on-chrome flex min-h-[72dvh] items-center bg-surface-chrome px-6 py-20 text-center sm:py-24">
-        <div class="mx-auto flex max-w-[680px] flex-col items-center">
-            <h1 class="text-display text-balance font-semibold sm:text-hero">
-                @if ($hasCatalog)
-                    {{ __('catalog.storefront.title') }}
-                @else
-                    {{ __('storefront.headline', ['brand' => $brand]) }}
-                @endif
-            </h1>
+    <section class="on-chrome flex min-h-[72dvh] flex-1 items-center bg-surface-chrome px-6 py-20 text-center sm:py-24">
+        {{--
+            Two widths, because the copy and the product do not want the same
+            one. A headline is read across about forty characters and a
+            product is looked at; the image carried a `max-w-[52rem]` it could
+            never reach, because it sat inside the 680px column the sentences
+            need and `w-full` of 680px is 680px.
+        --}}
+        <div class="mx-auto flex w-full max-w-[64rem] flex-col items-center">
+            <div class="flex max-w-[680px] flex-col items-center">
+                <h1 class="text-display text-balance font-semibold sm:text-hero">
+                    @if ($hasCatalog)
+                        {{ __('catalog.storefront.title') }}
+                    @else
+                        {{ __('storefront.headline', ['brand' => $brand]) }}
+                    @endif
+                </h1>
 
-            <p class="mt-4 max-w-[46ch] text-title font-normal text-content-muted">
-                @if ($hasCatalog)
-                    {{ __('catalog.storefront.subtitle') }}
-                @else
-                    {{ __('storefront.subheadline') }}
-                @endif
-            </p>
+                <p class="mt-4 max-w-[46ch] text-title font-normal text-content-muted">
+                    @if ($hasCatalog)
+                        {{ __('catalog.storefront.subtitle') }}
+                    @else
+                        {{ __('storefront.subheadline') }}
+                    @endif
+                </p>
 
-            <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-                @if ($hasCatalog)
-                    <a
-                        href="{{ route('storefront.catalog') }}"
-                        class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
-                    >
-                        {{ __('storefront.plans') }}
-                    </a>
-                    <a
-                        href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
-                    >
-                        {{ __('storefront.client_area') }}
-                    </a>
-                @else
-                    <a
-                        href="{{ url('/client') }}"
-                        class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
-                    >
-                        {{ __('storefront.client_area') }}
-                    </a>
-                    <a
-                        href="{{ url('/admin') }}"
-                        class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
-                    >
-                        {{ __('storefront.admin') }}
-                    </a>
-                @endif
+                <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+                    @if ($hasCatalog)
+                        <a
+                            href="{{ route('storefront.catalog') }}"
+                            class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                        >
+                            {{ __('storefront.plans') }}
+                        </a>
+                        <a
+                            href="{{ url('/client') }}"
+                            class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
+                        >
+                            {{ __('storefront.client_area') }}
+                        </a>
+                    @else
+                        <a
+                            href="{{ url('/client') }}"
+                            class="pressable inline-flex items-center rounded-full bg-brand px-6 py-3 text-title font-normal text-content-inverse transition-colors duration-(--duration-fast) hover:bg-brand-hover"
+                        >
+                            {{ __('storefront.client_area') }}
+                        </a>
+                        <a
+                            href="{{ url('/admin') }}"
+                            class="pressable inline-flex items-center rounded-full border border-brand px-6 py-3 text-title font-normal text-brand transition-colors duration-(--duration-fast) hover:bg-brand hover:text-content-inverse"
+                        >
+                            {{ __('storefront.admin') }}
+                        </a>
+                    @endif
+                </div>
             </div>
 
             {{--
@@ -86,15 +95,18 @@
                 `public/storefront/`, and the tile is composed to read as a
                 typographic hero when it is - a picture of a missing picture
                 is worse than no picture.
+
+                Sized from the file rather than from two numbers written here:
+                see `App\Support\View\Picture`.
             --}}
-            @if (! empty($heroImage))
+            @if ($heroImage)
                 <img
-                    src="{{ $heroImage }}"
+                    src="{{ $heroImage->url }}"
                     alt=""
-                    width="2000"
-                    height="1200"
+                    width="{{ $heroImage->width }}"
+                    height="{{ $heroImage->height }}"
                     fetchpriority="high"
-                    class="product-shadow mt-14 w-full max-w-[52rem] object-contain"
+                    class="product-shadow mt-14 h-auto w-full max-w-[52rem]"
                 >
             @endif
         </div>
