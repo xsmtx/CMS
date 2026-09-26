@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Application\Access\SyncPermissions;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Provisioning\PlacementFactor;
+use App\Domain\Provisioning\PlacementStrategy;
 use App\Domain\Provisioning\ServerStatus;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
@@ -16,6 +18,7 @@ use App\Infrastructure\Provisioning\Jobs\RunServiceAction;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\Models\ServerGroup;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Provisioning\Models\ServicePlacement;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
@@ -83,6 +86,52 @@ it('shows a service with only the actions its module supports', function (): voi
             ->where('service.module', 'fake')
             ->where('can.provision', true)
             ->where('can.terminate', true));
+});
+
+/**
+ * Why this node, on the screen.
+ *
+ * The persisted reason is the deliverable of scored placement and it is only a
+ * deliverable if somebody can read it, so the panel is asserted here rather than
+ * trusted: the record was written by a queue worker weeks earlier, and nothing
+ * else on this page would notice if it stopped arriving.
+ */
+it('shows why the service is on the node it is on', function (): void {
+    $placement = ServicePlacement::factory()
+        ->for_($this->service, $this->service->server)
+        ->create([
+            'strategy' => PlacementStrategy::Scored->value,
+            'score' => 0.7425,
+            'candidates' => 3,
+            'factors' => [
+                PlacementFactor::Disk->value => ['score' => 0.2, 'weight' => 4, 'measure' => 0.8, 'assumed' => false],
+                PlacementFactor::Cpu->value => ['score' => 0.9, 'weight' => 3, 'measure' => 0.1, 'assumed' => true],
+            ],
+        ]);
+
+    $this->actingAs($this->operator, 'staff')
+        ->get("/admin/services/{$this->service->id}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('placement.strategy', PlacementStrategy::Scored->value)
+            // Two fields, as everything that crosses to the browser is: the
+            // value for the page to reason about and the label to print.
+            ->where('placement.strategyLabel', __('provisioning.strategies.scored'))
+            ->where('placement.server', $placement->server_name)
+            ->where('placement.candidates', 3)
+            ->has('placement.factors', 2)
+            // Worst first: a placement is explained by its objections.
+            ->where('placement.factors.0.factor', PlacementFactor::Disk->value)
+            ->where('placement.factors.0.label', __('provisioning.placement.factors.disk'))
+            ->where('placement.factors.0.measured', true)
+            ->where('placement.factors.1.assumed', true));
+});
+
+it('says so rather than drawing an empty panel when nothing was recorded', function (): void {
+    $this->actingAs($this->operator, 'staff')
+        ->get("/admin/services/{$this->service->id}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->where('placement', null));
 });
 
 it('offers nothing to run when the module does not exist on this installation', function (): void {

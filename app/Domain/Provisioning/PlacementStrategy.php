@@ -28,6 +28,19 @@ enum PlacementStrategy: string
     /** Prefers the customer's region, then falls back to least accounts. */
     case RegionAware = 'region_aware';
 
+    /**
+     * Every factor the installation can measure, weighted, with the reason
+     * written down.
+     *
+     * A member of its own rather than a change to `CapacityAware`: that one
+     * counts accounts against a limit an operator typed, answers the same way
+     * on an installation nothing monitors, and is somebody's production
+     * setting. A strategy that started reading a monitoring system because a
+     * release shipped would be a placement decision changing under an operator
+     * who did not ask for it.
+     */
+    case Scored = 'scored';
+
     case Manual = 'manual';
 
     public function labelKey(): string

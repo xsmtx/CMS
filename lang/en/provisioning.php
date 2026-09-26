@@ -34,7 +34,38 @@ return [
         'weighted' => 'Weighted',
         'capacity_aware' => 'Most free capacity',
         'region_aware' => 'Closest region',
+        'scored' => 'Scored on every factor',
         'manual' => 'Chosen by hand',
+    ],
+
+    'placement' => [
+        'title' => 'Why this node',
+        'intro' => 'What was read at the moment this service was placed, and how much each reading counted.',
+        'chosen_by' => 'Chosen by',
+        'score' => 'Score',
+        'candidates' => 'Nodes in the running',
+        'decided_at' => 'Decided',
+        'weight' => 'Weight',
+        'factor' => 'Factor',
+        'assumed_value' => 'Assumed from the other nodes',
+        'reading' => 'Reading',
+        'measured' => 'Measured',
+        'stated' => 'Stated',
+        'none' => 'This service was placed before the platform recorded its reasons.',
+        'unscored' => 'Nothing was measured: the choice was made on the rows this platform owns.',
+
+        'factors' => [
+            'accounts' => 'Accounts held',
+            'cpu' => 'CPU in use',
+            'memory' => 'Memory in use',
+            'disk' => 'Disk in use',
+            'io' => 'Disk operations',
+            'bandwidth' => 'Bandwidth out',
+            'health' => 'Node health',
+            'region' => 'Region',
+            'growth' => 'Disk trend',
+            'anti_affinity' => 'This customer already here',
+        ],
     ],
 
     'auto_setup' => [

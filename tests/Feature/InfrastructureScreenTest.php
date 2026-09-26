@@ -13,12 +13,16 @@ use App\Domain\Infrastructure\Relation;
 use App\Domain\Infrastructure\ResourceKind;
 use App\Domain\Infrastructure\SampleBatch;
 use App\Domain\Organizations\OrganizationType;
+use App\Domain\Provisioning\ServerStatus;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
+use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Resources\Models\ResourceAdapter;
 use App\Support\Organizations\OrganizationContext;
+use Carbon\CarbonImmutable;
+use Database\Factories\ResourceMetricDayFactory;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
 use Inertia\Testing\AssertableInertia;
@@ -102,6 +106,61 @@ it('builds the drawer only when it is asked for by name', function (): void {
         ->assertJsonPath('props.peek.node.label', 'Node one')
         ->assertJsonPath('props.peek.impact.services', 0)
         ->assertJsonMissingPath('props.nodes');
+});
+
+/**
+ * §3 asks for capacity and maintenance beside the readings on a resource's own
+ * view. Both are drawn from something other than the graph row, so both are
+ * facts a drawer can silently stop carrying.
+ */
+it('carries capacity and the operators own word into the drawer', function (): void {
+    $server = Server::factory()->create([
+        'organization_id' => $this->provider->id,
+        'status' => ServerStatus::Maintenance->value,
+    ]);
+
+    $node = app(ResourceGraph::class)->upsertNode(
+        $this->provider->id,
+        ResourceKind::Server,
+        $server->id,
+        $server->name,
+        subject: $server,
+    );
+
+    // Eight days of a disk climbing towards a ceiling the adapter reported.
+    foreach (range(0, 7) as $index) {
+        ResourceMetricDayFactory::new()
+            ->forNode($node)
+            ->on(CarbonImmutable::now()->subDays(8 - $index)->toDateString(), 400.0 + ($index * 20))
+            ->create(['metric' => 'disk.used', 'unit' => 'bytes']);
+    }
+
+    app(RecordSamples::class)->handle($this->provider->id, 'probe', new SampleBatch([
+        new RawSample($server->id, 'disk_used', 540, 'bytes'),
+        new RawSample($server->id, 'disk_total', 1000, 'bytes'),
+    ]));
+
+    $version = app(HandleInertiaRequests::class)->version(request());
+
+    $this->actingAs($this->admin, 'staff')
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => (string) $version,
+            'X-Inertia-Partial-Component' => 'Admin/Resources/Explorer',
+            'X-Inertia-Partial-Data' => 'peek',
+        ])
+        ->get('/admin/resources?node='.$node->id)
+        ->assertOk()
+        ->assertJsonPath('props.peek.capacity.0.metric', 'disk.used')
+        ->assertJsonPath('props.peek.capacity.0.filling', true)
+        // A node in maintenance has an `unknown` health because nothing is
+        // checking a box that was taken out of service on purpose. Without this
+        // the drawer would read as a monitoring gap.
+        ->assertJsonPath('props.peek.operatorState.state', ServerStatus::Maintenance->value)
+        ->assertJsonPath(
+            'props.peek.operatorState.stateLabel',
+            __(ServerStatus::Maintenance->labelKey()),
+        );
 });
 
 it('does not open the explorer to a role without the permission', function (): void {

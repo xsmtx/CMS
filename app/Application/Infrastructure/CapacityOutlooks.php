@@ -104,4 +104,38 @@ final readonly class CapacityOutlooks
 
         return array_slice($rows, 0, max(1, $limit));
     }
+
+    /**
+     * Every capacity question that can be answered about one resource.
+     *
+     * **Including the flat ones**, which is the difference from `soonest()`. On a
+     * list of four hundred resources "not filling" forty times is noise; on the
+     * one resource somebody has opened, "this disk has been flat for three
+     * months" is the answer they came for, and leaving it out would read as the
+     * platform having nothing to say.
+     *
+     * @return list<array{metric: MetricKind, outlook: CapacityOutlook}>
+     */
+    public function forNode(string $nodeId, ?CarbonImmutable $now = null): array
+    {
+        $rows = [];
+
+        foreach (self::FORECASTABLE as $metric) {
+            $outlook = $this->forecast->forNode($nodeId, $metric, $now);
+
+            if ($outlook === null) {
+                continue;
+            }
+
+            $rows[] = ['metric' => $metric, 'outlook' => $outlook];
+        }
+
+        usort(
+            $rows,
+            static fn (array $a, array $b): int => ($a['outlook']->daysRemaining() ?? PHP_INT_MAX)
+                <=> ($b['outlook']->daysRemaining() ?? PHP_INT_MAX),
+        );
+
+        return $rows;
+    }
 }

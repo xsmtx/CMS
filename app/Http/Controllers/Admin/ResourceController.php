@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Infrastructure\CapacityOutlooks;
 use App\Application\Infrastructure\ImpactSummary;
 use App\Application\Infrastructure\ListResources;
 use App\Application\Infrastructure\OwnershipHistory;
@@ -11,6 +12,7 @@ use App\Application\Infrastructure\ResourceTree;
 use App\Domain\Infrastructure\ResourceKind;
 use App\Http\Concerns\PresentsResources;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use App\Support\Errors\ForbiddenException;
@@ -41,6 +43,7 @@ final class ResourceController extends Controller
         private readonly ResourceTree $tree,
         private readonly ImpactSummary $impact,
         private readonly OwnershipHistory $history,
+        private readonly CapacityOutlooks $capacity,
     ) {}
 
     public function index(Request $request): Response
@@ -125,6 +128,66 @@ final class ResourceController extends Controller
             'metrics' => array_values($metrics
                 ->map(fn (ResourceMetric $metric): array => $this->metricRow($metric))
                 ->all()),
+            'capacity' => $this->capacityFor($node),
+            'operatorState' => $this->operatorState($node),
+        ];
+    }
+
+    /**
+     * Where this one resource is heading, flat lines included.
+     *
+     * §3 asks for capacity beside the readings on a resource's own view, and the
+     * two answers are different questions: the Telemetry screen lists what is
+     * filling across the estate, and this says what is known about the thing
+     * somebody has actually opened. "It has been flat for three months" is worth
+     * printing here and noise there.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function capacityFor(ResourceNode $node): array
+    {
+        return array_map(
+            static fn (array $row): array => [
+                'metric' => $row['metric']->value,
+                'metricLabel' => (string) __('infrastructure.metrics.'.$row['metric']->value),
+                'utilisation' => round($row['outlook']->utilisation(), 4),
+                'filling' => $row['outlook']->isFilling(),
+                'daysRemaining' => $row['outlook']->daysRemaining(),
+                'fullOn' => $row['outlook']->fullOn?->toDateString(),
+                'days' => $row['outlook']->days,
+            ],
+            $this->capacity->forNode($node->id),
+        );
+    }
+
+    /**
+     * What an operator has said about the thing itself, as opposed to what was
+     * discovered about it.
+     *
+     * A server in maintenance is the case this exists for: the graph would call
+     * that node's health `unknown` - nothing is checking a box that was taken out
+     * of service on purpose - and a screen that only showed the discovered fact
+     * would read as a monitoring gap rather than as somebody's decision. Only
+     * servers have such a state today; the rest answer null rather than inventing
+     * one.
+     *
+     * @return array{state: string, stateLabel: string}|null
+     */
+    private function operatorState(ResourceNode $node): ?array
+    {
+        if ($node->kind !== ResourceKind::Server || $node->subject_id === null) {
+            return null;
+        }
+
+        $server = Server::query()->whereKey($node->subject_id)->first();
+
+        if (! $server instanceof Server) {
+            return null;
+        }
+
+        return [
+            'state' => $server->status->value,
+            'stateLabel' => (string) __($server->status->labelKey()),
         ];
     }
 

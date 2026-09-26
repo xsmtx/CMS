@@ -12,6 +12,7 @@ use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceMetricDay;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Writes readings against nodes, and says what it could not place.
@@ -133,7 +134,121 @@ final readonly class RecordSamples
             $indexed[$node->node_key] = $node;
         }
 
-        return $indexed;
+        return [...$indexed, ...$this->byHostname($organizationId, array_values(array_filter(
+            $keys,
+            static fn (string $key): bool => ! isset($indexed[$key]),
+        )))];
+    }
+
+    /**
+     * The targets an adapter named by hostname rather than by our own key.
+     *
+     * A server's node key is its ULID, because a hostname is not unique and
+     * two machines sharing one would silently become a single node (ADR
+     * 0043). An adapter has never heard of a ULID: Prometheus reports
+     * `instance="web-1.dc2:9100"`, Zabbix reports the host name, and without
+     * this every sample from a real monitoring system would land in
+     * `unplaced` while the installation was configured perfectly.
+     *
+     * This is the mapping Phase A said would be needed, and it is a mapping
+     * rather than a guess: the hostname on a `resource_nodes` row is what an
+     * operator typed for that machine, and the exporter's `instance` is the
+     * same string. The port is stripped because an exporter's address is a
+     * host **and** a port, and the machine is the host.
+     *
+     * **Ambiguity is refused, not resolved.** Two nodes claiming one hostname
+     * produce no match at all and the target is counted as unplaced, because
+     * a reading attached to the wrong machine is worse than a reading nobody
+     * placed: the first is acted on.
+     *
+     * @param  list<string>  $targets
+     * @return array<string, ResourceNode>
+     */
+    private function byHostname(string $organizationId, array $targets): array
+    {
+        if ($targets === []) {
+            return [];
+        }
+
+        // The host is carried in the value as well as in the key: a key that
+        // looks like a number is an integer by the time it is read back, and
+        // a hostname is a string somebody else chose.
+        /** @var array<string, array{host: string, targets: list<string>}> $hosts */
+        $hosts = [];
+
+        foreach ($targets as $target) {
+            $host = mb_strtolower($this->host($target));
+
+            $hosts[$host] ??= ['host' => $host, 'targets' => []];
+            $hosts[$host]['targets'][] = $target;
+        }
+
+        $nodes = ResourceNode::query()
+            ->withoutGlobalScope('organization')
+            ->where('organization_id', $organizationId)
+            ->whereNull('retired_at')
+            ->whereIn(
+                DB::raw('lower(json_unquote(json_extract(`attributes`, \'$.hostname\')))'),
+                array_column($hosts, 'host'),
+            )
+            ->get();
+
+        $byHost = [];
+
+        foreach ($nodes as $node) {
+            $hostname = $node->attributes['hostname'] ?? null;
+
+            if (! is_string($hostname) || $hostname === '') {
+                continue;
+            }
+
+            $key = mb_strtolower($hostname);
+
+            // Seen twice: neither one wins.
+            $byHost[$key] = array_key_exists($key, $byHost) ? null : $node;
+        }
+
+        $matched = [];
+
+        foreach ($hosts as $group) {
+            $node = $byHost[$group['host']] ?? null;
+
+            if (! $node instanceof ResourceNode) {
+                continue;
+            }
+
+            foreach ($group['targets'] as $target) {
+                $matched[$target] = $node;
+            }
+        }
+
+        return $matched;
+    }
+
+    /**
+     * The host out of an exporter's address.
+     *
+     * `web-1:9100` is a host and a port; `[2001:db8::1]:9100` is the same
+     * thing written the way IPv6 has to be written, and splitting that one on
+     * the last colon without the brackets would leave half an address.
+     */
+    private function host(string $target): string
+    {
+        if (str_starts_with($target, '[')) {
+            $end = mb_strpos($target, ']');
+
+            return $end === false ? $target : mb_substr($target, 1, $end - 1);
+        }
+
+        // A bare IPv6 address has several colons and no port; only one colon
+        // means a port is plausible.
+        if (mb_substr_count($target, ':') !== 1) {
+            return $target;
+        }
+
+        $host = mb_substr($target, 0, (int) mb_strpos($target, ':'));
+
+        return $host === '' ? $target : $host;
     }
 
     private function write(ResourceNode $node, MetricSample $sample, string $source): void

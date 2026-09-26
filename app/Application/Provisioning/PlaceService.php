@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Application\Provisioning;
 
 use App\Application\Provisioning\Exceptions\PlacementFailed;
+use App\Domain\Provisioning\PlacementDecision;
 use App\Domain\Provisioning\PlacementStrategy;
 use App\Domain\Provisioning\ServerStatus;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\Models\ServerGroup;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Infrastructure\Provisioning\Models\ServicePlacement;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Throwable;
 
 /**
  * Which node a service goes on.
@@ -31,7 +35,16 @@ use Illuminate\Support\Collection;
  */
 final readonly class PlaceService
 {
-    public function handle(ServerGroup $group, ?string $preferredRegion = null): Server
+    public function __construct(
+        private ScorePlacement $scores,
+    ) {}
+
+    /**
+     * @param  Service|null  $for  the service being placed, when there is one:
+     *                             what makes anti-affinity and a written reason
+     *                             possible
+     */
+    public function handle(ServerGroup $group, ?string $preferredRegion = null, ?Service $for = null): Server
     {
         $candidates = $this->candidates($group);
 
@@ -51,17 +64,91 @@ final readonly class PlaceService
             throw PlacementFailed::noCapacity($group->name);
         }
 
+        // Scored for every strategy, not only for the scored one. The readings
+        // are what an operator wants beside the choice whatever made it - "the
+        // group is set to fewest accounts, and here is what the node's disk was
+        // doing at the time" is the useful sentence. It costs two queries on a
+        // path that runs once per service.
+        $decisions = $for instanceof Service || $group->placement_strategy === PlacementStrategy::Scored
+            ? $this->scores->forServers($withCapacity, $used, $preferredRegion, $for?->customer_id)
+            : [];
+
         $chosen = match ($group->placement_strategy) {
             PlacementStrategy::LeastAccounts => $this->leastAccounts($withCapacity, $used),
             PlacementStrategy::Weighted => $this->weighted($withCapacity, $used),
             PlacementStrategy::CapacityAware => $this->capacityAware($withCapacity, $used),
             PlacementStrategy::RegionAware => $this->regionAware($withCapacity, $used, $preferredRegion),
+            PlacementStrategy::Scored => $this->scored($withCapacity, $used, $decisions),
             PlacementStrategy::Manual => throw PlacementFailed::manualGroup($group->name),
         };
 
         $this->markFullIfReached($chosen, ($used[$chosen->id] ?? 0) + 1);
 
+        if ($for instanceof Service) {
+            $this->record($for, $chosen, $group->placement_strategy, $decisions[$chosen->id] ?? null);
+        }
+
         return $chosen;
+    }
+
+    /**
+     * The best node over every factor the installation can measure.
+     *
+     * The ordering falls back to fewest accounts when two nodes score
+     * identically, which is what an installation with no monitoring at all
+     * looks like: every node answers on the same three factors, every score
+     * ties, and the dull correct default decides. That is the behaviour an
+     * operator who turns this on before configuring a monitoring adapter
+     * should get - not an arbitrary node.
+     *
+     * @param  Collection<int, Server>  $servers
+     * @param  array<string, int>  $used
+     * @param  array<string, PlacementDecision>  $decisions
+     */
+    private function scored(Collection $servers, array $used, array $decisions): Server
+    {
+        return $servers->sortBy(
+            // Score, then accounts, then the id. The measures go in front of
+            // the id rather than each carrying one: `key()` ends with the
+            // server's own id, so two of them concatenated would decide every
+            // tie on the first id and the accounts half would never be read.
+            fn (Server $server): string => sprintf(
+                '%015.6f|%015.6f|%s',
+                1.0 - ($decisions[$server->id]?->score() ?? 0.0),
+                $used[$server->id] ?? 0,
+                $server->id,
+            ),
+        )->firstOrFail();
+    }
+
+    /**
+     * Write down why.
+     *
+     * Append-only, and it never throws into the placement: a decision that was
+     * made and not recorded is a gap in an audit trail, and a provisioning job
+     * that failed because the audit trail could not be written is an outage.
+     */
+    private function record(
+        Service $service,
+        Server $chosen,
+        PlacementStrategy $strategy,
+        ?PlacementDecision $decision,
+    ): void {
+        try {
+            ServicePlacement::query()->create([
+                'organization_id' => $service->organization_id,
+                'service_id' => $service->id,
+                'server_id' => $chosen->id,
+                'strategy' => $strategy->value,
+                'server_name' => $chosen->name,
+                'score' => $decision?->score(),
+                'candidates' => $decision->candidates ?? 1,
+                'factors' => $decision?->toArray(),
+                'decided_at' => CarbonImmutable::now(),
+            ]);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     /**

@@ -1636,3 +1636,54 @@ falling line is "not the disk to worry about", and a metric whose ceiling
 nothing reported gets no answer at all. A ratio fills at 1.0 and bytes used
 fill at bytes total — the total being a reading the adapter sent, never a
 number this platform chose.
+
+**What an adapter calls a machine is not what this platform calls it.** A
+server's node key is its ULID and Prometheus reports
+`instance="web-1.dc2:9100"`, so without a mapping every reading from a real
+monitoring system lands in `unplaced` while the installation is configured
+perfectly — and the Telemetry screen stays empty for a reason nobody can see.
+`RecordSamples::byHostname()` matches the leftover targets against the
+`hostname` on the node's attributes, lower-cased, with the port stripped
+(`[2001:db8::1]:9100` is a host and a port written the way IPv6 has to be
+written; splitting on the last colon without the brackets leaves half an
+address). **Ambiguity is refused, not resolved**: two nodes claiming one
+hostname match nothing at all, because a reading attached to the wrong machine
+is worse than a reading nobody placed — the first one is acted on.
+
+**Scored placement is in** (`PlacementStrategy::Scored`, `PlacementFactor`,
+`ScorePlacement`, `service_placements`), and it is a weighted mean over the
+readings the graph happens to hold. Ten of §4's thirteen inputs; reserved
+capacity and compatibility are left out because no column states them, and a
+factor scored from a number nobody entered always says the same thing. Three
+rules hold it up:
+
+- **A discovered fact never refuses a placement.** Graph health pulls a node
+  down hard and cannot remove it from the running: a monitoring adapter that
+  breaks at three in the morning would otherwise empty the candidate set and
+  fail every provisioning job on the installation. Only an operator's own row
+  — `maintenance`, `full` — refuses, before anything is scored.
+- **What nothing reported is assumed to be the average of the candidates that
+  did**, marked `assumed` on the row. Both obvious alternatives send every
+  service to the one machine nobody can see: scoring an unreported factor as
+  zero makes it the worst node, and taking the mean over only a node's own
+  factors judges it on how empty it is, which on an unmonitored box is the best
+  score on the list. That second one is what the first test written here
+  actually caught.
+- **The record is numbers and slugs, never a sentence** — the `health_message`
+  rule again. It is written for *every* strategy, not only the scored one,
+  because "the group is set to fewest accounts, and this is what the disk was
+  doing at the time" is the sentence somebody wants six weeks later. Writing it
+  never throws into the placement: an audit trail that could not be written must
+  not become an outage.
+
+A new `PlacementStrategy` member is a new option on the server-group form and a
+new validation case for free — both are built from `cases()` — but
+`VocabularyTest` fails until both languages name it, which is the guard working.
+
+**`phpunit.xml` sets `memory_limit` to 1G**, and the arch tests are why: they
+parse every file under `app/` in one process and the default 128M ran out as
+the codebase grew. The symptom is not a failing assertion — it is a fatal error
+inside php-parser on whichever file happened to be next, which kills the worker
+at the *first* test and makes the whole suite look like it failed. `composer
+stan` already carries `--memory-limit=1G` for the same reason; running
+`./vendor/bin/phpstan` bare now crashes.

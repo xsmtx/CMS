@@ -19,6 +19,7 @@ use App\Infrastructure\Provisioning\Jobs\RunServiceAction;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\Models\ServiceEvent;
 use App\Infrastructure\Provisioning\Models\ServiceOption;
+use App\Infrastructure\Provisioning\Models\ServicePlacement;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
@@ -136,6 +137,7 @@ final class ServiceController extends Controller
                     $service->status->manualTransitions(),
                 ),
             ],
+            'placement' => $this->placement($service),
             'can' => [
                 'update' => $this->actor->can('update', $service),
                 'provision' => $this->actor->can('provision', $service)
@@ -221,6 +223,50 @@ final class ServiceController extends Controller
         $transitions->handle($service, $target, $this->actor->model(), $request->input('reason'));
 
         return back()->with('status', __('provisioning.services.saved'));
+    }
+
+    /**
+     * Why this service is on the node it is on.
+     *
+     * The last decision rather than all of them: a screen answering "why here"
+     * is answering about where it is now, and the history is a report rather
+     * than a panel. Null when the service was placed before the platform
+     * recorded its reasons, and the screen says so rather than drawing an empty
+     * table.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function placement(Service $service): ?array
+    {
+        $placement = ServicePlacement::query()
+            ->where('service_id', $service->id)
+            ->latest('decided_at')
+            ->first();
+
+        if (! $placement instanceof ServicePlacement) {
+            return null;
+        }
+
+        return [
+            'strategy' => $placement->strategy->value,
+            'strategyLabel' => (string) __($placement->strategy->labelKey()),
+            'server' => $placement->server_name,
+            'score' => $placement->score,
+            'candidates' => $placement->candidates,
+            'decidedAt' => $placement->decided_at->toIso8601String(),
+            'factors' => array_map(
+                static fn (array $reading): array => [
+                    'factor' => $reading['factor']->value,
+                    'label' => (string) __($reading['factor']->labelKey()),
+                    'measured' => $reading['factor']->isMeasured(),
+                    'score' => $reading['score'],
+                    'weight' => $reading['weight'],
+                    'measure' => $reading['measure'],
+                    'assumed' => $reading['assumed'],
+                ],
+                $placement->readings(),
+            ),
+        ];
     }
 
     /**

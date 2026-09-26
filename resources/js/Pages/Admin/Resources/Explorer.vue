@@ -23,6 +23,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 
+import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppDrawer from '../../../Components/AppDrawer.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -96,6 +97,18 @@ interface MoneyRow {
   minor: number
 }
 
+interface CapacityRow {
+  metric: string
+  metricLabel: string
+  /** How full it is now, as a ratio of its ceiling. */
+  utilisation: number
+  filling: boolean
+  daysRemaining: number | null
+  fullOn: string | null
+  /** How many daily points the line was drawn through. */
+  days: number
+}
+
 interface Peek {
   node: NodeRow
   above: TreeRow[]
@@ -110,6 +123,9 @@ interface Peek {
   }
   history: HistoryRowShape[]
   metrics: MetricRow[]
+  capacity: CapacityRow[]
+  /** What an operator said about the thing itself, where the thing has such a state. */
+  operatorState: { state: string; stateLabel: string } | null
 }
 
 const props = defineProps<{
@@ -209,6 +225,10 @@ function when(value: string | null): string {
 }
 
 /** A measurement, in the unit it is stored in. */
+function percent(ratio: number): string {
+  return `${(ratio * 100).toFixed(1)}%`
+}
+
 function reading(metric: MetricRow): string {
   if (metric.unit === 'ratio') return `${(metric.value * 100).toFixed(1)}%`
   if (metric.unit === 'bytes') return bytes(metric.value)
@@ -353,6 +373,18 @@ function duration(seconds: number): string {
       :loading="loadingPeek && peek === null"
     >
       <div v-if="peek" class="flex flex-col gap-5">
+        <!--
+          What an operator decided, before what was discovered. A server in
+          maintenance has an `unknown` health because nothing is checking a box
+          that was taken out of service on purpose, and a drawer showing only
+          the discovered fact reads as a monitoring gap rather than as somebody's
+          decision.
+        -->
+        <AppAlert v-if="peek.operatorState" tone="info">
+          {{ t('infrastructure.explorer.drawer.operator_state') }}:
+          {{ peek.operatorState.stateLabel }}
+        </AppAlert>
+
         <!-- Impact first. It is the question the graph exists to answer, and
              putting it under three lists would bury it. -->
         <section class="flex flex-col gap-2">
@@ -427,6 +459,33 @@ function duration(seconds: number): string {
                 {{ reading(metric) }}
                 <span v-if="metric.stale" class="text-warning text-chrome">
                   · {{ t('infrastructure.telemetry.stale') }}
+                </span>
+              </dd>
+            </template>
+          </dl>
+        </section>
+
+        <!--
+          Where it is heading, under what it is doing now. Flat lines included,
+          unlike the Telemetry screen's list: on one resource "this disk has
+          been flat for three months" is the answer somebody came for, and on a
+          list of four hundred it is noise.
+        -->
+        <section v-if="peek.capacity.length > 0" class="flex flex-col gap-2">
+          <h3 class="text-content-subtle text-label uppercase">
+            {{ t('infrastructure.capacity.title') }}
+          </h3>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-1">
+            <template v-for="row in peek.capacity" :key="row.metric">
+              <dt class="text-content-muted text-body">{{ row.metricLabel }}</dt>
+              <dd class="text-body text-right font-medium tabular-nums">
+                {{ percent(row.utilisation) }}
+                <span v-if="!row.filling" class="text-content-subtle text-chrome">
+                  · {{ t('infrastructure.capacity.not_filling') }}
+                </span>
+                <span v-else class="text-chrome">
+                  ·
+                  {{ t('infrastructure.capacity.in_days', { days: row.daysRemaining ?? 0 }) }}
                 </span>
               </dd>
             </template>

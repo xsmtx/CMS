@@ -28,6 +28,15 @@
         </exclude>
     </source>
     <php>
+        <!--
+            The architecture tests parse every file under app/ in one process,
+            and the default 128M ran out as the codebase grew: the symptom is a
+            fatal error inside php-parser on whichever file happened to be
+            next, which reads as a broken class rather than as a limit. The
+            product itself is not held to this number - a request parses
+            nothing.
+        -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

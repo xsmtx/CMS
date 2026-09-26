@@ -466,11 +466,64 @@ first, because the first adapter is its first caller.
   that it cannot know.
 - **Global search reaches the graph**: a hostname or an IP out of somebody
   else's ticket now finds the resource.
+- **The capacity panel** on the Telemetry screen: what is filling, soonest
+  first, drawn only when something actually is, and saying how many daily
+  points each date came from.
+- **What an adapter calls a machine** is now matched to what this platform calls
+  it (`RecordSamples::byHostname()`). A server's node key is its ULID and
+  Prometheus reports `instance="web-1.dc2:9100"`, so without the mapping every
+  reading from a real monitoring system would have landed in `unplaced` on an
+  installation that was configured perfectly. Two nodes claiming one hostname
+  match **nothing**: a reading attached to the wrong machine is worse than one
+  nobody placed, because the first is acted on.
+- **Scored placement** (§4): `PlacementStrategy::Scored`, `PlacementFactor`,
+  `ScorePlacement` and a `service_placements` row per decision. Ten factors of
+  the thirteen §4 lists, weighted; the two it leaves out — reserved capacity and
+  compatibility — are left out because no column anywhere states them, and a
+  factor scored from a number nobody entered always says the same thing.
+- **The Infrastructure Center**, as far as core honestly can. §3 asks for a
+  unified view of a resource with health, CPU/RAM/storage/I/O, bandwidth,
+  capacity, maintenance, alerts, incidents, recent changes and customer/revenue
+  impact. The Explorer's drawer already carried the readings, the containment
+  both ways, the impact in `MoneyByCurrency` and the edge history; it now also
+  carries **the capacity answer for that one resource** (flat lines included,
+  unlike the Telemetry list) and **the operator's own word about the thing** — a
+  server in maintenance has an `unknown` health, because nothing is checking a
+  box that was taken out of service on purpose, and a drawer showing only the
+  discovered fact reads as a monitoring gap rather than as somebody's decision.
 
-Still open in B: placement scoring over real metrics, the Infrastructure
-Center views, and a screen for the capacity answer. Nothing in C, F or the
-rest has been started, and the standing limitation is unchanged — no real
-monitoring system has ever answered this code.
+  Two parts of §3 are deliberately not built rather than pending. **Alerts and
+  incidents are Phase D** and a panel promising them now would be a panel that is
+  always empty. **Datacenter, cluster, hypervisor, VM, database, cache, load
+  balancer and storage views** need nodes of those kinds to exist, and core
+  discovers none of them — `ResourceKind` is an open vocabulary and the Explorer
+  already lists whatever a module reports, so those views arrive with the
+  adapters in F and G rather than as screens waiting for data.
+
+Three decisions inside scored placement are the whole design:
+
+- **A discovered fact never refuses a placement.** Graph health pulls a node
+  down hard and cannot remove it from the running, because a monitoring adapter
+  that breaks at three in the morning would otherwise empty the candidate set
+  and fail every provisioning job on the installation. Only an operator's own
+  row — `maintenance`, `full` — refuses.
+- **What nothing reported is assumed to be the average of the candidates that
+  did**, and the row says which numbers were assumed. Both obvious alternatives
+  send every service to the one machine nobody can see: scoring an unreported
+  factor as zero makes it the worst node, and leaving it out of the total judges
+  it only on how empty it is.
+- **The record is numbers and slugs, never a sentence.** `factors` holds each
+  factor's score, weight and measurement; the wording lives in `lang/`, because
+  a sentence written by whichever queue worker ran the placement would be in
+  whichever language that worker was running in. Recorded for every strategy,
+  not only the scored one: "the group is set to fewest accounts, and this is
+  what the disk was doing at the time" is the sentence an operator wants six
+  weeks later.
+
+Still open in B: nothing. C, F and the rest have not been started, and the
+standing limitation is unchanged — no real monitoring system has ever answered
+this code, so the placement engine has never scored a reading a machine actually
+took.
 
 ## 10. Phase A, precisely
 

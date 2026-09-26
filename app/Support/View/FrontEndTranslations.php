@@ -179,6 +179,7 @@ final class FrontEndTranslations
 
         'provisioning.addons',
         'provisioning.connect',
+        'provisioning.placement',
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',

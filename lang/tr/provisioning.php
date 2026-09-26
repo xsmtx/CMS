@@ -34,7 +34,38 @@ return [
         'weighted' => 'Ağırlıklı',
         'capacity_aware' => 'En çok boş kapasite',
         'region_aware' => 'En yakın bölge',
+        'scored' => 'Tüm etkenlere göre puanlanır',
         'manual' => 'Elle seçilir',
+    ],
+
+    'placement' => [
+        'title' => 'Neden bu sunucu',
+        'intro' => 'Bu hizmet yerleştirilirken okunanlar ve her okumanın ne kadar ağırlığı olduğu.',
+        'chosen_by' => 'Seçim yöntemi',
+        'score' => 'Puan',
+        'candidates' => 'Değerlendirilen sunucu',
+        'decided_at' => 'Karar zamanı',
+        'weight' => 'Ağırlık',
+        'factor' => 'Etken',
+        'assumed_value' => 'Diğer sunuculara göre varsayıldı',
+        'reading' => 'Okuma',
+        'measured' => 'Ölçüldü',
+        'stated' => 'Tanımlı',
+        'none' => 'Bu hizmet, platform gerekçeleri kaydetmeye başlamadan önce yerleştirildi.',
+        'unscored' => 'Hiçbir ölçüm yapılmadı: seçim yalnızca platformun kendi kayıtlarına göre yapıldı.',
+
+        'factors' => [
+            'accounts' => 'Barındırılan hesap',
+            'cpu' => 'Kullanılan CPU',
+            'memory' => 'Kullanılan bellek',
+            'disk' => 'Kullanılan disk',
+            'io' => 'Disk işlemi',
+            'bandwidth' => 'Giden bant genişliği',
+            'health' => 'Sunucu sağlığı',
+            'region' => 'Bölge',
+            'growth' => 'Disk eğilimi',
+            'anti_affinity' => 'Bu müşteri zaten burada',
+        ],
     ],
 
     'auto_setup' => [

@@ -28,12 +28,15 @@ import AppCopy from '../../../Components/AppCopy.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
+import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
 import DangerZone from '../../../Components/DangerZone.vue'
 import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
 import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
 import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
 import PageHeader from '../../../Components/PageHeader.vue'
+import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
@@ -48,7 +51,28 @@ interface ServiceEvent {
   occurredAt: string
 }
 
+interface PlacementFactor {
+  factor: string
+  label: string
+  /** Whether this came from a monitoring system or from a row this product owns. */
+  measured: boolean
+  score: number
+  weight: number
+  measure: number | null
+  /** True when nothing reported it and the other candidates' average was used. */
+  assumed: boolean
+}
+
 const props = defineProps<{
+  placement: {
+    strategy: string
+    strategyLabel: string
+    server: string
+    score: number | null
+    candidates: number
+    decidedAt: string
+    factors: PlacementFactor[]
+  } | null
   service: {
     id: string
     name: string
@@ -108,6 +132,63 @@ const hasAside = computed(
   () =>
     props.can.update && (props.service.username !== null || props.service.transitions.length > 0),
 )
+
+const PLACEMENT_COLUMNS: TableColumn[] = [
+  { key: 'factor', label: t('provisioning.placement.factor') },
+  { key: 'reading', label: t('provisioning.placement.reading') },
+  { key: 'weight', label: t('provisioning.placement.weight'), numeric: true },
+  { key: 'score', label: t('provisioning.placement.score'), numeric: true },
+]
+
+const placementSummary = computed<DescriptionItem[]>(() => [
+  {
+    key: 'chosen_by',
+    label: t('provisioning.placement.chosen_by'),
+    value: props.placement?.strategyLabel ?? null,
+  },
+  {
+    key: 'score',
+    label: t('provisioning.placement.score'),
+    value: props.placement?.score === null ? null : percent(props.placement?.score ?? 0),
+  },
+  {
+    key: 'candidates',
+    label: t('provisioning.placement.candidates'),
+    value: String(props.placement?.candidates ?? 0),
+  },
+  {
+    key: 'decided_at',
+    label: t('provisioning.placement.decided_at'),
+    value: formatDateTime(props.placement?.decidedAt ?? null),
+  },
+])
+
+function percent(ratio: number): string {
+  return `${(ratio * 100).toFixed(1)}%`
+}
+
+/**
+ * The reading in the factor's own units.
+ *
+ * A ratio is a percentage, days are days, and a count is a count. An operator
+ * reading this panel at two in the morning is checking the platform's arithmetic
+ * against what they can see in their own monitoring system, so the number has to
+ * be the one that system would show them.
+ */
+function reading(factor: PlacementFactor): string {
+  if (factor.assumed) return t('provisioning.placement.assumed_value')
+  if (factor.measure === null) return '—'
+
+  if (factor.factor === 'cpu' || factor.factor === 'memory' || factor.factor === 'disk') {
+    return percent(factor.measure)
+  }
+
+  if (factor.factor === 'growth') {
+    return t('infrastructure.capacity.in_days', { days: Math.round(factor.measure) })
+  }
+
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(factor.measure)
+}
 
 const location = computed<DescriptionItem[]>(() => [
   { key: 'domain', label: t('ui.service.domain'), value: props.service.domain },
@@ -318,6 +399,49 @@ function formatDate(value: string | null): string {
               :title="t('ui.service.no_activity')"
               :description="t('ui.service.no_activity_detail')"
             />
+          </DetailSection>
+
+          <!--
+            Why this node. §4 of the operations handoff calls the persisted,
+            explainable reason the deliverable of smart placement rather than a
+            nicety, and this is where an operator reads it: worst factor first,
+            because a placement is explained by its objections and not by the
+            eight things that were fine.
+          -->
+          <DetailSection
+            v-if="placement"
+            :title="t('provisioning.placement.title')"
+            :description="t('provisioning.placement.intro')"
+          >
+            <div class="flex flex-col gap-5">
+              <DescriptionList :items="placementSummary" />
+
+              <AppTable
+                v-if="placement.factors.length > 0"
+                name="placement"
+                :columns="PLACEMENT_COLUMNS"
+              >
+                <AppTableRow v-for="factor in placement.factors" :key="factor.factor">
+                  <td data-col="factor">
+                    <span class="font-medium">{{ factor.label }}</span>
+                    <span class="text-content-subtle text-chrome block">
+                      {{
+                        factor.measured
+                          ? t('provisioning.placement.measured')
+                          : t('provisioning.placement.stated')
+                      }}
+                    </span>
+                  </td>
+                  <td data-col="reading" class="tabular-nums">{{ reading(factor) }}</td>
+                  <td data-col="weight" class="numeric tabular-nums">{{ factor.weight }}</td>
+                  <td data-col="score" class="numeric tabular-nums">{{ percent(factor.score) }}</td>
+                </AppTableRow>
+              </AppTable>
+
+              <p v-else class="text-content-muted text-chrome max-w-[70ch]">
+                {{ t('provisioning.placement.unscored') }}
+              </p>
+            </div>
           </DetailSection>
 
           <DetailSection

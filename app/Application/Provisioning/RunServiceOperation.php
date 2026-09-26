@@ -373,6 +373,7 @@ final readonly class RunServiceOperation
         $server = $this->placement->handle(
             $group,
             $service->customer?->addressFor(AddressType::Billing)?->country_code,
+            $service,
         );
 
         $service->forceFill([

@@ -105,9 +105,11 @@ final readonly class ProjectCoreResources implements AutomationRun
                     // The ULID, not the hostname. A hostname is what an adapter
                     // knows and it is also not unique: two servers sharing one
                     // would silently become a single node, because the unique key
-                    // is what makes a second run idempotent. How an adapter's own
-                    // inventory finds a node key is Phase B's problem, and the
-                    // answer is a mapping rather than a guess.
+                    // is what makes a second run idempotent. What an adapter's own
+                    // inventory calls the machine is matched against the hostname
+                    // written here, in `RecordSamples::byHostname()` - and two
+                    // nodes claiming one hostname match nothing rather than one
+                    // of them.
                     nodeKey: $server->id,
                     label: $server->name,
                     subject: $server,
