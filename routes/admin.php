@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NetworkChangeController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
+use App\Http\Controllers\Admin\OperationsCalendarController;
 use App\Http\Controllers\Admin\OptionGroupController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrderReviewController;
@@ -448,6 +449,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * passes its start. The only human act after scheduling is calling it
      * off.
      */
+    /*
+     * A month of what happened and what is coming. The month is a query
+     * parameter rather than a path segment, so the bare URL is always this
+     * month and a linked one is somebody's answer to "what were we doing on
+     * the 14th".
+     */
+    Route::get('reliability/calendar', OperationsCalendarController::class)
+        ->name('reliability.calendar');
+
     Route::get('reliability/maintenance', [MaintenanceController::class, 'index'])
         ->name('reliability.maintenance');
     Route::post('reliability/maintenance', [MaintenanceController::class, 'store'])

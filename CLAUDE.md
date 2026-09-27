@@ -113,9 +113,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A and B
-are complete** (`phase-a-result.md`, `phase-b-result.md`); C to J are not started.
-Do not begin one without being asked for it.
+plan before any of it was built — and its phases are lettered. **Phases A, B, C
+and D are complete** (`phase-a-result.md`, `phase-b-result.md`,
+`phase-c-plan.md`, `phase-d-result.md`); E to J are not started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -2616,3 +2616,26 @@ being woken is already `Sms` and `Chat` (SDK 1.3), both of which a module
 implements. Web push is a subscription table, a VAPID keypair and a service
 worker; it is real work and the provider half belongs in a module, so it is
 left undone and said so here rather than half-built.
+
+**Phase D is complete** (`docs/architecture/phase-d-result.md`): alerts,
+incidents, impact, the status page, SLA credits, postmortems, maintenance
+windows, the operations calendar and deep links. The push channel is declined
+with its reason recorded rather than half-built.
+
+**The operations calendar is a list of days, not a grid of boxes.** A grid is
+what a calendar looks like; a list is what one is for — and it survives the
+ordinary month, in which nothing happened at all. Thirty empty boxes say less
+than one sentence does, and the two days that matter are lost among them.
+
+**An entry that spans days is repeated on each of them, and the repeats must
+not say the same thing.** A six-day incident printed its start time — "03:32"
+— on all six days, which reads as though it began again each morning. The day
+it started says when; the days after say it was already running. The browser
+found it the moment seed data covered more than one day, which is another
+reason throwaway data should be shaped like real data rather than like the
+smallest thing that renders.
+
+**A month goes in the address bar, not in component state.** Somebody looking
+at the 14th of July is usually about to send that month to a colleague. A
+parameter that does not parse falls back to this month rather than refusing:
+they edited the URL, and the useful answer is the month they are standing in.

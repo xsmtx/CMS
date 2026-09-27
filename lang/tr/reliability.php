@@ -241,4 +241,15 @@ return [
             'held' => 'Bastırılan uyarı',
         ],
     ],
+
+    'calendar' => [
+        'title' => 'Operasyon takvimi',
+        'intro' => 'Ne oldu ve ne geliyor: olaylar ile planlı çalışma aynı ayda.',
+        'previous' => 'Önceki ay',
+        'next' => 'Sonraki ay',
+        'maintenance' => 'Bakım',
+        'ongoing' => 'süregelen',
+        'empty' => 'Bu ay bir şey yok',
+        'empty_detail' => 'Olay da planlı çalışma da yok. Buradaki boş bir ay iyi sonuçtur.',
+    ],
 ];

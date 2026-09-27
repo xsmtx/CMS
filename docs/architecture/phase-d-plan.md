@@ -1,6 +1,6 @@
 # Phase D — Reliability Plan
 
-Status: planned
+Status: complete (2026-09-27) — see `phase-d-result.md`
 Date: 2026-09-26
 Previous: `phase-c-plan.md`
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` §15, §16, §26

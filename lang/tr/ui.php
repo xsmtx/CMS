@@ -702,6 +702,7 @@ return [
         'alerts' => 'Uyarılar',
         'incidents' => 'Olaylar',
         'maintenance' => 'Bakım',
+        'calendar' => 'Takvim',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

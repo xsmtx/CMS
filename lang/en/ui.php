@@ -707,6 +707,7 @@ return [
         'alerts' => 'Alerts',
         'incidents' => 'Incidents',
         'maintenance' => 'Maintenance',
+        'calendar' => 'Calendar',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

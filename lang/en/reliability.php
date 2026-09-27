@@ -283,4 +283,15 @@ return [
             'held' => 'Alerts held',
         ],
     ],
+
+    'calendar' => [
+        'title' => 'Operations calendar',
+        'intro' => 'What happened and what is coming: incidents and planned work on the same month.',
+        'previous' => 'Earlier month',
+        'next' => 'Later month',
+        'maintenance' => 'Maintenance',
+        'ongoing' => 'already running',
+        'empty' => 'Nothing this month',
+        'empty_detail' => 'No incident and no planned work. An empty month here is the good outcome.',
+    ],
 ];
