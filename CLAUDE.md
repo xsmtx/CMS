@@ -2767,3 +2767,64 @@ column, check that its wording was written *for* that column.
 **`Domain` has no `service_id`** — a domain is not a service (ADR 0028) and
 does not carry one. A certificate's link to a service, when it has one, comes
 from the node it was found on rather than sideways from the name it covers.
+
+**Zone health and the DNS contract are in** (§8), which unblocks DNS in
+`integration-modules-plan.md` — it listed DNS as waiting on exactly this.
+
+**Core owns the checks because they are RFCs, not opinions.** "Does this
+domain have exactly one SPF record" is RFC 7208 §3.2 and has one right
+answer; fetching the records is the only part that differs between
+PowerDNS, BIND, Cloudflare and Route 53, so that is the only part that is an
+adapter. `InspectZone` is **pure** — a zone in, findings out, no database and
+no adapter — which is the only way these rules can be trusted before a real
+provider has ever answered.
+
+**What core refuses to have an opinion about is as deliberate as what it
+checks.** It does not grade a DMARC policy (`p=none` is what most people
+deploy on purpose for months), does not decide whether a domain ought to have
+mail, and has no views about TTLs. A findings list full of things that are
+fine is a list an operator stops reading — and then misses the `+all`.
+
+**A finding raises and clears like an alert**, kept once cleared, with
+`cleared_token` for the MariaDB-nulls-are-distinct reason `alerts.dedupe_token`
+exists. It is keyed per **source** as well as per check: two providers holding
+one zone is a real configuration during a migration, and "the old provider
+still says this" is exactly the finding somebody wants.
+
+**A sweep that could not read a zone clears nothing.** An adapter that is
+down must not look like a zone that was suddenly fixed — clearing on a failed
+read is the bug that makes a findings list untrustworthy. And core asks about
+**its own domains**, never the provider's zone list: a provider authoritative
+for four thousand names would otherwise have this platform producing findings
+for customers it does not have.
+
+**`FindingSeverity` is its own enum and not `AlertSeverity`.** A test caught
+it: `AlertSeverity::from('info')` throws, because that enum's three members
+are distinguished by *when somebody is interrupted* — and a zone finding never
+interrupts anybody, it sits on a list until an operator reads it. Borrowing it
+would have been Phase D's "a severity scale must not wear another scale's
+words" arriving from the other direction. Two members, and the line between
+them is whether the zone is **objectively broken**.
+
+**`DnsZone::textAt()` strips the quoting a zone file adds**, because a
+provider that round-trips through one hands back `"v=spf1 -all"` and a check
+that missed the quoted form would report every zone on that provider as
+having no SPF. Long TXT values arrive split into quoted chunks — that is how
+DKIM keys are carried — so the chunks are joined before anything reads them.
+
+**The bare `all` in an SPF record is the one people write by accident**,
+because `+` is the default qualifier and reads like it means nothing. Both
+forms are caught; `-all` and `~all` are the whole point of SPF and must never
+be flagged, which is its own test.
+
+**`Capability::DnsRecordWrite` has no method on the contract**, the third time
+this pattern appears after the firewall and the certificate. A bulk record
+change is how a business disappears from the internet for four hours, and it
+belongs behind §6's guarded workflow rather than behind a method anything
+could call.
+
+**An unused method is the same smell as an unused setting.** A `checks()`
+helper was written on the controller "for a screen that wants to name them",
+with a docblock rationalising why it was there. Nothing called it. Deleted
+rather than justified — if the docblock has to argue for the code, that is the
+answer.

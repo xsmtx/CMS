@@ -166,6 +166,15 @@ final class CorePermissions
              * and issuing belongs to a provisioning module.
              */
             new PermissionDefinition('security.certificates.view', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Zone health (§8). A view and nothing else: core reads a
+             * zone and reports what is wrong with it, and changing a
+             * record belongs behind §6's guarded workflow rather than on
+             * a screen — a bulk record change is how a business vanishes
+             * from the internet for four hours.
+             */
+            new PermissionDefinition('security.dns.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

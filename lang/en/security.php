@@ -172,4 +172,77 @@ return [
             'chain' => 'Chain',
         ],
     ],
+
+    /*
+     * Zone health (§8).
+     *
+     * Every detail line says what to do about the finding. A list that
+     * names a problem without naming the fix is one an operator has to
+     * research before they can act, which is how a list stops being read.
+     *
+     * Core has no opinions beyond the RFCs: it does not grade a DMARC
+     * policy, decide whether a domain ought to have mail, or tell anybody
+     * what their TTLs should be.
+     */
+    'dns' => [
+        'title' => 'Zone health',
+        'intro' => 'What is wrong with the DNS of the domains here. Read by asking a provider; nothing on this screen changes a record.',
+        'empty' => 'Nothing wrong',
+        'empty_detail' => 'No zone finding is open. Either the zones are in order, or no DNS source has been configured yet — core reads a zone rather than hosting it.',
+        'warnings' => 'Worth acting on',
+        'information' => 'Worth knowing',
+        'unattributed' => 'Nobody',
+        'fixed_on' => 'fixed :date',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+
+        'severities' => [
+            'warning' => 'Worth acting on',
+            'info' => 'Worth knowing',
+        ],
+
+        'checks' => [
+            'spf_duplicate' => 'Two SPF records',
+            'spf_permissive' => 'SPF lets anyone send',
+            'spf_missing' => 'No SPF record',
+            'dmarc_missing' => 'No DMARC record',
+            'dmarc_monitor_only' => 'DMARC is monitoring only',
+            'mx_missing' => 'No mail servers',
+            'ns_too_few' => 'Only one nameserver',
+            'dnssec_off' => 'Zone is not signed',
+        ],
+
+        'details' => [
+            'spf_duplicate' => 'A resolver that finds two gives up on both, so the domain behaves as though it had none. Merge them into one record.',
+            'spf_permissive' => 'The record ends in +all, which tells every receiver that anyone may send as this domain. That is worse than having no SPF at all; -all or ~all is what was meant.',
+            'spf_missing' => 'Nothing states who may send as this domain. Harmless if it never sends mail, and worth adding if it does.',
+            'dmarc_missing' => 'Nothing tells receivers what to do with mail that fails SPF or DKIM. A policy is a business decision rather than a fault.',
+            'dmarc_monitor_only' => 'p=none collects reports and asks receivers to do nothing, which is the ordinary first step. Worth revisiting once the reports are clean.',
+            'mx_missing' => 'No mail server is named at the apex, so this domain receives no mail. Expected for one that only serves a website.',
+            'ns_too_few' => 'One nameserver is the difference between a maintenance window and an outage. RFC 1034 asks for at least two.',
+            'dnssec_off' => 'The provider says this zone is unsigned. A choice rather than a fault, and worth making deliberately.',
+        ],
+
+        'types' => [
+            'a' => 'A',
+            'aaaa' => 'AAAA',
+            'cname' => 'CNAME',
+            'mx' => 'MX',
+            'ns' => 'NS',
+            'txt' => 'TXT',
+            'srv' => 'SRV',
+            'caa' => 'CAA',
+            'soa' => 'SOA',
+            'other' => 'Something else',
+        ],
+
+        'columns' => [
+            'finding' => 'Finding',
+            'domain' => 'Domain',
+            'severity' => 'How urgent',
+            'customer' => 'Whose',
+            'since' => 'Since',
+            'source' => 'Found by',
+        ],
+    ],
 ];

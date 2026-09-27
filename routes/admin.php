@@ -65,6 +65,7 @@ use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
 use App\Http\Controllers\Admin\TodoController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\ZoneHealthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -467,6 +468,13 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * deployed and never issues — obtaining a certificate is a provisioning
      * module's job with an account key behind it.
      */
+    /*
+     * Zone health (§8). Read-only: core owns the checks because they are
+     * RFCs rather than opinions, and a module fetches the records.
+     */
+    Route::get('security/dns', ZoneHealthController::class)
+        ->name('security.dns');
+
     Route::get('security/certificates', CertificateController::class)
         ->name('security.certificates');
 

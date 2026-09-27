@@ -148,4 +148,66 @@ return [
             'chain' => 'Zincir',
         ],
     ],
+
+    'dns' => [
+        'title' => 'Bölge sağlığı',
+        'intro' => 'Buradaki alan adlarının DNS’inde neyin yanlış olduğu. Bir sağlayıcıya sorularak okunur; bu ekranda hiçbir kayıt değiştirilmez.',
+        'empty' => 'Yanlış bir şey yok',
+        'empty_detail' => 'Açık bölge bulgusu yok. Ya bölgeler düzgün ya da henüz bir DNS kaynağı tanımlanmadı — çekirdek bölgeyi barındırmaz, okur.',
+        'warnings' => 'İşlem gerektirir',
+        'information' => 'Bilinmesi iyi olur',
+        'unattributed' => 'Kimse',
+        'fixed_on' => ':date düzeltildi',
+        'show_all' => 'Hepsini göster',
+        'show_open' => 'Açık olanları göster',
+
+        'severities' => [
+            'warning' => 'İşlem gerektirir',
+            'info' => 'Bilinmesi iyi olur',
+        ],
+
+        'checks' => [
+            'spf_duplicate' => 'İki SPF kaydı',
+            'spf_permissive' => 'SPF herkesin göndermesine izin veriyor',
+            'spf_missing' => 'SPF kaydı yok',
+            'dmarc_missing' => 'DMARC kaydı yok',
+            'dmarc_monitor_only' => 'DMARC yalnızca izliyor',
+            'mx_missing' => 'Posta sunucusu yok',
+            'ns_too_few' => 'Tek bir ad sunucusu',
+            'dnssec_off' => 'Bölge imzalı değil',
+        ],
+
+        'details' => [
+            'spf_duplicate' => 'İki kayıt bulan bir çözümleyici ikisinden de vazgeçer, yani alan adı hiç SPF’i yokmuş gibi davranır. Tek kayıtta birleştirin.',
+            'spf_permissive' => 'Kayıt +all ile bitiyor; bu, her alıcıya bu alan adı adına herkesin gönderebileceğini söyler. Hiç SPF olmamasından kötüdür; kastedilen -all ya da ~all.',
+            'spf_missing' => 'Bu alan adı adına kimin gönderebileceğini belirten bir şey yok. Hiç posta göndermiyorsa zararsız, gönderiyorsa eklenmeli.',
+            'dmarc_missing' => 'SPF ya da DKIM’i geçemeyen postaya ne yapılacağını söyleyen bir şey yok. Politika bir hatadan çok bir iş kararıdır.',
+            'dmarc_monitor_only' => 'p=none rapor toplar ve alıcılardan bir şey yapmamalarını ister; olağan ilk adımdır. Raporlar temizlenince yeniden bakılmalı.',
+            'mx_missing' => 'Kökte posta sunucusu belirtilmemiş, yani bu alan adı posta almaz. Yalnızca web sitesi sunan bir alan adı için beklenen durumdur.',
+            'ns_too_few' => 'Tek ad sunucusu, bir bakım penceresi ile bir kesinti arasındaki farktır. RFC 1034 en az iki ister.',
+            'dnssec_off' => 'Sağlayıcı bu bölgenin imzasız olduğunu söylüyor. Hatadan çok bir tercihtir ve bilerek yapılmalıdır.',
+        ],
+
+        'types' => [
+            'a' => 'A',
+            'aaaa' => 'AAAA',
+            'cname' => 'CNAME',
+            'mx' => 'MX',
+            'ns' => 'NS',
+            'txt' => 'TXT',
+            'srv' => 'SRV',
+            'caa' => 'CAA',
+            'soa' => 'SOA',
+            'other' => 'Başka bir şey',
+        ],
+
+        'columns' => [
+            'finding' => 'Bulgu',
+            'domain' => 'Alan adı',
+            'severity' => 'Ne kadar acil',
+            'customer' => 'Kimin',
+            'since' => 'Ne zamandan beri',
+            'source' => 'Bulan',
+        ],
+    ],
 ];

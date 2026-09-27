@@ -116,6 +116,10 @@ return [
             'label' => 'Issue SLA credits',
             'description' => 'Raise a credit note against an invoice because of an outage.',
         ],
+        'security.dns.view' => [
+            'label' => 'See zone health',
+            'description' => 'Read what is wrong with the DNS of the domains this installation holds.',
+        ],
         'security.certificates.view' => [
             'label' => 'See the certificate fleet',
             'description' => 'Read what is deployed, when it expires and whose it is.',

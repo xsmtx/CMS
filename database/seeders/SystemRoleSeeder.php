@@ -112,6 +112,7 @@ final class SystemRoleSeeder extends Seeder
                 'security.abuse.view',
                 'security.abuse.manage',
                 'security.certificates.view',
+                'security.dns.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

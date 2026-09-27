@@ -705,6 +705,7 @@ return [
         'calendar' => 'Takvim',
         'abuse' => 'Kötüye kullanım',
         'certificates' => 'Sertifikalar',
+        'dns' => 'DNS',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

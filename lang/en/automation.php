@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'zone_health' => [
+            'label' => 'Zone health',
+            'description' => 'Asks every DNS source about the zones this installation holds, and raises what is wrong with them.',
+        ],
         'certificates' => [
             'label' => 'Certificates',
             'description' => 'Asks every certificate source what it currently has deployed, and retires what has stopped being served.',

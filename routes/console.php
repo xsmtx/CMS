@@ -228,3 +228,16 @@ Schedule::command('platform:run certificates')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground();
+
+/*
+ * Asking every DNS source about the zones this installation holds.
+ *
+ * Daily. A zone changes when somebody changes it, and an SPF record that has
+ * been wrong for a month will still be wrong in an hour — asking a provider
+ * for four hundred zones every five minutes is a rate limit and a bill.
+ */
+Schedule::command('platform:run zone-health')
+    ->dailyAt('04:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();

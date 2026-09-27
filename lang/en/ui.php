@@ -710,6 +710,7 @@ return [
         'calendar' => 'Calendar',
         'abuse' => 'Abuse',
         'certificates' => 'Certificates',
+        'dns' => 'DNS',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

@@ -14,6 +14,7 @@ use App\Application\Automation\Runs\EvaluateAlerts;
 use App\Application\Automation\Runs\ExpireAccessGrants;
 use App\Application\Automation\Runs\ForgetAbuseEvidence;
 use App\Application\Automation\Runs\GenerateRenewalInvoices;
+use App\Application\Automation\Runs\InspectZones;
 use App\Application\Automation\Runs\MarkInvoicesOverdue;
 use App\Application\Automation\Runs\NotifyExpiringDomains;
 use App\Application\Automation\Runs\ProjectCoreResources;
@@ -58,6 +59,7 @@ final readonly class TaskRegistry
             AutomationTask::Alerts => EvaluateAlerts::class,
             AutomationTask::AbuseRetention => ForgetAbuseEvidence::class,
             AutomationTask::Certificates => CollectCertificates::class,
+            AutomationTask::ZoneHealth => InspectZones::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

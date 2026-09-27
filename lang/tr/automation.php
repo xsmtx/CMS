@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'zone_health' => [
+            'label' => 'Bölge sağlığı',
+            'description' => 'İlgili her DNS kaynağına bu kurulumun tuttuğu bölgeleri sorar ve yanlış olanları bildirir.',
+        ],
         'certificates' => [
             'label' => 'Sertifikalar',
             'description' => 'İlgili her kaynağa şu anda hangi sertifikaları sunduğunu sorar ve artık sunulmayanları emekliye ayırır.',

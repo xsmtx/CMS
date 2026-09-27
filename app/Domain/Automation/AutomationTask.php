@@ -125,6 +125,17 @@ enum AutomationTask: string
     case Certificates = 'certificates';
 
     /**
+     * Asking every DNS source about the zones this installation holds
+     * (§8).
+     *
+     * Daily. A zone changes when somebody changes it, and an SPF record
+     * that has been wrong for a month will still be wrong in an hour —
+     * asking a provider for four hundred zones every five minutes is a
+     * rate limit and a bill.
+     */
+    case ZoneHealth = 'zone-health';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -199,6 +210,7 @@ enum AutomationTask: string
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
             self::Certificates => 60,
+            self::ZoneHealth => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }
