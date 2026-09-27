@@ -229,7 +229,58 @@ return [
         'happening_now' => 'Happening now',
         'history' => 'Past incidents',
         'no_history' => 'Nothing has gone wrong in the last :days days.',
+        'maintenance' => 'Planned maintenance',
+        'maintenance_running' => 'Happening now',
+        'maintenance_planned' => 'Planned',
         'started' => 'Started :at.',
         'ran' => 'From :from to :to.',
+    ],
+
+    /*
+     * Planned work (§16).
+     *
+     * The states are worded from where the window is in its own life, not
+     * from a column: there is no stored state, and a window that started ten
+     * seconds ago says so.
+     */
+    'maintenance' => [
+        'title' => 'Maintenance',
+        'intro' => 'Work somebody planned. While a window is running, the alerts it causes are still raised and recorded — nobody is woken by them.',
+        'states' => [
+            'scheduled' => 'Scheduled',
+            'active' => 'Running now',
+            'ended' => 'Over',
+            'cancelled' => 'Called off',
+        ],
+        'plan' => 'Plan a window',
+        // The submit button, not the heading above it and not the toggle
+        // that revealed the form — all three said the same three words.
+        'plan_it' => 'Plan it',
+        'plan_intro' => 'What is being done, when, and whether customers are told.',
+        'window_title' => 'What is being done',
+        'body' => 'What customers should know',
+        'body_hint' => 'Shown on the status page when the window is published. Left empty, only the title and the times are.',
+        'starts_at' => 'Starts',
+        'ends_at' => 'Ends',
+        'nodes' => 'Which machines',
+        'nodes_hint' => 'One node key per line. Leave it empty for the whole installation, which is what a network or power maintenance is.',
+        'is_public' => 'Show it on the status page',
+        'is_public_hint' => 'Off by default. Announcing planned work is a decision somebody makes.',
+        'scheduled_flash' => 'The window is planned.',
+        'cancelled_flash' => 'The window is called off.',
+        'cancel' => 'Call it off',
+        'cancel_title' => 'Call off this window?',
+        'cancel_body' => 'The record stays and says it was planned and then called off — which is a different thing from never having warned anybody. Alerts stop being held the moment it is cancelled.',
+        'empty' => 'Nothing is planned',
+        'empty_detail' => 'No maintenance window has been recorded. One planned here holds back the alerts the work itself causes, without hiding them.',
+        'everywhere' => 'Everywhere',
+        'suppressed' => ':count held',
+        'columns' => [
+            'window' => 'Window',
+            'state' => 'State',
+            'when' => 'When',
+            'scope' => 'Machines',
+            'held' => 'Alerts held',
+        ],
     ],
 ];

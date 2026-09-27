@@ -116,6 +116,10 @@ return [
             'label' => 'Issue SLA credits',
             'description' => 'Raise a credit note against an invoice because of an outage.',
         ],
+        'reliability.maintenance.manage' => [
+            'label' => 'Plan maintenance',
+            'description' => 'Schedule work, announce it, and hold back the alerts it will cause.',
+        ],
         'reliability.incidents.view' => [
             'label' => 'See incidents',
             'description' => 'Read what went wrong, the timeline and what was underneath.',

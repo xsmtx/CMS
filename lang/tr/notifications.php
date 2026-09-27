@@ -16,6 +16,8 @@ return [
         'domain_expiring' => 'Alan adı süresi doluyor',
         'ticket_opened' => 'Destek talebi açıldı',
         'ticket_replied' => 'Destek talebine yanıt verildi',
+        'alert_raised' => 'Uyarı oluştu',
+        'maintenance_scheduled' => 'Bakım planlandı',
     ],
 
     'categories' => [
@@ -146,6 +148,17 @@ return [
             'subject' => 'Yanıt: [:ticket_number] :subject',
             'body' => ':ticket_number numaralı talebe yeni bir yanıt var.',
             'action' => 'Yanıtı oku',
+        ],
+
+        'alert_raised' => [
+            'subject' => ':severity — :subject',
+            'body' => ":subject, :rule kuralını aştı.\n\nÖlçülen: :observed",
+            'action' => 'Uyarıları aç',
+        ],
+        'maintenance_scheduled' => [
+            'subject' => 'Planlı bakım: :title',
+            'body' => ":title\n\n:starts_at - :ends_at arası.\n\n:body",
+            'action' => 'Durum sayfasını gör',
         ],
     ],
 

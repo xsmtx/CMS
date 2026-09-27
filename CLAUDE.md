@@ -2524,3 +2524,65 @@ backslash**, and `'a customer's invoice'` is then a PHP parse error in a
 language file. Nothing caught it until the tests ran: `pint app` and `phpstan`
 do not read `lang/`, and `pint --test` had last run before the edit. `php -l`
 on a language file after a scripted edit costs nothing.
+
+**Maintenance windows are in** (§16), and with them **the first notification
+this product sends to operators**. The two arrived together on purpose: a
+window that suppressed nothing would have been a setting read by nothing, and
+`alert_rules.notify` had been exactly that since the alerts increment —
+stored, drawn on the form, and consulted by no code at all.
+
+- **A window suppresses the message, never the observation.** The alert is
+  raised, counted and on the screen exactly as it would be, and
+  `alerts.suppressed_by` names the window that held it. An operator asking
+  "did anything happen during the maintenance" has to get the true answer, and
+  a platform that dropped the reading could not give one. The maintenance
+  screen shows how many each window held, because a window that held nothing
+  either covered the wrong machines or the work went better than expected.
+- **There is no state column**, and `phase-d-plan.md` §3's sketch of one is
+  corrected rather than followed. Whether a window is running is a question
+  about its own two timestamps, asked when somebody asks it — so a scheduler
+  that was down for three hours cannot leave one marked "scheduled" while it is
+  plainly happening. `access_grants` made the same call in Phase C. Being
+  called off is the one thing a clock cannot say, so `cancelled_at` is a
+  column, and cancelling a window that already ran is refused: the alerts it
+  suppressed carry its id, and rewriting that would be rewriting what happened.
+- **Empty node keys mean everywhere.** A datacentre power test is the ordinary
+  window, and making an operator enumerate four hundred machines to express it
+  is how a feature goes unused — so `covers()` is a method rather than an
+  `in_array` at each call site, because the empty case is the one somebody
+  writing the check by hand gets backwards.
+- **The banner on the status page does not move for planned work.** "All
+  systems operational" during a maintenance is the truth as far as a customer
+  standing outside is concerned, and a page that went amber every Sunday at two
+  is one nobody reads on a Monday. The window is announced above the incidents
+  instead, and disappears from there the moment it is cancelled or ends.
+
+`AlertRaised` is a domain event and `SendAlertNotifications` is the listener,
+which is ADR 0029 exactly: the sweep that noticed announces, and one place
+decides who hears. Three rules in it — a window sends nothing, a **warning
+interrupts nobody** (`AlertSeverity::interrupts()`, because a warning that woke
+people is a warning they turn off and it takes the criticals with it), and
+staff get it, all of them, because there is no on-call rotation here and §6 of
+the plan says inventing half of one would be worse than leaving it to the rota
+people already keep.
+
+**`NotificationEvent::AlertRaised` is transactional and its audience is
+`Staff`** — the first member of either kind. Somebody woken because a disk is
+full cannot have opted out of it, and staff preferences are a role rather than
+a checkbox on an account.
+
+**`composer stan`, not `./vendor/bin/phpstan`.** The bare binary crashed today
+at 128M — the failure CLAUDE.md already predicted, arriving the moment the
+codebase crossed the line. The symptom is "Child process error … reached
+configured PHP memory limit" rather than an assertion, so it reads like an
+environment problem and is not one.
+
+**A date range printed with `toLocaleString()` on both ends** said
+"30.09.2026 03:01:05 — 30.09.2026 07:01:05": the date twice, and seconds on
+work planned for next Tuesday. A window inside one day prints its date once,
+and nothing here is scheduled to the second.
+
+**The submit button matched its heading for the third time.** The toggle, the
+section title and the submit all read "Plan a window". It is the same fix as
+the incidents screens — a button says what pressing it does — and it is worth
+grepping a new form for the heading's own words before calling it done.

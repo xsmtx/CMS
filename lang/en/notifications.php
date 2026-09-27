@@ -16,6 +16,8 @@ return [
         'domain_expiring' => 'Domain expiring',
         'ticket_opened' => 'Ticket opened',
         'ticket_replied' => 'Ticket replied',
+        'alert_raised' => 'Alert raised',
+        'maintenance_scheduled' => 'Maintenance scheduled',
     ],
 
     'categories' => [
@@ -146,6 +148,28 @@ return [
             'subject' => 'Re: [:ticket_number] :subject',
             'body' => 'There is a new reply on ticket :ticket_number.',
             'action' => 'Read the reply',
+        ],
+
+        /*
+         * The first two messages here that are not written to a customer.
+         * The alert one is read on a phone at three in the morning, so the
+         * subject carries the whole of it and the body is the detail.
+         */
+        'alert_raised' => [
+            'subject' => ':severity — :subject',
+            'body' => ':subject crossed :rule.
+
+What was measured: :observed',
+            'action' => 'Open the alerts',
+        ],
+        'maintenance_scheduled' => [
+            'subject' => 'Planned maintenance: :title',
+            'body' => ':title
+
+From :starts_at to :ends_at.
+
+:body',
+            'action' => 'See the status page',
         ],
     ],
 

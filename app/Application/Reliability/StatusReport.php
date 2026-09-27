@@ -21,6 +21,13 @@ use Carbon\CarbonImmutable;
  *     body: string,
  *     writtenAt: CarbonImmutable,
  * }
+ * @phpstan-type PublishedWindow array{
+ *     title: string,
+ *     body: string|null,
+ *     startsAt: CarbonImmutable,
+ *     endsAt: CarbonImmutable,
+ *     isRunning: bool,
+ * }
  * @phpstan-type PublishedIncident array{
  *     reference: string,
  *     title: string,
@@ -35,11 +42,13 @@ final readonly class StatusReport
     /**
      * @param  list<PublishedIncident>  $open
      * @param  list<PublishedIncident>  $history
+     * @param  list<PublishedWindow>  $maintenance
      */
     public function __construct(
         public PublicStatusLevel $level,
         public array $open,
         public array $history,
         public CarbonImmutable $since,
+        public array $maintenance = [],
     ) {}
 }

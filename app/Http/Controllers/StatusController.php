@@ -75,6 +75,20 @@ final class StatusController extends Controller
             'noHistory' => (string) __('reliability.status_page.no_history', [
                 'days' => PublicStatus::HistoryDays,
             ]),
+            'maintenance' => array_map(
+                fn (array $window): array => [
+                    'title' => $window['title'],
+                    'body' => $window['body'],
+                    'when' => (string) __('reliability.status_page.ran', [
+                        'from' => $this->when($window['startsAt']),
+                        'to' => $this->when($window['endsAt']),
+                    ]),
+                    'note' => (string) __($window['isRunning']
+                        ? 'reliability.status_page.maintenance_running'
+                        : 'reliability.status_page.maintenance_planned'),
+                ],
+                $report->maintenance,
+            ),
         ]);
     }
 

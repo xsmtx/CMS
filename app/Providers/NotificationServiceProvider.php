@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Notifications\Listeners\SendAlertNotifications;
 use App\Application\Notifications\Listeners\SendEventNotifications;
 use App\Application\Notifications\Listeners\SendTicketNotifications;
 use App\Domain\Billing\Events\InvoiceIssued;
@@ -15,6 +16,7 @@ use App\Domain\Ordering\Events\OrderPlaced;
 use App\Domain\Provisioning\Events\ServiceProvisioned;
 use App\Domain\Provisioning\Events\ServiceSuspended;
 use App\Domain\Provisioning\Events\ServiceTerminated;
+use App\Domain\Reliability\Events\AlertRaised;
 use App\Domain\Support\Events\TicketOpened;
 use App\Domain\Support\Events\TicketReplied;
 use App\Infrastructure\Modules\ActiveModules;
@@ -84,5 +86,10 @@ final class NotificationServiceProvider extends ServiceProvider
 
         Event::listen(TicketOpened::class, [SendTicketNotifications::class, 'opened']);
         Event::listen(TicketReplied::class, [SendTicketNotifications::class, 'replied']);
+
+        // The first message in this product that goes to operators. A
+        // maintenance window is what stops it, and the listener is where
+        // that is decided rather than in the sweep that noticed.
+        Event::listen(AlertRaised::class, [SendAlertNotifications::class, 'raised']);
     }
 }

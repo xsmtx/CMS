@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Health\MaintenanceMode;
 use App\Application\Reliability\Incidents;
+use App\Application\Reliability\MaintenanceWindows;
 use App\Application\Reliability\PublicStatus;
 use App\Domain\Organizations\OrganizationType;
 use App\Domain\Reliability\AlertSeverity;
@@ -13,6 +14,7 @@ use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Reliability\Models\Incident;
 use App\Infrastructure\Reliability\Models\IncidentUpdate;
+use App\Infrastructure\Reliability\Models\MaintenanceWindow;
 use App\Support\Organizations\OrganizationContext;
 use Carbon\CarbonImmutable;
 use Database\Seeders\ProviderOrganizationSeeder;
@@ -199,6 +201,68 @@ it('stays up while maintenance mode closes the shop', function (): void {
     $this->get('/status')
         ->assertOk()
         ->assertSee(__('reliability.status_page.levels.operational'));
+});
+
+/**
+ * Planned work, above the incidents: somebody who has just noticed their site
+ * is slow wants to know whether it was announced before they read about what
+ * broke.
+ */
+it('announces the planned work somebody published', function (): void {
+    MaintenanceWindow::factory()
+        ->published()
+        ->create([
+            'organization_id' => $this->provider->id,
+            'title' => 'Switch firmware on the core pair',
+            'body' => 'Sites stay up. Expect two short interruptions.',
+        ]);
+
+    MaintenanceWindow::factory()->create([
+        'organization_id' => $this->provider->id,
+        'title' => 'A window nobody published',
+    ]);
+
+    $this->get('/status')
+        ->assertOk()
+        ->assertSee(__('reliability.status_page.maintenance'))
+        ->assertSee('Switch firmware on the core pair')
+        ->assertSee('Sites stay up. Expect two short interruptions.')
+        ->assertDontSee('A window nobody published')
+        // **The banner does not move.** "All systems operational" during
+        // planned work is the truth as far as a customer standing outside is
+        // concerned, and a page that went amber every Sunday at two is one
+        // nobody reads on a Monday.
+        ->assertSee(__('reliability.status_page.levels.operational'));
+});
+
+it('stops announcing a window that was called off', function (): void {
+    $window = MaintenanceWindow::factory()
+        ->published()
+        ->create([
+            'organization_id' => $this->provider->id,
+            'title' => 'Switch firmware on the core pair',
+        ]);
+
+    app(MaintenanceWindows::class)->cancel($window, $this->staff);
+
+    $this->get('/status')
+        ->assertOk()
+        ->assertDontSee('Switch firmware on the core pair');
+});
+
+/** A window that is over is an operator's record, not an announcement. */
+it('does not announce a window that has already run', function (): void {
+    MaintenanceWindow::factory()
+        ->published()
+        ->over()
+        ->create([
+            'organization_id' => $this->provider->id,
+            'title' => 'Last night on the core pair',
+        ]);
+
+    $this->get('/status')
+        ->assertOk()
+        ->assertDontSee('Last night on the core pair');
 });
 
 it('answers 404 when the installation publishes no status page', function (): void {

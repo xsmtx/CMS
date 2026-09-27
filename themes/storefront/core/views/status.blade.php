@@ -35,6 +35,32 @@
 
         <p class="mt-2 text-body text-content-muted">{{ $checkedAt }}</p>
 
+        {{--
+            Planned work, above the incidents. Somebody who has just noticed
+            their site is slow wants to know whether it was announced before
+            they read about what broke — and a status page that buried the
+            answer under the history is one they ask support instead.
+        --}}
+        @if (! empty($maintenance))
+            <section class="mt-14">
+                <h2 class="text-title font-semibold">
+                    {{ __('reliability.status_page.maintenance') }}
+                </h2>
+
+                @foreach ($maintenance as $window)
+                    <article class="mt-6 border-t border-line pt-6 first:mt-4">
+                        <h3 class="text-title font-semibold">{{ $window['title'] }}</h3>
+                        <p class="mt-1 text-chrome text-content-subtle">
+                            {{ $window['note'] }} · {{ $window['when'] }}
+                        </p>
+                        @if ($window['body'])
+                            <p class="mt-3 max-w-[70ch] text-body whitespace-pre-line">{{ $window['body'] }}</p>
+                        @endif
+                    </article>
+                @endforeach
+            </section>
+        @endif
+
         @if (! empty($open))
             <section class="mt-14">
                 <h2 class="text-title font-semibold">

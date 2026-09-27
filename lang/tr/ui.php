@@ -701,6 +701,7 @@ return [
         'attacks' => 'Saldırılar',
         'alerts' => 'Uyarılar',
         'incidents' => 'Olaylar',
+        'maintenance' => 'Bakım',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

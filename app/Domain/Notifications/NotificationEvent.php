@@ -34,6 +34,14 @@ enum NotificationEvent: string
     case TicketOpened = 'ticket.opened';
     case TicketReplied = 'ticket.replied';
 
+    /*
+     * The first message in this product that goes to operators rather than
+     * customers, and the first with nobody to opt out of it: staff
+     * preferences are a role, not a checkbox on an account.
+     */
+    case AlertRaised = 'alert.raised';
+    case MaintenanceScheduled = 'maintenance.scheduled';
+
     public function labelKey(): string
     {
         return 'notifications.events.'.$this->translationKey();
@@ -57,6 +65,7 @@ enum NotificationEvent: string
         return match ($this) {
             self::InvoiceIssued, self::PaymentReceived, self::PaymentFailed => NotificationCategory::Invoices,
             self::TicketOpened, self::TicketReplied => NotificationCategory::Support,
+            self::AlertRaised, self::MaintenanceScheduled => NotificationCategory::Product,
             default => NotificationCategory::Product,
         };
     }
@@ -74,6 +83,11 @@ enum NotificationEvent: string
         return match ($this) {
             self::PaymentFailed, self::ServiceSuspended, self::ServiceTerminated,
             self::DomainExpiring, self::InvoiceIssued => true,
+            // Somebody being woken because a disk is full cannot have opted
+            // out of it, and a customer told their site will be down on
+            // Sunday has not opted out of that either — it is about the
+            // service, which is what transactional means here.
+            self::AlertRaised, self::MaintenanceScheduled => true,
             default => false,
         };
     }
@@ -86,6 +100,7 @@ enum NotificationEvent: string
         return match ($this) {
             self::OrderPlaced => NotificationAudience::Both,
             self::TicketOpened, self::TicketReplied => NotificationAudience::Both,
+            self::AlertRaised => NotificationAudience::Staff,
             default => NotificationAudience::Customer,
         };
     }

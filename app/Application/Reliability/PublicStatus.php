@@ -8,6 +8,7 @@ use App\Domain\Reliability\IncidentState;
 use App\Domain\Reliability\PublicStatusLevel;
 use App\Infrastructure\Reliability\Models\Incident;
 use App\Infrastructure\Reliability\Models\IncidentUpdate;
+use App\Infrastructure\Reliability\Models\MaintenanceWindow;
 use Carbon\CarbonImmutable;
 
 /**
@@ -76,6 +77,7 @@ final readonly class PublicStatus
             open: $open,
             history: $history,
             since: $since,
+            maintenance: $this->maintenance(),
         );
     }
 
@@ -91,6 +93,45 @@ final readonly class PublicStatus
     public function isPublished(): bool
     {
         return (bool) config('platform.reliability.status_page', true);
+    }
+
+    /**
+     * Planned work somebody chose to announce (§16).
+     *
+     * Running and upcoming only, never the history: a customer wants to know
+     * what is happening and what is coming, and a list of every window this
+     * year is an operator's record rather than an announcement. A cancelled
+     * one disappears from here the moment it is cancelled, which is the whole
+     * point of being able to call one off.
+     *
+     * The banner is **not** moved by a window. "All systems operational"
+     * during planned work is the truth as far as a customer standing outside
+     * is concerned, and a status page that went amber every Sunday night at
+     * two would be one nobody reads on a Monday.
+     *
+     * @return list<array{title: string, body: string|null, startsAt: CarbonImmutable, endsAt: CarbonImmutable, isRunning: bool}>
+     */
+    private function maintenance(): array
+    {
+        $now = CarbonImmutable::now();
+
+        $windows = MaintenanceWindow::query()
+            ->where('is_public', true)
+            ->whereNull('cancelled_at')
+            ->where('ends_at', '>', $now)
+            ->oldest('starts_at')
+            ->limit(20)
+            ->get();
+
+        return array_values($windows
+            ->map(static fn (MaintenanceWindow $window): array => [
+                'title' => $window->title,
+                'body' => $window->body,
+                'startsAt' => $window->starts_at,
+                'endsAt' => $window->ends_at,
+                'isRunning' => $window->isActive($now),
+            ])
+            ->all());
     }
 
     /**

@@ -115,6 +115,10 @@ return [
             'label' => 'SLA kredisi ver',
             'description' => 'Bir kesinti nedeniyle müşterinin faturasına alacak dekontu keser.',
         ],
+        'reliability.maintenance.manage' => [
+            'label' => 'Bakım planla',
+            'description' => 'Çalışma planlar, duyurur ve yol açacağı uyarıları bastırır.',
+        ],
         'reliability.incidents.view' => [
             'label' => 'Olayları gör',
             'description' => 'Neyin ters gittiğini, zaman çizelgesini ve altında ne olduğunu okur.',

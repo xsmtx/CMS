@@ -136,6 +136,13 @@ final class CorePermissions
              * carries the password challenge as well.
              */
             new PermissionDefinition('reliability.credits.issue', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Planning work (§16). Support holds it: the people who answer
+             * the phone during a maintenance are the people who should be
+             * able to see one coming and to schedule the small ones.
+             */
+            new PermissionDefinition('reliability.maintenance.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

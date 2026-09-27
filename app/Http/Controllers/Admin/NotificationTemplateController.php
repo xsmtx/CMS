@@ -272,6 +272,23 @@ final class NotificationTemplateController extends Controller
                 'subject' => 'Site is down',
                 'department' => 'Technical Support',
             ],
+
+            // The two that are written to operators rather than customers.
+            // The match has no default on purpose: a new event must fail to
+            // compile rather than preview as a blank sentence.
+            NotificationEvent::AlertRaised => [
+                'subject' => 'web-1.dc2',
+                'rule' => 'Disk above 90%',
+                'severity' => 'Now',
+                'observed' => '0.94',
+            ],
+
+            NotificationEvent::MaintenanceScheduled => [
+                'title' => 'Switch firmware on the core pair',
+                'starts_at' => CarbonImmutable::parse('2026-10-11 02:00'),
+                'ends_at' => CarbonImmutable::parse('2026-10-11 04:00'),
+                'body' => 'Sites stay up. Expect two short interruptions of about a minute.',
+            ],
         };
     }
 

@@ -104,6 +104,9 @@ final class SystemRoleSeeder extends Seeder
                 // senior to press the button.
                 'reliability.incidents.view',
                 'reliability.incidents.manage',
+                // And planning the work: the people answering the phone
+                // during a maintenance should be able to see one coming.
+                'reliability.maintenance.manage',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

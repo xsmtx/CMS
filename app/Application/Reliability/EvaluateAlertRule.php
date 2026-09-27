@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Reliability;
 
 use App\Domain\Reliability\AlertState;
+use App\Domain\Reliability\Events\AlertRaised;
 use App\Domain\Reliability\Observation;
 use App\Infrastructure\Reliability\Models\Alert;
 use App\Infrastructure\Reliability\Models\AlertRule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Event;
 
 /**
  * One rule against what is currently true: raise, keep, or clear.
@@ -36,11 +38,23 @@ use Illuminate\Database\QueryException;
  *
  * Nothing here notifies. `NotificationEvent` and `Notifier` already exist
  * (ADR 0029), and a rule that sent its own mail would be a second place that
- * knows about opt-outs, locales and delivery records.
+ * knows about opt-outs, locales and delivery records. It announces
+ * `AlertRaised` and a listener decides who hears about it — which is also
+ * where a rule's `notify` flag is finally read.
+ *
+ * **A maintenance window suppresses the message, never the observation**
+ * (§16). The alert is raised, counted and on the screen exactly as it would
+ * be; what changes is that `suppressed_by` names the window and nobody is
+ * woken. An operator asking "did anything happen during the maintenance" has
+ * to get the true answer, and a platform that dropped the reading could not
+ * give one.
  */
 final readonly class EvaluateAlertRule
 {
-    public function __construct(private GatherObservations $observations) {}
+    public function __construct(
+        private GatherObservations $observations,
+        private MaintenanceWindows $maintenance,
+    ) {}
 
     /**
      * @return array{raised: int, kept: int, cleared: int}
@@ -129,17 +143,27 @@ final readonly class EvaluateAlertRule
 
             // It has now been bad long enough. The row was already there; the
             // only thing that changes is whether anybody is told about it.
+            $promoted = false;
+
             if ($existing->state === AlertState::Suppressed && $this->held($rule, $existing, $at)) {
                 $existing->state = AlertState::Raised;
+                $existing->suppressed_by = $this->windowFor($rule, $existing->subject_key, $at);
+                $promoted = true;
             }
 
             $existing->save();
 
+            if ($promoted) {
+                $this->announce($rule, $existing);
+            }
+
             return false;
         }
 
+        $raisesNow = $rule->for_minutes === 0;
+
         try {
-            Alert::query()->create([
+            $alert = Alert::query()->create([
                 'organization_id' => $rule->organization_id,
                 'alert_rule_id' => $rule->id,
                 'subject_key' => $observation->key,
@@ -147,12 +171,19 @@ final readonly class EvaluateAlertRule
                 // `for_minutes` of zero raises immediately; anything else
                 // starts held, and the next evaluation that still finds it bad
                 // promotes it.
-                'state' => $rule->for_minutes === 0 ? AlertState::Raised : AlertState::Suppressed,
+                'state' => $raisesNow ? AlertState::Raised : AlertState::Suppressed,
                 'severity' => $rule->severity,
                 'observed' => $observation->observed,
                 'occurrences' => 1,
                 'first_seen_at' => $at,
                 'last_seen_at' => $at,
+                // Asked only when it is actually being raised: a held alert
+                // has told nobody anything, so there is nothing to suppress
+                // and the window that matters is the one running when it
+                // finally becomes visible.
+                'suppressed_by' => $raisesNow
+                    ? $this->windowFor($rule, $observation->key, $at)
+                    : null,
             ]);
         } catch (QueryException) {
             // Two evaluations of one rule at once, which the unique index
@@ -162,7 +193,41 @@ final readonly class EvaluateAlertRule
             return false;
         }
 
+        if ($raisesNow) {
+            $this->announce($rule, $alert);
+        }
+
         return true;
+    }
+
+    /**
+     * The window suppressing this subject's notifications, if one is running.
+     */
+    private function windowFor(AlertRule $rule, string $nodeKey, CarbonImmutable $at): ?string
+    {
+        return $this->maintenance
+            ->covering($rule->organization_id, $nodeKey, $at)?->id;
+    }
+
+    /**
+     * Say it happened — and say whether anybody should hear about it.
+     *
+     * A rule with `notify` off announces nothing at all, which is what that
+     * flag has always meant and until now was stored and read by nothing. A
+     * suppressed one *does* announce, carrying the window, because the event
+     * is also how anything else in this platform learns an alert exists.
+     */
+    private function announce(AlertRule $rule, Alert $alert): void
+    {
+        if (! $rule->notify) {
+            return;
+        }
+
+        Event::dispatch(new AlertRaised(
+            alertId: $alert->id,
+            organizationId: $alert->organization_id,
+            suppressedBy: $alert->suppressed_by,
+        ));
     }
 
     /**

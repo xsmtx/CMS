@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\LicenceController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MarketplaceController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NetworkChangeController;
@@ -441,6 +442,19 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * without saying what was identified is the move that makes a status page
      * useless, so the update carries both.
      */
+    /*
+     * Planned work (§16). There is no route that moves a window along,
+     * because a window has no stored state to move: it starts when the clock
+     * passes its start. The only human act after scheduling is calling it
+     * off.
+     */
+    Route::get('reliability/maintenance', [MaintenanceController::class, 'index'])
+        ->name('reliability.maintenance');
+    Route::post('reliability/maintenance', [MaintenanceController::class, 'store'])
+        ->name('reliability.maintenance.store');
+    Route::delete('reliability/maintenance/{window}', [MaintenanceController::class, 'cancel'])
+        ->name('reliability.maintenance.cancel');
+
     Route::get('reliability/incidents', [IncidentController::class, 'index'])
         ->name('reliability.incidents');
     Route::get('reliability/incidents/{incident}', [IncidentController::class, 'show'])
