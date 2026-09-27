@@ -115,6 +115,18 @@ return [
             'label' => 'SLA kredisi ver',
             'description' => 'Bir kesinti nedeniyle müşterinin faturasına alacak dekontu keser.',
         ],
+        'security.abuse.view' => [
+            'label' => 'Kötüye kullanım dosyalarını gör',
+            'description' => 'Neyin şikâyet edildiğini, kime ait olduğunu ve masanın ne yaptığını okur.',
+        ],
+        'security.abuse.manage' => [
+            'label' => 'Kötüye kullanım dosyası kaydet ve güncelle',
+            'description' => 'Bir şikâyeti yazar, kanıt saklar ve ne yapıldığını kaydeder.',
+        ],
+        'security.abuse.act' => [
+            'label' => 'Kötüye kullanım dosyasında işlem yap',
+            'description' => 'Bir şikâyet nedeniyle hizmeti askıya alır, giden postayı durdurur ya da sıfırlamaya zorlar.',
+        ],
         'reliability.maintenance.manage' => [
             'label' => 'Bakım planla',
             'description' => 'Çalışma planlar, duyurur ve yol açacağı uyarıları bastırır.',

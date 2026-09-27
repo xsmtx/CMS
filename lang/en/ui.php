@@ -708,6 +708,7 @@ return [
         'incidents' => 'Incidents',
         'maintenance' => 'Maintenance',
         'calendar' => 'Calendar',
+        'abuse' => 'Abuse',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

@@ -2639,3 +2639,77 @@ smallest thing that renders.
 at the 14th of July is usually about to send that month to a colleague. A
 parameter that does not parse falls back to this month rather than refusing:
 they edited the URL, and the useful answer is the month they are standing in.
+
+**Phase E has begun** (`docs/architecture/phase-e-plan.md`), and the abuse desk
+is in — §13's cases, the correlation chain, guarded actions and evidence with
+a retention clock.
+
+**An abuse case is the third record in this family and points the other way.**
+An incident is the platform's fault; a ticket is a conversation; a case is the
+customer's fault, or their compromised account's. It ends in a **decision**
+rather than in "resolved": `actioned`, `no_action` and `rejected` are three
+different answers, and a word that flattened them would tell the next reader
+nothing.
+
+**Attribution is at the moment the complaint is about, never now.** A report
+about an address last Tuesday belongs to whoever held it last Tuesday;
+attributing it to today's holder is how an innocent customer is suspended for
+somebody else's spam. `ip_assignments` is append-only for exactly this, and
+the walk now lives in **one** place (`AttributeReport`) — `RecordDdosEvent`
+grew it privately in Phase C and calls this instead, because two copies would
+eventually disagree about the case that matters: an assignment released at the
+very second of the report.
+
+**A case this platform cannot attribute is kept**, with a sentence on the
+screen saying why rather than a dash a reader would take for missing data. An
+address in a range nobody recorded and a sender who is simply wrong are both
+findings, and somebody still has to answer them.
+
+**Every guarded action is a person pressing a button, and three of the four
+land in `manual`.** Only suspension has a seam, and it calls
+`TransitionService` rather than writing a column — two places that can suspend
+is one too many. Recording a decision this platform cannot carry out, and
+saying so on the screen, is the `Manual*` adapters' honesty applied to a
+decision about a customer; an action that silently did nothing would be worse.
+Nothing is automatic and nothing should be: a shared address, a forwarded
+newsletter and a competitor's complaint all look like the real thing.
+
+**`retain_until` is the first column in this product whose job is to make
+something be forgotten**, and `AutomationTask::AbuseRetention` is the first
+task whose job is to delete. Everything else here is append-only on principle;
+this is the deliberate exception, because a complaint holds a **third party's**
+data. Core keeps a reference — an id, a URL, a hash, a bounded excerpt — never
+a mail body, a full log or a disk image. The deadline is written when the
+evidence is captured and never recomputed, so shortening the policy in March
+does not retroactively delete what was kept under January's terms. What is
+deleted is the reference; the case, its timeline and the decision all stay.
+
+**The audit row for a capture deliberately omits the reference.** An audit log
+is the one table nothing deletes from, so putting the third party's data in it
+would have defeated the whole arrangement. The kind and the retention go in;
+the thing itself does not.
+
+**`case` is a reserved word in JavaScript.** A prop named `case` makes every
+`case.foo` in a Vue template a parse error — nineteen of them, plus nine
+TypeScript errors, from one prop name. It is `abuseCase` now. Worth knowing
+before naming a prop after a domain noun that is also a keyword: `class`,
+`default`, `new`, `delete` and `for` are the others waiting.
+
+**`FrontEndTranslationsTest` caught the new screens printing their own keys**
+before the browser pass had finished looking at them — `security` was not in
+the published allow-list. The designed symptom worked and the guard worked;
+the browser simply got there first this time.
+
+**A column header borrowed from elsewhere, for the third time.** The actions
+table used the list's *Whose* column for the operator who decided, so a staff
+member's name sat under a heading that means the customer. It has
+`act_decider` now. The rule is the one the affected-customers table taught:
+a column heading names what is in each row, and borrowing one that fitted
+somewhere else is how a screen ends up lying quietly.
+
+**An empty required dropdown with a button under it, again.** A case nobody
+could attribute has no services, so "which service" was an empty select above
+an enabled Act button — the server would refuse on a field whose list was
+empty. It says why instead, and the button is disabled. Third time this shape
+has been found; it is worth checking any `AppSelect` whose options come from a
+relation that can legitimately be empty.

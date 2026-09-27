@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Network;
 
+use App\Application\Security\AttributeReport;
 use App\Domain\Infrastructure\Network\DdosAttack;
 use App\Domain\Infrastructure\Network\DdosVector;
 use App\Domain\Network\Exceptions\InvalidAddress;
 use App\Domain\Network\IpAddress;
 use App\Infrastructure\Network\Models\DdosEvent;
 use App\Infrastructure\Network\Models\IpAddressRecord;
-use App\Infrastructure\Network\Models\IpAssignment;
 use App\Infrastructure\Provisioning\Models\Service;
-use Carbon\CarbonImmutable;
 
 /**
  * Writes down an attack, and works out whose it was.
@@ -40,10 +39,18 @@ use Carbon\CarbonImmutable;
  */
 final readonly class RecordDdosEvent
 {
+    public function __construct(private AttributeReport $attribution) {}
+
     public function handle(string $organizationId, string $source, DdosAttack $attack): DdosEvent
     {
         $address = $this->addressFor($organizationId, $attack->target);
-        [$customerId, $serviceId] = $this->attribute($address, $attack->startedAt);
+
+        // The one place that answers "who held this address then". It grew
+        // here first and now lives in `AttributeReport`, because abuse
+        // attribution needs the identical walk and two copies of it would
+        // eventually disagree about the case that matters — an assignment
+        // released at the very second of the report.
+        $whose = $this->attribution->atAddress($organizationId, $attack->target, $attack->startedAt);
 
         return DdosEvent::query()->updateOrCreate(
             ['source' => $source, 'reference' => $attack->reference],
@@ -51,8 +58,8 @@ final readonly class RecordDdosEvent
                 'organization_id' => $organizationId,
                 'target_address' => $this->canonical($attack->target),
                 'ip_address_id' => $address?->id,
-                'customer_id' => $customerId,
-                'service_id' => $serviceId,
+                'customer_id' => $whose->customerId,
+                'service_id' => $whose->serviceId,
                 'started_at' => $attack->startedAt,
                 'ended_at' => $attack->endedAt,
                 // Nullable both ways on purpose: a vendor reports one figure,
@@ -89,52 +96,6 @@ final readonly class RecordDdosEvent
             ->where('organization_id', $organizationId)
             ->where('address_bytes', $parsed->bytes)
             ->first();
-    }
-
-    /**
-     * Who held it **when the attack started**.
-     *
-     * The assignment that was open at that moment, which is an `assigned_at`
-     * in the past and a `released_at` that is either null or later. An
-     * address handed on since is attributed to whoever had it then, which is
-     * the answer an abuse report or a credit request actually needs.
-     *
-     * @return array{0: string|null, 1: string|null}
-     */
-    private function attribute(?IpAddressRecord $address, CarbonImmutable $at): array
-    {
-        if (! $address instanceof IpAddressRecord) {
-            return [null, null];
-        }
-
-        $assignment = IpAssignment::query()
-            ->where('ip_address_id', $address->id)
-            ->where('assigned_at', '<=', $at)
-            ->where(static fn ($query) => $query
-                ->whereNull('released_at')
-                ->orWhere('released_at', '>=', $at))
-            ->latest('assigned_at')
-            ->first();
-
-        if (! $assignment instanceof IpAssignment) {
-            return [null, null];
-        }
-
-        // A service knows its customer; a server does not have one, and that
-        // is a real answer rather than a gap — an attack on a machine of ours
-        // is not an attack on anybody's account.
-        if ($assignment->holder_type !== Service::class) {
-            return [null, null];
-        }
-
-        $service = Service::query()
-            ->withoutGlobalScope('organization')
-            ->whereKey($assignment->holder_id)
-            ->first();
-
-        return $service instanceof Service
-            ? [$service->customer_id, $service->id]
-            : [null, null];
     }
 
     /**

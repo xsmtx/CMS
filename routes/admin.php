@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\Guard;
+use App\Http\Controllers\Admin\AbuseController;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AddressingController;
 use App\Http\Controllers\Admin\AlertController;
@@ -455,6 +456,30 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * month and a linked one is somebody's answer to "what were we doing on
      * the 14th".
      */
+    /*
+     * The abuse desk (§13). Recording is Support's and acting is not, so
+     * the permission check is per method in the controller rather than on
+     * the group — one screen, two audiences.
+     */
+    Route::get('security/abuse', [AbuseController::class, 'index'])
+        ->name('security.abuse');
+    Route::get('security/abuse/{case}', [AbuseController::class, 'show'])
+        ->name('security.abuse.show');
+    Route::post('security/abuse', [AbuseController::class, 'store'])
+        ->name('security.abuse.store');
+    Route::post('security/abuse/{case}/notes', [AbuseController::class, 'note'])
+        ->name('security.abuse.note');
+    Route::post('security/abuse/{case}/evidence', [AbuseController::class, 'keep'])
+        ->name('security.abuse.evidence');
+
+    /*
+     * Acting suspends a paying customer, so the password is asked for again
+     * — the tenth action in this product that does.
+     */
+    Route::post('security/abuse/{case}/actions', [AbuseController::class, 'act'])
+        ->middleware('auth.recent')
+        ->name('security.abuse.act');
+
     Route::get('reliability/calendar', OperationsCalendarController::class)
         ->name('reliability.calendar');
 

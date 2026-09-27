@@ -164,6 +164,17 @@ final class FrontEndTranslations
         'reliability',
 
         /*
+         * The abuse desk. Operator vocabulary end to end: a customer never
+         * sees a complaint, and the only sentence here written *to* one is
+         * the reason on an action, which the operator types.
+         *
+         * Note what is **not** in this file: no complainant's data, no
+         * evidence, no addresses. Those live in rows with a retention
+         * deadline, and a language file is shipped to every browser.
+         */
+        'security',
+
+        /*
          * The tax screen's own vocabulary. Operator words only, and it names no
          * jurisdiction — there is no list of countries in either language's
          * `tax.php` and there must not be one (ADR 0045).

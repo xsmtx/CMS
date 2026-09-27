@@ -100,6 +100,20 @@ enum AutomationTask: string
     case AdapterHealth = 'adapter-health';
 
     /**
+     * Deleting abuse evidence that is past its retention deadline (§13).
+     *
+     * The one task here whose job is to **forget**. Everything else in this
+     * product is append-only on principle; this is the deliberate exception,
+     * because an abuse complaint holds a third party's data and keeping it
+     * for ever is a privacy decision nobody made.
+     *
+     * Daily rather than hourly: a deadline measured in months does not need
+     * to be checked every five minutes, and a deletion sweep that ran
+     * constantly would be a deletion sweep nobody watched.
+     */
+    case AbuseRetention = 'abuse-retention';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -169,6 +183,10 @@ enum AutomationTask: string
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.
             self::AdapterHealth => 5,
+            // Daily. A retention deadline measured in months does not need
+            // checking every five minutes, and a deletion sweep that ran
+            // constantly would be one nobody watched.
+            self::AbuseRetention => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

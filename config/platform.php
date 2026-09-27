@@ -714,6 +714,20 @@ return [
         'max_grant_minutes' => env('NETWORK_MAX_GRANT_MINUTES', 720),
     ],
 
+    'abuse' => [
+        /*
+         * How long evidence is kept (§13).
+         *
+         * A complaint holds a third party's data, and keeping it for ever is
+         * a privacy decision nobody made. Six months is dull and defensible;
+         * an operator with a policy sets their own. The deadline is written
+         * onto each row when it is captured and never recomputed, so
+         * shortening this does not retroactively delete what was kept under
+         * the terms that applied then.
+         */
+        'retention_days' => env('ABUSE_RETENTION_DAYS', 180),
+    ],
+
     'reliability' => [
         /*
          * Whether this installation serves its own status page (§15).

@@ -198,3 +198,18 @@ Schedule::command('platform:run licence')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground();
+
+/*
+ * Forgetting abuse evidence that is past its deadline.
+ *
+ * Daily, and deliberately not more often: a retention deadline measured in
+ * months does not need checking every five minutes, and a deletion sweep that
+ * ran constantly would be one nobody watched. It asks a question about rows,
+ * so a scheduler that was down for a week catches up rather than leaving a
+ * fortnight of somebody's data behind permanently.
+ */
+Schedule::command('platform:run abuse-retention')
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();

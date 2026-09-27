@@ -107,6 +107,10 @@ final class SystemRoleSeeder extends Seeder
                 // And planning the work: the people answering the phone
                 // during a maintenance should be able to see one coming.
                 'reliability.maintenance.manage',
+                // The abuse desk. Recording is Support's; acting is not,
+                // because suspending a paying customer is commercial.
+                'security.abuse.view',
+                'security.abuse.manage',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

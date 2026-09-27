@@ -143,6 +143,22 @@ final class CorePermissions
              * able to see one coming and to schedule the small ones.
              */
             new PermissionDefinition('reliability.maintenance.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * The abuse desk (§13). Recording a complaint is Support's:
+             * an abuse report lands on whoever reads the mailbox, and a desk
+             * that had to find somebody senior before writing it down is a
+             * desk that writes it in a ticket instead — where it has no
+             * retention clock and no correlation.
+             *
+             * **Acting is not**, for the same reason issuing a credit is
+             * not: suspending a paying customer is a commercial decision
+             * with a contract behind it, and no abuse signal is right every
+             * time.
+             */
+            new PermissionDefinition('security.abuse.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('security.abuse.manage', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('security.abuse.act', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

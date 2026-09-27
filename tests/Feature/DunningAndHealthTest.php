@@ -178,8 +178,9 @@ it('shows staff the tasks even before any of them has run', function (): void {
             // and the attack collection, and Phase D the alert evaluation. A
             // count rather than a list on purpose: the screen has to offer
             // every task the command can run, and a new one joins both or
-            // neither — which is what this has caught seven phases running.
-            ->has('tasks', 16)
+            // neither — which is what this has caught eight phases running,
+            // Phase E's forgetting sweep included.
+            ->has('tasks', 17)
             ->where('tasks.0.lastRun', null));
 });
 

@@ -116,6 +116,18 @@ return [
             'label' => 'Issue SLA credits',
             'description' => 'Raise a credit note against an invoice because of an outage.',
         ],
+        'security.abuse.view' => [
+            'label' => 'See abuse cases',
+            'description' => 'Read what was complained about, whose it was and what the desk did.',
+        ],
+        'security.abuse.manage' => [
+            'label' => 'Record and update abuse cases',
+            'description' => 'Write a complaint down, keep evidence and record what has been done about it.',
+        ],
+        'security.abuse.act' => [
+            'label' => 'Act on abuse cases',
+            'description' => 'Suspend a service, stop outbound mail or force a reset because of a complaint.',
+        ],
         'reliability.maintenance.manage' => [
             'label' => 'Plan maintenance',
             'description' => 'Schedule work, announce it, and hold back the alerts it will cause.',

@@ -703,6 +703,7 @@ return [
         'incidents' => 'Olaylar',
         'maintenance' => 'Bakım',
         'calendar' => 'Takvim',
+        'abuse' => 'Kötüye kullanım',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

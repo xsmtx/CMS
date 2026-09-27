@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetri',
             'description' => 'Etkin her izleme bağdaştırıcısına şu anda ne bildiğini sorar.',
         ],
+        'abuse_retention' => [
+            'label' => 'Kötüye kullanım saklama',
+            'description' => 'Saklama süresi dolan kötüye kullanım kanıtlarını siler. Buradaki işi unutmak olan tek görev.',
+        ],
         'alerts' => [
             'label' => 'Uyarılar',
             'description' => 'Etkin her kurala doğru olup olmadığını sorar; yanlış olanı açar, düzelen kapanır.',

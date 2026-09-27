@@ -506,6 +506,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/reliability/calendar',
         permission: 'reliability.maintenance.manage',
       },
+      {
+        label: nav('abuse', 'Abuse'),
+        href: '/admin/security/abuse',
+        permission: 'security.abuse.view',
+      },
     ],
   },
   {

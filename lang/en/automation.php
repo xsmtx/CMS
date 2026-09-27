@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'abuse_retention' => [
+            'label' => 'Abuse retention',
+            'description' => 'Deletes abuse evidence that is past its retention deadline. The one task here whose job is to forget.',
+        ],
         'alerts' => [
             'label' => 'Alerts',
             'description' => 'Asks every enabled rule whether it is true, raises what is wrong and clears what has stopped being wrong.',

@@ -1,0 +1,124 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'abuse' => [
+        'title' => 'Kötüye kullanım',
+        'intro' => 'Dışarıdan birinin şikâyeti, o sırada kimin olduğu ve ne yapıldığı.',
+
+        'kinds' => [
+            'phishing' => 'Oltalama',
+            'malware' => 'Zararlı yazılım',
+            'spam' => 'İstenmeyen posta',
+            'brute_force' => 'Kaba kuvvet',
+            'compromise' => 'Ele geçirilmiş hesap',
+            'vulnerability' => 'Güvenlik açığı',
+            'blocklist' => 'Kara liste kaydı',
+            'copyright' => 'Telif hakkı',
+            'other' => 'Başka bir şey',
+        ],
+
+        'states' => [
+            'open' => 'Kimse bakmadı',
+            'investigating' => 'Bakılıyor',
+            'waiting_customer' => 'Müşteride',
+            'actioned' => 'İşlem yapıldı',
+            'no_action' => 'İşlem gerekmedi',
+            'rejected' => 'Şikâyet yanlıştı',
+        ],
+
+        'actions' => [
+            'suspend_service' => 'Hizmeti askıya al',
+            'stop_outbound_mail' => 'Giden postayı durdur',
+            'force_password_reset' => 'Parola sıfırlamaya zorla',
+            'contact_customer' => 'Müşteriyle iletişime geç',
+        ],
+
+        'action_states' => [
+            'pending' => 'Yolda',
+            'done' => 'Yapıldı',
+            'manual' => 'Birinin yapması gerekiyor',
+            'failed' => 'Başarısız',
+        ],
+
+        'evidence_kinds' => [
+            'url' => 'Bir bağlantı',
+            'ip_address' => 'Bir adres',
+            'domain' => 'Bir alan adı',
+            'mail_message_id' => 'Bir mesaj kimliği',
+            'log_excerpt' => 'Bir günlük parçası',
+            'file_hash' => 'Bir dosya özeti',
+            'complaint_reference' => 'Şikâyetçinin kendi referansı',
+            'note' => 'Bir not',
+        ],
+
+        'empty' => 'Açık şikâyet yok',
+        'empty_detail' => 'Kötüye kullanım masasında bekleyen bir şey yok. Buradaki boş liste iyi sonuçtur.',
+        'open' => 'Şikâyet kaydet',
+        'open_intro' => 'Ne geldi, ne zaman oldu ve neyi işaret etti. İsnat, geldiği ana göre değil olduğu ana göre çıkarılır.',
+        'summary' => 'Şikâyet konusu',
+        'kind' => 'Türü',
+        'severity' => 'Ne kadar acil',
+        'source' => 'Kim şikâyet etti',
+        'source_hint' => 'Bir spam tuzağı, bir marka ekibi, bir kişi. Şikâyet söylemediyse boş bırakılır.',
+        'external_reference' => 'Onların referansı',
+        'subject_type' => 'Neyi işaret etti',
+        'subject_value' => 'Adres ya da alan adı',
+        'subject_hint' => 'Adres baytlarıyla eşleştirilir, bu yüzden her yazımı çalışır.',
+        'occurred_at' => 'Ne zaman oldu',
+        'occurred_at_hint' => 'Geldiği an değil. Geçen salıya dair bir rapor, adresi geçen salı tutan kişiye aittir.',
+        'subjects' => [
+            'ip' => 'Bir adres',
+            'domain' => 'Bir alan adı',
+            'none' => 'Hiçbiri',
+        ],
+        'opened' => 'Dosya kaydedildi.',
+        'record' => 'Kaydet',
+
+        'unattributed' => 'Kimse',
+        'unattributed_detail' => 'Bu platform kime ait olduğunu söyleyemedi — kimsenin kaydetmediği bir aralıktaki adres, bize ait olmayan bir alan adı ya da baştan yanlış bir şikâyet. Yine de saklanır: birinin buna yanıt vermesi gerekiyor.',
+        'attributed_at' => ':at tarihindeki durumuna göre isnat edildi.',
+
+        'timeline' => 'Ne yapıldı',
+        'timeline_intro' => 'Yalnızca eklenir. Masanın yanıt verirken neye inandığı, bir anlaşmazlıkta tartışılan şeydir.',
+        'about' => 'Şikâyet',
+        'note' => 'Ne olduğunu yaz',
+        'note_body' => 'Ne oldu',
+        'note_state' => 'Şu an nerede',
+        'note_save' => 'Yaz',
+        'noted' => 'Not yazıldı.',
+
+        'act' => 'İşlem yap',
+        'act_intro' => 'Bunların her biri bir insanın düğmeye basmasıdır. Hiçbiri otomatik değildir; çünkü hiçbir kötüye kullanım sinyali her seferinde doğru değildir.',
+        'act_action' => 'Ne yapılacak',
+        'act_service' => 'Hangi hizmet',
+        'act_decider' => 'Kim karar verdi',
+        'act_no_service' => 'Askıya alınacak hizmet yok: bu platform şikâyetin kime ait olduğunu söyleyemedi. Önce isnat edin ya da başka bir işlem seçin.',
+        'act_reason' => 'Neden',
+        'act_reason_hint' => 'İşlemle birlikte gönderilir ve hizmetin kendi geçmişine yazılır, burada tutulmaz.',
+        'acted' => 'Karar kaydedildi.',
+        'manual_note' => 'Bu platformun bunu yapacak bir yolu yok, bu yüzden birine iş olarak kaydedildi.',
+
+        'evidence' => 'Kanıt',
+        'evidence_intro' => 'Şeyin kendisi değil, referanslar. Saklama süresi dolunca her biri silinir — bir şikâyet başkasının verisini taşır.',
+        'evidence_kind' => 'Türü',
+        'evidence_reference' => 'Referans',
+        'evidence_keep' => 'Sakla',
+        'evidence_kept' => 'Referans saklandı.',
+        'evidence_until' => ':date tarihine kadar',
+        'evidence_none' => 'Saklanan bir şey yok.',
+
+        'columns' => [
+            'case' => 'Şikâyet',
+            'kind' => 'Tür',
+            'state' => 'Durum',
+            'customer' => 'Kimin',
+            'occurred' => 'Olduğu an',
+            'actions' => 'İşlemler',
+        ],
+
+        'show_all' => 'Hepsini göster',
+        'show_open' => 'Açık olanları göster',
+    ],
+];
