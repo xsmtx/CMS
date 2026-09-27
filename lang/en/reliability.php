@@ -85,6 +85,7 @@ return [
         'adapter_health' => 'An adapter',
         'automation_run' => 'An automation task',
         'failed_operation' => 'A failed operation',
+        'certificate_expiry' => 'How long a certificate has left',
         'capacity' => 'Something running out',
     ],
 

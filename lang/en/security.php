@@ -136,4 +136,40 @@ return [
         'show_all' => 'Show everything',
         'show_open' => 'Show what is open',
     ],
+
+    /*
+     * The certificate fleet (§8).
+     *
+     * Discovered, never issued: core reads what is deployed and answers
+     * the questions that need no private key.
+     */
+    'certificates' => [
+        'title' => 'Certificates',
+        'intro' => 'What is deployed, when it expires and whose it is. Found by asking, never issued here.',
+        'empty' => 'Nothing found',
+        'empty_detail' => 'No certificate source has reported anything. Core discovers what is deployed rather than issuing it, so this fills in once an adapter can see your certificates.',
+        'expiring_soon' => 'Expiring soon',
+        'expired' => 'Expired',
+        'healthy' => 'In date',
+        // The chain's own word. "In date" is about expiry, and lending it
+        // to the chain column put an answer about time under a heading about
+        // completeness — the fourth borrowed label found in this pass.
+        'chain_ok' => 'Complete',
+        'chain_unknown' => 'Chain not checked',
+        'chain_broken' => 'Chain incomplete',
+        'days_left' => ':days days left',
+        'days_ago' => 'Expired :days days ago',
+        'retired' => 'No longer served',
+        'unattributed' => 'Nobody',
+        'show_all' => 'Show everything',
+        'show_live' => 'Show what is served',
+        'columns' => [
+            'name' => 'Certificate',
+            'expiry' => 'Expires',
+            'issuer' => 'Issuer',
+            'customer' => 'Whose',
+            'source' => 'Found by',
+            'chain' => 'Chain',
+        ],
+    ],
 ];

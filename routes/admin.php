@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\BillingSettingsController;
 use App\Http\Controllers\Admin\CancellationController;
 use App\Http\Controllers\Admin\CannedResponseController;
+use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectController;
 use App\Http\Controllers\Admin\ContactController;
@@ -461,6 +462,14 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * the permission check is per method in the controller rather than on
      * the group — one screen, two audiences.
      */
+    /*
+     * The certificate fleet (§8). Read-only: core discovers what is
+     * deployed and never issues — obtaining a certificate is a provisioning
+     * module's job with an account key behind it.
+     */
+    Route::get('security/certificates', CertificateController::class)
+        ->name('security.certificates');
+
     Route::get('security/abuse', [AbuseController::class, 'index'])
         ->name('security.abuse');
     Route::get('security/abuse/{case}', [AbuseController::class, 'show'])

@@ -116,6 +116,10 @@ return [
             'label' => 'Issue SLA credits',
             'description' => 'Raise a credit note against an invoice because of an outage.',
         ],
+        'security.certificates.view' => [
+            'label' => 'See the certificate fleet',
+            'description' => 'Read what is deployed, when it expires and whose it is.',
+        ],
         'security.abuse.view' => [
             'label' => 'See abuse cases',
             'description' => 'Read what was complained about, whose it was and what the desk did.',

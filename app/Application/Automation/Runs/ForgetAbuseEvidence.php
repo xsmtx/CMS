@@ -67,7 +67,6 @@ final readonly class ForgetAbuseEvidence implements AutomationRun
                         // a run record is read by people and kept for a long
                         // time, which is the shape this row exists to avoid.
                         $kind,
-                        null,
                     ));
                 } catch (Throwable $exception) {
                     $summary = $summary->failing(new RunItem(

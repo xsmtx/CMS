@@ -35,5 +35,5 @@ namespace App\Domain\Modules;
  */
 final class Sdk
 {
-    public const string VERSION = '1.4';
+    public const string VERSION = '1.5';
 }

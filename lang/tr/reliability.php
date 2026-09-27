@@ -75,6 +75,7 @@ return [
         'adapter_health' => 'Bir bağdaştırıcı',
         'automation_run' => 'Bir otomasyon görevi',
         'failed_operation' => 'Başarısız bir işlem',
+        'certificate_expiry' => 'Sertifikanın ne kadar ömrü kaldığı',
         'capacity' => 'Tükenmekte olan bir şey',
     ],
 

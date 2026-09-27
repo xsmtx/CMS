@@ -114,6 +114,17 @@ enum AutomationTask: string
     case AbuseRetention = 'abuse-retention';
 
     /**
+     * Asking every certificate source what it currently has deployed (§8).
+     *
+     * The whole inventory rather than a window, because a certificate that
+     * has *stopped* being deployed is the interesting answer. Hourly: a
+     * certificate's life is measured in weeks, and asking a control panel
+     * every five minutes for a list that changes twice a month is a denial of
+     * service against your own operator.
+     */
+    case Certificates = 'certificates';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -187,6 +198,7 @@ enum AutomationTask: string
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
+            self::Certificates => 60,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

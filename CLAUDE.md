@@ -2713,3 +2713,57 @@ an enabled Act button — the server would refuse on a field whose list was
 empty. It says why instead, and the button is disabled. Third time this shape
 has been found; it is worth checking any `AppSelect` whose options come from a
 relation that can legitimately be empty.
+
+**The certificate fleet is in** (§8). Discovered, never issued: core reads
+what is deployed and answers the questions that need no private key — what
+expires soon, what chain is incomplete, whose customer is affected.
+`CertificateProvider` is the contract (SDK **1.5**, additive) and
+`Capability::CertificateIssueWrite` and `CertificateDeployWrite` deliberately
+have **no method on it**, for the reason the firewall's write did: obtaining a
+certificate has an account key behind it and deploying one changes what every
+visitor is served, so both belong behind a workflow rather than behind a
+method anything could call.
+
+- **The fingerprint is the identity, not the common name.** One name is served
+  by four certificates over a year and two names by one; a row keyed on the
+  name would collapse the renewals into each other and lose exactly the
+  history somebody wants when a renewal silently failed — and an *alert* keyed
+  on it would look like the same alert clearing and reopening at every
+  renewal.
+- **`not_after` is never computed.** It comes from the certificate and is not
+  defaulted or adjusted anywhere: an expiry this installation guessed would be
+  worse than none, because somebody would act on it.
+- **`chain_ok` is nullable and the null means "nobody looked".** An adapter
+  reading a file off disk cannot say what a client would be served, and
+  drawing that as a tick would be the platform asserting something it does not
+  know. The column has three states on the screen for the same reason.
+- **A certificate that stops being reported is retired, not deleted**, and
+  **only by the source that wrote it** — retiring by organization would take a
+  second adapter's fleet with it every time this one ran.
+- **Attribution refuses ambiguity.** A certificate naming `shop.example.com`
+  belongs to whoever holds `example.com`; a wildcard covering four customers'
+  subdomains belongs to none of them. The `RecordSamples::byHostname()` rule
+  again: attached to the wrong customer is worse than attached to nobody.
+- **A wildcard covers one label and no more.** `*.example.com` is
+  `a.example.com`, not `a.b.example.com` and not `example.com`. Being lenient
+  here would have the platform call a name covered that a browser refuses,
+  which is the one answer worse than no answer.
+
+**Expiry is an `AlertSubject`, not a constant.** Thirty days is right for a
+business renewing by hand and absurd for one on ACME with a fortnight's
+lifetime, so the threshold is written as a rule and core ships none — the
+decision tax, dunning and placement all made. The gatherer emits **every**
+live certificate including expired ones with a negative figure, because
+"below 14" has to catch "minus 3": a certificate that lapsed last night is the
+one somebody most needs to hear about. The screen's own thirty days groups a
+list and never decides whether anybody is told.
+
+**A fourth borrowed label.** The chain column reused "In date", which is about
+expiry, so an answer about time sat under a heading about completeness. That
+is four in one session — the affected-customers table, the actions table, the
+abuse section heading, and this. It is now worth a habit: when adding a
+column, check that its wording was written *for* that column.
+
+**`Domain` has no `service_id`** — a domain is not a service (ADR 0028) and
+does not carry one. A certificate's link to a service, when it has one, comes
+from the node it was found on rather than sideways from the name it covers.

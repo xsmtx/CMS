@@ -709,6 +709,7 @@ return [
         'maintenance' => 'Maintenance',
         'calendar' => 'Calendar',
         'abuse' => 'Abuse',
+        'certificates' => 'Certificates',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

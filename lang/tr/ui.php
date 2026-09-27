@@ -704,6 +704,7 @@ return [
         'maintenance' => 'Bakım',
         'calendar' => 'Takvim',
         'abuse' => 'Kötüye kullanım',
+        'certificates' => 'Sertifikalar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

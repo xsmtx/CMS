@@ -11,7 +11,6 @@ use App\Domain\Network\Exceptions\InvalidAddress;
 use App\Domain\Network\IpAddress;
 use App\Infrastructure\Network\Models\DdosEvent;
 use App\Infrastructure\Network\Models\IpAddressRecord;
-use App\Infrastructure\Provisioning\Models\Service;
 
 /**
  * Writes down an attack, and works out whose it was.

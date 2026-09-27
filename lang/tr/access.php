@@ -115,6 +115,10 @@ return [
             'label' => 'SLA kredisi ver',
             'description' => 'Bir kesinti nedeniyle müşterinin faturasına alacak dekontu keser.',
         ],
+        'security.certificates.view' => [
+            'label' => 'Sertifika filosunu gör',
+            'description' => 'Ne sunulduğunu, ne zaman dolduğunu ve kime ait olduğunu okur.',
+        ],
         'security.abuse.view' => [
             'label' => 'Kötüye kullanım dosyalarını gör',
             'description' => 'Neyin şikâyet edildiğini, kime ait olduğunu ve masanın ne yaptığını okur.',

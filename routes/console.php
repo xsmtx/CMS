@@ -213,3 +213,18 @@ Schedule::command('platform:run abuse-retention')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground();
+
+/*
+ * Asking every certificate source what it currently has deployed.
+ *
+ * Hourly. A certificate's life is measured in weeks and the thing an operator
+ * wants to hear about — a renewal that silently failed — is visible for days
+ * before it matters; asking a control panel every five minutes for a list
+ * that changes twice a month is a denial of service against your own
+ * operator.
+ */
+Schedule::command('platform:run certificates')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();

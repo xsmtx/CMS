@@ -159,6 +159,13 @@ final class CorePermissions
             new PermissionDefinition('security.abuse.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('security.abuse.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('security.abuse.act', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * The certificate fleet (§8). A view and nothing else, because
+             * there is nothing to write: core discovers what is deployed
+             * and issuing belongs to a provisioning module.
+             */
+            new PermissionDefinition('security.certificates.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.request', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('network.changes.approve', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(

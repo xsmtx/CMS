@@ -54,6 +54,19 @@ enum AlertSubject: string
     case Capacity = 'capacity';
 
     /**
+     * How many days a deployed certificate has left (§8).
+     *
+     * **The threshold is the operator's**, which is the whole reason this is
+     * a rule rather than a constant. Thirty days is right for a business that
+     * renews by hand and absurd for one on ACME with a fortnight's lifetime;
+     * core shipping a number would be core deciding when somebody should care.
+     *
+     * It is empty on an installation with no certificate adapter, like
+     * `Metric` — honest rather than broken.
+     */
+    case CertificateExpiry = 'certificate_expiry';
+
+    /**
      * Whether this subject needs a target naming which thing.
      *
      * A metric rule is about a measurement across everything that reports it;
@@ -64,7 +77,12 @@ enum AlertSubject: string
     {
         return match ($this) {
             self::HealthCheck, self::AdapterHealth, self::AutomationRun => true,
-            self::Metric, self::FailedOperation, self::Capacity => false,
+            self::Metric, self::FailedOperation, self::Capacity,
+            // No target: a rule about expiry is about every certificate this
+            // installation can see, not about one of them. An operator who
+            // wanted one certificate watched would be writing a rule they
+            // have to rewrite at every renewal.
+            self::CertificateExpiry => false,
         };
     }
 
@@ -78,7 +96,9 @@ enum AlertSubject: string
     public function isNumeric(): bool
     {
         return match ($this) {
-            self::Metric, self::Capacity => true,
+            // Days remaining, which is a number an operator compares
+            // against — "below 14" is the rule everybody writes.
+            self::Metric, self::Capacity, self::CertificateExpiry => true,
             self::HealthCheck, self::AdapterHealth, self::AutomationRun, self::FailedOperation => false,
         };
     }

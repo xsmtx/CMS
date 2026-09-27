@@ -104,8 +104,7 @@ final class AbuseCase extends Model implements AuditLabel
         // timeline learned: `created_at` has a resolution of one second and
         // two entries inside it came back in whatever order the database
         // felt like.
-        return $this->hasMany(AbuseCaseEvent::class)
-            ->orderByDesc('created_at')
+        return $this->hasMany(AbuseCaseEvent::class)->latest()
             ->orderByDesc('id');
     }
 
@@ -114,7 +113,7 @@ final class AbuseCase extends Model implements AuditLabel
      */
     public function evidence(): HasMany
     {
-        return $this->hasMany(AbuseEvidence::class)->orderByDesc('captured_at');
+        return $this->hasMany(AbuseEvidence::class)->latest('captured_at');
     }
 
     /**
@@ -122,7 +121,7 @@ final class AbuseCase extends Model implements AuditLabel
      */
     public function actions(): HasMany
     {
-        return $this->hasMany(AbuseActionRecord::class)->orderBy('created_at');
+        return $this->hasMany(AbuseActionRecord::class)->oldest();
     }
 
     /**

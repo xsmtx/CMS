@@ -19,6 +19,7 @@ use App\Infrastructure\Operations\Models\Operation;
 use App\Infrastructure\Resources\Models\ResourceAdapter;
 use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
+use App\Infrastructure\Security\Models\Certificate;
 use Illuminate\Support\Facades\Lang;
 use Throwable;
 
@@ -73,6 +74,7 @@ final readonly class GatherObservations
             AlertSubject::AutomationRun => $this->automationRuns($target),
             AlertSubject::FailedOperation => $this->failedOperations(),
             AlertSubject::Capacity => $this->capacityRuns($organizationId),
+            AlertSubject::CertificateExpiry => $this->certificates($organizationId),
         };
     }
 
@@ -315,6 +317,52 @@ final readonly class GatherObservations
                 // trap through a third door.
                 label: $row['node']->label.' — '
                     .__('infrastructure.metrics.'.$row['metric']->value),
+                bad: true,
+                observed: (string) __('reliability.observed.days_left', ['days' => $days]),
+                value: (float) $days,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * How many days each live certificate has left (§8).
+     *
+     * Every one of them, every time: the rule decides which are worth an
+     * alert, and a gatherer that pre-filtered by some number of its own would
+     * be a second threshold nobody could see. Expired ones are included with
+     * a negative figure, because "below 14" has to catch "minus 3" — a
+     * certificate that lapsed last night is the one somebody most needs to
+     * hear about.
+     *
+     * @return list<Observation>
+     */
+    private function certificates(?string $organizationId): array
+    {
+        if ($organizationId === null) {
+            return [];
+        }
+
+        $observations = [];
+
+        foreach (
+            Certificate::query()
+                ->where('organization_id', $organizationId)
+                ->live()
+                ->orderBy('not_after')
+                ->limit(500)
+                ->get() as $certificate
+        ) {
+            $days = $certificate->daysRemaining();
+
+            $observations[] = new Observation(
+                // The fingerprint, not the name: one name is served by four
+                // certificates over a year, and an alert keyed on the name
+                // would look like the same alert clearing and reopening at
+                // every renewal.
+                key: $certificate->fingerprint,
+                label: $certificate->common_name,
                 bad: true,
                 observed: (string) __('reliability.observed.days_left', ['days' => $days]),
                 value: (float) $days,

@@ -50,13 +50,13 @@ final readonly class OperationsCalendar
             ->where(static fn ($query) => $query
                 ->whereNull('resolved_at')
                 ->orWhere('resolved_at', '>=', $from))
-            ->orderBy('started_at')
+            ->oldest('started_at')
             ->get();
 
         $windows = MaintenanceWindow::query()
             ->where('starts_at', '<=', $to)
             ->where('ends_at', '>=', $from)
-            ->orderBy('starts_at')
+            ->oldest('starts_at')
             ->get();
 
         $days = [];

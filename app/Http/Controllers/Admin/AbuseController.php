@@ -57,7 +57,7 @@ final class AbuseController extends Controller
             // and a partial load is the same exception by another route.
             ->with(Customer::displayNameWith('customer'))
             ->withCount('actions')
-            ->when(! $showAll, static fn ($query) => $query->open())
+            ->unless($showAll, static fn ($query) => $query->open())
             ->latest('reported_at')
             ->paginate(25)
             ->withQueryString();
@@ -176,8 +176,7 @@ final class AbuseController extends Controller
             actor: $this->staff($actor),
         );
 
-        return redirect()
-            ->route('admin.security.abuse.show', $case)
+        return to_route('admin.security.abuse.show', $case)
             ->with('status', __('security.abuse.opened'));
     }
 

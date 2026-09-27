@@ -43,6 +43,10 @@ return [
             'label' => 'Telemetry',
             'description' => 'Asks every enabled monitoring adapter what it currently knows.',
         ],
+        'certificates' => [
+            'label' => 'Certificates',
+            'description' => 'Asks every certificate source what it currently has deployed, and retires what has stopped being served.',
+        ],
         'abuse_retention' => [
             'label' => 'Abuse retention',
             'description' => 'Deletes abuse evidence that is past its retention deadline. The one task here whose job is to forget.',
