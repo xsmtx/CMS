@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Notifications\Listeners;
 
+use App\Application\Notifications\DeepLink;
 use App\Application\Notifications\Notifier;
 use App\Application\Notifications\ResolveRecipients;
 use App\Domain\Billing\Events\InvoiceIssued;
@@ -44,6 +45,7 @@ final readonly class SendEventNotifications
     public function __construct(
         private Notifier $notifier,
         private ResolveRecipients $recipients,
+        private DeepLink $links,
     ) {}
 
     /**
@@ -66,7 +68,7 @@ final readonly class SendEventNotifications
                 'order_number' => $order->number,
                 'total' => $order->total,
             ],
-            url('/client/orders/'.$order->id),
+            $this->links->order($order),
             organizationId: $event->organizationId,
         );
     }
@@ -86,7 +88,7 @@ final readonly class SendEventNotifications
                 'order_number' => $order->number,
                 'total' => $order->total,
             ],
-            url('/client/orders/'.$order->number),
+            $this->links->order($order),
             organizationId: $event->organizationId,
         );
     }
@@ -107,7 +109,7 @@ final readonly class SendEventNotifications
                 'total' => $invoice->total,
                 'due_date' => $invoice->due_on,
             ],
-            url('/client/billing/invoices/'.$invoice->number),
+            $this->links->invoice($invoice),
             organizationId: $event->organizationId,
         );
     }
@@ -134,7 +136,7 @@ final readonly class SendEventNotifications
                 'invoice_number' => $invoice->number,
                 'amount' => $payment->amount,
             ],
-            url('/client/billing/invoices/'.$invoice->number),
+            $this->links->invoice($invoice),
             organizationId: $event->organizationId,
         );
     }
@@ -164,7 +166,7 @@ final readonly class SendEventNotifications
                 // declined" from the bank is more use than a generic line.
                 'reason' => $event->reason ?? '',
             ],
-            $invoice === null ? null : url('/client/billing/invoices/'.$invoice->number),
+            $invoice === null ? null : $this->links->invoice($invoice),
             organizationId: $event->organizationId,
         );
     }
@@ -187,7 +189,7 @@ final readonly class SendEventNotifications
                 'service_name' => $service->name,
                 'domain' => $service->domain ?? '',
             ],
-            url('/client/services/'.$service->id),
+            $this->links->service($service),
             organizationId: $event->organizationId,
         );
     }
@@ -207,7 +209,7 @@ final readonly class SendEventNotifications
                 'service_name' => $service->name,
                 'reason' => $event->reason ?? '',
             ],
-            url('/client/services/'.$service->id),
+            $this->links->service($service),
             organizationId: $event->organizationId,
         );
     }
@@ -243,7 +245,7 @@ final readonly class SendEventNotifications
                 'domain' => $domain->name,
                 'expires_on' => $domain->expires_on,
             ],
-            url('/client/domains/'.$domain->id),
+            $this->links->domain($domain),
             organizationId: $event->organizationId,
         );
     }

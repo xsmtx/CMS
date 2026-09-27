@@ -2586,3 +2586,33 @@ and nothing here is scheduled to the second.
 section title and the submit all read "Plan a window". It is the same fix as
 the incidents screens — a button says what pressing it does — and it is worth
 grepping a new form for the heading's own words before calling it done.
+
+**A notification's link is built in one place** (`DeepLink`), and §26's deep
+links are done. The bug it was written for: `SendEventNotifications` built
+`/client/orders/{ulid}` for a route that looks an order up by its **number**,
+so **the first message this platform ever sends a customer — their order
+confirmation — arrived with a link that answered 404.** Everything passed. The
+message was sent, the delivery row was written, and the string inside it was
+never asked to resolve.
+
+`tests/Feature/DeepLinkTest.php` does not assert the shape of a URL: it
+**opens** every one of them, as the person who would have received it, and
+expects the page. A path that exists with the wrong key in it still 404s,
+which is the whole failure — and the test was checked against the original bug
+before being trusted. It also refuses a listener that builds a `/client` or
+`/admin` URL by hand, because the other half of this mistake is the one that
+leaks rather than 404s: a customer handed an admin link.
+
+**A test that opens a portal page needs the contact to hold a portal role**,
+or it drives a 403 and `assertOk()` fails for a reason that looks like the
+thing under test. It has now bitten twice.
+
+**There is deliberately no `NotificationChannel::Push`.** §26 asks for a push
+channel, and a member nothing implements is a member nothing can set —
+`ChannelRegistry` would hold no entry for it, `Notifier` would deliver
+nothing, and `notification_deliveries` would record nothing, which is the
+`AddonStatus` rule through a different door. What "push" means for an operator
+being woken is already `Sms` and `Chat` (SDK 1.3), both of which a module
+implements. Web push is a subscription table, a VAPID keypair and a service
+worker; it is real work and the provider half belongs in a module, so it is
+left undone and said so here rather than half-built.

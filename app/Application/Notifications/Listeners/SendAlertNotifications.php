@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Notifications\Listeners;
 
+use App\Application\Notifications\DeepLink;
 use App\Application\Notifications\Notifier;
 use App\Application\Notifications\ResolveRecipients;
 use App\Domain\Notifications\NotificationEvent;
@@ -37,6 +38,7 @@ final readonly class SendAlertNotifications
         private Notifier $notifier,
         private ResolveRecipients $recipients,
         private OrganizationContext $organizations,
+        private DeepLink $links,
     ) {}
 
     public function raised(AlertRaised $event): void
@@ -79,7 +81,7 @@ final readonly class SendAlertNotifications
             ],
             // A deep link, not a list to hunt through: somebody reading this
             // on a phone at three in the morning has one press to make.
-            url('/admin/reliability/alerts'),
+            $this->links->alerts(),
             organizationId: $event->organizationId,
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Notifications\Listeners;
 
+use App\Application\Notifications\DeepLink;
 use App\Application\Notifications\Notifier;
 use App\Application\Notifications\ResolveRecipients;
 use App\Domain\Notifications\NotificationEvent;
@@ -33,6 +34,7 @@ final readonly class SendTicketNotifications
     public function __construct(
         private Notifier $notifier,
         private ResolveRecipients $recipients,
+        private DeepLink $links,
     ) {}
 
     public function opened(TicketOpened $event): void
@@ -57,7 +59,7 @@ final readonly class SendTicketNotifications
                 NotificationEvent::TicketOpened,
                 $customerSide,
                 $this->dataFor($ticket),
-                url('/client/support/'.$ticket->id),
+                $this->links->customerTicket($ticket),
                 organizationId: $event->organizationId,
             );
         }
@@ -66,7 +68,7 @@ final readonly class SendTicketNotifications
             NotificationEvent::TicketOpened,
             $this->staffFor($ticket),
             $this->dataFor($ticket),
-            url('/admin/support/'.$ticket->id),
+            $this->links->staffTicket($ticket),
             organizationId: $event->organizationId,
         );
     }
@@ -101,7 +103,7 @@ final readonly class SendTicketNotifications
                     ...$this->carbonCopies($ticket),
                 ],
                 $this->dataFor($ticket),
-                url('/client/support/'.$ticket->id),
+                $this->links->customerTicket($ticket),
                 organizationId: $event->organizationId,
             );
 
@@ -112,7 +114,7 @@ final readonly class SendTicketNotifications
             NotificationEvent::TicketReplied,
             $this->staffFor($ticket),
             $this->dataFor($ticket),
-            url('/admin/support/'.$ticket->id),
+            $this->links->staffTicket($ticket),
             organizationId: $event->organizationId,
         );
     }
