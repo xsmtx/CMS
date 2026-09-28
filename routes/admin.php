@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\DcimController;
 use App\Http\Controllers\Admin\DdosEventController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\GatewayLogController;
+use App\Http\Controllers\Admin\HardwarePartController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ImportController;
@@ -517,6 +518,25 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::delete('infrastructure/dcim/racks/{rack}/positions/{position}', [DcimController::class, 'remove'])
         ->name('infrastructure.dcim.remove');
+
+    /*
+     * Hardware parts (§11). About parts, not machines: a disk outlives
+     * the machine it was first fitted to.
+     */
+    Route::get('infrastructure/parts', [HardwarePartController::class, 'index'])
+        ->name('infrastructure.parts');
+
+    Route::post('infrastructure/parts', [HardwarePartController::class, 'store'])
+        ->name('infrastructure.parts.store');
+
+    Route::get('infrastructure/parts/{part}', [HardwarePartController::class, 'show'])
+        ->name('infrastructure.parts.show');
+
+    Route::post('infrastructure/parts/{part}/fit', [HardwarePartController::class, 'fit'])
+        ->name('infrastructure.parts.fit');
+
+    Route::post('infrastructure/parts/{part}/remove', [HardwarePartController::class, 'remove'])
+        ->name('infrastructure.parts.remove');
 
     Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
         ->middleware(['can:infrastructure.power', 'auth.recent'])

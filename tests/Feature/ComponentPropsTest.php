@@ -41,6 +41,18 @@ function silentlyIgnoringProps(): array
         // Renders a `<tr>`. Anything else falls through and does nothing.
         // `key` and the directives are Vue's own and are not props.
         'AppTableRow' => ['id', 'label', 'key', 'v-for', 'v-if', 'v-else-if', 'v-show', 'class'],
+
+        /*
+         * Renders a `<label>`. The “any” choice is the first entry in
+         * `options` with an empty value, and a caller who reaches for an
+         * `any-label` prop instead gets an attribute on the label element and
+         * a filter with no words in it — which is exactly what happened on
+         * the hardware screen.
+         */
+        'FilterSelect' => [
+            'label', 'options', 'modelValue', 'v-model',
+            'key', 'v-for', 'v-if', 'v-else-if', 'v-show', 'class',
+        ],
     ];
 }
 

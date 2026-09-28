@@ -714,6 +714,7 @@ return [
         'load_balancers' => 'Yük dengeleyiciler',
         'machines' => 'Makineler',
         'dcim' => 'Veri merkezi',
+        'parts' => 'Donanım',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

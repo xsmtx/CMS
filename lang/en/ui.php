@@ -719,6 +719,7 @@ return [
         'load_balancers' => 'Load balancers',
         'machines' => 'Machines',
         'dcim' => 'Datacenter',
+        'parts' => 'Hardware',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

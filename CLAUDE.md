@@ -3346,3 +3346,33 @@ rack elevation linked a server's name to `/admin/servers/{id}`, and there is no
 per-server page in this product — servers are managed on Apps → Infrastructure.
 A path a page names is a promise, and the guard written after the fleet screen
 spent several phases posting to a 404 is what stopped this one shipping.
+
+**Hardware inventory is about parts, not machines.** A disk outlives the
+machine it was first fitted to, and "where has this serial been" is what a
+warranty claim turns on — so `part_fittings` is append-only like
+`ip_assignments`, a part is in one machine at a time, and fitting one that is
+already somewhere closes that fitting in the same transaction. Fitting a part
+into the machine it is already in does **nothing**: a double-press must not
+read as somebody pulling the disk and putting it back.
+
+**A warranty has three answers, not two.** In, out, and nobody recorded one.
+The third is a gap in the register, and drawing it as expired would send
+somebody to argue with a vendor who is still obliged. The list sorts soonest
+to lapse first and the unrecorded ones **last**, because the screen is opened
+for the things about to happen.
+
+**`warranty_until` is not validated as being in the future.** A part whose
+warranty ran out last year is exactly the one an operator needs to record.
+
+**`FilterSelect` has no `any-label` prop** — the "any" choice is the first
+option with an empty value. Passing one puts an attribute on a `<label>` and
+leaves the filter showing nothing, which is what happened on the hardware
+screen. `ComponentPropsTest` now names it alongside `AppTableRow`: the list is
+the components where an ignored attribute is *invisible*, and this was the
+second.
+
+**A scripted edit with no assertion is an edit that may silently not happen.**
+A batch of `str.replace` calls where only some had `assert count == 1` left an
+old form on the page beside its replacement; `vue-tsc` caught it, and only
+because the handler's signature had changed. Assert every replacement, or use
+the Edit tool, which fails loudly.

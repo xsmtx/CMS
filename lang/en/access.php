@@ -132,6 +132,10 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'dcim.parts.manage' => [
+            'label' => 'Record hardware parts',
+            'description' => 'Add parts, and record which machine each one is fitted to.',
+        ],
         'infrastructure.machines.view' => [
             'label' => 'See virtual machines',
             'description' => 'Read every host and the machines on it, and what each one is doing.',

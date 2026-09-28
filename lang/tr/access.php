@@ -131,6 +131,10 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'dcim.parts.manage' => [
+            'label' => 'Donanım parçalarını kaydet',
+            'description' => 'Parça ekler ve her birinin hangi makinede takılı olduğunu kaydeder.',
+        ],
         'infrastructure.machines.view' => [
             'label' => 'Sanal makineleri gör',
             'description' => 'Her ana makineyi, üzerindeki makineleri ve her birinin ne yaptığını okur.',

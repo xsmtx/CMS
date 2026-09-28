@@ -216,6 +216,7 @@ final class CorePermissions
              */
             new PermissionDefinition('dcim.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('dcim.manage', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('dcim.parts.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(
                 'infrastructure.power',
                 'infrastructure',
