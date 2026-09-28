@@ -200,6 +200,15 @@ enum AutomationTask: string
     case Power = 'power';
 
     /**
+     * Asking every panel which web applications it is hosting (§18).
+     *
+     * Daily. A plugin release is not something anybody is woken for, and a
+     * fleet of four hundred sites asked hourly is a panel's API budget spent
+     * on nothing.
+     */
+    case Sites = 'sites';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -276,7 +285,7 @@ enum AutomationTask: string
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
             self::LoadBalancers, self::Machines => 60,
-            self::ZoneHealth, self::Reputation, self::Usage => 1440,
+            self::ZoneHealth, self::Reputation, self::Usage, self::Sites => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

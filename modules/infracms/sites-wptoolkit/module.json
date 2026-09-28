@@ -1,0 +1,47 @@
+{
+    "slug": "sites-wptoolkit",
+    "name": "WP Toolkit",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads which WordPress installations a Plesk or cPanel server is hosting, how far behind each one is, and what has been published against the plugins and themes on it.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.11",
+    "platform": "*",
+    "namespace": "InfraCMS\\SitesWptoolkit",
+    "entrypoint": "WpToolkitModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "Panel address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the panel answers, for example https://plesk.example.com:8443."
+        },
+        {
+            "key": "server_node",
+            "label": "The machine this panel runs on",
+            "type": "text",
+            "required": false,
+            "hint": "A node key from the resource graph. Sites are hung off it, so an outage on that machine names the customer sites it takes with it. Left empty, the sites stand on their own."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a panel with a self-signed certificate on a trusted network."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "20",
+            "hint": "A panel listing four hundred sites is slower than a device answering one question."
+        }
+    ]
+}

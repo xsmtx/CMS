@@ -34,7 +34,7 @@ return [
         'target_hint' => 'Leave empty to ask about every one of them.',
         'comparison' => 'When it is',
         'threshold' => 'Threshold',
-        'threshold_hint' => 'A percentage for a ratio, a number of days for a capacity forecast.',
+        'threshold_hint' => 'Whatever the reading is measured in — a percentage, a number of days, a count.',
         'for_minutes' => 'For at least, in minutes',
         'for_minutes_hint' => 'Zero raises the moment it is true. A spike that lasts nine seconds is not an alert.',
         'severity' => 'Severity',
@@ -89,6 +89,8 @@ return [
         'reputation_listing' => 'How long one of our addresses has been blocklisted',
         'backup_age' => 'How old the last good backup is',
         'capacity' => 'Something running out',
+        'site_updates' => 'How much of a site is out of date',
+        'site_vulnerability' => 'A site with a known-vulnerable plugin or theme',
     ],
 
     'comparisons' => [
@@ -102,6 +104,11 @@ return [
         'days_left' => ':days days left',
         'days_listed' => 'listed :days days',
         'days_since_backup' => 'last good copy :days days old',
+        // The core is named separately because it is the one component
+        // whose age says something about every other.
+        'behind' => ':count out of date',
+        'behind_with_core' => 'the core, and :count more out of date',
+        'vulnerable' => ':count with an advisory',
     ],
 
     /*

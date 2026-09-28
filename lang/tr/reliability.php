@@ -34,7 +34,7 @@ return [
         'target_hint' => 'Hepsini sormak için boş bırakın.',
         'comparison' => 'Şu olduğunda',
         'threshold' => 'Eşik',
-        'threshold_hint' => 'Oran için yüzde, kapasite tahmini için gün sayısı.',
+        'threshold_hint' => 'Ölçüm ne ile ifade ediliyorsa o — yüzde, gün sayısı ya da adet.',
         'for_minutes' => 'En az şu kadar süre, dakika',
         'for_minutes_hint' => 'Sıfır, doğru olduğu anda açar. Dokuz saniye süren bir tepe uyarı değildir.',
         'severity' => 'Önem',
@@ -78,6 +78,8 @@ return [
         'certificate_expiry' => 'Sertifikanın ne kadar ömrü kaldığı',
         'reputation_listing' => 'Adreslerimizden birinin ne kadar süredir kara listede olduğu',
         'backup_age' => 'Son başarılı yedeğin ne kadar eski olduğu',
+        'site_updates' => 'Bir sitenin ne kadarının güncel olmadığı',
+        'site_vulnerability' => 'Bilinen açığı olan eklentisi ya da teması olan site',
         'capacity' => 'Tükenmekte olan bir şey',
     ],
 
@@ -92,6 +94,9 @@ return [
         'days_left' => ':days gün kaldı',
         'days_listed' => ':days gündür kara listede',
         'days_since_backup' => 'son başarılı kopya :days günlük',
+        'behind' => ':count güncel değil',
+        'behind_with_core' => 'çekirdek ve :count şey daha güncel değil',
+        'vulnerable' => ':count tanesi için uyarı var',
     ],
 
     'incident_states' => [

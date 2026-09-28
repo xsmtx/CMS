@@ -101,6 +101,36 @@ enum AlertSubject: string
     case BackupAge = 'backup_age';
 
     /**
+     * How many things on one site are behind their latest version (§18).
+     *
+     * The core counts as one of them here, which is the only place the two
+     * are added together — a rule is a question an operator writes once, and
+     * “more than ten things on this site are out of date” is the question
+     * they mean. The alert’s own sentence says whether the core is among
+     * them.
+     *
+     * The threshold is the operator’s, like every other numeric subject. A
+     * managed-WordPress business and one selling shared hosting by the gigabyte
+     * do not agree about when a customer’s plugin list is anybody’s problem.
+     */
+    case SiteUpdates = 'site_updates';
+
+    /**
+     * A site with a component something has published an advisory against
+     * (§18).
+     *
+     * **Separate from `SiteUpdates`, and it must stay separate.** Three
+     * versions behind with nothing said against it is housekeeping; a
+     * published advisory is tonight. One subject would make the four hundred
+     * of the first kind hide the one of the second — and an operator who
+     * learned to ignore the list would be right to.
+     *
+     * Not numeric: one vulnerable plugin is the alert. A threshold here would
+     * be somebody writing “wake me at three”.
+     */
+    case SiteVulnerability = 'site_vulnerability';
+
+    /**
      * Whether this subject needs a target naming which thing.
      *
      * A metric rule is about a measurement across everything that reports it;
@@ -116,7 +146,9 @@ enum AlertSubject: string
             // installation can see, not about one of them. An operator who
             // wanted one certificate watched would be writing a rule they
             // have to rewrite at every renewal.
-            self::CertificateExpiry, self::ReputationListing, self::BackupAge => false,
+            self::CertificateExpiry, self::ReputationListing, self::BackupAge,
+            // Nor here: a rule about out-of-date sites is about the fleet.
+            self::SiteUpdates, self::SiteVulnerability => false,
         };
     }
 
@@ -136,8 +168,11 @@ enum AlertSubject: string
             // because how long it has been true is what decides whether
             // anybody should be woken for it.
             self::Metric, self::Capacity, self::CertificateExpiry,
-            self::ReputationListing, self::BackupAge => true,
-            self::HealthCheck, self::AdapterHealth, self::AutomationRun, self::FailedOperation => false,
+            self::ReputationListing, self::BackupAge, self::SiteUpdates => true,
+            self::HealthCheck, self::AdapterHealth, self::AutomationRun,
+            // One vulnerable plugin is the alert; a threshold would be
+            // somebody writing “wake me at three of them”.
+            self::FailedOperation, self::SiteVulnerability => false,
         };
     }
 

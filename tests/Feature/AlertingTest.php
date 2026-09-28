@@ -421,3 +421,31 @@ it('leaves a disabled rule alone', function (): void {
     expect($summary->examined)->toBe(0)
         ->and(Alert::query()->count())->toBe(0);
 });
+
+/**
+ * The form's shape comes from the enum, and this is why.
+ *
+ * The page used to hold a second copy of which subjects are numeric — a
+ * hand-written `subject === 'metric' || subject === 'capacity'` — and it
+ * stopped being true three phases later. Certificate expiry, blocklist age
+ * and backup age were all drawn with no comparison and no threshold field,
+ * and `EvaluateAlertRule` says in as many words that a numeric rule with no
+ * threshold matches nothing: every rule an operator wrote on those three
+ * subjects was a rule that could never fire, and nothing said so.
+ */
+it('sends each subject its own shape rather than letting the page guess', function (): void {
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/reliability/alerts')
+        ->assertOk()
+        ->assertInertia(function ($page): void {
+            $sent = collect($page->toArray()['props']['options']['subjects'])
+                ->keyBy('value');
+
+            expect($sent)->toHaveCount(count(AlertSubject::cases()));
+
+            foreach (AlertSubject::cases() as $subject) {
+                expect($sent[$subject->value]['numeric'])->toBe($subject->isNumeric())
+                    ->and($sent[$subject->value]['needsTarget'])->toBe($subject->needsTarget());
+            }
+        });
+});

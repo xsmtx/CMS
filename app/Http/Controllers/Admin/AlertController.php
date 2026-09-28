@@ -64,7 +64,12 @@ final class AlertController extends Controller
                 ->map($this->ruleRow(...))
                 ->all()),
             'options' => [
-                'subjects' => $this->options(AlertSubject::cases()),
+                // The subjects carry their own shape, because the page
+                // used to hold a second copy of it and the two drifted:
+                // three numeric subjects were drawn with no threshold field
+                // at all, and a numeric rule with no threshold matches
+                // nothing. One answer, from the enum that owns it.
+                'subjects' => $this->subjects(),
                 'severities' => $this->options(AlertSeverity::cases()),
                 'comparisons' => $this->options(AlertComparison::cases()),
             ],
@@ -128,13 +133,29 @@ final class AlertController extends Controller
     }
 
     /**
-     * @param  list<AlertSubject|AlertSeverity|AlertComparison>  $cases
+     * @return list<array{value: string, label: string, needsTarget: bool, numeric: bool}>
+     */
+    private function subjects(): array
+    {
+        return array_values(array_map(
+            static fn (AlertSubject $subject): array => [
+                'value' => $subject->value,
+                'label' => (string) __($subject->labelKey()),
+                'needsTarget' => $subject->needsTarget(),
+                'numeric' => $subject->isNumeric(),
+            ],
+            AlertSubject::cases(),
+        ));
+    }
+
+    /**
+     * @param  list<AlertSeverity|AlertComparison>  $cases
      * @return list<array{value: string, label: string}>
      */
     private function options(array $cases): array
     {
         return array_values(array_map(
-            static fn (AlertSubject|AlertSeverity|AlertComparison $case): array => [
+            static fn (AlertSeverity|AlertComparison $case): array => [
                 'value' => $case->value,
                 'label' => (string) __($case->labelKey()),
             ],

@@ -113,10 +113,10 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A to F
+plan before any of it was built — and its phases are lettered. **Phases A to G
 are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
-`phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`); G to J are not
-started.
+`phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`,
+`phase-g-result.md`); H to J are not started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -2214,10 +2214,13 @@ hours) is a permission with extra steps, and this product has roles for those.
 takes a nullable staff user and writes `bySystem()` when there is none — a
 record whose author was invented would be a record that lied about who acted.
 
+**Phase G is complete.** The DCIM spine, hardware parts, the power path, remote
+hands and the WordPress fleet's read half. `docs/architecture/phase-g-result.md`
+records each decision; H to J are not started.
+
 **Phase C is complete.** IPAM, the device contracts and the FortiGate module,
 topology discovery, the guarded change workflow, just-in-time access and DDoS
-events. `docs/architecture/phase-c-plan.md` records each decision; D to J are
-not started.
+events. `docs/architecture/phase-c-plan.md` records each decision.
 
 **An attack is attributed through `ip_assignments`, at the moment it
 started.** Every scrubbing vendor can say an address was hit with 40 Gbps of
@@ -3460,3 +3463,60 @@ A grid is the answer rather than a flex row: fields that belong together
 **A form is a column, not the window.** The raise form ran the full 1400px, so
 the sentence somebody types for a technician was one line 1390 pixels wide.
 `max-w-3xl`, like every other form in the admin area.
+
+**The WordPress fleet is a read, and the write half is deliberately absent**
+(§18, `SiteProvider`, `DiscoverSites`, `modules/infracms/sites-wptoolkit`). A
+site is a graph node and its plugin list is an attribute on it — §14's rule
+again, because four hundred sites times sixty plugins rewritten every day is a
+time-series database nobody sized. A panel answers, never the site itself: a
+WordPress installation cannot say what it is running without a plugin inside
+it, and a platform that needed one could not answer "which of our sites has
+the vulnerable component".
+
+**Out of date and vulnerable are different facts, and two alert subjects
+rather than one.** Three releases behind with nothing said against it is
+housekeeping somebody does on a Thursday; a published advisory is tonight. A
+single "needs attention" figure would let four hundred of the first kind hide
+the one of the second — and an operator who learned to ignore that list would
+be right to.
+
+**A site nothing looked at is not a site that is clean.** `vulnerable` is
+three-valued on a component and `vulnerability_data` on the node says whether
+anything checked at all; `AlertSubject::SiteVulnerability` produces no
+observation where nothing did. Reading an absent advisory list as zero hands a
+whole fleet a clean bill of health it never earned, which is the one number in
+this phase somebody would put on a slide.
+
+**Not knowing a latest version is neither current nor behind.**
+`SiteVersion::isBehind()` answers false to both nulls, and one place answers
+it: two copies would eventually disagree, and a site would be counted as up to
+date in the figure and out of date in the list.
+
+**`AdapterArea` is now 25, not the handoff's 23.** `Mail` was added for §13 and
+`Site` for §18, each because the requested feature had no contract in §27's
+list and the nearest one was not near — filing a customer's plugin list under
+`Automation` would put Ansible and WordPress behind one switch an operator
+flips once.
+
+**There is no `site.update.write`, and that is the opposite of
+`FirewallPolicyWrite`.** The firewall's write exists with no interface method
+because it is a write somebody could make today over the same connection, and
+naming it keeps the audit honest. A site update capability would have nothing
+in core that could ever call it, which is a switch that lies — the rule
+`ReputationRead` states from the other side.
+
+**A page that holds a second copy of an enum's shape will drift from it.** The
+alert rule form decided which subjects are numeric with a hand-written
+`subject === 'metric' || subject === 'capacity'`, and three phases later
+certificate expiry, blocklist age and backup age were all drawn with no
+threshold field — while `EvaluateAlertRule` refuses a numeric rule with no
+threshold. **Every rule an operator wrote on those three subjects was a rule
+that could never fire**, and nothing said so: the screen rendered, the rule
+saved, the list stayed empty. `needsTarget` and `numeric` are sent per subject
+now and `AlertingTest` pins them against `cases()`. Anything a form decides
+from an enum's *meaning* — which fields to show, which are required — belongs
+in the payload, not in a literal in the template.
+
+A hint that names two of six cases has drifted the same way. "A percentage for
+a ratio, a number of days for a capacity forecast" was written when there were
+two numeric subjects; it is a sentence about any of them now.

@@ -17,7 +17,7 @@
  * and a second mapping in the browser would be a second place to get it wrong.
  */
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
@@ -45,6 +45,19 @@ interface PaginationLink {
 interface Option {
   value: string
   label: string
+}
+
+/**
+ * A subject carries its own shape, because the page used to hold a second
+ * copy of it. The hand-written list said only `metric` and `capacity` were
+ * numeric, so certificate expiry, blocklist age and backup age were drawn
+ * with no threshold field at all — and a numeric rule with no threshold
+ * matches nothing, which made every one of those rules a rule that could
+ * never fire.
+ */
+interface SubjectOption extends Option {
+  needsTarget: boolean
+  numeric: boolean
 }
 
 interface AlertRow {
@@ -92,7 +105,7 @@ const props = defineProps<{
   }
   filters: { all: boolean }
   rules: RuleRow[]
-  options: { subjects: Option[]; severities: Option[]; comparisons: Option[] }
+  options: { subjects: SubjectOption[]; severities: Option[]; comparisons: Option[] }
   can: { manage: boolean }
 }>()
 
@@ -114,11 +127,36 @@ const form = useForm({
   note: '',
 })
 
+const subject = computed(() =>
+  props.options.subjects.find((option) => option.value === form.subject),
+)
+
 /**
  * A threshold is only asked for where it means something. A field saying "90"
  * next to "the scheduler has stopped" is a field nobody can fill in.
  */
-const isNumeric = computed(() => form.subject === 'metric' || form.subject === 'capacity')
+const isNumeric = computed(() => subject.value?.numeric === true)
+
+/**
+ * And a target only where there is one to name. A rule about certificate
+ * expiry is about every certificate this installation can see, not about one
+ * of them — an operator who named one would be rewriting the rule at every
+ * renewal.
+ */
+const needsTarget = computed(() => subject.value?.needsTarget === true)
+
+/*
+ * A target left behind by a subject that had one would be submitted with a
+ * subject that has none — the field is gone from the screen and the value is
+ * still on the form. The same for a threshold.
+ */
+watch(needsTarget, (wanted) => {
+  if (!wanted) form.target = ''
+})
+
+watch(isNumeric, (wanted) => {
+  if (!wanted) form.threshold = ''
+})
 
 const ALERT_COLUMNS: TableColumn[] = [
   { key: 'subject', label: t('reliability.alerts.columns.subject') },
@@ -237,8 +275,9 @@ function asks(rule: RuleRow): string {
             />
           </div>
 
-          <div class="grid gap-4 md:grid-cols-3">
+          <div v-if="needsTarget || isNumeric" class="grid gap-4 md:grid-cols-3">
             <AppInput
+              v-if="needsTarget"
               v-model="form.target"
               :label="t('reliability.rules.target')"
               :hint="t('reliability.rules.target_hint')"

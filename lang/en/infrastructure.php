@@ -19,7 +19,15 @@ declare(strict_types=1);
 return [
     'title' => 'Infrastructure',
 
+    'sites' => [
+        'components' => [
+            'plugin' => 'Plugin',
+            'theme' => 'Theme',
+        ],
+    ],
+
     'kinds' => [
+        'site' => 'Site',
         'pdu' => 'PDU',
         'pdu_outlet' => 'Outlet',
         'ups' => 'UPS',
@@ -89,6 +97,7 @@ return [
     ],
 
     'areas' => [
+        'site' => 'Web applications',
         'monitoring' => 'Monitoring',
         'network_device' => 'Network devices',
         'firewall' => 'Firewalls',
@@ -331,6 +340,14 @@ return [
     ],
 
     'capabilities' => [
+        'site.inventory.read' => [
+            'label' => 'Read installed applications',
+            'description' => 'Ask this panel which web applications it is hosting, and which version each one and its plugins and themes are on.',
+        ],
+        'site.vulnerability.read' => [
+            'label' => 'Read published advisories',
+            'description' => 'Ask whether anything has been published against a plugin or a theme that is installed. Without this, a site’s advisory count is left unknown rather than reported as zero.',
+        ],
         'mail.reputation.read' => [
             'label' => 'Read blocklist listings',
             'description' => 'Ask whether this installation’s own sending addresses are on a blocklist. Nothing here asks for one to be lifted — that is a form with a human on the other end.',

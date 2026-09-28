@@ -14,6 +14,7 @@ use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\CollectUsage;
 use App\Application\Automation\Runs\DiscoverLoadBalancers;
 use App\Application\Automation\Runs\DiscoverPower;
+use App\Application\Automation\Runs\DiscoverSites;
 use App\Application\Automation\Runs\DiscoverStorage;
 use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\DiscoverVirtualMachines;
@@ -74,6 +75,7 @@ final readonly class TaskRegistry
             AutomationTask::Machines => DiscoverVirtualMachines::class,
             AutomationTask::Usage => CollectUsage::class,
             AutomationTask::Power => DiscoverPower::class,
+            AutomationTask::Sites => DiscoverSites::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

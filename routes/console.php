@@ -286,6 +286,19 @@ Schedule::command('platform:run power')
     ->onOneServer()
     ->runInBackground();
 
+/*
+ * Asking every panel which web applications it is hosting (§18).
+ *
+ * Daily, and early: a plugin release is not something anybody is woken
+ * for, and a fleet of four hundred sites asked hourly is a panel's API
+ * budget spent on nothing.
+ */
+Schedule::command('platform:run sites')
+    ->dailyAt('04:40')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run usage')
     ->dailyAt('05:00')
     ->withoutOverlapping()

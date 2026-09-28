@@ -54,6 +54,19 @@ enum AdapterArea: string
      */
     case Mail = 'mail';
 
+    /**
+     * Web applications on somebody's hosting account (§18).
+     *
+     * The second area §27's list does not name, added for the same reason
+     * `Mail` was: §18 asks for a WordPress fleet and none of the
+     * twenty-three contracts is about an application living on an account.
+     * `Automation` is the nearest and it is not near — that is Ansible and
+     * Terraform, configuration a provider applies to its own machines, and
+     * filing a customer's plugin list under it would put two unrelated things
+     * behind one capability an operator switches on once.
+     */
+    case Site = 'site';
+
     public function labelKey(): string
     {
         return 'infrastructure.areas.'.$this->value;

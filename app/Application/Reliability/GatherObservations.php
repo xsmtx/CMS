@@ -82,6 +82,8 @@ final readonly class GatherObservations
             AlertSubject::CertificateExpiry => $this->certificates($organizationId),
             AlertSubject::ReputationListing => $this->listings($organizationId),
             AlertSubject::BackupAge => $this->protections($organizationId),
+            AlertSubject::SiteUpdates => $this->siteUpdates($organizationId),
+            AlertSubject::SiteVulnerability => $this->siteVulnerabilities($organizationId),
         };
     }
 
@@ -512,5 +514,103 @@ final readonly class GatherObservations
     private function worded(string $key, string $fallback): string
     {
         return Lang::has($key) ? (string) __($key) : $fallback;
+    }
+
+    /**
+     * How many things are out of date on each site (§18).
+     *
+     * **The core is counted with the components here, and only here.** The
+     * node keeps them apart — `core_outdated` beside `outdated` — because
+     * “WordPress 5.9 with nothing else behind” and “WordPress 6.6 with eleven
+     * plugins behind” are different problems. A rule is one question written
+     * once, though, and the question an operator means is how much is behind
+     * on this site; the sentence on the alert says whether the core is part
+     * of it.
+     *
+     * @return list<Observation>
+     */
+    private function siteUpdates(?string $organizationId): array
+    {
+        $observations = [];
+
+        foreach ($this->siteNodes($organizationId) as $node) {
+            $attributes = $node->attributes ?? [];
+
+            $core = ($attributes['core_outdated'] ?? false) === true;
+            $components = (int) ($attributes['outdated'] ?? 0);
+            $behind = $components + ($core ? 1 : 0);
+
+            $observations[] = new Observation(
+                key: $node->node_key,
+                label: $node->label,
+                bad: true,
+                observed: (string) __(
+                    $core ? 'reliability.observed.behind_with_core' : 'reliability.observed.behind',
+                    ['count' => $components],
+                ),
+                value: (float) $behind,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * Sites with a component something has published an advisory against
+     * (§18).
+     *
+     * **A site nothing looked at produces no observation**, which is the same
+     * rule a stale metric gets: this platform must not assert that a site is
+     * clean because no vulnerability database was configured. The node says
+     * whether anything looked (`vulnerability_data`), and a site where
+     * nothing did is skipped rather than reported as safe.
+     *
+     * @return list<Observation>
+     */
+    private function siteVulnerabilities(?string $organizationId): array
+    {
+        $observations = [];
+
+        foreach ($this->siteNodes($organizationId) as $node) {
+            $attributes = $node->attributes ?? [];
+
+            if (($attributes['vulnerability_data'] ?? false) !== true) {
+                continue;
+            }
+
+            $vulnerable = (int) ($attributes['vulnerable'] ?? 0);
+
+            $observations[] = new Observation(
+                key: $node->node_key,
+                label: $node->label,
+                bad: $vulnerable > 0,
+                observed: (string) __('reliability.observed.vulnerable', ['count' => $vulnerable]),
+                value: (float) $vulnerable,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * Every site this organization can see, as the discovery run left them.
+     *
+     * @return list<ResourceNode>
+     */
+    private function siteNodes(?string $organizationId): array
+    {
+        if ($organizationId === null) {
+            return [];
+        }
+
+        return array_values(ResourceNode::query()
+            ->withoutGlobalScope('organization')
+            ->where('organization_id', $organizationId)
+            ->where('kind', 'site')
+            ->whereNull('retired_at')
+            ->orderBy('label')
+            ->limit(2000)
+            ->get()
+            ->all());
     }
 }

@@ -1,7 +1,7 @@
 # Advanced Operations — plan of record
 
-Status: plan. Phase A complete; **Phase B started** (2026-09-26); C to J not
-started.
+Status: plan. **Phases A to G complete** (the latest, G, on 2026-09-29); H to J
+not started.
 Date: 2026-09-24
 Handoff: `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` (all sections)
 Required by: handoff #2 §30

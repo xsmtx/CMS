@@ -120,6 +120,26 @@ enum Capability: string
     case ReputationRead = 'mail.reputation.read';
 
     /**
+     * What is installed on somebody's hosting account, and what is known
+     * against it (§18).
+     *
+     * Two reads and no write. The versions and the advisories are separate
+     * capabilities because they usually come from separate places — a panel
+     * knows what is installed and a vulnerability database knows what is
+     * wrong with it — and an operator who has one and not the other should
+     * be able to say so.
+     *
+     * There is no `site.update.write`. §18 asks for updates and maintenance
+     * mode; they need a guarded workflow for changing somebody else's site,
+     * which this product has only for network devices. A capability with
+     * nothing in core that would ever call it is a switch that lies, which is
+     * the rule `ReputationRead` states from the other side.
+     */
+    case SiteInventoryRead = 'site.inventory.read';
+
+    case SiteVulnerabilityRead = 'site.vulnerability.read';
+
+    /**
      * The contract this capability belongs to.
      *
      * A match rather than splitting the value on a dot: the return type is
@@ -157,6 +177,7 @@ enum Capability: string
             self::BackupStatusRead, self::BackupRunWrite, self::RestoreWrite => AdapterArea::Backup,
             self::AutomationStateRead, self::AutomationApplyWrite => AdapterArea::Automation,
             self::LogQueryRead => AdapterArea::Log,
+            self::SiteInventoryRead, self::SiteVulnerabilityRead => AdapterArea::Site,
             self::SecretRead, self::SecretWrite => AdapterArea::Secret,
             self::UsageRead => AdapterArea::Metering,
             self::ReputationRead => AdapterArea::Mail,

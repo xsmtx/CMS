@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'sites' => [
+            'label' => 'Site envanteri',
+            'description' => 'Her panele hangi web uygulamalarını barındırdığını, her birinin ne kadar geride kaldığını ve bir eklenti ya da tema hakkında bir şey yayımlanıp yayımlanmadığını sorar.',
+        ],
         'power' => [
             'label' => 'Güç ve ortam',
             'description' => 'Her PDU’ya hangi prizin hangi cihazı beslediğini, her kesintisiz güç kaynağına şebekenin yerinde olup olmadığını ve her kabinet sensörüne odanın ne kadar sıcak olduğunu sorar.',

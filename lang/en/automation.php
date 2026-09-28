@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'sites' => [
+            'label' => 'Site inventory',
+            'description' => 'Asks every panel which web applications it is hosting, how far behind each one is, and whether anything has been published against a plugin or a theme.',
+        ],
         'power' => [
             'label' => 'Power and environment',
             'description' => 'Asks every PDU which socket feeds which device, every UPS whether the mains is still there, and every rack sensor how warm the room is.',

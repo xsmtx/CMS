@@ -29,11 +29,15 @@ namespace App\Domain\Modules;
  * cannot have been implemented, so no existing module has anything to look
  * at.
  *
+ * 1.11 is the same shape: `SiteProvider` and the value objects it speaks
+ * in (§18), plus `AdapterArea::Site` and two capabilities. New members on
+ * enums a module only reads, and a contract nothing has implemented.
+ *
  * Changing or removing anything a module implements or calls is a major one.
  * A major bump is a decision, not a consequence — it makes every existing
  * module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.10';
+    public const string VERSION = '1.11';
 }

@@ -13,7 +13,15 @@ declare(strict_types=1);
 return [
     'title' => 'Altyapı',
 
+    'sites' => [
+        'components' => [
+            'plugin' => 'Eklenti',
+            'theme' => 'Tema',
+        ],
+    ],
+
     'kinds' => [
+        'site' => 'Site',
         'pdu' => 'PDU',
         'pdu_outlet' => 'Priz',
         'ups' => 'Kesintisiz güç kaynağı',
@@ -78,6 +86,7 @@ return [
     ],
 
     'areas' => [
+        'site' => 'Web uygulamaları',
         'monitoring' => 'İzleme',
         'network_device' => 'Ağ cihazları',
         'firewall' => 'Güvenlik duvarları',
@@ -294,6 +303,14 @@ return [
     ],
 
     'capabilities' => [
+        'site.inventory.read' => [
+            'label' => 'Kurulu uygulamaları oku',
+            'description' => 'Bu panele hangi web uygulamalarını barındırdığını, her birinin ve eklenti ile temalarının hangi sürümde olduğunu sorar.',
+        ],
+        'site.vulnerability.read' => [
+            'label' => 'Yayımlanmış uyarıları oku',
+            'description' => 'Kurulu bir eklenti ya da tema hakkında bir şey yayımlanıp yayımlanmadığını sorar. Bu olmadan bir sitenin uyarı sayısı sıfır diye bildirilmez, bilinmiyor kalır.',
+        ],
         'mail.reputation.read' => [
             'label' => 'Kara liste kayıtlarını oku',
             'description' => 'Bu kurulumun kendi gönderim adreslerinin bir kara listede olup olmadığını sorar. Buradan kaldırma talebi gönderilmez — o, karşısında bir insan olan bir formdur.',
