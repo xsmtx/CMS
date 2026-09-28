@@ -34,6 +34,23 @@ return [
         'remove_body' => 'Bu, ünitenin boş olduğunu kaydeder. Hiçbir şeyin gücü kesilmez ve kimse bir yere gönderilmez — makine hâlâ kabinetteyse bu, şemayı yanlış hâle getirir.',
     ],
 
+    'power' => [
+        'feeds' => [
+            'a' => 'A hattı',
+            'b' => 'B hattı',
+            'unknown' => 'Hat belirtilmemiş',
+        ],
+
+        'sensors' => [
+            'temperature' => 'Sıcaklık',
+            'humidity' => 'Nem',
+            'airflow' => 'Hava akışı',
+            'leak' => 'Su',
+            'smoke' => 'Duman',
+            'door' => 'Kapı',
+        ],
+    ],
+
     'parts' => [
         'title' => 'Donanım',
         'intro' => 'Parçalar ve her birinin nerelerde bulunduğu. Bir disk, ilk takıldığı makineden daha uzun yaşar; garanti talebi de buna dayanır.',

@@ -274,6 +274,18 @@ Schedule::command('platform:run zone-health')
  * first would lose a month permanently the first time a worker was down
  * for one; every repeat here is a skip.
  */
+/*
+ * Asking every PDU, UPS and rack sensor what it sees.
+ *
+ * Every fifteen minutes: a room warms slowly, but a UPS on battery is
+ * the most urgent thing in this family and an hour is too long.
+ */
+Schedule::command('platform:run power')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run usage')
     ->dailyAt('05:00')
     ->withoutOverlapping()

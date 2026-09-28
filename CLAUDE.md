@@ -3376,3 +3376,43 @@ A batch of `str.replace` calls where only some had `assert count == 1` left an
 old form on the page beside its replacement; `vue-tsc` caught it, and only
 because the handler's signature had changed. Assert every replacement, or use
 the Edit tool, which fails loudly.
+
+**`Relation::Powers` has existed since Phase A and now has its first caller.**
+The edge goes from the **outlet**, never from the PDU: two devices on one PDU
+are usually on different breakers, and A-versus-B redundancy is the only
+question anybody asks of a power diagram. `PowerFeed::Unknown` is never
+guessed into `A` — a single-fed device that looked redundant is the one wrong
+answer that costs an outage — and **which feed a PDU is, is configuration**,
+because no PDU knows which of a rack's pair it is and an operator does.
+
+**A temperature is a number and a leak is a state.** `SensorKind::isReading()`
+decides which, and it is the rule `DiscoverPower` follows: readings become
+telemetry, states become attributes on the node. A state stored as 1.0 is a
+chart nobody can read and an alert nobody can word.
+
+**Humidity has no `higherIsWorse`.** It is bad in both directions — dry air is
+static, wet air is condensation — and a single boolean cannot say so, so it
+falls to null with everything else whose badness is an operator's own rule.
+
+**A PDU with no probe answers 404, and that is not a failure.** An adapter
+that threw would make every sweep on every unprobed PDU look like an outage,
+so a missing sensor collection answers with nothing. A missing *outlet* list
+is still a throw: an empty one would retire a rack's whole power path.
+
+**An outlet's label is the only place the device is recorded.** There is no
+field for "what is plugged in" — an operator types the machine's name into the
+socket's label, which is what every datacenter does. A default name
+(`Outlet A2`) means nobody said, and is kept as nothing rather than as a
+device called `Outlet A2`.
+
+**A PDU's `state` is a word and its `power` may carry its unit.** `OnWait` is
+neither on nor off and answers null; `1.4 kW` parsed as watts is a thousand
+times wrong, which is a rack that looks empty.
+
+**A private constant may shadow an imported class name.** `private const
+string SensorKind` beside `use …\Power\SensorKind` is legal PHP that every
+reader has to parse twice. Renamed.
+
+**`pluck()` on a cast column returns the cast values.** A test asserting
+`toContain('temperature')` against a column cast to `MetricKind` compares a
+string with an enum and fails while the data is correct.

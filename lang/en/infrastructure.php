@@ -20,6 +20,10 @@ return [
     'title' => 'Infrastructure',
 
     'kinds' => [
+        'pdu' => 'PDU',
+        'pdu_outlet' => 'Outlet',
+        'ups' => 'UPS',
+        'environment_sensor' => 'Sensor',
         'hypervisor_host' => 'Host',
         'virtual_machine' => 'Virtual machine',
         'lb_listener' => 'Listener',
@@ -203,6 +207,8 @@ return [
         'db.slow_queries' => 'Slow queries',
         'db.deadlocks' => 'Deadlocks',
         'cache.evictions' => 'Cache evictions',
+        'humidity' => 'Humidity',
+        'airflow' => 'Airflow',
         'battery.runtime' => 'Battery runtime',
     ],
 
@@ -409,6 +415,15 @@ return [
             'technology' => 'Technology',
             'replicas' => 'Copies kept',
             'attached_to' => 'Attached to',
+            'feed' => 'Feed',
+            'breaker' => 'Breaker',
+            'on' => 'Switched on',
+            'plugged_in' => 'Plugged in',
+            'on_battery' => 'On battery',
+            'alarm' => 'Alarm',
+            'sensor' => 'Measures',
+            'location' => 'Where',
+            'triggered' => 'Triggered',
         ],
 
         'values' => [
@@ -420,6 +435,21 @@ return [
                 'degraded' => 'Degraded',
                 'critical' => 'Critical',
                 'unknown' => 'Not reported',
+            ],
+            'feed' => [
+                'a' => 'A',
+                'b' => 'B',
+                // Never guessed: a single-fed device that looked
+                // redundant is the one wrong answer that costs an outage.
+                'unknown' => 'Not stated',
+            ],
+            'sensor' => [
+                'temperature' => 'Temperature',
+                'humidity' => 'Humidity',
+                'airflow' => 'Airflow',
+                'leak' => 'Water',
+                'smoke' => 'Smoke',
+                'door' => 'Door',
             ],
             'state' => [
                 'up' => 'Up',

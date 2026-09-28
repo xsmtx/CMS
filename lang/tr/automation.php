@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'power' => [
+            'label' => 'Güç ve ortam',
+            'description' => 'Her PDU’ya hangi prizin hangi cihazı beslediğini, her kesintisiz güç kaynağına şebekenin yerinde olup olmadığını ve her kabinet sensörüne odanın ne kadar sıcak olduğunu sorar.',
+        ],
         'usage' => [
             'label' => 'Kullanım ölçümü',
             'description' => 'Her ölçüm kaynağına geçen ay her hizmetin ne kadar kullandığını sorar ve bir sonraki faturanın alıntılayacağı bir anı yazar.',

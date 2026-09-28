@@ -191,6 +191,15 @@ enum AutomationTask: string
     case Usage = 'usage';
 
     /**
+     * Asking every PDU, UPS and rack sensor what it sees (§11).
+     *
+     * Every fifteen minutes. A room warms slowly and an outlet's load does
+     * not, but a UPS on battery is the most urgent thing in this family and
+     * an hour is too long to find out.
+     */
+    case Power = 'power';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -260,6 +269,7 @@ enum AutomationTask: string
             // health is not telemetry, and a device that went down forty
             // seconds ago is found by whatever was talking to it.
             self::AdapterHealth => 5,
+            self::Power => 15,
             // Daily. A retention deadline measured in months does not need
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.

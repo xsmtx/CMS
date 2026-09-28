@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'power' => [
+            'label' => 'Power and environment',
+            'description' => 'Asks every PDU which socket feeds which device, every UPS whether the mains is still there, and every rack sensor how warm the room is.',
+        ],
         'usage' => [
             'label' => 'Usage metering',
             'description' => 'Asks every metering source what each service used last month, and writes a snapshot the next invoice quotes.',

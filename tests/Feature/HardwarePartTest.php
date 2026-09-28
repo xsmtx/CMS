@@ -91,7 +91,7 @@ it('keeps a part’s history when it moves', function (): void {
     CarbonImmutable::setTestNow('2026-05-01 10:00:00');
     $this->parts->fit($part, $second, $this->admin);
 
-    $fittings = PartFitting::query()->orderBy('fitted_at')->get();
+    $fittings = PartFitting::query()->oldest('fitted_at')->get();
 
     expect($fittings)->toHaveCount(2)
         // Closed, never deleted.

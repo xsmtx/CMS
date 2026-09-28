@@ -1,0 +1,60 @@
+{
+    "slug": "pdu-servertech",
+    "name": "Server Technology PDU",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads a Server Technology PDU over its JAWS API: which socket feeds which device, how much each draws, and what the rack sensors say. Nothing here switches an outlet.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.10",
+    "platform": "*",
+    "namespace": "InfraCMS\\PduServertech",
+    "entrypoint": "ServertechModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "PDU address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the PDU answers, for example https://pdu-r14-a.dc2.example.com. The management address on your own network."
+        },
+        {
+            "key": "username",
+            "label": "API user",
+            "type": "text",
+            "required": true,
+            "hint": "A read-only user on the PDU. The password is written separately, on the Adapters screen, and is never stored here."
+        },
+        {
+            "key": "feed",
+            "label": "Which feed this PDU is",
+            "type": "select",
+            "required": false,
+            "default": "unknown",
+            "options": [
+                { "value": "a", "label": "A" },
+                { "value": "b", "label": "B" },
+                { "value": "unknown", "label": "Not stated" }
+            ],
+            "hint": "A rack normally has two PDUs, one per feed. Saying which this one is turns \"forty things are on this PDU\" into \"this device is on A only\", which is the question a power diagram is for."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a PDU using its own self-signed certificate on a management network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "10",
+            "hint": "A PDU is a small computer on a slow network. Ten seconds is generous and still short enough that a sweep of forty racks finishes."
+        }
+    ]
+}

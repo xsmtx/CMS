@@ -14,6 +14,10 @@ return [
     'title' => 'Altyapı',
 
     'kinds' => [
+        'pdu' => 'PDU',
+        'pdu_outlet' => 'Priz',
+        'ups' => 'Kesintisiz güç kaynağı',
+        'environment_sensor' => 'Sensör',
         'hypervisor_host' => 'Ana makine',
         'virtual_machine' => 'Sanal makine',
         'lb_listener' => 'Dinleyici',
@@ -184,6 +188,8 @@ return [
         'db.slow_queries' => 'Yavaş sorgular',
         'db.deadlocks' => 'Kilitlenmeler',
         'cache.evictions' => 'Önbellekten atılanlar',
+        'humidity' => 'Nem',
+        'airflow' => 'Hava akışı',
         'battery.runtime' => 'Batarya süresi',
     ],
 
@@ -372,6 +378,15 @@ return [
             'technology' => 'Teknoloji',
             'replicas' => 'Tutulan kopya',
             'attached_to' => 'Bağlı olduğu',
+            'feed' => 'Hat',
+            'breaker' => 'Sigorta',
+            'on' => 'Açık',
+            'plugged_in' => 'Takılı olan',
+            'on_battery' => 'Aküde',
+            'alarm' => 'Alarm',
+            'sensor' => 'Ölçtüğü',
+            'location' => 'Nerede',
+            'triggered' => 'Tetiklendi',
         ],
 
         'values' => [
@@ -380,6 +395,19 @@ return [
                 'degraded' => 'Bozulmuş',
                 'critical' => 'Kritik',
                 'unknown' => 'Bildirilmedi',
+            ],
+            'feed' => [
+                'a' => 'A',
+                'b' => 'B',
+                'unknown' => 'Belirtilmemiş',
+            ],
+            'sensor' => [
+                'temperature' => 'Sıcaklık',
+                'humidity' => 'Nem',
+                'airflow' => 'Hava akışı',
+                'leak' => 'Su',
+                'smoke' => 'Duman',
+                'door' => 'Kapı',
             ],
             'state' => [
                 'up' => 'Açık',

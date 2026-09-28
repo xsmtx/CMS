@@ -37,6 +37,23 @@ return [
         'remove_body' => 'This records that the unit is free. Nothing is powered off and nobody is sent anywhere — if the machine is still in the cabinet, this makes the diagram wrong.',
     ],
 
+    'power' => [
+        'feeds' => [
+            'a' => 'Feed A',
+            'b' => 'Feed B',
+            'unknown' => 'Feed not stated',
+        ],
+
+        'sensors' => [
+            'temperature' => 'Temperature',
+            'humidity' => 'Humidity',
+            'airflow' => 'Airflow',
+            'leak' => 'Water',
+            'smoke' => 'Smoke',
+            'door' => 'Door',
+        ],
+    ],
+
     'parts' => [
         'title' => 'Hardware',
         'intro' => 'Parts, and where each of them has been. A disk outlives the machine it was first fitted to, which is what a warranty claim turns on.',

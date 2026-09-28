@@ -52,6 +52,17 @@ enum MetricKind: string
     case BatteryRuntime = 'battery.runtime';
 
     /*
+     * The room around the rack (§11).
+     *
+     * Temperature is already above; these two are what a rack sensor adds.
+     * A leak, smoke or a door is **not** here on purpose: those are states,
+     * and a state stored as 1.0 is a chart nobody can read and an alert
+     * nobody can word. They live as attributes on the sensor's node.
+     */
+    case Humidity = 'humidity';
+    case Airflow = 'airflow';
+
+    /*
      * Mail operations (§13).
      *
      * Numbers rather than a subsystem: a mail queue is a queue and a
@@ -146,6 +157,12 @@ enum MetricKind: string
             self::Uptime, self::ReplicationLag, self::BatteryRuntime => MetricUnit::Seconds,
             self::DiskLatency, self::ResponseLatency => MetricUnit::Milliseconds,
             self::Temperature => MetricUnit::Celsius,
+            self::Humidity => MetricUnit::Percent,
+            // Metres a second, which has no member and does not need one:
+            // a bare count with the unit in the metric's own name is what
+            // `cpu_percent` taught, and inventing a unit for one reading
+            // is a dimension nothing else uses.
+            self::Airflow => MetricUnit::Count,
             self::PowerDraw => MetricUnit::Watts,
         };
     }
@@ -175,7 +192,17 @@ enum MetricKind: string
             // a screen that drew it red at its busiest hour would be a
             // screen nobody trusts.
             self::MailDelivered => false,
-            self::Uptime, self::CacheHitRatio, self::BatteryCharge, self::BatteryRuntime => false,
+            self::Uptime, self::CacheHitRatio, self::BatteryCharge, self::BatteryRuntime,
+            self::Airflow => false,
+            /*
+             * Humidity is deliberately not here, in either arm.
+             *
+             * It is bad in **both** directions — dry air is static and wet
+             * air is condensation — and `higherIsWorse` is a single boolean
+             * that cannot say so. A guess either way would tone half the
+             * readings wrongly, so it falls to null with everything else
+             * whose badness is an operator's own rule.
+             */
             default => null,
         };
     }
@@ -224,6 +251,8 @@ enum MetricKind: string
             self::ReplicationLag => ['replication_lag', 'seconds_behind_master', 'slave_lag', 'lag'],
             self::CacheHitRatio => ['hit_ratio', 'cache_hit_ratio', 'keyspace_hit_ratio', 'buffer_hit_ratio'],
             self::Temperature => ['temp', 'temperature', 'inlet_temp', 'cpu_temp'],
+            self::Humidity => ['humidity', 'rel_humidity', 'relative_humidity'],
+            self::Airflow => ['airflow', 'air_flow'],
             self::PowerDraw => ['power', 'power_draw', 'watts', 'outlet_load', 'load_watts'],
             self::BatteryCharge => ['battery', 'battery_charge', 'charge_remaining'],
             self::BatteryRuntime => ['battery_runtime', 'runtime_remaining', 'autonomy'],
