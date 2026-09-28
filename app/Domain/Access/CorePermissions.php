@@ -240,6 +240,15 @@ final class CorePermissions
             ),
 
             /*
+             * Reconciliation (§22). The queue is Support's — “the customer
+             * says their account is suspended and the panel says active” is
+             * a support question first — and deciding what to do about a
+             * finding is not.
+             */
+            new PermissionDefinition('intelligence.reconciliation.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('intelligence.reconciliation.remediate', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on

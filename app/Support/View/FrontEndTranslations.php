@@ -164,6 +164,11 @@ final class FrontEndTranslations
         'dcim',
         'infrastructure.backup',
 
+        // Reconciliation is operator vocabulary end to end — no customer is
+        // told their account is “nobody's” — so the whole group is
+        // published rather than leaf paths.
+        'intelligence',
+
         // Addressing is operator vocabulary end to end - no customer sees a
         // prefix - so the whole group is published rather than leaf paths.
         'network',

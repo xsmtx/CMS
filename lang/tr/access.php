@@ -131,6 +131,14 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'intelligence.reconciliation.view' => [
+            'label' => 'Uyuşmayanları gör',
+            'description' => 'Bu platformun inandığı ile her sağlayıcının bildirdiği arasındaki farkları okur.',
+        ],
+        'intelligence.reconciliation.remediate' => [
+            'label' => 'Bir fark hakkında karar ver',
+            'description' => 'Bir bulguyu bilerek yapılmış diye kapatır ya da düzelten bir öneriyi onaylar. Bu olmadan hiçbir şey uygulanmaz.',
+        ],
         'dcim.remote_hands.request' => [
             'label' => 'Saha desteği iste',
             'description' => 'Veri merkezindeki biri için iş açar ve planlar.',

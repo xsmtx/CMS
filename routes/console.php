@@ -293,6 +293,18 @@ Schedule::command('platform:run power')
  * for, and a fleet of four hundred sites asked hourly is a panel's API
  * budget spent on nothing.
  */
+/*
+ * Comparing what this platform believes against what providers report.
+ *
+ * Hourly, offset from the other hourly sweeps: every run is one request
+ * per service to somebody else's control panel.
+ */
+Schedule::command('platform:run reconcile')
+    ->hourlyAt(35)
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run sites')
     ->dailyAt('04:40')
     ->withoutOverlapping()

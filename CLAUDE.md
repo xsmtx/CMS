@@ -3520,3 +3520,67 @@ in the payload, not in a literal in the template.
 A hint that names two of six cases has drifted the same way. "A percentage for
 a ratio, a number of days for a capacity forecast" was written when there were
 two numeric subjects; it is a sentence about any of them now.
+
+**Phase H has begun** (`docs/architecture/phase-h-plan.md`). The reconciliation
+engine is in; remediation proposals, orphan detection, revenue leakage, cost,
+customer health and noisy neighbour are not. The automation builder and the AI
+assistant are deliberately outside the phase.
+
+**It needed no new contract.** `ProvisioningModule::sync()` and `SyncResult`
+have existed since Phase 6 and nothing had ever called them on a schedule —
+`SyncResult`'s own docblock says "a sync reports; it does not decide", which is
+exactly what a reconciliation engine wants. Adding a `ReconciliationProvider`
+would have been a second way to ask the same question. Before writing a
+contract for a new phase, grep for one that was written for the old one and
+never used.
+
+**`RunServiceOperation::observe()` is `sync()` without the parts a sweep must
+not do.** It writes no service event, because an event per service per hour
+would bury the ones an operator reads; it does not throw, because an
+unreachable provider is a conclusion rather than a failure of the sweep; and it
+returns the `SyncResult` itself, because `sync()` drops the remote status,
+which is the whole point.
+
+**`unknown` is a class of its own and must never fold into `drift`.** A machine
+that might have been resized and a machine nobody could ask are different
+things to act on, and the second is a monitoring problem. Folding them would
+put a panel's outage in front of an operator as four hundred customers whose
+accounts had apparently changed — with the one real finding somewhere in it.
+An adapter that is reachable and has no opinion (`ManualModule`) is `unknown`
+too: reading its silence as agreement would mark every manually-provisioned
+service healthy for ever.
+
+**A finding worsens in place.** A drift that became a missing account is the
+same finding getting worse, so the class is refreshed on the existing row —
+closing and reopening it would reset the clock that says how long it has been
+wrong.
+
+**A dismissal is keyed the way a finding is keyed, not by a finding's id.** The
+whole point is to survive tonight's sweep clearing that row and raising an
+identical one. It has an author, a reason and usually a date it stops applying,
+and whether it still applies is asked when the sweep runs rather than stored —
+ADR 0031 applied to somebody's judgement, so the finding comes back by itself
+with no scheduled task that *has* to run.
+
+**A dismissal suppresses the row, never the comparison.** The sweep still asks
+and still clears what has been fixed; what changes is whether anybody is shown
+it. Skipping the comparison would mean a machine somebody deliberately built by
+hand could then change under them and nothing would say so.
+
+**I wrote a translated sentence into a column again, and the browser found
+it.** `expected` and `found` were being stored as `__($status->labelKey())`, so
+an hourly sweep would have frozen "Active" and "Suspended" into whichever
+locale the scheduler ran in — on a Turkish installation, English for ever. The
+row holds values now and the screen words them, **except** a provider's own
+message, which is evidence rather than vocabulary and is stored and shown
+verbatim. Both halves are pinned by tests. The rule is old; what is new is that
+it applies to a *stored enum value's label* and not only to a sentence.
+
+**A form that appears at the top of a list has to name the row it is about.**
+The dismiss form said "Stop raising this?" with four rows underneath it and no
+indication which. Same fix as the remote-hands move form, found the same way.
+
+**"Show what has been put right too" was only half true.** A closed finding is
+either fixed or set aside, and both live behind one filter — so the filter says
+"closed" and the row's own line says which kind. A filter whose word covers one
+of the two cases is a filter that lies about the other.

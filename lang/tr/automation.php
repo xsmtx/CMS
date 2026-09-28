@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'reconcile' => [
+            'label' => 'Mutabakat',
+            'description' => 'Her sağlayıcıya her hizmet hakkında neyi doğru saydığını sorar ve bizimle uyuşmadığı yerleri kaydeder. Bildirir, asla düzeltmez.',
+        ],
         'sites' => [
             'label' => 'Site envanteri',
             'description' => 'Her panele hangi web uygulamalarını barındırdığını, her birinin ne kadar geride kaldığını ve bir eklenti ya da tema hakkında bir şey yayımlanıp yayımlanmadığını sorar.',

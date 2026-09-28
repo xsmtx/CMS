@@ -1,0 +1,308 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Admin;
+
+use App\Domain\Intelligence\ReconciliationClass;
+use App\Domain\Provisioning\ServiceStatus;
+use App\Http\Controllers\Controller;
+use App\Infrastructure\Identity\Models\StaffUser;
+use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
+use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
+use App\Support\Audit\Facades\Audit;
+use App\Support\Errors\ForbiddenException;
+use App\Support\Identity\CurrentActor;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * What this platform believes, against what each provider reports (§22).
+ *
+ * **Worst first, and `unknown` last.** The order is the screen's whole
+ * argument: a customer paying for an account that is not there comes before a
+ * machine nobody is billing for, and both come before a provider that did not
+ * answer — which is a fact about the connection rather than about anybody's
+ * account.
+ *
+ * Reading the queue is Support's; deciding what to do about a finding is not.
+ */
+final class ReconciliationController extends Controller
+{
+    public function index(Request $request, CurrentActor $actor): Response
+    {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.view');
+
+        $showAll = $request->boolean('all');
+
+        $findings = ReconciliationFinding::query()
+            ->unless($showAll, static fn ($query) => $query->open())
+            ->orderByRaw('field(`class`, ?, ?, ?, ?)', $this->order())
+            ->orderBy('first_seen_at')
+            ->paginate(50)
+            ->withQueryString();
+
+        return Inertia::render('Admin/Intelligence/Reconciliation', [
+            'findings' => [
+                'data' => $this->rows(array_values($findings->items())),
+                'links' => $findings->linkCollection()->toArray(),
+                'currentPage' => $findings->currentPage(),
+                'lastPage' => $findings->lastPage(),
+                'total' => $findings->total(),
+            ],
+            'filters' => ['all' => $showAll],
+            // Whether anything has ever been compared. An empty queue on an
+            // installation that has never run the sweep says something
+            // completely different from an empty queue on one that has.
+            'compared' => ReconciliationFinding::query()->withoutGlobalScopes()->exists()
+                || $findings->total() > 0,
+            'can' => [
+                'remediate' => $actor->can('intelligence.reconciliation.remediate'),
+            ],
+        ]);
+    }
+
+    /**
+     * "This one is deliberate."
+     *
+     * Keyed the way a finding is keyed rather than by the finding's own id,
+     * because the point is to survive tonight's sweep clearing this row and
+     * raising an identical one.
+     */
+    public function dismiss(
+        Request $request,
+        CurrentActor $actor,
+        ReconciliationFinding $finding,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.remediate');
+
+        $data = $request->validate([
+            // Required, because a dismissal nobody can judge is one the next
+            // operator has to undo to find out what it was for.
+            'reason' => ['required', 'string', 'max:2000'],
+            'until' => ['nullable', 'date', 'after:now'],
+        ]);
+
+        $staff = $this->staff($actor);
+
+        ReconciliationDismissal::query()->updateOrCreate(
+            [
+                'organization_id' => $finding->organization_id,
+                'source' => $finding->source,
+                'resource' => $finding->resource,
+                'subject_id' => $finding->subject_id,
+                'remote_key' => $finding->remote_key,
+                'field' => $finding->field,
+            ],
+            [
+                'dismissed_by' => $staff->id,
+                'reason' => $data['reason'],
+                'dismissed_at' => CarbonImmutable::now(),
+                'until' => isset($data['until']) ? CarbonImmutable::parse($data['until']) : null,
+            ],
+        );
+
+        // The finding itself is cleared rather than deleted: it was true, and
+        // the row is what says for how long.
+        $finding->cleared_at = CarbonImmutable::now();
+        $finding->cleared_token = $finding->id;
+        $finding->save();
+
+        Audit::action('intelligence.reconciliation.dismissed')
+            ->by($staff)
+            ->on($finding)
+            ->forOrganization($finding->organization_id)
+            ->because($data['reason'])
+            ->write();
+
+        return back()->with('status', __('intelligence.reconciliation.dismissed'));
+    }
+
+    public function undismiss(
+        CurrentActor $actor,
+        ReconciliationFinding $finding,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.remediate');
+
+        $staff = $this->staff($actor);
+
+        ReconciliationDismissal::query()
+            ->where('organization_id', $finding->organization_id)
+            ->where('source', $finding->source)
+            ->where('resource', $finding->resource)
+            ->where('subject_id', $finding->subject_id)
+            ->where('remote_key', $finding->remote_key)
+            ->where('field', $finding->field)
+            ->delete();
+
+        Audit::action('intelligence.reconciliation.undismissed')
+            ->by($staff)
+            ->on($finding)
+            ->forOrganization($finding->organization_id)
+            ->write();
+
+        return back()->with('status', __('intelligence.reconciliation.undismissed'));
+    }
+
+    /**
+     * The order an operator wants, which is not the order the enum declares.
+     *
+     * `Missing` first because somebody is paying for nothing; `unknown` last
+     * because it is not a conclusion about the account at all.
+     *
+     * Built from the enum rather than written out, so a sixth class cannot
+     * end up sorting to whichever position MariaDB's `field()` gives an
+     * unlisted value. That is zero, which is first.
+     *
+     * @return list<string>
+     */
+    private function order(): array
+    {
+        return [
+            ReconciliationClass::Missing->value,
+            ReconciliationClass::Drift->value,
+            ReconciliationClass::Orphan->value,
+            ReconciliationClass::Unknown->value,
+        ];
+    }
+
+    /**
+     * The page's rows, with every dismissal read in one query.
+     *
+     * One lookup per row would be fifty queries on a full page, which is the
+     * shape `LazyLoadingTest` exists to catch — and it would not catch this
+     * one, because a `first()` in a loop is not a lazy load.
+     *
+     * @param  list<ReconciliationFinding>  $findings
+     * @return list<array<string, mixed>>
+     */
+    private function rows(array $findings): array
+    {
+        $dismissals = $this->dismissalsFor($findings);
+
+        return array_map(
+            fn (ReconciliationFinding $finding): array => $this->row(
+                $finding,
+                $dismissals[$this->key($finding)] ?? null,
+            ),
+            $findings,
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function row(ReconciliationFinding $finding, ?ReconciliationDismissal $dismissal): array
+    {
+        return [
+            'id' => $finding->id,
+            'subject' => $finding->subject_label,
+            'resource' => $finding->resource,
+            'resourceLabel' => (string) __('intelligence.resources.'.$finding->resource),
+            // Two fields, always: the value for the tone and the word for
+            // the screen.
+            'class' => $finding->class->value,
+            'classLabel' => (string) __($finding->class->labelKey()),
+            'classTone' => $finding->class->tone(),
+            'field' => $finding->field,
+            'expected' => $this->worded($finding->expected),
+            'found' => $this->worded($finding->found),
+            'detail' => $finding->detail ?? [],
+            'remoteKey' => $finding->remote_key,
+            'firstSeenAt' => $finding->first_seen_at->toIso8601String(),
+            'lastSeenAt' => $finding->last_seen_at->toIso8601String(),
+            'clearedAt' => $finding->cleared_at?->toIso8601String(),
+            'dismissal' => $dismissal === null ? null : [
+                'reason' => $dismissal->reason,
+                'until' => $dismissal->until?->toIso8601String(),
+                'by' => $dismissal->staff?->name,
+            ],
+        ];
+    }
+
+    /**
+     * @param  list<ReconciliationFinding>  $findings
+     * @return array<string, ReconciliationDismissal>
+     */
+    private function dismissalsFor(array $findings): array
+    {
+        if ($findings === []) {
+            return [];
+        }
+
+        $keyed = [];
+
+        foreach (
+            ReconciliationDismissal::query()
+                ->whereIn('source', array_unique(array_map(
+                    static fn (ReconciliationFinding $finding): string => $finding->source,
+                    $findings,
+                )))
+                ->with('staff')
+                ->get() as $dismissal
+        ) {
+            $keyed[implode('|', [
+                $dismissal->source,
+                $dismissal->resource,
+                $dismissal->subject_id ?? '',
+                $dismissal->remote_key ?? '',
+                $dismissal->field ?? '',
+            ])] = $dismissal;
+        }
+
+        return $keyed;
+    }
+
+    /**
+     * A stored value, in the reader's own language where it is one of ours.
+     *
+     * The row holds raw values rather than sentences, because a word stored
+     * in the language of whichever scheduler run wrote it is a word the next
+     * operator cannot read. **What is not one of ours is returned
+     * untouched**, which is right rather than lazy: a provider's own message
+     * is evidence, and translating it would be this platform putting words
+     * into somebody else's mouth.
+     */
+    private function worded(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $status = ServiceStatus::tryFrom($value);
+
+        return $status instanceof ServiceStatus ? (string) __($status->labelKey()) : $value;
+    }
+
+    private function key(ReconciliationFinding $finding): string
+    {
+        return implode('|', [
+            $finding->source,
+            $finding->resource,
+            $finding->subject_id ?? '',
+            $finding->remote_key ?? '',
+            $finding->field ?? '',
+        ]);
+    }
+
+    private function staff(CurrentActor $actor): StaffUser
+    {
+        $staff = $actor->model();
+
+        if (! $staff instanceof StaffUser) {
+            throw new ForbiddenException(__('automation.errors.not_permitted'));
+        }
+
+        return $staff;
+    }
+
+    private function refuseUnless(CurrentActor $actor, string $permission): void
+    {
+        if (! $actor->can($permission)) {
+            throw new ForbiddenException(__('automation.errors.not_permitted'));
+        }
+    }
+}

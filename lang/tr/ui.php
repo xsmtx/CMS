@@ -716,6 +716,7 @@ return [
         'dcim' => 'Veri merkezi',
         'parts' => 'Donanım',
         'remote_hands' => 'Saha desteği',
+        'reconciliation' => 'Mutabakat',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

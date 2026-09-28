@@ -146,6 +146,10 @@ final class SystemRoleSeeder extends Seeder
                 // And asking for somebody to go and look at it, which is
                 // what the person on the telephone actually needs.
                 'dcim.remote_hands.request',
+                // And whether the panel agrees with us about an account,
+                // which is the first thing to check when somebody says
+                // their site is off and the platform says it is on.
+                'intelligence.reconciliation.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

@@ -721,6 +721,7 @@ return [
         'dcim' => 'Datacenter',
         'parts' => 'Hardware',
         'remote_hands' => 'Remote hands',
+        'reconciliation' => 'Reconciliation',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

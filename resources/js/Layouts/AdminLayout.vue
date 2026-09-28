@@ -556,6 +556,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/infrastructure/remote-hands',
         permission: 'dcim.view',
       },
+      {
+        label: nav('reconciliation', 'Reconciliation'),
+        href: '/admin/intelligence/reconciliation',
+        permission: 'intelligence.reconciliation.view',
+      },
     ],
   },
   {

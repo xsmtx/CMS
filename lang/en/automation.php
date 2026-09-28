@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'reconcile' => [
+            'label' => 'Reconciliation',
+            'description' => 'Asks every provider what it thinks is true about each service, and records where it disagrees with us. It reports and never repairs.',
+        ],
         'sites' => [
             'label' => 'Site inventory',
             'description' => 'Asks every panel which web applications it is hosting, how far behind each one is, and whether anything has been published against a plugin or a theme.',

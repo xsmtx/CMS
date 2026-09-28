@@ -180,8 +180,8 @@ it('shows staff the tasks even before any of them has run', function (): void {
             // every task the command can run, and a new one joins both or
             // neither — which is what this has caught nine phases running,
             // Phase E's forgetting sweep, certificate collector and zone
-            // inspection included, and Phase G's site inventory last.
-            ->has('tasks', 27)
+            // inspection included, and Phase H's reconciliation last.
+            ->has('tasks', 28)
             ->where('tasks.0.lastRun', null));
 });
 

@@ -209,6 +209,17 @@ enum AutomationTask: string
     case Sites = 'sites';
 
     /**
+     * Comparing what this platform believes against what providers report
+     * (§22).
+     *
+     * Hourly. Every run is one request per service to somebody else's
+     * control panel, and a fleet of two thousand asked every five minutes is
+     * twenty-four thousand requests an hour at a provider who did not agree
+     * to that. It reports and never repairs.
+     */
+    case Reconcile = 'reconcile';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -284,7 +295,7 @@ enum AutomationTask: string
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
-            self::LoadBalancers, self::Machines => 60,
+            self::LoadBalancers, self::Machines, self::Reconcile => 60,
             self::ZoneHealth, self::Reputation, self::Usage, self::Sites => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

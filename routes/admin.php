@@ -52,6 +52,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\RemoteHandsController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReputationController;
@@ -552,6 +553,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::post('infrastructure/remote-hands/{task}', [RemoteHandsController::class, 'transition'])
         ->name('infrastructure.remote_hands.transition');
+
+    /*
+     * Reconciliation (§22). It reports and never repairs — the only writes
+     * here are an operator saying a difference is deliberate, and undoing
+     * that.
+     */
+    Route::get('intelligence/reconciliation', [ReconciliationController::class, 'index'])
+        ->name('intelligence.reconciliation');
+
+    Route::post('intelligence/reconciliation/{finding}/dismiss', [ReconciliationController::class, 'dismiss'])
+        ->name('intelligence.reconciliation.dismiss');
+
+    Route::delete('intelligence/reconciliation/{finding}/dismiss', [ReconciliationController::class, 'undismiss'])
+        ->name('intelligence.reconciliation.undismiss');
 
     Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
         ->middleware(['can:infrastructure.power', 'auth.recent'])

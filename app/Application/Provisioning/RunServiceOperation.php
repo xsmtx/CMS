@@ -17,6 +17,7 @@ use App\Domain\Provisioning\ProvisioningRequest;
 use App\Domain\Provisioning\ProvisioningResult;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Domain\Provisioning\SyncResult;
 use App\Infrastructure\Provisioning\Models\ServerGroup;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\ModuleRegistry;
@@ -276,6 +277,35 @@ final readonly class RunServiceOperation
         return $sync->reachable
             ? ProvisioningResult::succeeded(metadata: $sync->usage)
             : ProvisioningResult::failed((string) $sync->message);
+    }
+
+    /**
+     * Ask the provider what it sees, and hand back exactly that.
+     *
+     * The difference from `sync()` is what it does **not** do. It writes no
+     * service event, because the caller is the nightly reconciliation sweep
+     * and an event per service would bury the ones an operator reads under
+     * four hundred rows a night saying nothing happened. It does not throw,
+     * because an unreachable provider is a conclusion (`unknown`) rather
+     * than a failure of the sweep. And it returns the `SyncResult` itself
+     * rather than a `ProvisioningResult`, because the remote status is the
+     * whole point and `sync()` drops it.
+     *
+     * `synced_at` is still written: when we last managed to ask is a fact
+     * about the service either way.
+     */
+    public function observe(Service $service): SyncResult
+    {
+        try {
+            $module = $this->moduleFor($service, ServiceOperation::Sync);
+            $sync = $module->sync($service->reference());
+        } catch (Throwable $exception) {
+            return SyncResult::unreachable($exception->getMessage());
+        }
+
+        $service->forceFill(['synced_at' => CarbonImmutable::now()])->save();
+
+        return $sync;
     }
 
     /**

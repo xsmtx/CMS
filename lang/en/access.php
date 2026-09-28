@@ -132,6 +132,14 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'intelligence.reconciliation.view' => [
+            'label' => 'See what does not agree',
+            'description' => 'Read the differences between what this platform believes and what each provider reports.',
+        ],
+        'intelligence.reconciliation.remediate' => [
+            'label' => 'Decide what to do about a difference',
+            'description' => 'Dismiss a finding as deliberate, or approve a proposal that puts it right. Nothing is applied without this.',
+        ],
         'dcim.remote_hands.request' => [
             'label' => 'Ask for remote hands',
             'description' => 'Raise a task for somebody at the datacenter, and schedule it.',
