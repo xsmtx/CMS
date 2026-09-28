@@ -157,6 +157,11 @@ final class FrontEndTranslations
         'infrastructure.backups',
         'infrastructure.loadbalancing',
         'infrastructure.virtualisation',
+
+        // The datacenter is operator vocabulary end to end — no customer
+        // sees a rack unit — so the whole group is published rather than
+        // leaf paths.
+        'dcim',
         'infrastructure.backup',
 
         // Addressing is operator vocabulary end to end - no customer sees a

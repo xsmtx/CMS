@@ -203,6 +203,8 @@ it, so the four count columns are empty by construction.
 | [x] | `Admin/Infrastructure/BackupCoverage.vue` | list | F | yes |
 | [x] | `Admin/Infrastructure/LoadBalancers.vue` | list | F | yes |
 | [x] | `Admin/Infrastructure/VirtualMachines.vue` | list | F | yes |
+| [x] | `Admin/Dcim/Index.vue` | list | G | yes |
+| [x] | `Admin/Dcim/Rack.vue` | detail | G | yes |
 
 The public status page (`themes/storefront/core/views/status.blade.php`) is
 not here and should not be: the storefront is Blade themes and out of the

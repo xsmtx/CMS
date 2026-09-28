@@ -123,6 +123,14 @@ return [
             'label' => 'Sertifika filosunu gör',
             'description' => 'Ne sunulduğunu, ne zaman dolduğunu ve kime ait olduğunu okur.',
         ],
+        'dcim.view' => [
+            'label' => 'Veri merkezini gör',
+            'description' => 'Hangi makinenin hangi kabinette olduğunu ve nerede yer olduğunu okur.',
+        ],
+        'dcim.manage' => [
+            'label' => 'Veri merkezini düzenle',
+            'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
+        ],
         'infrastructure.machines.view' => [
             'label' => 'Sanal makineleri gör',
             'description' => 'Her ana makineyi, üzerindeki makineleri ve her birinin ne yaptığını okur.',

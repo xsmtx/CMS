@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerUserController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DcimController;
 use App\Http\Controllers\Admin\DdosEventController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\GatewayLogController;
@@ -496,6 +497,26 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::get('infrastructure/machines', [VirtualMachineController::class, 'index'])
         ->name('infrastructure.machines');
+
+    /*
+     * The datacenter (§11). No password challenge: nothing here changes
+     * what a customer is served, and the destructive act is somebody
+     * physically pulling a disk.
+     */
+    Route::get('infrastructure/dcim', [DcimController::class, 'index'])
+        ->name('infrastructure.dcim');
+
+    Route::post('infrastructure/dcim/racks', [DcimController::class, 'storeRack'])
+        ->name('infrastructure.dcim.racks.store');
+
+    Route::get('infrastructure/dcim/racks/{rack}', [DcimController::class, 'show'])
+        ->name('infrastructure.dcim.rack');
+
+    Route::post('infrastructure/dcim/racks/{rack}/positions', [DcimController::class, 'place'])
+        ->name('infrastructure.dcim.place');
+
+    Route::delete('infrastructure/dcim/racks/{rack}/positions/{position}', [DcimController::class, 'remove'])
+        ->name('infrastructure.dcim.remove');
 
     Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
         ->middleware(['can:infrastructure.power', 'auth.recent'])

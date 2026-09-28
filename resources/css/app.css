@@ -750,19 +750,33 @@
      * both get them unconditionally. An action nobody can reveal is an
      * action that does not exist.
      */
-  .data-table .row-actions {
+  /*
+   * Row actions are revealed on hover, and `.row-actions` alone does nothing.
+   *
+   * It needs a container that knows what a row is. `.data-table` was the only
+   * one, so the class written on a list that is not a table was inert — a
+   * promise of a hover behaviour that never happened, which is a note in
+   * CLAUDE.md and was then made again on the rack elevation. `.hover-rows` is
+   * the second container rather than a second class: one rule, two shapes.
+   */
+  .data-table .row-actions,
+  .hover-rows .row-actions {
     opacity: 0;
     transition: opacity var(--duration-fast) var(--ease-out);
   }
 
   .data-table tbody tr:hover .row-actions,
   .data-table tbody tr:focus-within .row-actions,
-  .data-table tbody tr[data-selected] .row-actions {
+  .data-table tbody tr[data-selected] .row-actions,
+  .hover-rows > *:hover .row-actions,
+  .hover-rows > *:focus-within .row-actions {
     opacity: 1;
   }
 
+  /* Nothing hovers on a touch screen, so nothing is hidden there. */
   @media (hover: none) {
-    .data-table .row-actions {
+    .data-table .row-actions,
+    .hover-rows .row-actions {
       opacity: 1;
     }
   }

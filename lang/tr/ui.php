@@ -713,6 +713,7 @@ return [
         'backups' => 'Yedekler',
         'load_balancers' => 'Yük dengeleyiciler',
         'machines' => 'Makineler',
+        'dcim' => 'Veri merkezi',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

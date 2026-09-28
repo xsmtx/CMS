@@ -3299,3 +3299,50 @@ It was found the long way round: **Rector reported a three-argument call as
 having extra parameters**, because it had resolved the *other* function of
 that name. A static analyser disagreeing with code that plainly works is worth
 reading twice before it is worked around.
+
+**Phase G has begun** (`docs/architecture/phase-g-plan.md`), and the DCIM spine
+is the first thing in it. **It is the first thing in this product that no
+adapter can discover**: a rack is not an API, somebody types it in, and core
+ships no rack sizes, no naming convention and no assumption that a datacenter
+has more than one room. DCIM is core for the reason IPAM was — a module cannot
+draw a screen, and this is almost entirely screens.
+
+**A device in a rack is a `servers` row or a label, never a second table of
+machines.** A `devices` table would immediately be a second answer to "what
+servers do we have" (ADR 0043). What a rack position adds is *where it is*,
+which is the fact no other table holds; the label covers the switch, the patch
+panel and the blanking plate, none of which this platform sells.
+
+**Units are numbered from the bottom and the elevation is drawn from the
+top.** Both facts are on the screen, because an operator about to send a
+technician needs to be sure which way round it is. A device occupying four
+units is drawn once and continued three times — repeating its name reads as
+four machines, which is the mistake a rack diagram exists to stop.
+
+**The overlap rule cannot be an index.** A unique key on `(rack_id,
+start_unit)` stops two things starting on one unit and says nothing about a 2U
+device landing on the 1U above it, so the check is read-then-write under a lock
+on the **rack** row — `AllocateAddress`'s shape, because the units being
+claimed have no rows of their own to lock — and the index is the guard behind
+it. A refusal names what is in the way and where: "the chassis is already in
+units 10 to 13", never "that does not fit".
+
+**Free units are the recessed ones, not the occupied ones.** Tinting what is
+there makes a full rack look like a rack of holes. It also fixed a real
+contrast failure: `danger-subtle` at 12px on `surface-secondary` is **4.49:1**
+where 4.5 is the floor, and the Take out button sat on exactly that.
+
+**`.row-actions` now works outside a table.** It was inert on a list — which
+is a note already in this file, made again — because only `.data-table`
+revealed it. `.hover-rows` is the second container rather than a second class:
+one rule, two shapes, and the `(hover: none)` escape applies to both.
+
+**A borrowed column label, for the fifth time.** The rack list headed its
+"9 / 24" column with `dcim.rack.elevation` — the heading of another section
+standing in for a word. Every count column needs a word of its own.
+
+**`AdminActionRoutesTest` caught a link to a screen that does not exist.** The
+rack elevation linked a server's name to `/admin/servers/{id}`, and there is no
+per-server page in this product — servers are managed on Apps → Infrastructure.
+A path a page names is a promise, and the guard written after the fleet screen
+spent several phases posting to a 404 is what stopped this one shipping.

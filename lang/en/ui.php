@@ -718,6 +718,7 @@ return [
         'backups' => 'Backups',
         'load_balancers' => 'Load balancers',
         'machines' => 'Machines',
+        'dcim' => 'Datacenter',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

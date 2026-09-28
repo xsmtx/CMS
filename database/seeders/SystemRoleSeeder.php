@@ -140,6 +140,9 @@ final class SystemRoleSeeder extends Seeder
                 // And which machine a customer is on, which is the first
                 // question of every “the site is down”. Not the power.
                 'infrastructure.machines.view',
+                // And which rack it is in, which is the first thing asked
+                // when somebody has to go and look at it.
+                'dcim.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

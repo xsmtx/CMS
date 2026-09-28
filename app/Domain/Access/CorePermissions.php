@@ -203,6 +203,19 @@ final class CorePermissions
              * machine several customers are on.
              */
             new PermissionDefinition('infrastructure.machines.view', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * The datacenter (§11). The view is Support's — “which rack is
+             * this customer on” is a support question during an incident —
+             * and the building's layout is not.
+             *
+             * No password challenge anywhere in this family: nothing here
+             * changes what a customer is served. The destructive act is
+             * somebody physically pulling a disk, and this platform records
+             * that rather than causing it.
+             */
+            new PermissionDefinition('dcim.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('dcim.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(
                 'infrastructure.power',
                 'infrastructure',

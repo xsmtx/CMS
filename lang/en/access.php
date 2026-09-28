@@ -124,6 +124,14 @@ return [
             'label' => 'See the certificate fleet',
             'description' => 'Read what is deployed, when it expires and whose it is.',
         ],
+        'dcim.view' => [
+            'label' => 'See the datacenter',
+            'description' => 'Read which rack every machine is in, and where there is space.',
+        ],
+        'dcim.manage' => [
+            'label' => 'Change the datacenter',
+            'description' => 'Add rooms and racks, and record what occupies which units.',
+        ],
         'infrastructure.machines.view' => [
             'label' => 'See virtual machines',
             'description' => 'Read every host and the machines on it, and what each one is doing.',

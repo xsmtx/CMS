@@ -541,6 +541,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/infrastructure/machines',
         permission: 'infrastructure.machines.view',
       },
+      {
+        label: nav('dcim', 'Datacenter'),
+        href: '/admin/infrastructure/dcim',
+        permission: 'dcim.view',
+      },
     ],
   },
   {
