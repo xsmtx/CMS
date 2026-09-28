@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'load_balancers' => [
+            'label' => 'Yük dengeleyici envanteri',
+            'description' => 'Her yük dengeleyiciye neyi dinlediğini ve her dinleyicinin arkasında hangi makinelerin olduğunu sorar.',
+        ],
         'storage' => [
             'label' => 'Depolama envanteri',
             'description' => 'Her depolama sistemine hangi havuz ve birimleri sunduğunu sorar ve bunları kaynak grafiğine yazar.',

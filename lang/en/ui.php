@@ -716,6 +716,7 @@ return [
         'dns' => 'DNS',
         'reputation' => 'Reputation',
         'backups' => 'Backups',
+        'load_balancers' => 'Load balancers',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

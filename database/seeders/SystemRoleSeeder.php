@@ -132,6 +132,11 @@ final class SystemRoleSeeder extends Seeder
                 // And whether a customer's site is backed up, which is a
                 // support question long before it is anybody else's.
                 'infrastructure.backup.view',
+                // And what is behind the balancer, which is the answer to
+                // “why is the site slow for some people”. Not the drain:
+                // taking a backend out is a change to what the world
+                // reaches.
+                'infrastructure.loadbalancers.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

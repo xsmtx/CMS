@@ -711,6 +711,7 @@ return [
         'dns' => 'DNS',
         'reputation' => 'İtibar',
         'backups' => 'Yedekler',
+        'load_balancers' => 'Yük dengeleyiciler',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

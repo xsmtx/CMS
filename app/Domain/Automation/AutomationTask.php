@@ -164,6 +164,15 @@ enum AutomationTask: string
     case Storage = 'storage';
 
     /**
+     * Asking every load balancer what it is serving (§9).
+     *
+     * Hourly. A listener list changes when somebody deploys; a backend's
+     * *state* changes faster, which is why the drain screen re-reads one
+     * backend rather than trusting this.
+     */
+    case LoadBalancers = 'load-balancers';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -237,7 +246,7 @@ enum AutomationTask: string
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
-            self::Certificates, self::Backups, self::Storage => 60,
+            self::Certificates, self::Backups, self::Storage, self::LoadBalancers => 60,
             self::ZoneHealth, self::Reputation => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

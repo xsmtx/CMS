@@ -184,6 +184,25 @@ final class CorePermissions
             new PermissionDefinition('infrastructure.backup.view', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Load balancers (§9, §16). The view is Support's — “is my site
+             * behind the balancer” is a support question — and the drain is
+             * not: taking a backend out of rotation is a change to what the
+             * world reaches, and it carries the password challenge.
+             *
+             * High risk, and a permission rather than an approval: a drain is
+             * reversible where a firewall policy is not, and requiring a
+             * second person would make a maintenance window need somebody
+             * else awake at two in the morning.
+             */
+            new PermissionDefinition('infrastructure.loadbalancers.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition(
+                'infrastructure.drain',
+                'infrastructure',
+                RoleScope::Staff,
+                highRisk: true,
+            ),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on

@@ -20,6 +20,8 @@ return [
     'title' => 'Infrastructure',
 
     'kinds' => [
+        'lb_listener' => 'Listener',
+        'lb_backend' => 'Backend',
         'storage_pool' => 'Storage pool',
         'storage_volume' => 'Volume',
         'organization' => 'Organization',
@@ -200,6 +202,46 @@ return [
         'db.deadlocks' => 'Deadlocks',
         'cache.evictions' => 'Cache evictions',
         'battery.runtime' => 'Battery runtime',
+    ],
+
+    'loadbalancing' => [
+        'title' => 'Load balancers',
+        'intro' => 'What each balancer is listening on and which machines are behind it. Draining stops new connections; the ones already open are left to finish.',
+        'empty' => 'No balancer has reported',
+        'empty_detail' => 'Either no load balancer adapter has been configured, or the ones that are have nothing to serve yet.',
+        'backends' => 'Backends',
+        // Reads after a fraction — “2 / 4 still taking traffic” — so it is
+        // not capitalised.
+        'serving' => 'still taking traffic',
+        'no_backends' => 'Nothing is behind this listener.',
+        'drain' => 'Drain',
+        'undrain' => 'Put back',
+        'done' => 'The balancer now reports :state.',
+
+        'confirm' => [
+            'drain_title' => 'Stop sending new connections to :name?',
+            // What actually happens, in the words somebody needs before they
+            // reboot a machine: the open connections are not cut.
+            'drain_body' => 'The balancer will stop sending new connections to this machine. Connections it already has are left to finish, so watch the count come down before you take the machine out of service. Nothing is cut.',
+            'undrain_title' => 'Put :name back into the rotation?',
+            'undrain_body' => 'The balancer will start sending new connections to this machine again.',
+        ],
+
+        'states' => [
+            'up' => 'Taking traffic',
+            // Neither up nor down: serving what it has, taking nothing new.
+            'draining' => 'Draining',
+            'down' => 'Failing its health check',
+            'disabled' => 'Turned off',
+            'unknown' => 'Not reported',
+        ],
+
+        'columns' => [
+            'backend' => 'Backend',
+            'address' => 'Address',
+            'weight' => 'Weight',
+            'state' => 'State',
+        ],
     ],
 
     'storage' => [

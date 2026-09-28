@@ -123,6 +123,14 @@ return [
             'label' => 'Sertifika filosunu gör',
             'description' => 'Ne sunulduğunu, ne zaman dolduğunu ve kime ait olduğunu okur.',
         ],
+        'infrastructure.loadbalancers.view' => [
+            'label' => 'Yük dengeleyicileri gör',
+            'description' => 'Her dengeleyicinin neyi dinlediğini ve arkasında hangi makinelerin olduğunu okur.',
+        ],
+        'infrastructure.drain' => [
+            'label' => 'Arka uç trafiğini boşalt',
+            'description' => 'Dengeleyicinin bir makineye yeni bağlantı göndermesini durdurur ve geri alır. Parolayı yeniden sorar.',
+        ],
         'security.reputation.view' => [
             'label' => 'Gönderim itibarını gör',
             'description' => 'Bu kurulumun hangi adreslerinin kara listede olduğunu ve üzerinde kimin hizmetinin bulunduğunu okur.',

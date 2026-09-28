@@ -1,0 +1,55 @@
+{
+    "slug": "loadbalancer-haproxy",
+    "name": "HAProxy",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads what HAProxy is listening on and which servers are behind each backend through the Data Plane API, and can take one server out of the rotation for a maintenance window.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.8",
+    "platform": "*",
+    "namespace": "InfraCMS\\LoadbalancerHaproxy",
+    "entrypoint": "HaproxyModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "Data Plane API address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the Data Plane API answers, for example https://lb1.dc2.example.com:5555. The management address, not the one traffic arrives on."
+        },
+        {
+            "key": "username",
+            "label": "API user",
+            "type": "text",
+            "required": true,
+            "hint": "The user from HAProxy's own userlist. The password is written separately, on the Adapters screen, and is never stored here."
+        },
+        {
+            "key": "api_version",
+            "label": "API version",
+            "type": "text",
+            "required": false,
+            "default": "v2",
+            "hint": "v2 or v3. The Data Plane API changes its paths between major versions, so this is asked rather than guessed."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a balancer using its own self-signed certificate on a management network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "15",
+            "hint": "A balancer under load must not become an operator staring at a spinner."
+        }
+    ]
+}

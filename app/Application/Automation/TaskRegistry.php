@@ -11,6 +11,7 @@ use App\Application\Automation\Runs\CollectCertificates;
 use App\Application\Automation\Runs\CollectDdosEvents;
 use App\Application\Automation\Runs\CollectProtections;
 use App\Application\Automation\Runs\CollectTelemetry;
+use App\Application\Automation\Runs\DiscoverLoadBalancers;
 use App\Application\Automation\Runs\DiscoverStorage;
 use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\EvaluateAlerts;
@@ -66,6 +67,7 @@ final readonly class TaskRegistry
             AutomationTask::Reputation => CheckReputation::class,
             AutomationTask::Backups => CollectProtections::class,
             AutomationTask::Storage => DiscoverStorage::class,
+            AutomationTask::LoadBalancers => DiscoverLoadBalancers::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

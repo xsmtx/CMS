@@ -3120,3 +3120,57 @@ staleness answer and be overwritten by the next sample anyway.
 **PHPStan now catches the `static fn` that reaches `$this`** — the trap Phase 9
 shipped once with every test passing, because no test loaded that page. Two of
 them appeared the moment a presenter needed an injected reader.
+
+**Load balancers are in, with the first write this family ships.** A drain is
+reversible where a firewall policy is not, so it is a guarded **action** —
+`infrastructure.drain` plus the password challenge, the permission above
+`auth.recent` on the route — rather than a guarded **change** needing a second
+person at two in the morning. `LoadBalancerWriter` is a separate interface from
+`LoadBalancerProvider` so an adapter that can only read says so by not
+implementing it, the reason `NetworkDeviceWriter` is its own.
+
+**`DrainBackend` reads the backend back.** The whole point of the action is the
+state it produces, and a balancer that accepted the command and then cannot
+describe the backend is `BackendRefused::unverifiable()` — not a success, because
+the operator is about to reboot a machine on the strength of the answer. The
+state it reports is written onto the node, so the list they return to shows what
+they did rather than what the last hourly sweep saw.
+
+**Nothing waits.** Telling a balancer to stop sending new connections takes a
+second; waiting for the open ones to finish is the operator's job. A method that
+blocked until the count reached zero would be a request that hung for an hour.
+That is also why `activeConnections` is null rather than zero when a balancer
+does not report it: acting on an invented zero is how somebody reboots a server
+that is still serving.
+
+**`BackendState::Draining` is the member that earns the enum** — neither up nor
+down, serving what it has and taking nothing new — and it is toned
+`maintenance` rather than `warning`, because it is a thing somebody chose.
+`Disabled` is somebody's decision and `Down` is a health check's verdict, the
+same distinction `PortState` draws.
+
+**HAProxy reports two states and the administrative one wins.** `admin_state`
+(`ready`/`drain`/`maint`) and `operational_state` (`up`/`down`/`stopping`) are
+separate fields: a server somebody drained is still operationally up and must
+not read as taking traffic. `stopping` is the operational way of saying
+draining. And a drain is a `PUT` of **one field** — sending the server's other
+fields back would overwrite whatever somebody changed in between.
+
+**The Data Plane API's two halves answer different shapes**: the configuration
+endpoints wrap their answer in `{_version, data}` and the runtime ones answer a
+bare list. Reading the envelope as the list answers nothing, silently.
+
+**The `resource_adapters` row does not exist until the registry syncs it**,
+which happens the first time anything asks the registry for an organization's
+adapters. A test that turns `writes_enabled` on before the first sweep updates
+nothing and silently does not happen — which is why the helper asserts the
+update matched one row.
+
+**`auth.recent`'s session key is `auth.confirmed_at`**, not Laravel's
+`auth.password_confirmed_at`. A test that sets the wrong one gets a 302 to the
+password screen and reads as a routing bug.
+
+**A translation key nothing reads is the same trap as a setting nothing reads.**
+`loadbalancing.reason_hint` was written for a hint `AppConfirm` already draws
+itself; it was found by looking at the dialog, and deleted. Before adding
+wording beside a primitive, check what the primitive already says.

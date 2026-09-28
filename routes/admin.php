@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\LicenceController;
+use App\Http\Controllers\Admin\LoadBalancerController;
 use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MarketplaceController;
 use App\Http\Controllers\Admin\ModuleController;
@@ -478,6 +479,22 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::get('infrastructure/backups', BackupCoverageController::class)
         ->name('infrastructure.backups');
+
+    /*
+     * Load balancers (§9). The list is a view; the drain is a guarded
+     * action with the permission **above** `auth.recent`, so somebody who
+     * may not drain is refused before being asked for a password.
+     */
+    Route::get('infrastructure/load-balancers', [LoadBalancerController::class, 'index'])
+        ->name('infrastructure.loadbalancers');
+
+    Route::post('infrastructure/load-balancers/{node}/drain', [LoadBalancerController::class, 'drain'])
+        ->middleware(['can:infrastructure.drain', 'auth.recent'])
+        ->name('infrastructure.loadbalancers.drain');
+
+    Route::post('infrastructure/load-balancers/{node}/undrain', [LoadBalancerController::class, 'undrain'])
+        ->middleware(['can:infrastructure.drain', 'auth.recent'])
+        ->name('infrastructure.loadbalancers.undrain');
 
     /*
      * Zone health (§8). Read-only: core owns the checks because they are

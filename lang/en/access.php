@@ -124,6 +124,14 @@ return [
             'label' => 'See the certificate fleet',
             'description' => 'Read what is deployed, when it expires and whose it is.',
         ],
+        'infrastructure.loadbalancers.view' => [
+            'label' => 'See load balancers',
+            'description' => 'Read what each balancer is listening on and which machines are behind it.',
+        ],
+        'infrastructure.drain' => [
+            'label' => 'Drain a backend',
+            'description' => 'Stop a balancer sending new connections to one machine, and put it back. Asks for the password again.',
+        ],
         'security.reputation.view' => [
             'label' => 'See sending reputation',
             'description' => 'Read which of this installation’s addresses are on a blocklist, and whose service is on them.',

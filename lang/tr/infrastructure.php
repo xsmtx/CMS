@@ -14,6 +14,8 @@ return [
     'title' => 'Altyapı',
 
     'kinds' => [
+        'lb_listener' => 'Dinleyici',
+        'lb_backend' => 'Arka uç',
         'storage_pool' => 'Depolama havuzu',
         'storage_volume' => 'Birim',
         'organization' => 'Kuruluş',
@@ -181,6 +183,41 @@ return [
         'db.deadlocks' => 'Kilitlenmeler',
         'cache.evictions' => 'Önbellekten atılanlar',
         'battery.runtime' => 'Batarya süresi',
+    ],
+
+    'loadbalancing' => [
+        'title' => 'Yük dengeleyiciler',
+        'intro' => 'Her dengeleyicinin neyi dinlediği ve arkasında hangi makinelerin olduğu. Boşaltma yeni bağlantıları durdurur; açık olanların bitmesi beklenir.',
+        'empty' => 'Bildirim yapan dengeleyici yok',
+        'empty_detail' => 'Ya hiç yük dengeleyici bağdaştırıcısı tanımlanmadı ya da tanımlı olanların henüz sunduğu bir şey yok.',
+        'backends' => 'Arka uçlar',
+        'serving' => 'hâlâ trafik alıyor',
+        'no_backends' => 'Bu dinleyicinin arkasında hiçbir şey yok.',
+        'drain' => 'Boşalt',
+        'undrain' => 'Geri al',
+        'done' => 'Dengeleyici şimdi :state bildiriyor.',
+
+        'confirm' => [
+            'drain_title' => ':name makinesine yeni bağlantı gönderilmesi dursun mu?',
+            'drain_body' => 'Dengeleyici bu makineye yeni bağlantı göndermeyi bırakacak. Hâlihazırda açık olan bağlantıların bitmesi beklenir; makineyi hizmet dışı bırakmadan önce sayının düşüşünü izleyin. Hiçbir şey kesilmez.',
+            'undrain_title' => ':name yeniden döngüye alınsın mı?',
+            'undrain_body' => 'Dengeleyici bu makineye yeniden yeni bağlantı göndermeye başlayacak.',
+        ],
+
+        'states' => [
+            'up' => 'Trafik alıyor',
+            'draining' => 'Boşaltılıyor',
+            'down' => 'Sağlık kontrolünü geçemiyor',
+            'disabled' => 'Kapatılmış',
+            'unknown' => 'Bildirilmedi',
+        ],
+
+        'columns' => [
+            'backend' => 'Arka uç',
+            'address' => 'Adres',
+            'weight' => 'Ağırlık',
+            'state' => 'Durum',
+        ],
     ],
 
     'storage' => [

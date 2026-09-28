@@ -261,6 +261,15 @@ Schedule::command('platform:run zone-health')
  * Hourly, and not at the same minute as the backup sweep: both talk to
  * somebody else's API.
  */
+/*
+ * Asking every load balancer what it is serving.
+ */
+Schedule::command('platform:run load-balancers')
+    ->hourlyAt(40)
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run storage')
     ->hourlyAt(20)
     ->withoutOverlapping()

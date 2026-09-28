@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'load_balancers' => [
+            'label' => 'Load balancer inventory',
+            'description' => 'Asks every load balancer what it is listening on and which machines are behind each listener.',
+        ],
         'storage' => [
             'label' => 'Storage inventory',
             'description' => 'Asks every storage system what pools and volumes it is serving, and writes them into the resource graph.',
