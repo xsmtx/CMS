@@ -217,6 +217,15 @@ final class CorePermissions
             new PermissionDefinition('dcim.view', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('dcim.manage', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition('dcim.parts.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Remote hands (§11). Asking is Support's — the person on the
+             * telephone is exactly who needs a disk swapped — and closing
+             * one with the serials is its own permission, because those
+             * two fields are the register for the next warranty claim.
+             */
+            new PermissionDefinition('dcim.remote_hands.request', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('dcim.remote_hands.complete', 'infrastructure', RoleScope::Staff),
             new PermissionDefinition(
                 'infrastructure.power',
                 'infrastructure',

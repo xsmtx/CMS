@@ -207,6 +207,7 @@ it, so the four count columns are empty by construction.
 | [x] | `Admin/Dcim/Rack.vue` | detail | G | yes |
 | [x] | `Admin/Dcim/Parts.vue` | list | G | yes |
 | [x] | `Admin/Dcim/Part.vue` | detail | G | yes |
+| [x] | `Admin/Dcim/RemoteHands.vue` | list | G | yes |
 
 The public status page (`themes/storefront/core/views/status.blade.php`) is
 not here and should not be: the storefront is Blade themes and out of the

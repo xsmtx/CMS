@@ -162,7 +162,9 @@ final class DcimController extends Controller
         } catch (RackRefused $refused) {
             // Every refusal reaches the form as a sentence. Anything else
             // still reaches the handler, because anything else is a bug.
-            return back()->withErrors(['start_unit' => $refused->getMessage()]);
+            return back()->withErrors([
+                'start_unit' => __($refused->key(), $refused->replacements()),
+            ]);
         }
 
         return back()->with('status', __('dcim.placed'));

@@ -52,6 +52,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\RemoteHandsController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReputationController;
 use App\Http\Controllers\Admin\ResellerController;
@@ -537,6 +538,20 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::post('infrastructure/parts/{part}/remove', [HardwarePartController::class, 'remove'])
         ->name('infrastructure.parts.remove');
+
+    /*
+     * Remote hands (§11). A record before it is a request: an audit that
+     * says a machine was opened is worth more than a ticket saying
+     * somebody was asked to open it.
+     */
+    Route::get('infrastructure/remote-hands', [RemoteHandsController::class, 'index'])
+        ->name('infrastructure.remote_hands');
+
+    Route::post('infrastructure/remote-hands', [RemoteHandsController::class, 'store'])
+        ->name('infrastructure.remote_hands.store');
+
+    Route::post('infrastructure/remote-hands/{task}', [RemoteHandsController::class, 'transition'])
+        ->name('infrastructure.remote_hands.transition');
 
     Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
         ->middleware(['can:infrastructure.power', 'auth.recent'])

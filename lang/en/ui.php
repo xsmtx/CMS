@@ -720,6 +720,7 @@ return [
         'machines' => 'Machines',
         'dcim' => 'Datacenter',
         'parts' => 'Hardware',
+        'remote_hands' => 'Remote hands',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

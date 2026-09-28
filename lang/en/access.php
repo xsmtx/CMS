@@ -132,6 +132,14 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'dcim.remote_hands.request' => [
+            'label' => 'Ask for remote hands',
+            'description' => 'Raise a task for somebody at the datacenter, and schedule it.',
+        ],
+        'dcim.remote_hands.complete' => [
+            'label' => 'Close a remote-hands task',
+            'description' => 'Record what the technician found, and which serial came out and which went in.',
+        ],
         'dcim.parts.manage' => [
             'label' => 'Record hardware parts',
             'description' => 'Add parts, and record which machine each one is fitted to.',

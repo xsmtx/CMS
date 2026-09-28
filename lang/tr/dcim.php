@@ -32,6 +32,79 @@ return [
         'remove' => 'Çıkar',
         'remove_title' => ':name, :rack kabinetinden çıkarılsın mı?',
         'remove_body' => 'Bu, ünitenin boş olduğunu kaydeder. Hiçbir şeyin gücü kesilmez ve kimse bir yere gönderilmez — makine hâlâ kabinetteyse bu, şemayı yanlış hâle getirir.',
+
+        'errors' => [
+            'does_not_fit' => ':start biriminden başlayan :heightU yükseklikte bir cihaz, :units U olan :rack kabinetinin tepesini aşar.',
+            'overlaps' => ':device zaten :from ile :to birimleri arasında.',
+            'overlaps_unnamed' => ':from ile :to birimleri zaten dolu.',
+            'occupied' => ':rack kabinetinin :start birimi, bu kaydedilirken doldu.',
+            'bad_height' => 'Bir cihaz en az bir birim kaplar.',
+            'nothing_to_place' => 'Bir sunucu seçin ya da bu konuma bir ad verin.',
+        ],
+    ],
+
+    'remote_hands' => [
+        'title' => 'Saha desteği',
+        'intro' => 'Veri merkezindeki birinden bir makineye dokunmasını istemek. Talep olmadan önce bir kayıt — bir makinenin açıldığını söyleyen denetim kaydı, birinin açmasının istendiğini söyleyen kayıttan değerlidir.',
+        'empty' => 'Bekleyen yok',
+        'empty_detail' => 'Açık iş yok. Binada bir çift ele ihtiyaç olduğunda bir iş açın.',
+        'requested' => 'Açıldı.',
+        'moved' => 'Kaydedildi.',
+        'add' => 'Bir şey iste',
+        'show_all' => 'Hepsini göster',
+        'show_open' => 'Açık olanları göster',
+        'waiting_since' => ':date tarihinden beri bekliyor',
+        'scheduled_for' => ':date için',
+        'serials' => ':old çıktı, :new takıldı',
+        'no_serials' => 'Seri numarası kaydedilmedi',
+        'unplaced' => 'Kabinet ya da makine belirtilmedi',
+
+        'fields' => [
+            'summary' => 'Yapılması gereken',
+            'instructions' => 'Yönerge',
+            'instructions_hint' => 'Korídorda duran birinin ihtiyacı olan sözlerle. Yuva numarası, ışık rengi, hangi yönü.',
+            'rack' => 'Kabinet',
+            'server' => 'Makine',
+            'part' => 'Parça',
+            'technician' => 'Teknisyen',
+            'technician_hint' => 'Bir ad. Veri merkezinde çalışır ve burada hesabı yoktur.',
+            'scheduled_for' => 'Kararlaştırılan zaman',
+            'old_serial' => 'Çıkan seri numarası',
+            'new_serial' => 'Takılan seri numarası',
+            'outcome' => 'Ne oldu',
+            'evidence' => 'Kanıt',
+            'evidence_hint' => 'Başka bir yerdeki bir kayda ya da fotoğrafa bağlantı. Buraya hiçbir dosya yüklenmez.',
+            'save' => 'Aç',
+            'none' => 'Yok',
+        ],
+
+        'states' => [
+            'requested' => 'Bekliyor',
+            'scheduled' => 'Kararlaştırıldı',
+            'in_progress' => 'Biri orada',
+            'done' => 'Tamamlandı',
+            'cancelled' => 'Vazgeçildi',
+        ],
+
+        'moves' => [
+            'requested' => 'Yeniden beklemeye al',
+            'scheduled' => 'Bir zaman kararlaştır',
+            'in_progress' => 'Biri şu an orada',
+            'done' => 'Kapat',
+            'cancelled' => 'İşi iptal et',
+        ],
+
+        'errors' => [
+            'cannot_move' => '“:from” durumundaki bir iş “:to” olamaz.',
+            'needs_outcome' => 'Kapatmadan önce ne olduğunu yazın.',
+        ],
+
+        'columns' => [
+            'task' => 'İş',
+            'where' => 'Nerede',
+            'state' => 'Durum',
+            'waiting' => 'Açıldı',
+        ],
     ],
 
     'power' => [

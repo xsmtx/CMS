@@ -131,6 +131,14 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'dcim.remote_hands.request' => [
+            'label' => 'Saha desteği iste',
+            'description' => 'Veri merkezindeki biri için iş açar ve planlar.',
+        ],
+        'dcim.remote_hands.complete' => [
+            'label' => 'Saha desteği işini kapat',
+            'description' => 'Teknisyenin ne bulduğunu, hangi seri numarasının çıktığını ve hangisinin takıldığını kaydeder.',
+        ],
         'dcim.parts.manage' => [
             'label' => 'Donanım parçalarını kaydet',
             'description' => 'Parça ekler ve her birinin hangi makinede takılı olduğunu kaydeder.',

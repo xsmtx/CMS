@@ -143,6 +143,9 @@ final class SystemRoleSeeder extends Seeder
                 // And which rack it is in, which is the first thing asked
                 // when somebody has to go and look at it.
                 'dcim.view',
+                // And asking for somebody to go and look at it, which is
+                // what the person on the telephone actually needs.
+                'dcim.remote_hands.request',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

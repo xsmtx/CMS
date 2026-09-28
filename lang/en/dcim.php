@@ -35,6 +35,85 @@ return [
         'remove' => 'Take out',
         'remove_title' => 'Take :name out of :rack?',
         'remove_body' => 'This records that the unit is free. Nothing is powered off and nobody is sent anywhere — if the machine is still in the cabinet, this makes the diagram wrong.',
+
+        'errors' => [
+            // Each one names what is in the way and where, because a rack
+            // diagram that does not match the building sends somebody to
+            // the wrong cabinet.
+            'does_not_fit' => 'A :heightU device at unit :start would end above the top of :rack, which is :unitsU.',
+            'overlaps' => ':device is already in units :from to :to.',
+            'overlaps_unnamed' => 'Units :from to :to are already taken.',
+            'occupied' => 'Unit :start of :rack was taken while this was being saved.',
+            'bad_height' => 'A device occupies at least one unit.',
+            'nothing_to_place' => 'Choose a server, or give this position a name.',
+        ],
+    ],
+
+    'remote_hands' => [
+        'title' => 'Remote hands',
+        'intro' => 'Asking somebody at the datacenter to go and touch a machine. A record before it is a request — an audit that says a machine was opened is worth more than a ticket saying somebody was asked to open it.',
+        'empty' => 'Nothing waiting',
+        'empty_detail' => 'No task is open. Raise one when something needs a pair of hands in the building.',
+        'requested' => 'Raised.',
+        'moved' => 'Recorded.',
+        'add' => 'Ask for something',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+        'waiting_since' => 'Waiting since :date',
+        'scheduled_for' => 'For :date',
+        'serials' => ':old came out, :new went in',
+        'no_serials' => 'No serials recorded',
+        'unplaced' => 'No rack or machine named',
+
+        'fields' => [
+            'summary' => 'What needs doing',
+            'instructions' => 'Instructions',
+            'instructions_hint' => 'In the words somebody standing in the aisle needs. Bay numbers, light colours, which way round.',
+            'rack' => 'Rack',
+            'server' => 'Machine',
+            'part' => 'Part',
+            'technician' => 'Technician',
+            'technician_hint' => 'A name. They work for the datacenter and have no account here.',
+            'scheduled_for' => 'Agreed for',
+            'old_serial' => 'Serial that came out',
+            'new_serial' => 'Serial that went in',
+            'outcome' => 'What happened',
+            'evidence' => 'Evidence',
+            'evidence_hint' => 'A link to a ticket or a photograph somewhere else. Nothing is uploaded here.',
+            'save' => 'Raise it',
+            'none' => 'None',
+        ],
+
+        'states' => [
+            'requested' => 'Waiting',
+            // Its own state: a task agreed for Tuesday at two is not the same
+            // as one nobody has looked at.
+            'scheduled' => 'Agreed',
+            'in_progress' => 'Somebody is there',
+            'done' => 'Done',
+            'cancelled' => 'Called off',
+        ],
+
+        'moves' => [
+            'requested' => 'Put back to waiting',
+            'scheduled' => 'Agree a window',
+            'in_progress' => 'Somebody is there now',
+            'done' => 'Close it',
+            'cancelled' => 'Call it off',
+        ],
+
+        'errors' => [
+            'cannot_move' => 'A task that is “:from” cannot become “:to”.',
+            // The reason the whole record exists.
+            'needs_outcome' => 'Say what happened before closing this.',
+        ],
+
+        'columns' => [
+            'task' => 'Task',
+            'where' => 'Where',
+            'state' => 'State',
+            'waiting' => 'Raised',
+        ],
     ],
 
     'power' => [

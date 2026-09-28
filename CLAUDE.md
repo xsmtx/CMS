@@ -3416,3 +3416,47 @@ reader has to parse twice. Renamed.
 **`pluck()` on a cast column returns the cast values.** A test asserting
 `toContain('temperature')` against a column cast to `MetricKind` compares a
 string with an enum and fails while the data is correct.
+
+**Remote hands is a record before it is a request** (§11, `remote_hands_tasks`,
+`/admin/infrastructure/remote-hands`). An audit row saying a machine was opened
+is worth more than a ticket saying somebody was asked to open it, so every move
+writes one and closing a task asks for the sentence the whole record exists for.
+Four things it settled:
+
+- **The technician is a name, not a staff user.** The person who walks to the
+  rack works for the datacenter and has no account here; a foreign key would be
+  asking for one to be invented.
+- **Evidence is a reference, not a file.** A link to a ticket or a photograph
+  somewhere else. Nothing is uploaded, which is one fewer thing to store,
+  redact and back up.
+- **There is no `Failed`.** A technician who went and could not do it has still
+  been, and the outcome says what happened — a state would only say that
+  somebody has to read it. A task that should not have been asked for is
+  `Cancelled`.
+- **`Scheduled` may go back to `Requested`.** A window that falls through is an
+  ordinary Tuesday, and cancelling and re-raising would lose the thread.
+
+**A status label is the wrong wording for the button that moves something into
+it.** The row actions read `Agreed`, `Somebody is there`, `Called off` — three
+buttons stating facts rather than offering actions, which is the "a button is
+labelled with what it does" rule through a new door. `RemoteHandsState` has an
+`actionKey()` beside its `labelKey()` now (`Agree a window`, `Somebody is there
+now`, `Call it off`), and an enum whose members will ever appear on a button
+wants both from the start. Found by hovering a row; nothing in 2270 tests could
+see it.
+
+**A refusal is a sentence somebody reads, so it is a key.** `RackRefused` shipped
+in the DCIM spine with its wording written into the exception, and
+`DcimController` put `getMessage()` on the form — hard-coded English at an
+operator working in Turkish, which is exactly the `LicenceCheck` trap. Both
+refusals carry `key()` and `replacements()` now and the controller renders them.
+The English message stays on the exception, because that is what a log wants.
+
+**`items-end` on a row of fields aligns the wrappers, not the controls.** One
+field with a hint and two without put three inputs at three different heights.
+A grid is the answer rather than a flex row: fields that belong together
+(the two serials) share a row, and a field that does not stands alone.
+
+**A form is a column, not the window.** The raise form ran the full 1400px, so
+the sentence somebody types for a technician was one line 1390 pixels wide.
+`max-w-3xl`, like every other form in the admin area.

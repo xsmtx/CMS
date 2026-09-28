@@ -715,6 +715,7 @@ return [
         'machines' => 'Makineler',
         'dcim' => 'Veri merkezi',
         'parts' => 'Donanım',
+        'remote_hands' => 'Saha desteği',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',
