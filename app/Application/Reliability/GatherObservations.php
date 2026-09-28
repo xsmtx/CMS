@@ -6,6 +6,7 @@ namespace App\Application\Reliability;
 
 use App\Application\Health\HealthChecks;
 use App\Application\Infrastructure\CapacityOutlooks;
+use App\Application\Infrastructure\MetricNames;
 use App\Domain\Automation\AutomationTask;
 use App\Domain\Automation\RunStatus;
 use App\Domain\Health\HealthState;
@@ -63,6 +64,7 @@ final readonly class GatherObservations
     public function __construct(
         private HealthChecks $checks,
         private CapacityOutlooks $capacity,
+        private MetricNames $metrics,
     ) {}
 
     /**
@@ -315,13 +317,13 @@ final readonly class GatherObservations
 
             $observations[] = new Observation(
                 key: $row['node']->node_key.'/'.$row['metric']->value,
-                // `infrastructure.metrics.<value>` rather than a `labelKey()`:
-                // `MetricKind` has none, and the value has a dot in it, so a
-                // key built from it would ask the translator to walk two
-                // levels and come back with the path — the permission-slug
-                // trap through a third door.
-                label: $row['node']->label.' — '
-                    .__('infrastructure.metrics.'.$row['metric']->value),
+                // Through `MetricNames`, never `__()`: a metric's value has a
+                // dot in it, so a key built from it asks the translator to walk
+                // two levels and comes back with the path. The comment that
+                // used to sit here described that trap exactly and the code
+                // under it fell into it anyway — which is why the reader is a
+                // class now rather than a rule somebody remembers.
+                label: $row['node']->label.' — '.$this->metrics->label($row['metric']),
                 bad: true,
                 observed: (string) __('reliability.observed.days_left', ['days' => $days]),
                 value: (float) $days,

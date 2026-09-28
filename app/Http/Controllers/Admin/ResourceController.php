@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Application\Infrastructure\CapacityOutlooks;
 use App\Application\Infrastructure\ImpactSummary;
 use App\Application\Infrastructure\ListResources;
+use App\Application\Infrastructure\MetricNames;
 use App\Application\Infrastructure\OwnershipHistory;
 use App\Application\Infrastructure\ResourceTree;
 use App\Domain\Infrastructure\ResourceKind;
@@ -44,6 +45,7 @@ final class ResourceController extends Controller
         private readonly ImpactSummary $impact,
         private readonly OwnershipHistory $history,
         private readonly CapacityOutlooks $capacity,
+        private readonly MetricNames $metricNames,
     ) {}
 
     public function index(Request $request): Response
@@ -147,9 +149,12 @@ final class ResourceController extends Controller
     private function capacityFor(ResourceNode $node): array
     {
         return array_map(
-            static fn (array $row): array => [
+            // Not `static`: it reaches `$this` for the metric's wording, and a
+            // `static fn` that does is the trap Phase 9 shipped once and no
+            // test saw. PHPStan is the guard now.
+            fn (array $row): array => [
                 'metric' => $row['metric']->value,
-                'metricLabel' => (string) __('infrastructure.metrics.'.$row['metric']->value),
+                'metricLabel' => $this->metricNames->label($row['metric']),
                 'utilisation' => round($row['outlook']->utilisation(), 4),
                 'filling' => $row['outlook']->isFilling(),
                 'daysRemaining' => $row['outlook']->daysRemaining(),

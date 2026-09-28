@@ -20,6 +20,8 @@ return [
     'title' => 'Infrastructure',
 
     'kinds' => [
+        'storage_pool' => 'Storage pool',
+        'storage_volume' => 'Volume',
         'organization' => 'Organization',
         'server' => 'Server',
         'service' => 'Service',
@@ -194,7 +196,22 @@ return [
         'mail.bounce_rate' => 'Bounce rate',
         'mail.auth_failures' => 'Failed mail logins',
         'mail.spam_score' => 'Average spam score',
+        'db.slow_queries' => 'Slow queries',
+        'db.deadlocks' => 'Deadlocks',
+        'cache.evictions' => 'Cache evictions',
         'battery.runtime' => 'Battery runtime',
+    ],
+
+    'storage' => [
+        'health' => [
+            'healthy' => 'Healthy',
+            // The member a three-state scale loses: a pool rebuilding after a
+            // disk failure is serving every read and is one more failure from
+            // losing data.
+            'degraded' => 'Degraded',
+            'critical' => 'Critical',
+            'unknown' => 'Not reported',
+        ],
     ],
 
     'backup' => [
@@ -278,7 +295,45 @@ return [
             'unwatched' => 'Nothing reporting',
             'retired' => 'Retired',
         ],
+        'attributes' => [
+            'model' => 'Model',
+            'serial' => 'Serial',
+            'firmware' => 'Firmware',
+            'hostname' => 'Hostname',
+            'vendor' => 'Vendor',
+            'state' => 'State',
+            'description' => 'Description',
+            'speed_mbps' => 'Speed (Mbps)',
+            'mac' => 'MAC address',
+            'vlan' => 'VLAN',
+            'health' => 'Reported health',
+            'technology' => 'Technology',
+            'replicas' => 'Copies kept',
+            'attached_to' => 'Attached to',
+        ],
+
+        'values' => [
+            // The two attribute keys whose value is an enum rather than a
+            // fact. Everything else an adapter reports is its own word — a
+            // model number is not ours to translate.
+            'health' => [
+                'healthy' => 'Healthy',
+                'degraded' => 'Degraded',
+                'critical' => 'Critical',
+                'unknown' => 'Not reported',
+            ],
+            'state' => [
+                'up' => 'Up',
+                // Administratively up with no cable in it is down, and a
+                // port somebody shut deliberately is neither.
+                'down' => 'Down',
+                'disabled' => 'Disabled',
+                'unknown' => 'Not reported',
+            ],
+        ],
+
         'drawer' => [
+            'reported' => 'What it reported',
             'sits_on' => 'Sits on',
             'contains' => 'Contains',
             'impact' => 'If this fails',

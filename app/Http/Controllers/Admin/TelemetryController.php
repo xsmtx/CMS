@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Application\Infrastructure\CapacityOutlooks;
 use App\Application\Infrastructure\ListTelemetry;
+use App\Application\Infrastructure\MetricNames;
 use App\Http\Concerns\PresentsResources;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Resources\Models\ResourceMetric;
@@ -43,6 +44,7 @@ final class TelemetryController extends Controller
         private readonly ListTelemetry $telemetry,
         private readonly CapacityOutlooks $capacity,
         private readonly OrganizationContext $organizations,
+        private readonly MetricNames $metricNames,
     ) {}
 
     public function index(Request $request): Response
@@ -104,12 +106,15 @@ final class TelemetryController extends Controller
         }
 
         return array_map(
-            static fn (array $row): array => [
+            // Not `static`: it reaches `$this` for the metric's wording, and a
+            // `static fn` that does is the trap Phase 9 shipped once and no
+            // test saw. PHPStan is the guard now.
+            fn (array $row): array => [
                 'id' => $row['node']->id.':'.$row['metric']->value,
                 'node' => $row['node']->label,
                 'nodeKey' => $row['node']->node_key,
                 'metric' => $row['metric']->value,
-                'metricLabel' => (string) __('infrastructure.metrics.'.$row['metric']->value),
+                'metricLabel' => $this->metricNames->label($row['metric']),
                 'utilisation' => round($row['outlook']->utilisation(), 4),
                 'daysRemaining' => $row['outlook']->daysRemaining(),
                 'fullOn' => $row['outlook']->fullOn?->toDateString(),

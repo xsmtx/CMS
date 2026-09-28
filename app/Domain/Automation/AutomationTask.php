@@ -155,6 +155,15 @@ enum AutomationTask: string
     case Backups = 'backups';
 
     /**
+     * Asking every storage system what it is serving (§9).
+     *
+     * Hourly. A pool's capacity moves slowly and a volume list moves when
+     * somebody provisions; the monitoring adapters are what watch a pool by
+     * the minute.
+     */
+    case Storage = 'storage';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -228,7 +237,7 @@ enum AutomationTask: string
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
-            self::Certificates, self::Backups => 60,
+            self::Certificates, self::Backups, self::Storage => 60,
             self::ZoneHealth, self::Reputation => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

@@ -74,6 +74,24 @@ enum MetricKind: string
     case MailAuthFailures = 'mail.auth_failures';
     case MailSpamScore = 'mail.spam_score';
 
+    /*
+     * Databases and caches (§9).
+     *
+     * Only what the kinds above cannot already say. Connections are
+     * `Sessions`, queries a second are `RequestRate`, replication is
+     * `ReplicationLag`, the buffer or keyspace hit ratio is `CacheHitRatio`
+     * and memory is `MemoryUsed` — adding a second name for any of them
+     * would split one question across two charts.
+     *
+     * These three are what is left, and each is a different kind of bad: a
+     * slow query is somebody's code, a deadlock is two pieces of somebody's
+     * code, and an eviction is a cache that is too small for what is being
+     * asked of it.
+     */
+    case SlowQueries = 'db.slow_queries';
+    case Deadlocks = 'db.deadlocks';
+    case Evictions = 'cache.evictions';
+
     /**
      * Suffixes that name a unit, longest first so `_mbps` is not read as `_mb`.
      *
@@ -113,7 +131,10 @@ enum MetricKind: string
             // Rates, because a count of deliveries since the daemon
             // started is a number that only ever grows and tells an
             // operator nothing about this afternoon.
-            self::MailDelivered, self::MailRejected, self::MailAuthFailures => MetricUnit::PerSecond,
+            self::MailDelivered, self::MailRejected, self::MailAuthFailures,
+            // Rates for the same reason: a counter that has only grown
+            // since the server started says nothing about this afternoon.
+            self::SlowQueries, self::Deadlocks, self::Evictions => MetricUnit::PerSecond,
             self::MailBounceRate => MetricUnit::Ratio,
             // A spam score is a number a filter chose on its own scale.
             // Neither a ratio nor a count, and pretending otherwise would
@@ -148,7 +169,8 @@ enum MetricKind: string
             self::QueueDepth, self::ReplicationLag,
             self::MailQueueDepth, self::MailDeferred, self::MailHeld,
             self::MailRejected, self::MailBounceRate, self::MailAuthFailures,
-            self::MailSpamScore => true,
+            self::MailSpamScore,
+            self::SlowQueries, self::Deadlocks, self::Evictions => true,
             // Delivered is the one mail metric where more is better, and
             // a screen that drew it red at its busiest hour would be a
             // screen nobody trusts.
@@ -218,6 +240,9 @@ enum MetricKind: string
             self::MailBounceRate => ['bounce_rate', 'mail_bounce_rate'],
             self::MailAuthFailures => ['mail_auth_failures', 'smtp_auth_failures'],
             self::MailSpamScore => ['spam_score', 'mail_spam_score'],
+            self::SlowQueries => ['slow_queries', 'slow_query_rate', 'mysql_slow_queries'],
+            self::Deadlocks => ['deadlocks', 'innodb_deadlocks', 'lock_deadlocks'],
+            self::Evictions => ['evictions', 'evicted_keys', 'keyspace_evictions'],
         };
     }
 

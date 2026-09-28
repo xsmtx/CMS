@@ -110,7 +110,11 @@ it('puts the answer on the telemetry screen', function (): void {
             // Two fields, as everything that crosses to the browser does: the
             // metric for the screen to reason about and the label to print.
             ->where('capacity.0.metric', MetricKind::CpuUtilisation->value)
-            ->where('capacity.0.metricLabel', __('infrastructure.metrics.cpu.utilisation'))
+            // The wording, not the key. This assertion used to compare one
+            // broken `__()` call against another and passed while both sides
+            // printed `infrastructure.metrics.cpu.utilisation` at an
+            // operator; it is spelled out now so it cannot agree with itself.
+            ->where('capacity.0.metricLabel', 'CPU')
             // How many points the line came from, because a date from eight
             // and a date from ninety deserve different belief.
             ->where('capacity.0.days', 8));

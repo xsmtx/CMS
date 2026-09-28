@@ -628,6 +628,9 @@ return [
      * path in the rail. The breadcrumb compares a page heading against these,
      * which is the other reason they may never render as a key.
      */
+    'yes' => 'Evet',
+    'no' => 'Hayır',
+
     'nav' => [
         'clients' => 'Müşteriler',
         'view_search_clients' => 'Müşterileri Görüntüle/Ara',

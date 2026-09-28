@@ -139,13 +139,36 @@ returned an amount would be a module setting prices.
 | Table | Why core |
 | --- | --- |
 | `backup_protections` | The unified protected-resource row: what, by which source, last run, last good, restore points. Raise-and-clear like `alerts`. |
-| `storage_volumes` | Identity, capacity and state; the graph holds the relationships. |
 | `usage_snapshots` | Append-only, quoted by an invoice line. |
 | `usage_meters` | Which meter measures which service, and in what unit. |
 
-Storage pools, load-balancer backends, hypervisor hosts and BMC sensors are
-**graph nodes and telemetry**, not tables. They have no fact core owns that
-the owning system does not: ADR 0043's rule, applied for the fourth time.
+Storage pools **and volumes**, load-balancer backends, hypervisor hosts and
+BMC sensors are **graph nodes and telemetry**, not tables. They have no fact
+core owns that the owning system does not: ADR 0043's rule, applied for the
+fourth time.
+
+### Correction: `storage_volumes` is not a table (2026-09-28)
+
+This section originally gave a volume its own table, on the grounds that it
+has an identity core wants to correlate to a service. It does not need one,
+and `ResourceKind`'s own docblock says why in as many words: core owns four
+kinds because it owns four kinds of row, and **"a storage volume"** is one of
+the examples it names of a thing a *module* owns.
+
+Everything the table was for is already in the graph. A pool contains a
+volume, a server hosts one, a server contains a service and a service belongs
+to a customer — so §9's "attached workloads" is the walk `ImpactSummary`
+already does, with no new code. Capacity goes through `RecordSamples` as
+`disk.total` and `disk.used`, which is what `CapacityForecast` reads and what
+the Telemetry screen already draws; a column would have been a second copy of
+a number that changes every hour, and the daily rollup would never have seen
+it.
+
+The one thing a table would have bought — an edge from a volume to a
+customer's service — is refused by the graph anyway, because the two ends are
+in different subtrees (ADR 0043). That is the same wall IPAM hit in Phase C,
+and the answer is the same: the provider-side objects go in the graph and the
+crossing is made by walking, never by an edge.
 
 ## 4. Authorization
 

@@ -14,6 +14,8 @@ return [
     'title' => 'Altyapı',
 
     'kinds' => [
+        'storage_pool' => 'Depolama havuzu',
+        'storage_volume' => 'Birim',
         'organization' => 'Kuruluş',
         'server' => 'Sunucu',
         'service' => 'Hizmet',
@@ -175,7 +177,19 @@ return [
         'mail.bounce_rate' => 'Geri dönüş oranı',
         'mail.auth_failures' => 'Başarısız posta girişi',
         'mail.spam_score' => 'Ortalama spam puanı',
+        'db.slow_queries' => 'Yavaş sorgular',
+        'db.deadlocks' => 'Kilitlenmeler',
+        'cache.evictions' => 'Önbellekten atılanlar',
         'battery.runtime' => 'Batarya süresi',
+    ],
+
+    'storage' => [
+        'health' => [
+            'healthy' => 'Sağlıklı',
+            'degraded' => 'Bozulmuş',
+            'critical' => 'Kritik',
+            'unknown' => 'Bildirilmedi',
+        ],
     ],
 
     'backup' => [
@@ -257,7 +271,40 @@ return [
             'unwatched' => 'Bildirim yok',
             'retired' => 'Emekli',
         ],
+        'attributes' => [
+            'model' => 'Model',
+            'serial' => 'Seri numarası',
+            'firmware' => 'Yazılım sürümü',
+            'hostname' => 'Makine adı',
+            'vendor' => 'Üretici',
+            'state' => 'Durum',
+            'description' => 'Açıklama',
+            'speed_mbps' => 'Hız (Mbps)',
+            'mac' => 'MAC adresi',
+            'vlan' => 'VLAN',
+            'health' => 'Bildirilen sağlık',
+            'technology' => 'Teknoloji',
+            'replicas' => 'Tutulan kopya',
+            'attached_to' => 'Bağlı olduğu',
+        ],
+
+        'values' => [
+            'health' => [
+                'healthy' => 'Sağlıklı',
+                'degraded' => 'Bozulmuş',
+                'critical' => 'Kritik',
+                'unknown' => 'Bildirilmedi',
+            ],
+            'state' => [
+                'up' => 'Açık',
+                'down' => 'Kapalı',
+                'disabled' => 'Devre dışı',
+                'unknown' => 'Bildirilmedi',
+            ],
+        ],
+
         'drawer' => [
+            'reported' => 'Bildirdikleri',
             'sits_on' => 'Üzerinde durduğu',
             'contains' => 'İçerdiği',
             'impact' => 'Arızalanırsa',

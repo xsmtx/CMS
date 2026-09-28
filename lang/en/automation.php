@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'storage' => [
+            'label' => 'Storage inventory',
+            'description' => 'Asks every storage system what pools and volumes it is serving, and writes them into the resource graph.',
+        ],
         'certificates' => [
             'label' => 'Certificates',
             'description' => 'Asks every certificate source what it currently has deployed, and retires what has stopped being served.',

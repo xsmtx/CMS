@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'storage' => [
+            'label' => 'Depolama envanteri',
+            'description' => 'Her depolama sistemine hangi havuz ve birimleri sunduğunu sorar ve bunları kaynak grafiğine yazar.',
+        ],
         'certificates' => [
             'label' => 'Sertifikalar',
             'description' => 'İlgili her kaynağa şu anda hangi sertifikaları sunduğunu sorar ve artık sunulmayanları emekliye ayırır.',

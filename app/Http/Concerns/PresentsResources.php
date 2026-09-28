@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Concerns;
 
 use App\Application\Infrastructure\HistoryRow;
+use App\Application\Infrastructure\MetricNames;
 use App\Application\Infrastructure\TreeRow;
 use App\Domain\Health\HealthState;
 use App\Domain\Infrastructure\MetricKind;
@@ -105,7 +106,7 @@ trait PresentsResources
             // says rather than hidden: a module written against a newer core is a
             // thing an operator should be able to see, not a blank line.
             'metricLabel' => $kind instanceof MetricKind
-                ? (string) __('infrastructure.metrics.'.$kind->value)
+                ? app(MetricNames::class)->label($kind)
                 : ($metric->getRawOriginal('metric') ?? ''),
             'unit' => $metric->unit?->value,
             'unitLabel' => $metric->unit === null ? '' : (string) __($metric->unit->labelKey()),

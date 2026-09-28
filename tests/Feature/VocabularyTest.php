@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Application\Health\HealthChecks;
+use App\Application\Infrastructure\MetricNames;
 use App\Domain\Automation\AutomationTask;
 use App\Domain\Infrastructure\AdapterArea;
+use App\Domain\Infrastructure\MetricKind;
 use App\Domain\Infrastructure\Network\BgpState;
 use App\Domain\Infrastructure\Network\FirewallAction;
 use App\Domain\Infrastructure\Network\PortState;
@@ -306,6 +308,51 @@ it('names every licensing audit action in both locales', function (): void {
             expect($wording)->not->toBe($key, $action.' has no wording in '.$locale);
         }
     }
+});
+
+/**
+ * Every metric an operator reads is named, in both languages, **through the
+ * reader rather than through `__()`**.
+ *
+ * A `MetricKind`'s value has a dot in it, so
+ * `__('infrastructure.metrics.disk.total')` asks the translator to walk three
+ * levels of nesting and comes back with the key. Every metric name in this
+ * product printed its own translation key that way, on the Telemetry screen,
+ * in the Explorer's drawer, on the capacity panel and inside an alert's
+ * label, in both languages, since Phase A. The wording was there and correct
+ * the whole time; nothing read it.
+ *
+ * So this asks `MetricNames::isWorded()` rather than comparing a label with a
+ * key: the derived fallback (`disk.iops` becomes "Disk iops") is legible
+ * enough that a comparison would pass for every metric nobody has named.
+ */
+it('names every metric in both locales, through the reader', function (): void {
+    $names = app(MetricNames::class);
+
+    foreach (['en', 'tr'] as $locale) {
+        app()->setLocale($locale);
+
+        $missing = [];
+
+        foreach (MetricKind::cases() as $kind) {
+            // A fresh reader per locale: the wording is memoised, which is
+            // the whole point of the class and a trap for a test that reuses
+            // one across a locale change.
+            if (! (new MetricNames)->isWorded($kind)) {
+                $missing[] = $kind->value;
+            }
+        }
+
+        expect($missing)->toBe([], 'Unnamed metrics in '.$locale);
+    }
+
+    app()->setLocale('en');
+
+    // And the label is the wording rather than the key, which is the bug
+    // itself: one assertion against the shape that was broken.
+    expect($names->label(MetricKind::DiskTotal))
+        ->not->toBe('infrastructure.metrics.disk.total')
+        ->not->toBe('disk.total');
 });
 
 /**

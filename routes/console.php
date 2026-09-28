@@ -255,6 +255,18 @@ Schedule::command('platform:run zone-health')
  * Hourly. A nightly job finishes at some hour of the night and an operator
  * wants to see it that morning.
  */
+/*
+ * Asking every storage system what it is serving.
+ *
+ * Hourly, and not at the same minute as the backup sweep: both talk to
+ * somebody else's API.
+ */
+Schedule::command('platform:run storage')
+    ->hourlyAt(20)
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run backups')
     ->hourly()
     ->withoutOverlapping()

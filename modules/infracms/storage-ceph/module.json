@@ -1,0 +1,40 @@
+{
+    "slug": "storage-ceph",
+    "name": "Ceph",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads a Ceph cluster's pools and RBD images through the manager's REST API, so the graph can say which customer's workload is on which pool and how near it is to full.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.7",
+    "platform": "*",
+    "namespace": "InfraCMS\\StorageCeph",
+    "entrypoint": "CephModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "Ceph manager address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the dashboard API answers, for example https://ceph-mgr.dc2.example.com:8443. The management address, not a client one."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a cluster using its own self-signed certificate on a management network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "20",
+            "hint": "A cluster that is recovering answers slowly, and an inventory read must not become an operator staring at a spinner."
+        }
+    ]
+}

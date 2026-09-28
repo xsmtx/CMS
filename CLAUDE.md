@@ -3008,3 +3008,115 @@ screen added after the conversion gets a row. Each had been driven in a browser
 as part of its own increment, so the evidence was there and the record was not —
 which is exactly the drift a tracker exists to stop. They are listed now, in
 their own section, with the phase that added them.
+
+**A storage volume is a graph node, not a table**, and `phase-f-plan.md` §3
+records the correction. `ResourceKind`'s own docblock names "a storage volume"
+as its example of a thing a *module* owns — core owns four kinds because it
+owns four kinds of row. Everything a table would have bought is already in the
+graph: pool contains volume, server hosts volume, server contains service, so
+§9's "attached workloads" is the walk `ImpactSummary` already does. And the one
+thing a table would have added — an edge from a volume to a customer's service —
+is refused anyway, because the ends are in different subtrees (ADR 0043). Same
+wall IPAM hit in Phase C, same answer.
+
+**Capacity is telemetry, never a column.** `DiscoverStorage` writes
+`disk.total` and `disk.used` through `RecordSamples`, which is what
+`CapacityForecast` reads and what the Telemetry screen already draws. A
+`used_bytes` attribute on the node would be a second copy of a number that
+changes every hour, and the daily rollup would never see it. Nothing is
+written for a figure the source did not give: a pool with no total is an S3
+bucket, and a zero would draw it as full.
+
+**`modules/infracms/storage-ceph`** is the first storage adapter, and four
+things about Ceph only a careful read of its API turns up, each pinned by a
+test:
+
+- **A pool's total is not reported; it is derived.** Ceph answers `bytes_used`
+  and `max_avail`, and `max_avail` is what is left *for that pool* after
+  replication and the fullest OSD — so the total is the sum, and it moves when
+  a *different* pool grows. True of Ceph and surprising to everybody once.
+- **A pool's health is its own `pg_status`, not the cluster's `health`.**
+  `HEALTH_WARN` is cluster-wide and names no pool; a pool whose PGs are
+  `active+clean` is healthy inside a warning cluster, and reading the cluster
+  status would make every pool look broken because one OSD is near full. The
+  PG states are compound (`active+undersized+degraded`), so the check looks for
+  words rather than matching whole strings, and **worse wins** — a pool that is
+  both degraded and has an inactive PG is critical.
+- **An RBD image reports no health of its own**, so it is `Unknown` rather than
+  inheriting its pool's. An image on a degraded pool is not itself degraded.
+- **The image endpoint answers grouped by pool** — `{pool_name, value: [...]}`.
+  Reading it as a flat list answers nothing at all, silently, which looks
+  exactly like an empty cluster.
+
+**A volume names its pool differently from how the pool names itself.** Ceph's
+image list says `pool_name` and a pool is keyed here by its **id**, because an
+id survives a rename and a name does not — the serial-versus-hostname rule
+again. Without resolving one to the other every volume named a pool nothing
+had, and the containment edge was simply never written: the sweep did exactly
+what it should (no node, no edge) and the result was a graph with no
+relationships in it. When an adapter's two endpoints identify the same object
+differently, the *adapter* reconciles them; core writing an edge on a guess
+would be worse.
+
+**`StorageHealth::Degraded` is the member a three-state scale loses.** A pool
+rebuilding after a disk failure is serving every read and is one more failure
+from losing data — that is the window somebody can act in, and collapsing it
+into either neighbour throws the window away. Same reasoning as
+`BackupOutcome::Warning`.
+
+**A cluster's own bad health is not an adapter failure.** `CephProvider::health()`
+answers `Ok` on `HEALTH_WARN`: the adapter answered perfectly and the cluster has
+something to say, which belongs on the pools it affects and on an alert rule. An
+adapter marked failing because a cluster is rebalancing is one an operator learns
+to ignore.
+
+**Only what the existing metric kinds cannot say gets a new one.** Database and
+cache telemetry added exactly three — `db.slow_queries`, `db.deadlocks`,
+`cache.evictions` — because connections are `Sessions`, queries a second are
+`RequestRate`, replication is `ReplicationLag`, the hit ratio is
+`CacheHitRatio` and memory is `MemoryUsed`. A second name for any of them would
+split one question across two charts.
+
+**Every metric name in this product printed its own translation key**, on the
+Telemetry screen, in the Explorer's drawer, on the capacity panel and inside an
+alert's own label, in both languages, since Phase A. `MetricKind`'s values have
+dots in them, so `__('infrastructure.metrics.disk.total')` asks the translator
+to walk three levels of nesting and comes back with the path — the permission-
+slug trap through a fourth door. The wording was present and correct in `lang/`
+the whole time; nothing read it.
+
+`App\Application\Infrastructure\MetricNames` is the reader, beside
+`PermissionNames` and `CapabilityNames`. `VocabularyTest` asks it
+`isWorded()` for every `MetricKind` in both locales rather than comparing a
+label against a key, because the derived fallback (`disk.iops` → "Disk iops")
+is legible enough that a comparison would pass for every metric nobody had
+named.
+
+**The comment above one of those call sites described the trap exactly and the
+code under it fell into it anyway.** A rule somebody remembers is not a guard;
+a class is.
+
+**`CapacityPanelTest` asserted the bug.** It compared `metricLabel` against the
+same broken `__()` call, so both sides printed the key and the test passed. An
+assertion that builds its expectation the way the code builds its answer is an
+assertion that can only agree with itself — spell the expected string out.
+
+**The Explorer's drawer received every discovered fact and drew none of them.**
+`attributes` has been in the node payload since Phase A — a device's model,
+serial and firmware, a port's speed, MAC and VLAN, and now a Ceph pool's health
+and replica count — declared in the props interface and rendered nowhere. It has
+a "What it reported" section now. Wording comes from
+`infrastructure.explorer.attributes.<key>` with a **humanised key as the
+fallback**, because an adapter's key is not core's to name; a value is worded
+only where the key holds an enum (`health`, `state`), so a model number stays
+the adapter's own word.
+
+**The status column and what an adapter reported are different questions.** A
+node's `health` is derived by the telemetry normalizer and means "are the
+readings fresh"; a Ceph pool rebuilding after a disk failure reports perfectly
+and is degraded. Writing a discovered condition into that column would lose the
+staleness answer and be overwritten by the next sample anyway.
+
+**PHPStan now catches the `static fn` that reaches `$this`** — the trap Phase 9
+shipped once with every test passing, because no test loaded that page. Two of
+them appeared the moment a presenter needed an injected reader.

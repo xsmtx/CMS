@@ -220,6 +220,69 @@ function toneOf(node: NodeRow): StatusTone {
   return TONES[node.health] ?? 'unknown'
 }
 
+/**
+ * What an adapter said about this node, in the order it said it.
+ *
+ * Every discovered fact in this product lands in `attributes` — a device's
+ * model and serial, a port's speed and MAC, a Ceph pool's health and replica
+ * count — and until now the drawer received all of it and drew none of it.
+ * A fact the server bothered to send is a fact somebody meant to show.
+ */
+const reported = computed<{ key: string; label: string; value: string }[]>(() => {
+  const attributes = peek.value?.node.attributes ?? {}
+
+  return Object.entries(attributes)
+    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+    .map(([key, value]) => ({
+      key,
+      label: attributeLabel(key),
+      value: attributeValue(key, value),
+    }))
+})
+
+/**
+ * Wording where core has some, and the key itself where it has none.
+ *
+ * An adapter's key is not core's to name — the same decision
+ * `HealthController::worded()` made about measurement keys. The humanised
+ * fallback (`attached_to` becomes "Attached to") is one step better than the
+ * raw key and is what `CapabilityNames` does for a capability nobody has
+ * worded yet.
+ */
+function attributeLabel(key: string): string {
+  const wording = t(`infrastructure.explorer.attributes.${key}`, {}, '')
+
+  if (wording !== '') return wording
+
+  const words = key.replace(/_/g, ' ')
+
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/**
+ * The value in words where core has some, and the adapter's own word where it
+ * has none.
+ *
+ * A key like `health` or `state` holds an enum value — `degraded`, `up`,
+ * `disabled` — and printing it raw puts a machine word in front of an
+ * operator, in English, on a Turkish screen. Everything else is whatever the
+ * adapter said, which is right: a model number and a serial are not ours to
+ * translate.
+ */
+function attributeValue(key: string, value: unknown): string {
+  if (typeof value === 'boolean') {
+    return value ? t('ui.yes') : t('ui.no')
+  }
+
+  if (typeof value === 'number') return String(value)
+
+  if (typeof value === 'string') {
+    return t(`infrastructure.explorer.values.${key}.${value}`, {}, '') || value
+  }
+
+  return JSON.stringify(value)
+}
+
 function when(value: string | null): string {
   return value === null ? '—' : new Date(value).toLocaleString()
 }
@@ -488,6 +551,24 @@ function duration(seconds: number): string {
                   {{ t('infrastructure.capacity.in_days', { days: row.daysRemaining ?? 0 }) }}
                 </span>
               </dd>
+            </template>
+          </dl>
+        </section>
+
+        <!--
+          What the adapter itself reported. Not the same question as the
+          status column above it, which is about whether the readings are
+          fresh: a Ceph pool rebuilding after a disk failure reports perfectly
+          and is degraded, and only one of those two facts was visible before.
+        -->
+        <section v-if="reported.length > 0" class="flex flex-col gap-2">
+          <h3 class="text-content-subtle text-label uppercase">
+            {{ t('infrastructure.explorer.drawer.reported') }}
+          </h3>
+          <dl class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] gap-x-4 gap-y-1">
+            <template v-for="row in reported" :key="row.key">
+              <dt class="text-content-muted text-body">{{ row.label }}</dt>
+              <dd class="text-body break-words">{{ row.value }}</dd>
             </template>
           </dl>
         </section>
