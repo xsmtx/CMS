@@ -43,6 +43,41 @@ return [
         'depends_on' => 'depends on',
     ],
 
+    'backups' => [
+        'title' => 'Backup coverage',
+        'intro' => 'What is protected, what is stale and what nothing is backing up. Read by asking each source; nothing here runs a backup.',
+        'unprotected' => 'Unprotected',
+        'stale' => 'Stale',
+        'protected' => 'Protected',
+        'unprotected_tab' => 'Nothing is protecting these',
+        'stale_tab' => 'Something is trying and not succeeding',
+        'protected_tab' => 'Everything with a recent good copy',
+        'empty_unprotected' => 'Everything is protected',
+        'empty_unprotected_detail' => 'Every running service is named by a live backup source. If no backup source has been configured yet, this says so by listing every service instead — core reads a source rather than taking backups.',
+        'empty_stale' => 'Nothing is stale',
+        'empty_stale_detail' => 'Every protection here has a good copy inside the window.',
+        'empty_protected' => 'Nothing is being backed up',
+        'empty_protected_detail' => 'No backup source has reported a resource with a recent good copy. Either none is configured, or every job here is failing — the other two figures say which.',
+        'stale_after' => 'A good copy older than :days days is stale',
+        'never' => 'Nothing yet',
+        'never_detail' => 'Added to a job and not yet succeeded — which is not the same as failing.',
+        // “0 days old” beside a date reads as a figure that failed to
+        // load rather than as a backup that ran this morning.
+        'today' => 'Today',
+        'days_old' => ':days days old',
+        'unmatched' => 'No service here',
+        'columns' => [
+            'service' => 'Service',
+            'resource' => 'Protected as',
+            'customer' => 'Customer',
+            'status' => 'Status',
+            'outcome' => 'Last run',
+            'last_good' => 'Last good copy',
+            'restore_points' => 'Restore points',
+            'source' => 'Source',
+        ],
+    ],
+
     'areas' => [
         'monitoring' => 'Monitoring',
         'network_device' => 'Network devices',
@@ -160,6 +195,17 @@ return [
         'mail.auth_failures' => 'Failed mail logins',
         'mail.spam_score' => 'Average spam score',
         'battery.runtime' => 'Battery runtime',
+    ],
+
+    'backup' => [
+        'outcomes' => [
+            'succeeded' => 'Succeeded',
+            // A partial backup is not a success and not a failure. Collapsing
+            // it into either is how somebody finds out at restore time.
+            'warning' => 'Partial',
+            'failed' => 'Failed',
+            'unknown' => 'Not reported',
+        ],
     ],
 
     'capabilities' => [

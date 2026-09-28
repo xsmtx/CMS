@@ -176,6 +176,14 @@ final class CorePermissions
             new PermissionDefinition('security.reputation.view', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Backup coverage (§12). A view and nothing else: core does not
+             * take a backup and never will, so there is nothing to write.
+             * Running a job or restoring from one belongs behind a guarded
+             * workflow with an adapter somebody has actually proven.
+             */
+            new PermissionDefinition('infrastructure.backup.view', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on

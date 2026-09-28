@@ -51,6 +51,10 @@ return [
             'label' => 'Sending reputation',
             'description' => 'Asks every reputation source whether this installation’s own addresses are on a blocklist, and clears the ones that have been lifted.',
         ],
+        'backups' => [
+            'label' => 'Backup coverage',
+            'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
+        ],
         'certificates' => [
             'label' => 'Certificates',
             'description' => 'Asks every certificate source what it currently has deployed, and retires what has stopped being served.',

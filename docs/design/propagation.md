@@ -170,3 +170,38 @@ each. See `CLAUDE.md` for what it found.
 | [x] | `Auth/Register.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/ResetPassword.vue` | auth |  |  |  |  | yes |
 | [x] | `Auth/TwoFactorChallenge.vue` | auth |  |  |  |  | yes |
+
+## Screens added after the conversion (phases C to F)
+
+The file says a screen added after 2026-09-25 gets a row and is ticked the
+same way — the gates, then the browser. Sixteen were added across phases C, D,
+E and F and none of them joined this list until now, which is exactly the
+drift a tracker exists to stop. Each was driven in a browser as part of its
+own increment, in both appearances and in Turkish, and the bugs those passes
+found are recorded in `CLAUDE.md`; they are ticked on that evidence.
+
+All of them were written against the design system rather than converted to
+it, so the four count columns are empty by construction.
+
+| Done | Page | Type | Phase | i18n |
+| --- | --- | --- | --- | --- |
+| [x] | `Admin/Network/Addressing.vue` | list | C | yes |
+| [x] | `Admin/Network/Prefix.vue` | detail | C | yes |
+| [x] | `Admin/Network/Changes.vue` | list | C | yes |
+| [x] | `Admin/Network/Change.vue` | detail | C | yes |
+| [x] | `Admin/Network/Attacks.vue` | list | C | yes |
+| [x] | `Admin/Reliability/Alerts.vue` | list | D | yes |
+| [x] | `Admin/Reliability/Incidents.vue` | list | D | yes |
+| [x] | `Admin/Reliability/Incident.vue` | detail | D | yes |
+| [x] | `Admin/Reliability/Maintenance.vue` | list | D | yes |
+| [x] | `Admin/Reliability/Calendar.vue` | overview | D | yes |
+| [x] | `Admin/Security/Abuse.vue` | list | E | yes |
+| [x] | `Admin/Security/AbuseCase.vue` | detail | E | yes |
+| [x] | `Admin/Security/Certificates.vue` | list | E | yes |
+| [x] | `Admin/Security/ZoneHealth.vue` | list | E | yes |
+| [x] | `Admin/Security/Reputation.vue` | list | E | yes |
+| [x] | `Admin/Infrastructure/BackupCoverage.vue` | list | F | yes |
+
+The public status page (`themes/storefront/core/views/status.blade.php`) is
+not here and should not be: the storefront is Blade themes and out of the
+design system's scope (`frontend-architecture` §1).

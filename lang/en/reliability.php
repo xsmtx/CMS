@@ -87,6 +87,7 @@ return [
         'failed_operation' => 'A failed operation',
         'certificate_expiry' => 'How long a certificate has left',
         'reputation_listing' => 'How long one of our addresses has been blocklisted',
+        'backup_age' => 'How old the last good backup is',
         'capacity' => 'Something running out',
     ],
 
@@ -100,6 +101,7 @@ return [
         'failed_items' => ':count failed',
         'days_left' => ':days days left',
         'days_listed' => 'listed :days days',
+        'days_since_backup' => 'last good copy :days days old',
     ],
 
     /*

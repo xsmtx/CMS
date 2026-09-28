@@ -34,6 +34,39 @@ return [
         'depends_on' => 'bağımlı',
     ],
 
+    'backups' => [
+        'title' => 'Yedek kapsamı',
+        'intro' => 'Neyin korunduğu, hangisinin bayatladığı ve hiçbir şeyin yedeklemediği. Her kaynağa sorularak okunur; buradan yedek alınmaz.',
+        'unprotected' => 'Korumasız',
+        'stale' => 'Bayat',
+        'protected' => 'Korunuyor',
+        'unprotected_tab' => 'Hiçbir şey bunları korumuyor',
+        'stale_tab' => 'Bir şey deniyor ama başaramıyor',
+        'protected_tab' => 'Yakın zamanda başarılı kopyası olanlar',
+        'empty_unprotected' => 'Her şey korunuyor',
+        'empty_unprotected_detail' => 'Çalışan her hizmeti bir yedek kaynağı anıyor. Henüz bir yedek kaynağı tanımlanmadıysa bu liste bunun yerine tüm hizmetleri gösterir — çekirdek yedek almaz, kaynağa sorar.',
+        'empty_stale' => 'Bayatlayan yok',
+        'empty_stale_detail' => 'Buradaki her korumanın pencere içinde başarılı bir kopyası var.',
+        'empty_protected' => 'Yedeklenen bir şey yok',
+        'empty_protected_detail' => 'Hiçbir yedek kaynağı yakın zamanda başarılı kopyası olan bir kaynak bildirmedi. Ya hiç tanımlanmadı ya da buradaki her iş başarısız — diğer iki sayı hangisi olduğunu söylüyor.',
+        'stale_after' => ':days günden eski bir kopya bayat sayılır',
+        'never' => 'Henüz yok',
+        'never_detail' => 'Bir işe eklendi ve henüz başarılı olmadı — başarısız olmakla aynı şey değil.',
+        'today' => 'Bugün',
+        'days_old' => ':days günlük',
+        'unmatched' => 'Eşleşen hizmet yok',
+        'columns' => [
+            'service' => 'Hizmet',
+            'resource' => 'Korunma adı',
+            'customer' => 'Müşteri',
+            'status' => 'Durum',
+            'outcome' => 'Son çalışma',
+            'last_good' => 'Son başarılı kopya',
+            'restore_points' => 'Geri dönüş noktası',
+            'source' => 'Kaynak',
+        ],
+    ],
+
     'areas' => [
         'monitoring' => 'İzleme',
         'network_device' => 'Ağ cihazları',
@@ -143,6 +176,15 @@ return [
         'mail.auth_failures' => 'Başarısız posta girişi',
         'mail.spam_score' => 'Ortalama spam puanı',
         'battery.runtime' => 'Batarya süresi',
+    ],
+
+    'backup' => [
+        'outcomes' => [
+            'succeeded' => 'Başarılı',
+            'warning' => 'Kısmi',
+            'failed' => 'Başarısız',
+            'unknown' => 'Bildirilmedi',
+        ],
     ],
 
     'capabilities' => [

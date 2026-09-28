@@ -77,6 +77,7 @@ return [
         'failed_operation' => 'Başarısız bir işlem',
         'certificate_expiry' => 'Sertifikanın ne kadar ömrü kaldığı',
         'reputation_listing' => 'Adreslerimizden birinin ne kadar süredir kara listede olduğu',
+        'backup_age' => 'Son başarılı yedeğin ne kadar eski olduğu',
         'capacity' => 'Tükenmekte olan bir şey',
     ],
 
@@ -90,6 +91,7 @@ return [
         'failed_items' => ':count başarısız',
         'days_left' => ':days gün kaldı',
         'days_listed' => ':days gündür kara listede',
+        'days_since_backup' => 'son başarılı kopya :days günlük',
     ],
 
     'incident_states' => [

@@ -128,6 +128,10 @@ return [
             'label' => 'See sending reputation',
             'description' => 'Read which of this installation’s addresses are on a blocklist, and whose service is on them.',
         ],
+        'infrastructure.backup.view' => [
+            'label' => 'See backup coverage',
+            'description' => 'Read what is protected, what is stale and which services nothing is backing up.',
+        ],
         'security.abuse.view' => [
             'label' => 'See abuse cases',
             'description' => 'Read what was complained about, whose it was and what the desk did.',

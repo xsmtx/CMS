@@ -146,6 +146,15 @@ enum AutomationTask: string
     case Reputation = 'reputation';
 
     /**
+     * Asking every backup source what it is currently protecting (§12).
+     *
+     * Hourly. A nightly job finishes at some hour of the night and an
+     * operator wants to see it that morning; asking a backup vendor's API
+     * every five minutes is a rate limit rather than fresher data.
+     */
+    case Backups = 'backups';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -219,7 +228,7 @@ enum AutomationTask: string
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
-            self::Certificates => 60,
+            self::Certificates, self::Backups => 60,
             self::ZoneHealth, self::Reputation => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

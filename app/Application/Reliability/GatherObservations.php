@@ -15,6 +15,7 @@ use App\Domain\Operations\OperationState;
 use App\Domain\Reliability\AlertSubject;
 use App\Domain\Reliability\Observation;
 use App\Infrastructure\Automation\Models\AutomationRunRecord;
+use App\Infrastructure\Backup\Models\BackupProtection;
 use App\Infrastructure\Operations\Models\Operation;
 use App\Infrastructure\Resources\Models\ResourceAdapter;
 use App\Infrastructure\Resources\Models\ResourceMetric;
@@ -78,6 +79,7 @@ final readonly class GatherObservations
             AlertSubject::Capacity => $this->capacityRuns($organizationId),
             AlertSubject::CertificateExpiry => $this->certificates($organizationId),
             AlertSubject::ReputationListing => $this->listings($organizationId),
+            AlertSubject::BackupAge => $this->protections($organizationId),
         };
     }
 
@@ -411,6 +413,53 @@ final readonly class GatherObservations
                 label: $listing->address.' — '.$listing->list,
                 bad: true,
                 observed: (string) __('reliability.observed.days_listed', ['days' => $days]),
+                value: (float) $days,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * How old each live protection's last good copy is, in days.
+     *
+     * **A protection with no good copy at all is skipped, not alerted on.** A
+     * resource added to a job this afternoon has never had one and has not
+     * failed; the coverage screen is where “nothing yet” belongs, in words.
+     * It is the same rule staleness got in `metrics()` — this platform must
+     * not assert a number it does not have.
+     *
+     * @return list<Observation>
+     */
+    private function protections(?string $organizationId): array
+    {
+        if ($organizationId === null) {
+            return [];
+        }
+
+        $now = CarbonImmutable::now();
+        $observations = [];
+
+        foreach (
+            BackupProtection::query()
+                ->where('organization_id', $organizationId)
+                ->live()
+                ->whereNotNull('last_good_at')
+                ->orderBy('last_good_at')
+                ->limit(500)
+                ->get() as $protection
+        ) {
+            $days = $protection->lastGoodAgeInDays($now);
+
+            if ($days === null) {
+                continue;
+            }
+
+            $observations[] = new Observation(
+                key: $protection->id,
+                label: $protection->resource_name,
+                bad: true,
+                observed: (string) __('reliability.observed.days_since_backup', ['days' => $days]),
                 value: (float) $days,
             );
         }

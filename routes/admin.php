@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AlertController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
+use App\Http\Controllers\Admin\BackupCoverageController;
 use App\Http\Controllers\Admin\BillingSettingsController;
 use App\Http\Controllers\Admin\CancellationController;
 use App\Http\Controllers\Admin\CannedResponseController;
@@ -469,6 +470,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * deployed and never issues — obtaining a certificate is a provisioning
      * module's job with an account key behind it.
      */
+    /*
+     * Backup coverage (§12). Read-only, because core does not take a
+     * backup: what it can answer is which of the things this
+     * installation sold nothing is protecting, which no backup vendor
+     * can.
+     */
+    Route::get('infrastructure/backups', BackupCoverageController::class)
+        ->name('infrastructure.backups');
+
     /*
      * Zone health (§8). Read-only: core owns the checks because they are
      * RFCs rather than opinions, and a module fetches the records.

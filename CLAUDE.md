@@ -2919,3 +2919,92 @@ migration — and on a development box the browser then wants
 `DESIGN_ONLY` only filters that list, so it renders nothing on its own. A query
 string works (`/admin/security/reputation?all=1`), which is how a filtered view
 gets captured.
+
+**Phase F has begun** (`docs/architecture/phase-f-plan.md`), and backup coverage
+is the first thing in it. F is the data platform: backup, storage, database and
+cache telemetry, load balancers with guarded drain, hypervisors and BMC with
+guarded power, and the metering contract. The Migration Center is explicitly
+not in it — eight resumable steps beside seven adapter families would be two
+phases wearing one name.
+
+**Core never takes a backup and never will**, which `docs/operations/` has said
+since handoff #1. What core can do is the thing no backup vendor can: Veeam
+knows what it backs up, and only this installation knows what it sold. The
+difference — which running services nothing is protecting — is the reason the
+family is worth building, and it is the tab the screen opens on.
+
+**`last_good_at` is the number, never the last outcome.** A job that failed last
+night is a warning; a job that has succeeded every night for a month against a
+resource deleted three weeks ago is a lie, and a green tick beside it is worse
+than a red cross. It is also **not** `last_run_at`: a screen sorted on the run
+would put the most broken thing on the estate at the top looking fine.
+
+**The last good copy only ever moves forward.** A source that reports null for a
+run it could not describe must not erase what it said yesterday — "there has
+never been a good copy" and "I cannot tell you about the last one" are different
+answers, and writing the first when it meant the second makes a protected
+service look abandoned.
+
+**Unprotected and stale are different, and that distinction is the safety
+rail.** A source that is merely unreachable reports nothing, and "nothing" read
+naively means every customer has lost their backups — a screen that said so at
+three in the morning would be believed once and ignored for ever. Stale is a
+protection that exists and is not succeeding; unprotected is a service no live
+protection names. The contract says a failed read must **throw** rather than
+return `[]`, `CollectProtections` catches it and never calls the recorder, and a
+test pins that a sweep with no source configured retires nothing.
+
+**Each figure on that screen counts exactly what its list shows**, and they are
+not the same unit: unprotected counts *services* and stale and protected count
+*protections*. Pressing a count filters to a list, so a figure that did not match
+the rows under it reads as a bug — which is what the first browser pass showed,
+"1" over three rows. They do not sum to anything and were never meant to.
+
+**A suspended service still holds the customer's data** and is the one most
+likely to be deleted next, so it expects a backup. So do grace-period and
+cancel-pending. Expecting one only of `active` would leave out exactly the
+services somebody is about to lose.
+
+**A protection that matches no service is kept**, and the row says so in words.
+It is either a backup job for a customer who left — worth knowing, and worth
+money — or a name this platform spells differently. Matching is by name against
+the service's domain then its name, lower-cased, and **ambiguity is refused**:
+that is `RecordSamples::byHostname()`'s rule again, because a protection attached
+to the wrong service is what somebody reads before telling a customer their site
+is backed up.
+
+**A tone is a word `status.ts` knows, and `success` is not one of them.**
+`BackupOutcome::Succeeded` returned `success` where every other enum in this
+product returns `healthy`, so `asTone()` fell through to `unknown` and a backup
+that had worked drew ○. Nothing caught it — the value was a string, the test
+asserted the field was sent, and only the screenshot showed the glyph.
+`VocabularyTest` now walks every enum under `app/Domain` with a `tone()`, finds
+them by reading the source rather than from a list somebody maintains, and
+checks each against the `TONES` array parsed out of `status.ts`. One list of
+tone words, which is the thing it is guarding.
+
+**`AppStat` sits in a `flex flex-wrap gap-3`, not a full-width grid**, and its
+tone is conditional: a zero is `neutral`, never red. Nothing unprotected is the
+good answer, and a screen that drew it in danger would teach an operator to stop
+reading the colour. `Admin/Services/Index.vue` is the worked example.
+
+**"0 days old" beside a date reads as a figure that failed to load**, not as a
+backup that ran this morning. The screen says "Today" instead.
+
+`Illuminate\Contracts\Pagination\LengthAwarePaginator` does not declare
+`linkCollection()`. A read model returning the contract makes every controller
+that pages it fail PHPStan; return the concrete `Illuminate\Pagination\LengthAwarePaginator`.
+And a controller that builds one of several differently-typed pages wants a
+generic `page(LengthAwarePaginator $page, callable $row)` helper rather than a
+`match` that hands a union to `array_map`.
+
+**SDK 1.7**: `BackupProvider`, a contract that did not exist. Minor, because a
+contract nothing has implemented cannot have been implemented — the same
+reasoning `CertificateProvider` and `DnsProvider` got at 1.5.
+
+**Sixteen screens added in phases C to F had never joined
+`docs/design/propagation.md`**, although that file says in as many words that a
+screen added after the conversion gets a row. Each had been driven in a browser
+as part of its own increment, so the evidence was there and the record was not —
+which is exactly the drift a tracker exists to stop. They are listed now, in
+their own section, with the phase that added them.

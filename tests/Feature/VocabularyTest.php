@@ -307,3 +307,99 @@ it('names every licensing audit action in both locales', function (): void {
         }
     }
 });
+
+/**
+ * A tone is a word `status.ts` knows, and nothing else.
+ *
+ * The other half of the two-fields rule. A status crosses to the browser as a
+ * `status` for the tone and a `statusLabel` for the word; where the server
+ * decides the tone itself, `asTone()` maps anything it does not recognise to
+ * `unknown` — which is the designed symptom of a missing state and a silent
+ * lie when the tone is simply misspelled.
+ *
+ * `BackupOutcome::Succeeded` returned `success` where every other enum in
+ * this product returns `healthy`, so a backup that had worked drew the
+ * unknown mark. Nothing caught it: the value was a string, the test asserted
+ * the field was sent, and only looking at the screen showed the glyph.
+ *
+ * The list of tones is read out of `status.ts` rather than written here,
+ * because two lists of tone words is exactly the thing this is guarding
+ * against.
+ */
+it('gives every server-decided tone a word status.ts knows', function (): void {
+    $source = file_get_contents(resource_path('js/status.ts'));
+
+    expect($source)->toBeString();
+
+    preg_match('/const TONES = \[(.*?)\]/s', (string) $source, $block);
+
+    expect($block[1] ?? '')->not->toBe('');
+
+    preg_match_all("/'([a-z_]+)'/", $block[1], $matches);
+    $tones = $matches[1];
+
+    expect($tones)->toContain('healthy', 'warning', 'critical', 'unknown');
+
+    $offenders = [];
+
+    foreach (toneBearingEnums() as $enum) {
+        foreach ($enum::cases() as $case) {
+            /** @var string $tone */
+            $tone = $case->tone();
+
+            if (! in_array($tone, $tones, strict: true)) {
+                $offenders[] = $enum.'::'.$case->name.' => '.$tone;
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+/**
+ * Every enum under `app/Domain` with a `tone()`, found by reading the source
+ * rather than by a hand-written list — one somebody forgets to add to is a
+ * list that stops guarding the newest enum, which is always the one with the
+ * mistake in it.
+ *
+ * @return list<class-string>
+ */
+function toneBearingEnums(): array
+{
+    $found = [];
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator(app_path('Domain'), FilesystemIterator::SKIP_DOTS),
+    );
+
+    foreach ($files as $file) {
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
+
+        $source = (string) file_get_contents($file->getPathname());
+
+        if (! str_contains($source, 'public function tone(): string')) {
+            continue;
+        }
+
+        if (preg_match('/^enum (\w+)/m', $source, $name) !== 1) {
+            continue;
+        }
+
+        if (preg_match('/^namespace ([^;]+);/m', $source, $namespace) !== 1) {
+            continue;
+        }
+
+        $class = $namespace[1].'\\'.$name[1];
+
+        if (enum_exists($class)) {
+            $found[] = $class;
+        }
+    }
+
+    // The guard on the guard: an empty list passes every assertion above.
+    expect($found)->not->toBeEmpty();
+
+    return $found;
+}

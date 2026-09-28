@@ -154,6 +154,8 @@ final class FrontEndTranslations
         'infrastructure.explorer',
         'infrastructure.adapters',
         'infrastructure.telemetry',
+        'infrastructure.backups',
+        'infrastructure.backup',
 
         // Addressing is operator vocabulary end to end - no customer sees a
         // prefix - so the whole group is published rather than leaf paths.

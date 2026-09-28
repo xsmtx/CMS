@@ -129,6 +129,9 @@ final class SystemRoleSeeder extends Seeder
                 // answer to “why did my mail not arrive” before anybody
                 // starts reading headers.
                 'security.reputation.view',
+                // And whether a customer's site is backed up, which is a
+                // support question long before it is anybody else's.
+                'infrastructure.backup.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

@@ -83,6 +83,24 @@ enum AlertSubject: string
     case ReputationListing = 'reputation_listing';
 
     /**
+     * How old the last good backup of something is (§12).
+     *
+     * **The age of the last good copy, never the last outcome.** A job that
+     * failed last night is a warning; a job that has succeeded every night
+     * for a month against a resource deleted three weeks ago is a lie, and a
+     * green tick beside it is worse than a red cross.
+     *
+     * A protection that has never had a good copy produces no observation at
+     * all. A resource added to a job this afternoon has not failed, and an
+     * age invented for it would be a number somebody acts on — the coverage
+     * screen says “nothing yet” in words instead.
+     *
+     * The threshold is the operator's, like every other numeric subject: a
+     * nightly schedule and a weekly one do not agree about when to worry.
+     */
+    case BackupAge = 'backup_age';
+
+    /**
      * Whether this subject needs a target naming which thing.
      *
      * A metric rule is about a measurement across everything that reports it;
@@ -98,7 +116,7 @@ enum AlertSubject: string
             // installation can see, not about one of them. An operator who
             // wanted one certificate watched would be writing a rule they
             // have to rewrite at every renewal.
-            self::CertificateExpiry, self::ReputationListing => false,
+            self::CertificateExpiry, self::ReputationListing, self::BackupAge => false,
         };
     }
 
@@ -117,7 +135,8 @@ enum AlertSubject: string
             // Days listed is the same shape: “above 2” is the rule,
             // because how long it has been true is what decides whether
             // anybody should be woken for it.
-            self::Metric, self::Capacity, self::CertificateExpiry, self::ReputationListing => true,
+            self::Metric, self::Capacity, self::CertificateExpiry,
+            self::ReputationListing, self::BackupAge => true,
             self::HealthCheck, self::AdapterHealth, self::AutomationRun, self::FailedOperation => false,
         };
     }

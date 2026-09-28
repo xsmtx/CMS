@@ -526,6 +526,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/security/reputation',
         permission: 'security.reputation.view',
       },
+      {
+        label: nav('backups', 'Backups'),
+        href: '/admin/infrastructure/backups',
+        permission: 'infrastructure.backup.view',
+      },
     ],
   },
   {

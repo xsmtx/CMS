@@ -707,6 +707,7 @@ return [
         'certificates' => 'Sertifikalar',
         'dns' => 'DNS',
         'reputation' => 'İtibar',
+        'backups' => 'Yedekler',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

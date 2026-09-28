@@ -51,6 +51,10 @@ return [
             'label' => 'Gönderim itibarı',
             'description' => 'İlgili her itibar kaynağına bu kurulumun kendi adreslerinin kara listede olup olmadığını sorar ve kaldırılanları kapatır.',
         ],
+        'backups' => [
+            'label' => 'Yedek kapsamı',
+            'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
+        ],
         'certificates' => [
             'label' => 'Sertifikalar',
             'description' => 'İlgili her kaynağa şu anda hangi sertifikaları sunduğunu sorar ve artık sunulmayanları emekliye ayırır.',

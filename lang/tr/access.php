@@ -127,6 +127,10 @@ return [
             'label' => 'Gönderim itibarını gör',
             'description' => 'Bu kurulumun hangi adreslerinin kara listede olduğunu ve üzerinde kimin hizmetinin bulunduğunu okur.',
         ],
+        'infrastructure.backup.view' => [
+            'label' => 'Yedek kapsamını gör',
+            'description' => 'Neyin korunduğunu, hangisinin bayatladığını ve hiçbir şeyin yedeklemediği hizmetleri okur.',
+        ],
         'security.abuse.view' => [
             'label' => 'Kötüye kullanım dosyalarını gör',
             'description' => 'Neyin şikâyet edildiğini, kime ait olduğunu ve masanın ne yaptığını okur.',

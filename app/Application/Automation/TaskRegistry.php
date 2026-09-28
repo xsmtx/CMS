@@ -9,6 +9,7 @@ use App\Application\Automation\Runs\CheckReputation;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectCertificates;
 use App\Application\Automation\Runs\CollectDdosEvents;
+use App\Application\Automation\Runs\CollectProtections;
 use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\EvaluateAlerts;
@@ -62,6 +63,7 @@ final readonly class TaskRegistry
             AutomationTask::Certificates => CollectCertificates::class,
             AutomationTask::ZoneHealth => InspectZones::class,
             AutomationTask::Reputation => CheckReputation::class,
+            AutomationTask::Backups => CollectProtections::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

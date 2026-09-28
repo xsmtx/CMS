@@ -712,6 +712,7 @@ return [
         'certificates' => 'Certificates',
         'dns' => 'DNS',
         'reputation' => 'Reputation',
+        'backups' => 'Backups',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

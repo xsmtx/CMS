@@ -181,7 +181,7 @@ it('shows staff the tasks even before any of them has run', function (): void {
             // neither — which is what this has caught eight phases running,
             // Phase E's forgetting sweep, certificate collector and zone
             // inspection included.
-            ->has('tasks', 20)
+            ->has('tasks', 21)
             ->where('tasks.0.lastRun', null));
 });
 

@@ -249,6 +249,18 @@ Schedule::command('platform:run zone-health')
  * talk to somebody else's API, and two of ours arriving together is the
  * kind of burst a rate limiter answers.
  */
+/*
+ * Asking every backup source what it is currently protecting.
+ *
+ * Hourly. A nightly job finishes at some hour of the night and an operator
+ * wants to see it that morning.
+ */
+Schedule::command('platform:run backups')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run reputation')
     ->dailyAt('04:30')
     ->withoutOverlapping()
