@@ -25,7 +25,7 @@ use App\Domain\Provisioning\SyncResult;
 use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Audit\Models\AuditLog;
 use App\Infrastructure\Identity\Models\StaffUser;
-use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
+use App\Infrastructure\Intelligence\Models\FindingDismissal;
 use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
 use App\Infrastructure\Intelligence\Models\RemediationProposal;
 use App\Infrastructure\Organizations\Models\Organization;
@@ -397,7 +397,7 @@ it('stops raising a difference somebody said was deliberate', function (): void 
     reconcile();
 
     expect(ReconciliationFinding::query()->open()->count())->toBe(0)
-        ->and(ReconciliationDismissal::query()->count())->toBe(1);
+        ->and(FindingDismissal::query()->count())->toBe(1);
 });
 
 /**

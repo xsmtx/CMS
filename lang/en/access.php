@@ -132,6 +132,10 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'intelligence.commercial.view' => [
+            'label' => 'See what is not being billed',
+            'description' => 'Read the revenue leakage list: active services nothing has invoiced, domains with no renewal, addons left off an invoice, and payments attached to nothing.',
+        ],
         'intelligence.reconciliation.view' => [
             'label' => 'See what does not agree',
             'description' => 'Read the differences between what this platform believes and what each provider reports.',

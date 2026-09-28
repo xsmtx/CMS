@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Automation;
 
 use App\Application\Automation\Runs\CheckAdapterHealth;
+use App\Application\Automation\Runs\CheckLeakage;
 use App\Application\Automation\Runs\CheckReputation;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectCertificates;
@@ -78,6 +79,7 @@ final readonly class TaskRegistry
             AutomationTask::Power => DiscoverPower::class,
             AutomationTask::Sites => DiscoverSites::class,
             AutomationTask::Reconcile => Reconcile::class,
+            AutomationTask::Leakage => CheckLeakage::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

@@ -90,7 +90,6 @@ final readonly class DetectOrphans
                 label: $node->label,
                 remoteKey: $node->node_key,
                 field: 'owner',
-                expected: null,
                 found: is_string($key) ? $key : $node->node_key,
                 detail: array_filter([
                     'adapter' => $attributes['adapter'] ?? null,

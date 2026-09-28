@@ -37,6 +37,10 @@ return [
         ],
 
         'nothing_said' => 'The provider did not say',
+        // A dash there would read as missing data. Nothing here owning
+        // it is the whole of what an orphan is.
+        'nobody_here' => 'No record here',
+        'matched_on' => 'Looked for :field',
         'on_server' => 'on :server',
         'through' => 'through :module',
         // A sentence rather than a dash: a difference nobody could ask about
@@ -65,6 +69,49 @@ return [
         'confirm_remote_title' => 'This changes the customer’s account',
         'confirm_local_title' => 'This changes our record',
         'type_to_confirm' => 'Type the name of the service to confirm.',
+    ],
+
+    'leakage' => [
+        'title' => 'Revenue leakage',
+        'intro' => 'Money that quietly stopped arriving. Every line here is arithmetic over rows this platform already owns — no provider is asked and nothing is assumed.',
+        'empty' => 'Nothing is leaking',
+        'empty_detail' => 'Every active service, domain and addon has been invoiced, and every payment is attached to something.',
+        'at_stake' => 'At stake',
+        // An adjective, because `useTranslations()` has no
+        // `trans_choice`: a choice string in the browser renders its
+        // own pipe, and “1 findings” is the other half of that trap.
+        'count' => ':count open',
+        'show_all' => 'Show closed ones too',
+        'show_open' => 'Show what is still open',
+        // Not "owed": nobody has been invoiced, so nothing is owed. The
+        // figure is what would have been invoiced had anybody asked.
+        'total_hint' => 'What would have been invoiced, not what is owed.',
+        'dismiss' => 'It is deliberate',
+        'undismiss' => 'Raise it again',
+
+        'columns' => [
+            'subject' => 'What',
+            'kind' => 'Why',
+            'customer' => 'Whose',
+            'amount' => 'At stake',
+            'since' => 'Since',
+        ],
+
+        'kinds' => [
+            'service_not_billed' => 'Not invoiced',
+            'domain_not_renewed' => 'No renewal invoice',
+            'addon_not_billed' => 'Missing from the invoice',
+            'unmatched_payment' => 'Paid, attached to nothing',
+        ],
+
+        'descriptions' => [
+            'service_not_billed' => 'Active and priced, and no invoice has mentioned it since it fell due.',
+            'domain_not_renewed' => 'Past its renewal date, set to auto-renew, and no renewal invoice was raised.',
+            'addon_not_billed' => 'Its service was invoiced and this was left off that invoice.',
+            'unmatched_payment' => 'Money received and attached to no invoice — a customer who has paid and may still be chased for it.',
+        ],
+
+        'no_customer' => 'Nobody here',
     ],
 
     'actions' => [
@@ -113,6 +160,18 @@ return [
         'missing' => 'Not there',
         // Not a fault, and deliberately not worded as one.
         'unknown' => 'Nobody could ask',
+    ],
+
+    /*
+     * How sure a match is. An identity the provider itself returned is a
+     * stronger claim than a name somebody typed in two places, and an
+     * operator deciding whether to destroy something deserves to know
+     * which one was used.
+     */
+    'matched' => [
+        'external_id' => 'the provider’s own id',
+        'domain' => 'a matching domain name',
+        'address' => 'the address itself',
     ],
 
     'resources' => [

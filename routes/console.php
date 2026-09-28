@@ -305,6 +305,20 @@ Schedule::command('platform:run reconcile')
     ->onOneServer()
     ->runInBackground();
 
+/*
+ * Four ways money quietly stops arriving (§21).
+ *
+ * Late, and deliberately after the renewal sweep: asking “has billing
+ * got to this yet” while the renewal run is still working reports every
+ * service it has not reached, and a list that clears itself by
+ * breakfast is one nobody opens twice.
+ */
+Schedule::command('platform:run leakage')
+    ->dailyAt('06:20')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run sites')
     ->dailyAt('04:40')
     ->withoutOverlapping()

@@ -13,7 +13,7 @@ use App\Domain\Intelligence\RemediationAction;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Identity\Models\StaffUser;
-use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
+use App\Infrastructure\Intelligence\Models\FindingDismissal;
 use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
 use App\Infrastructure\Intelligence\Models\RemediationProposal;
 use App\Support\Audit\Facades\Audit;
@@ -120,7 +120,7 @@ final class ReconciliationController extends Controller
 
         $staff = $this->staff($actor);
 
-        ReconciliationDismissal::query()->updateOrCreate(
+        FindingDismissal::query()->updateOrCreate(
             [
                 'organization_id' => $finding->organization_id,
                 'source' => $finding->source,
@@ -268,7 +268,7 @@ final class ReconciliationController extends Controller
 
         $staff = $this->staff($actor);
 
-        ReconciliationDismissal::query()
+        FindingDismissal::query()
             ->where('organization_id', $finding->organization_id)
             ->where('source', $finding->source)
             ->where('resource', $finding->resource)
@@ -334,7 +334,7 @@ final class ReconciliationController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function row(ReconciliationFinding $finding, ?ReconciliationDismissal $dismissal): array
+    private function row(ReconciliationFinding $finding, ?FindingDismissal $dismissal): array
     {
         return [
             'id' => $finding->id,
@@ -402,7 +402,7 @@ final class ReconciliationController extends Controller
 
     /**
      * @param  list<ReconciliationFinding>  $findings
-     * @return array<string, ReconciliationDismissal>
+     * @return array<string, FindingDismissal>
      */
     private function dismissalsFor(array $findings): array
     {
@@ -413,7 +413,7 @@ final class ReconciliationController extends Controller
         $keyed = [];
 
         foreach (
-            ReconciliationDismissal::query()
+            FindingDismissal::query()
                 ->whereIn('source', array_unique(array_map(
                     static fn (ReconciliationFinding $finding): string => $finding->source,
                     $findings,

@@ -561,6 +561,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/intelligence/reconciliation',
         permission: 'intelligence.reconciliation.view',
       },
+      {
+        label: nav('leakage', 'Revenue leakage'),
+        href: '/admin/intelligence/leakage',
+        permission: 'intelligence.commercial.view',
+      },
     ],
   },
   {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Intelligence;
 
 use App\Domain\Intelligence\Difference;
-use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
+use App\Infrastructure\Intelligence\Models\FindingDismissal;
 use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -202,7 +202,7 @@ final readonly class RecordFindings
         $keys = [];
 
         foreach (
-            ReconciliationDismissal::query()
+            FindingDismissal::query()
                 ->where('organization_id', $organizationId)
                 ->where('source', $source)
                 ->get() as $dismissal

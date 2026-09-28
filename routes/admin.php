@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\IncidentController;
 use App\Http\Controllers\Admin\InfrastructureController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
+use App\Http\Controllers\Admin\LeakageController;
 use App\Http\Controllers\Admin\LicenceController;
 use App\Http\Controllers\Admin\LoadBalancerController;
 use App\Http\Controllers\Admin\MaintenanceController;
@@ -580,6 +581,19 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * somebody who may not touch this is asked to confirm their password and
      * *then* refused, which is rude and a small oracle.
      */
+    /*
+     * Revenue leakage (§21). Read-only but for a dismissal: nothing here
+     * raises an invoice, because some of these are deliberate.
+     */
+    Route::get('intelligence/leakage', [LeakageController::class, 'index'])
+        ->name('intelligence.leakage');
+
+    Route::post('intelligence/leakage/{finding}/dismiss', [LeakageController::class, 'dismiss'])
+        ->name('intelligence.leakage.dismiss');
+
+    Route::delete('intelligence/leakage/{finding}/dismiss', [LeakageController::class, 'undismiss'])
+        ->name('intelligence.leakage.undismiss');
+
     Route::post('intelligence/proposals/{proposal}/apply', [ReconciliationController::class, 'apply'])
         ->middleware(['can:intelligence.reconciliation.remediate', 'auth.recent'])
         ->name('intelligence.proposals.apply');

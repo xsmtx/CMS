@@ -59,6 +59,10 @@ return [
             'label' => 'Reconciliation',
             'description' => 'Asks every provider what it thinks is true about each service, and records where it disagrees with us. It reports and never repairs.',
         ],
+        'leakage' => [
+            'label' => 'Revenue leakage',
+            'description' => 'Asks four questions about this installation’s own rows: which active services, domains and addons nothing has invoiced, and which payments are attached to no invoice.',
+        ],
         'sites' => [
             'label' => 'Site inventory',
             'description' => 'Asks every panel which web applications it is hosting, how far behind each one is, and whether anything has been published against a plugin or a theme.',

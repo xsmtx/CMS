@@ -59,6 +59,10 @@ return [
             'label' => 'Mutabakat',
             'description' => 'Her sağlayıcıya her hizmet hakkında neyi doğru saydığını sorar ve bizimle uyuşmadığı yerleri kaydeder. Bildirir, asla düzeltmez.',
         ],
+        'leakage' => [
+            'label' => 'Gelir kaçağı',
+            'description' => 'Bu kurulumun kendi kayıtlarına dört soru sorar: hangi aktif hizmet, alan adı ve ek için fatura kesilmemiş ve hangi ödemeler hiçbir faturaya bağlanmamış.',
+        ],
         'sites' => [
             'label' => 'Site envanteri',
             'description' => 'Her panele hangi web uygulamalarını barındırdığını, her birinin ne kadar geride kaldığını ve bir eklenti ya da tema hakkında bir şey yayımlanıp yayımlanmadığını sorar.',

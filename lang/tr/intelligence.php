@@ -35,6 +35,8 @@ return [
         ],
 
         'nothing_said' => 'Sağlayıcı bir şey söylemedi',
+        'nobody_here' => 'Burada kaydı yok',
+        'matched_on' => ':field arandı',
         'on_server' => ':server üzerinde',
         'through' => ':module ile',
         'unknown_detail' => 'Bu, hesabın kendisi hakkında bir şey söylemez.',
@@ -61,6 +63,44 @@ return [
         'confirm_remote_title' => 'Bu, müşterinin hesabını değiştirir',
         'confirm_local_title' => 'Bu, bizim kaydımızı değiştirir',
         'type_to_confirm' => 'Onaylamak için hizmetin adını yazın.',
+    ],
+
+    'leakage' => [
+        'title' => 'Gelir kaçağı',
+        'intro' => 'Sessizce gelmeyi bırakan para. Buradaki her satır, bu platformun zaten sahip olduğu kayıtlar üzerinde bir hesaptan ibaret — hiçbir sağlayıcıya sorulmaz ve hiçbir şey varsayılmaz.',
+        'empty' => 'Kaçak yok',
+        'empty_detail' => 'Her aktif hizmet, alan adı ve ek için fatura kesilmiş ve her ödeme bir şeye bağlanmış.',
+        'at_stake' => 'Söz konusu tutar',
+        'count' => ':count açık',
+        'show_all' => 'Kapananları da göster',
+        'show_open' => 'Hâlâ açık olanları göster',
+        'total_hint' => 'Fatura kesilseydi ne kadar olacağı; borç tutarı değil.',
+        'dismiss' => 'Bilerek böyle',
+        'undismiss' => 'Yeniden aç',
+
+        'columns' => [
+            'subject' => 'Ne',
+            'kind' => 'Neden',
+            'customer' => 'Kimin',
+            'amount' => 'Söz konusu',
+            'since' => 'Ne zamandır',
+        ],
+
+        'kinds' => [
+            'service_not_billed' => 'Faturalanmadı',
+            'domain_not_renewed' => 'Yenileme faturası yok',
+            'addon_not_billed' => 'Faturada yok',
+            'unmatched_payment' => 'Ödendi, hiçbir şeye bağlı değil',
+        ],
+
+        'descriptions' => [
+            'service_not_billed' => 'Aktif ve fiyatlı; vadesi geçtiğinden beri hiçbir fatura bundan söz etmedi.',
+            'domain_not_renewed' => 'Yenileme tarihi geçmiş, otomatik yenilemeye açık ve yenileme faturası kesilmemiş.',
+            'addon_not_billed' => 'Bağlı olduğu hizmet için fatura kesilmiş ve bu, o faturada yer almamış.',
+            'unmatched_payment' => 'Alınan ve hiçbir faturaya bağlanmamış para — ödemesini yapmış ve hâlâ takip edilebilecek bir müşteri.',
+        ],
+
+        'no_customer' => 'Burada kimse yok',
     ],
 
     'actions' => [
@@ -106,6 +146,12 @@ return [
         'orphan' => 'Sahipsiz',
         'missing' => 'Orada yok',
         'unknown' => 'Kimseye sorulamadı',
+    ],
+
+    'matched' => [
+        'external_id' => 'sağlayıcının kendi kimliği',
+        'domain' => 'eşleşen bir alan adı',
+        'address' => 'adresin kendisi',
     ],
 
     'resources' => [

@@ -131,6 +131,10 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'intelligence.commercial.view' => [
+            'label' => 'Faturalanmayanları gör',
+            'description' => 'Gelir kaçağı listesini okur: hiç faturalanmamış aktif hizmetler, yenilenmemiş alan adları, faturada unutulmuş ekler ve hiçbir şeye bağlanmamış ödemeler.',
+        ],
         'intelligence.reconciliation.view' => [
             'label' => 'Uyuşmayanları gör',
             'description' => 'Bu platformun inandığı ile her sağlayıcının bildirdiği arasındaki farkları okur.',

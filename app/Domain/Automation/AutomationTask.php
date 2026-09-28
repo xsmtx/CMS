@@ -220,6 +220,16 @@ enum AutomationTask: string
     case Reconcile = 'reconcile';
 
     /**
+     * Four ways money quietly stops arriving (§21).
+     *
+     * Daily, and late enough to be after the renewal sweep: every one of
+     * these questions is “has billing got to this yet”, and asking it
+     * while the nightly renewal run is still working would report every
+     * service it has not reached yet.
+     */
+    case Leakage = 'leakage';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -296,7 +306,7 @@ enum AutomationTask: string
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
             self::LoadBalancers, self::Machines, self::Reconcile => 60,
-            self::ZoneHealth, self::Reputation, self::Usage, self::Sites => 1440,
+            self::ZoneHealth, self::Reputation, self::Usage, self::Sites, self::Leakage => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

@@ -717,6 +717,7 @@ return [
         'parts' => 'Donanım',
         'remote_hands' => 'Saha desteği',
         'reconciliation' => 'Mutabakat',
+        'leakage' => 'Gelir kaçağı',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

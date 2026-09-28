@@ -295,6 +295,18 @@ function day(value: string): string {
               {{ finding.remoteKey }}
             </span>
             <!--
+              How sure the match was. An identity the provider returned is a
+              stronger claim than a name typed in two places, and the server
+              already sends which was used.
+            -->
+            <span v-if="finding.detail.matched_on" class="text-content-subtle text-chrome block">
+              {{
+                t('intelligence.reconciliation.matched_on', {
+                  field: t(`intelligence.matched.${finding.detail.matched_on}`),
+                })
+              }}
+            </span>
+            <!--
               On the row rather than in a block of its own underneath: a
               second list repeating rows that are already on screen is two
               places for one fact.
@@ -328,7 +340,16 @@ function day(value: string): string {
               {{ t('intelligence.reconciliation.unknown_detail') }}
             </span>
           </td>
-          <td data-col="expected" class="text-content-muted">{{ finding.expected ?? '—' }}</td>
+          <td data-col="expected" class="text-content-muted">
+            <span v-if="finding.expected">{{ finding.expected }}</span>
+            <!--
+              A dash here would read as missing data. Nothing here owning it
+              is the whole of what an orphan is.
+            -->
+            <span v-else class="text-content-subtle">
+              {{ t('intelligence.reconciliation.nobody_here') }}
+            </span>
+          </td>
           <td data-col="found">
             <span v-if="finding.found">{{ finding.found }}</span>
             <span v-else class="text-content-subtle">

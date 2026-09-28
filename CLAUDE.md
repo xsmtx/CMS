@@ -3522,7 +3522,7 @@ a ratio, a number of days for a capacity forecast" was written when there were
 two numeric subjects; it is a sentence about any of them now.
 
 **Phase H has begun** (`docs/architecture/phase-h-plan.md`). The reconciliation
-engine and remediation proposals are in; orphan detection, revenue leakage,
+engine, remediation proposals, orphan detection and revenue leakage are in;
 cost, customer health and noisy neighbour are not. The automation builder and the AI
 assistant are deliberately outside the phase.
 
@@ -3671,3 +3671,62 @@ per question, because `clearDeparted` closes everything a source did not
 report this time: sharing a source with the service sweep would mean a
 hypervisor that could not be reached cleared every orphaned machine found last
 night.
+
+**A dash where a fact is absent reads as missing data.** An orphan's "We say"
+column was an em dash, and nothing here owning it is the whole of what an
+orphan *is* — it says "No record here" now. The same reading applies to the
+`matched_on` the server had been sending and the screen ignored: a fact the
+server bothered to send is a fact somebody meant to show, and here it is the
+one an operator wants most before destroying anything.
+
+**Revenue leakage is four joins over rows this platform already owns** (§21,
+`DetectLeakage`, `leakage_findings`). No adapter, no provider, no model —
+which makes it the one family in Phase H whose answers do not depend on an
+untested parse. A reconciliation finding is only as true as an adapter; these
+are arithmetic.
+
+- **`renewal_invoiced_through` is the question, not `next_due_on`.** The
+  renewal sweep and the importer both write it, and it is the column that says
+  how far billing actually got. A service whose due date has passed is
+  ordinary for a few hours a night.
+- **A line raised before the period began is last month's invoice.** Matching
+  on `invoice_items.subject_type`/`subject_id` without a date would find last
+  year's line and hide the leak entirely — and matching on the *description*
+  would be worse, because a line copies its words (ADR 0021).
+- **An addon on a service nothing is invoicing is the service's finding.**
+  Reporting both counts one problem twice and doubles the figure on the strip.
+- **Zero means free, which is a price somebody set.** A service with no
+  recurring amount is skipped rather than reported.
+- **A payment taken this morning is a bookkeeper's afternoon, not a leak.**
+  Two days, read from the **ledger** rather than from `payments`, because the
+  ledger is the truth about money that moved (ADR 0024).
+- **Nothing raises an invoice.** Charging a customer nobody decided to charge
+  is the one thing this family must not be able to do, and a test says so.
+
+**A finding is never an accusation.** A charity given free hosting, a domain
+held for a customer arriving in March, a payment taken on account — all three
+appear here and all three are deliberate. That is why the only write on the
+screen is a dismissal.
+
+**One dismissal table for every family of finding.** `reconciliation_dismissals`
+became `finding_dismissals`: the act is identical whether the finding is a
+machine the provider has and we do not or a service nothing is billing for, and
+`source` was already the discriminator. A second table would be a second answer
+to one question, and the second one is always the one that misses the next
+feature.
+
+**A strip that is not a legend for the table under it is a strip nobody reads
+twice.** The figures were ordered by size and the rows alphabetically by
+currency code, so the strip said TRY, EUR and the table led with EUR. The table
+takes its currency order from the strip now.
+
+**A label that repeats its own value says nothing.** `TRY` above `TRY 450.00`
+is the currency twice; the cell carries how many findings make up the figure
+instead, which is the fact it was missing. And that count is worded with an
+**adjective** (`:count open`), because `useTranslations()` has no
+`trans_choice` — a `|` choice string in the browser renders its own pipe, and
+"1 findings" is the other half of that trap.
+
+**The figure is what would have been invoiced, not what is owed**, and the
+sentence under the strip says so. Nobody has been invoiced, so nothing is owed
+— and this table must never be mistaken for a ledger.

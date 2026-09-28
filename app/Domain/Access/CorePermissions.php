@@ -249,6 +249,14 @@ final class CorePermissions
             new PermissionDefinition('intelligence.reconciliation.remediate', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Revenue leakage and what it is worth (§21). Commercial
+             * rather than operational, and a separate permission for that
+             * reason: the people who chase a suspended account are not
+             * the people who see the margin on it.
+             */
+            new PermissionDefinition('intelligence.commercial.view', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on
