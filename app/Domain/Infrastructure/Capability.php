@@ -110,6 +110,16 @@ enum Capability: string
     case UsageRead = 'metering.usage.read';
 
     /**
+     * Whether an address is on a blocklist (§13).
+     *
+     * Read only, and there is deliberately no write beside it: asking a
+     * blocklist to lift a listing is a form with a human on the other
+     * end, usually a captcha, and sometimes a promise about what has been
+     * fixed. A capability for it would be a capability that lies.
+     */
+    case ReputationRead = 'mail.reputation.read';
+
+    /**
      * The contract this capability belongs to.
      *
      * A match rather than splitting the value on a dot: the return type is
@@ -149,6 +159,7 @@ enum Capability: string
             self::LogQueryRead => AdapterArea::Log,
             self::SecretRead, self::SecretWrite => AdapterArea::Secret,
             self::UsageRead => AdapterArea::Metering,
+            self::ReputationRead => AdapterArea::Mail,
         };
     }
 

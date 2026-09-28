@@ -57,6 +57,7 @@ return [
         'automation' => 'Yapılandırma',
         'log' => 'Günlükler',
         'secret' => 'Sırlar',
+        'mail' => 'Posta ve itibar',
         'metering' => 'Kullanım ölçümü',
     ],
 
@@ -133,10 +134,22 @@ return [
         'temperature' => 'Sıcaklık',
         'power.draw' => 'Güç tüketimi',
         'battery.charge' => 'Batarya',
+        'mail.queue.depth' => 'Posta kuyruğu',
+        'mail.queue.deferred' => 'Ertelenen posta',
+        'mail.queue.held' => 'Bekletilen posta',
+        'mail.delivered' => 'Teslim edilen posta',
+        'mail.rejected' => 'Reddedilen posta',
+        'mail.bounce_rate' => 'Geri dönüş oranı',
+        'mail.auth_failures' => 'Başarısız posta girişi',
+        'mail.spam_score' => 'Ortalama spam puanı',
         'battery.runtime' => 'Batarya süresi',
     ],
 
     'capabilities' => [
+        'mail.reputation.read' => [
+            'label' => 'Kara liste kayıtlarını oku',
+            'description' => 'Bu kurulumun kendi gönderim adreslerinin bir kara listede olup olmadığını sorar. Buradan kaldırma talebi gönderilmez — o, karşısında bir insan olan bir formdur.',
+        ],
         'monitoring.metrics.read' => [
             'label' => 'Ölçümleri oku',
             'description' => 'Bu kaynağa izlediği varlıklarla ilgili güncel sayıları sorar.',

@@ -113,9 +113,9 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A, B, C
-and D are complete** (`phase-a-result.md`, `phase-b-result.md`,
-`phase-c-plan.md`, `phase-d-result.md`); E to J are not started.
+plan before any of it was built — and its phases are lettered. **Phases A to E
+are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
+`phase-d-result.md`, `phase-e-result.md`); F to J are not started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -2828,3 +2828,94 @@ helper was written on the controller "for a screen that wants to name them",
 with a docblock rationalising why it was there. Nothing called it. Deleted
 rather than justified — if the docblock has to argue for the code, that is the
 answer.
+
+**Phase E is complete** (`docs/architecture/phase-e-result.md`): the abuse desk,
+the certificate fleet, zone health, mail operations as telemetry and sending
+reputation. F to J are not started. SDK **1.6** — `AdapterArea::Mail` and
+`Capability::ReputationRead`, both additive.
+
+**Mail is numbers, and that is the whole of it** (§13). Eight `MetricKind`
+members — queue depth, deferred, held, delivered, rejected, bounce rate,
+authentication failures, spam score — arriving through the normalizer that
+already exists, landing on the Telemetry screen that already exists, alerted on
+by the rules that already exist. §6 is why there is nothing more: the series
+belongs in the specialist backend and core keeps the present. `MailDeferred` is
+separate from `MailQueueDepth` because they fail differently — a deep queue is a
+busy hour, and a deep *deferred* queue is somebody refusing to accept mail from
+you. `MailDelivered` is the one where more is better, and a screen drawing it red
+at its busiest hour is a screen nobody trusts.
+
+**`mail_queue` and `deferred` were aliases of `QueueDepth` and are not any
+more.** They are a mail server's queue, and mixing it with this installation's
+own job queue on one metric is two very different outages drawn as one line. The
+bare words another vendor also uses — `delivered`, `rejected`, `held` — are left
+out of the alias table on purpose: an alias that is right for one vendor and
+wrong for another is worse than an unmapped metric, which the Telemetry screen
+can at least show as unmapped.
+
+**A blocklist listing is not a metric**, which is why it is a row rather than a
+number. It is a yes-or-no fact about one address on one list, with a reason
+somebody wrote and a way to ask for it to be lifted; storing it as a figure
+would lose every part an operator needs to act. `reason` is the blocklist's own
+words, never translated or paraphrased — it is evidence in a conversation with
+somebody else, and paraphrasing evidence is how a delisting request gets
+refused. `delistUrl` is the field a platform is most likely to leave out and the
+one that matters most in practice: an operator who has found the listing still
+has to find the form.
+
+**Nothing delists.** Asking a blocklist to lift a listing is a form with a human
+on the other end, usually a captcha, and sometimes a promise about what has been
+fixed. `ReputationProvider` has one method, there is no `ReputationWrite`
+capability, and the screen carries the list's own link instead — a button that
+claimed otherwise would lie.
+
+`reputation_listings` is the third table with the raise-and-clear shape, after
+`alerts` and `zone_findings`, and the third to need a `cleared_token` for the
+same MariaDB reason. Attribution is taken **once, when the listing is first
+seen**, through the shared `AttributeReport` — re-attributing on every sweep
+would hand Tuesday's listing to whoever holds the address today, which is the
+one mistake this family must not make. An address that will not parse is counted
+and dropped rather than stored as text: a row whose address cannot be compared
+is a row nothing can attribute and nothing can clear.
+
+**A sweep with no source configured must clear nothing.** `CheckReputation`
+skips an organization with no addresses rather than handing an adapter an empty
+list, because recording an empty answer would clear every open listing on the
+first run after somebody deleted a prefix. Same reason `InspectZones` clears
+nothing on a failed read.
+
+**A `match` with no default fails loudly at a call site and silently inside a
+sweep.** `AlertSubject` has two of them — `needsTarget()` and `isNumeric()` —
+and adding a member to one and not the other meant the rule threw inside
+`EvaluateAlerts`, where "one rule failing never stops the rest" caught it: no
+alert, no error, nothing in the run record. When adding an enum member, grep for
+every `match ($this)` on that enum rather than fixing the one the compiler
+happened to point at.
+
+**`SystemRoleSeeder` changed a role's permission set and never flushed the
+permission cache.** `CreateRole`, `UpdateRole`, `DeleteRole` and
+`SyncPermissions` all do, and `PermissionCache`'s own docblock says stale
+authorization is never acceptable. This is the seeder an *upgrade* runs, so a
+phase that gives Support a new permission gave it to a role whose holders went
+on being refused for the cache's fifteen minutes — a 403 on a screen the
+operator can see the permission for in the role editor, with nothing saying why.
+Found because a new screen refused an account that held its permission.
+
+**No test in this suite could have caught that**, because `phpunit.xml` sets
+`ACCESS_CACHE_TTL` to 0: `PermissionCache::remember()` calls its resolver every
+time and the cache is disabled in every test there is. That is the right default
+for a suite about authorization — a cached answer would hide a missing grant —
+and it means the one test *about* the cache has to rebind `PermissionCache` with
+a real TTL itself. It does, and it was checked against the bug before being
+trusted.
+
+**A permission a phase declares reaches nobody until the roles are re-seeded.**
+`platform:permissions:sync` creates the row; `db:seed --class=SystemRoleSeeder`
+is what puts it on Administrator and Support. Both, in that order, after a
+migration — and on a development box the browser then wants
+`php artisan cache:clear` if the seeder ran before this fix.
+
+`tools/design-review.mjs` takes its page list from `DESIGN_PATHS` as JSON —
+`DESIGN_ONLY` only filters that list, so it renders nothing on its own. A query
+string works (`/admin/security/reputation?all=1`), which is how a filtered view
+gets captured.

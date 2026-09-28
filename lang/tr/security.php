@@ -149,6 +149,35 @@ return [
         ],
     ],
 
+    'reputation' => [
+        'title' => 'Gönderim itibarı',
+        'intro' => 'Bu kurulumun kendi adreslerinden hangilerinden bir kara listenin posta kabul etmediği. Bir kaynağa sorularak okunur; buradan kaldırma talebi gönderilmez.',
+        'empty' => 'Kara listede kayıt yok',
+        'empty_detail' => 'Buradaki hiçbir adres kara listede değil. Ya posta temiz ya da henüz bir itibar kaynağı tanımlanmadı — çekirdek kara liste işletmez, sorar.',
+        'listed' => 'Açık kayıt',
+        'addresses' => 'Etkilenen adres',
+        'customers' => 'Etkilenen müşteri',
+        'unattributed' => 'Kimse',
+        'delist' => 'Kaldırılmasını iste',
+        'lifted_on' => ':date kaldırıldı',
+        'show_all' => 'Hepsini göster',
+        'show_open' => 'Açık olanları göster',
+
+        'states' => [
+            'listed' => 'Kara listede',
+            'lifted' => 'Kaldırıldı',
+        ],
+
+        'columns' => [
+            'address' => 'Adres',
+            'list' => 'Kara liste',
+            'state' => 'Durum',
+            'customer' => 'Müşteri',
+            'since' => 'İlk görülme',
+            'source' => 'Kaynak',
+        ],
+    ],
+
     'dns' => [
         'title' => 'Bölge sağlığı',
         'intro' => 'Buradaki alan adlarının DNS’inde neyin yanlış olduğu. Bir sağlayıcıya sorularak okunur; bu ekranda hiçbir kayıt değiştirilmez.',

@@ -11,8 +11,10 @@ use App\Domain\Access\RoleScope;
 use App\Domain\Access\SystemRole;
 use App\Infrastructure\Access\Models\Permission;
 use App\Infrastructure\Access\Models\Role;
+use App\Infrastructure\Access\PermissionCache;
 use App\Infrastructure\Identity\Models\StaffUser;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Gate;
 
 function syncCorePermissions(): void
@@ -226,4 +228,45 @@ it('lists every staff permission for a super admin', function (): void {
     expect($owner->fresh()?->effectivePermissions())->toEqualCanonicalizing($staffSlugs)
         ->and($owner->fresh()?->effectivePermissions())->toContain('catalog.products.view')
         ->and($owner->fresh()?->effectivePermissions())->not->toContain('portal.dashboard.view');
+});
+
+/**
+ * The seeder is what an upgrade runs, and a phase gives a role its new
+ * permissions there. Without a flush the holders of that role go on being
+ * refused, on a screen the operator can see the permission for in the role
+ * editor — which reads as the feature simply not working.
+ *
+ * **The cache has to be switched on for this one test.** `phpunit.xml` sets
+ * `ACCESS_CACHE_TTL` to 0, which makes `PermissionCache::remember()` call its
+ * resolver every time — so the whole suite runs with the cache disabled and
+ * no test anywhere could catch a missing flush. That is the right default for
+ * a suite about authorization, and it is exactly why this one rebinds it.
+ */
+it('flushes the permission cache after seeding a role’s permissions', function (): void {
+    app()->singleton(PermissionCache::class, fn (): PermissionCache => new PermissionCache(
+        cache: app(CacheRepository::class),
+        prefix: 'access:permissions:test:',
+        ttl: 900,
+    ));
+
+    syncCorePermissions();
+    $this->seed(SystemRoleSeeder::class);
+
+    $agent = StaffUser::factory()->create();
+    $agent->assignRole(SystemRole::Support);
+    $agent = $agent->fresh();
+
+    // Warm the cache with the set as it stands.
+    expect($agent?->effectivePermissions())->not->toContain('catalog.products.manage');
+
+    // What a phase does: a role gains a permission it did not have.
+    $role = Role::query()->where('slug', SystemRole::Support->value)->sole();
+    $permission = Permission::query()->where('slug', 'catalog.products.manage')->sole();
+    $role->permissions()->syncWithoutDetaching([$permission->id]);
+
+    // Re-running the seeder is what a deployment does, and it must leave
+    // nobody holding a cached answer from before it.
+    $this->seed(SystemRoleSeeder::class);
+
+    expect($agent?->fresh()?->effectivePermissions())->toContain('catalog.products.manage');
 });

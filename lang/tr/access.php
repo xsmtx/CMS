@@ -123,6 +123,10 @@ return [
             'label' => 'Sertifika filosunu gör',
             'description' => 'Ne sunulduğunu, ne zaman dolduğunu ve kime ait olduğunu okur.',
         ],
+        'security.reputation.view' => [
+            'label' => 'Gönderim itibarını gör',
+            'description' => 'Bu kurulumun hangi adreslerinin kara listede olduğunu ve üzerinde kimin hizmetinin bulunduğunu okur.',
+        ],
         'security.abuse.view' => [
             'label' => 'Kötüye kullanım dosyalarını gör',
             'description' => 'Neyin şikâyet edildiğini, kime ait olduğunu ve masanın ne yaptığını okur.',

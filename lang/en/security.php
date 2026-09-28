@@ -184,6 +184,35 @@ return [
      * policy, decide whether a domain ought to have mail, or tell anybody
      * what their TTLs should be.
      */
+    'reputation' => [
+        'title' => 'Sending reputation',
+        'intro' => 'Which of this installation’s own addresses a blocklist will not accept mail from. Read by asking a source; nothing here asks for a listing to be lifted.',
+        'empty' => 'Nothing listed',
+        'empty_detail' => 'No address here is on a blocklist. Either the mail is clean, or no reputation source has been configured yet — core asks a source rather than running a blocklist.',
+        'listed' => 'Listings open',
+        'addresses' => 'Addresses affected',
+        'customers' => 'Customers affected',
+        'unattributed' => 'Nobody',
+        'delist' => 'Ask for it to be lifted',
+        'lifted_on' => 'lifted :date',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+
+        'states' => [
+            'listed' => 'Listed',
+            'lifted' => 'Lifted',
+        ],
+
+        'columns' => [
+            'address' => 'Address',
+            'list' => 'Blocklist',
+            'state' => 'State',
+            'customer' => 'Customer',
+            'since' => 'First seen',
+            'source' => 'Source',
+        ],
+    ],
+
     'dns' => [
         'title' => 'Zone health',
         'intro' => 'What is wrong with the DNS of the domains here. Read by asking a provider; nothing on this screen changes a record.',

@@ -86,6 +86,7 @@ return [
         'automation_run' => 'An automation task',
         'failed_operation' => 'A failed operation',
         'certificate_expiry' => 'How long a certificate has left',
+        'reputation_listing' => 'How long one of our addresses has been blocklisted',
         'capacity' => 'Something running out',
     ],
 
@@ -98,6 +99,7 @@ return [
         'late' => 'Last run :at',
         'failed_items' => ':count failed',
         'days_left' => ':days days left',
+        'days_listed' => 'listed :days days',
     ],
 
     /*

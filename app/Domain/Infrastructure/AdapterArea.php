@@ -44,6 +44,16 @@ enum AdapterArea: string
     case Secret = 'secret';
     case Metering = 'metering';
 
+    /**
+     * Mail operations and reputation (§13).
+     *
+     * One area rather than two, because the same adapter usually answers
+     * both: a mail platform knows its own queue depth and whether its
+     * outbound addresses are listed, and splitting them would mean two
+     * rows, two credentials and two health checks for one system.
+     */
+    case Mail = 'mail';
+
     public function labelKey(): string
     {
         return 'infrastructure.areas.'.$this->value;

@@ -47,6 +47,10 @@ return [
             'label' => 'Bölge sağlığı',
             'description' => 'İlgili her DNS kaynağına bu kurulumun tuttuğu bölgeleri sorar ve yanlış olanları bildirir.',
         ],
+        'reputation' => [
+            'label' => 'Gönderim itibarı',
+            'description' => 'İlgili her itibar kaynağına bu kurulumun kendi adreslerinin kara listede olup olmadığını sorar ve kaldırılanları kapatır.',
+        ],
         'certificates' => [
             'label' => 'Sertifikalar',
             'description' => 'İlgili her kaynağa şu anda hangi sertifikaları sunduğunu sorar ve artık sunulmayanları emekliye ayırır.',

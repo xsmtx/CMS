@@ -49,6 +49,7 @@ use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ReputationController;
 use App\Http\Controllers\Admin\ResellerController;
 use App\Http\Controllers\Admin\ResellerReportController;
 use App\Http\Controllers\Admin\ResourceAdapterController;
@@ -477,6 +478,14 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::get('security/certificates', CertificateController::class)
         ->name('security.certificates');
+
+    /*
+     * Sending reputation (§13). Read-only, because there is nothing to
+     * write: a delisting is a form somebody fills in on the list's own
+     * site, and the screen carries the link to it.
+     */
+    Route::get('security/reputation', ReputationController::class)
+        ->name('security.reputation');
 
     Route::get('security/abuse', [AbuseController::class, 'index'])
         ->name('security.abuse');

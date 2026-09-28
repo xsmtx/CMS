@@ -47,6 +47,10 @@ return [
             'label' => 'Zone health',
             'description' => 'Asks every DNS source about the zones this installation holds, and raises what is wrong with them.',
         ],
+        'reputation' => [
+            'label' => 'Sending reputation',
+            'description' => 'Asks every reputation source whether this installation’s own addresses are on a blocklist, and clears the ones that have been lifted.',
+        ],
         'certificates' => [
             'label' => 'Certificates',
             'description' => 'Asks every certificate source what it currently has deployed, and retires what has stopped being served.',

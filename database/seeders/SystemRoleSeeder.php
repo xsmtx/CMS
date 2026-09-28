@@ -10,6 +10,7 @@ use App\Domain\Access\RoleScope;
 use App\Domain\Access\SystemRole;
 use App\Infrastructure\Access\Models\Permission;
 use App\Infrastructure\Access\Models\Role;
+use App\Infrastructure\Access\PermissionCache;
 use Illuminate\Database\Seeder;
 
 /**
@@ -22,6 +23,8 @@ use Illuminate\Database\Seeder;
  */
 final class SystemRoleSeeder extends Seeder
 {
+    public function __construct(private readonly PermissionCache $cache) {}
+
     public function run(): void
     {
         $registry = app(PermissionRegistry::class);
@@ -55,6 +58,15 @@ final class SystemRoleSeeder extends Seeder
 
             $role->permissions()->syncWithoutDetaching($ids);
         }
+
+        // A role's permission set has just changed, so every cached set built
+        // from it is stale. `CreateRole`, `UpdateRole` and `DeleteRole` all
+        // flush for this reason and this ran without one, which is worse
+        // rather than equivalent: this is the seeder an upgrade runs, so a
+        // phase that gives Support a new permission gave it to a role whose
+        // holders went on being refused. The symptom is a 403 on a screen the
+        // operator can see in the role editor, with nothing saying why.
+        $this->cache->flush();
     }
 
     /**
@@ -113,6 +125,10 @@ final class SystemRoleSeeder extends Seeder
                 'security.abuse.manage',
                 'security.certificates.view',
                 'security.dns.view',
+                // And whether our own addresses are listed, which is the
+                // answer to “why did my mail not arrive” before anybody
+                // starts reading headers.
+                'security.reputation.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

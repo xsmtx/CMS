@@ -51,6 +51,29 @@ enum MetricKind: string
     case BatteryCharge = 'battery.charge';
     case BatteryRuntime = 'battery.runtime';
 
+    /*
+     * Mail operations (§13).
+     *
+     * Numbers rather than a subsystem: a mail queue is a queue and a
+     * bounce rate is a rate, so they arrive through the normalizer that
+     * already exists, land on the Telemetry screen that already exists,
+     * and are alerted on by the rules that already exist. §6 is why there
+     * is nothing more here — the series belongs in the specialist
+     * backend, and core keeps the present.
+     *
+     * `MailDeferred` is separate from `MailQueueDepth` because they fail
+     * differently: a deep queue is a busy hour, and a deep *deferred*
+     * queue is somebody refusing to accept mail from you.
+     */
+    case MailQueueDepth = 'mail.queue.depth';
+    case MailDeferred = 'mail.queue.deferred';
+    case MailHeld = 'mail.queue.held';
+    case MailDelivered = 'mail.delivered';
+    case MailRejected = 'mail.rejected';
+    case MailBounceRate = 'mail.bounce_rate';
+    case MailAuthFailures = 'mail.auth_failures';
+    case MailSpamScore = 'mail.spam_score';
+
     /**
      * Suffixes that name a unit, longest first so `_mbps` is not read as `_mb`.
      *
@@ -85,7 +108,17 @@ enum MetricKind: string
         return match ($this) {
             self::CpuUtilisation, self::PacketLoss,
             self::CacheHitRatio, self::BatteryCharge => MetricUnit::Ratio,
-            self::LoadAverage, self::Sessions, self::Accounts, self::QueueDepth => MetricUnit::Count,
+            self::LoadAverage, self::Sessions, self::Accounts, self::QueueDepth,
+            self::MailQueueDepth, self::MailDeferred, self::MailHeld => MetricUnit::Count,
+            // Rates, because a count of deliveries since the daemon
+            // started is a number that only ever grows and tells an
+            // operator nothing about this afternoon.
+            self::MailDelivered, self::MailRejected, self::MailAuthFailures => MetricUnit::PerSecond,
+            self::MailBounceRate => MetricUnit::Ratio,
+            // A spam score is a number a filter chose on its own scale.
+            // Neither a ratio nor a count, and pretending otherwise would
+            // draw a bar against a maximum nobody stated.
+            self::MailSpamScore => MetricUnit::Count,
             self::MemoryUsed, self::MemoryTotal, self::DiskUsed, self::DiskTotal => MetricUnit::Bytes,
             self::DiskIops, self::RequestRate, self::ErrorRate => MetricUnit::PerSecond,
             self::NetworkIn, self::NetworkOut => MetricUnit::BitsPerSecond,
@@ -112,7 +145,14 @@ enum MetricKind: string
         return match ($this) {
             self::CpuUtilisation, self::MemoryUsed, self::DiskUsed, self::DiskLatency,
             self::PacketLoss, self::ResponseLatency, self::ErrorRate,
-            self::QueueDepth, self::ReplicationLag => true,
+            self::QueueDepth, self::ReplicationLag,
+            self::MailQueueDepth, self::MailDeferred, self::MailHeld,
+            self::MailRejected, self::MailBounceRate, self::MailAuthFailures,
+            self::MailSpamScore => true,
+            // Delivered is the one mail metric where more is better, and
+            // a screen that drew it red at its busiest hour would be a
+            // screen nobody trusts.
+            self::MailDelivered => false,
             self::Uptime, self::CacheHitRatio, self::BatteryCharge, self::BatteryRuntime => false,
             default => null,
         };
@@ -154,13 +194,30 @@ enum MetricKind: string
             self::Accounts => ['accounts', 'account_count', 'domains', 'vhosts'],
             self::RequestRate => ['requests', 'rps', 'qps', 'queries_per_second'],
             self::ErrorRate => ['errors', 'error_rate', 'http_5xx', '5xx'],
-            self::QueueDepth => ['queue', 'queue_depth', 'queued', 'mail_queue', 'deferred'],
+            // `mail_queue` and `deferred` were here and are not any more:
+            // they are a mail server's queue, and mixing it with this
+            // installation's own job queue on one metric is two very
+            // different outages drawn as one line.
+            self::QueueDepth => ['queue', 'queue_depth', 'queued'],
             self::ReplicationLag => ['replication_lag', 'seconds_behind_master', 'slave_lag', 'lag'],
             self::CacheHitRatio => ['hit_ratio', 'cache_hit_ratio', 'keyspace_hit_ratio', 'buffer_hit_ratio'],
             self::Temperature => ['temp', 'temperature', 'inlet_temp', 'cpu_temp'],
             self::PowerDraw => ['power', 'power_draw', 'watts', 'outlet_load', 'load_watts'],
             self::BatteryCharge => ['battery', 'battery_charge', 'charge_remaining'],
             self::BatteryRuntime => ['battery_runtime', 'runtime_remaining', 'autonomy'],
+            // Mail. The bare words a firewall or a job queue also uses
+            // — `delivered`, `rejected`, `held` — are left out on
+            // purpose: an alias that is right for one vendor and wrong
+            // for another is worse than an unmapped metric, which the
+            // Telemetry screen can at least show as unmapped.
+            self::MailQueueDepth => ['mail_queue', 'mailq', 'postfix_queue', 'exim_queue'],
+            self::MailDeferred => ['deferred', 'mail_deferred', 'deferred_queue', 'postfix_deferred'],
+            self::MailHeld => ['mail_held', 'hold_queue', 'postfix_hold'],
+            self::MailDelivered => ['mail_delivered', 'messages_delivered', 'postfix_delivered'],
+            self::MailRejected => ['mail_rejected', 'messages_rejected', 'postfix_rejected'],
+            self::MailBounceRate => ['bounce_rate', 'mail_bounce_rate'],
+            self::MailAuthFailures => ['mail_auth_failures', 'smtp_auth_failures'],
+            self::MailSpamScore => ['spam_score', 'mail_spam_score'],
         };
     }
 

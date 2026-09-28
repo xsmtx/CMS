@@ -67,6 +67,22 @@ enum AlertSubject: string
     case CertificateExpiry = 'certificate_expiry';
 
     /**
+     * How many days one of our addresses has been on a blocklist (§13).
+     *
+     * **Days rather than a count of listings**, because the count is not the
+     * question. One address on four lists is one problem, and the thing that
+     * decides whether anybody should be woken is how long it has been true:
+     * a listing that lifts itself within the hour is noise, and one that is
+     * still there on the third morning is somebody's mail not arriving.
+     *
+     * The threshold is the operator's, like the certificate one. A business
+     * sending its own newsletters and one running four hundred shared hosting
+     * accounts do not agree about when this matters, and core shipping a
+     * number would be core deciding for both.
+     */
+    case ReputationListing = 'reputation_listing';
+
+    /**
      * Whether this subject needs a target naming which thing.
      *
      * A metric rule is about a measurement across everything that reports it;
@@ -82,7 +98,7 @@ enum AlertSubject: string
             // installation can see, not about one of them. An operator who
             // wanted one certificate watched would be writing a rule they
             // have to rewrite at every renewal.
-            self::CertificateExpiry => false,
+            self::CertificateExpiry, self::ReputationListing => false,
         };
     }
 
@@ -98,7 +114,10 @@ enum AlertSubject: string
         return match ($this) {
             // Days remaining, which is a number an operator compares
             // against — "below 14" is the rule everybody writes.
-            self::Metric, self::Capacity, self::CertificateExpiry => true,
+            // Days listed is the same shape: “above 2” is the rule,
+            // because how long it has been true is what decides whether
+            // anybody should be woken for it.
+            self::Metric, self::Capacity, self::CertificateExpiry, self::ReputationListing => true,
             self::HealthCheck, self::AdapterHealth, self::AutomationRun, self::FailedOperation => false,
         };
     }

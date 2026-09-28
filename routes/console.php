@@ -241,3 +241,16 @@ Schedule::command('platform:run zone-health')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground();
+
+/*
+ * Asking every reputation source about this installation's own addresses.
+ *
+ * Daily, and deliberately not at the same minute as the zone sweep: both
+ * talk to somebody else's API, and two of ours arriving together is the
+ * kind of burst a rate limiter answers.
+ */
+Schedule::command('platform:run reputation')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();

@@ -136,6 +136,16 @@ enum AutomationTask: string
     case ZoneHealth = 'zone-health';
 
     /**
+     * Asking every reputation source whether this installation's own
+     * addresses are on a blocklist (§13).
+     *
+     * Daily. A blocklist takes hours to list and days to delist, so
+     * asking one every five minutes is a rate limit rather than fresher
+     * data.
+     */
+    case Reputation = 'reputation';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -210,7 +220,7 @@ enum AutomationTask: string
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
             self::Certificates => 60,
-            self::ZoneHealth => 1440,
+            self::ZoneHealth, self::Reputation => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

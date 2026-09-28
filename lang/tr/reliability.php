@@ -76,6 +76,7 @@ return [
         'automation_run' => 'Bir otomasyon görevi',
         'failed_operation' => 'Başarısız bir işlem',
         'certificate_expiry' => 'Sertifikanın ne kadar ömrü kaldığı',
+        'reputation_listing' => 'Adreslerimizden birinin ne kadar süredir kara listede olduğu',
         'capacity' => 'Tükenmekte olan bir şey',
     ],
 
@@ -88,6 +89,7 @@ return [
         'late' => 'Son çalışma :at',
         'failed_items' => ':count başarısız',
         'days_left' => ':days gün kaldı',
+        'days_listed' => ':days gündür kara listede',
     ],
 
     'incident_states' => [

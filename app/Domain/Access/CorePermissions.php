@@ -168,6 +168,14 @@ final class CorePermissions
             new PermissionDefinition('security.certificates.view', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Sending reputation (§13). A view and nothing else, because
+             * there is nothing to write: asking a blocklist to lift a
+             * listing is a form with a human on the other end, and a
+             * permission for it would guard a button that cannot exist.
+             */
+            new PermissionDefinition('security.reputation.view', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on

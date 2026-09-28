@@ -706,6 +706,7 @@ return [
         'abuse' => 'Kötüye kullanım',
         'certificates' => 'Sertifikalar',
         'dns' => 'DNS',
+        'reputation' => 'İtibar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

@@ -521,6 +521,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/security/dns',
         permission: 'security.dns.view',
       },
+      {
+        label: nav('reputation', 'Reputation'),
+        href: '/admin/security/reputation',
+        permission: 'security.reputation.view',
+      },
     ],
   },
   {

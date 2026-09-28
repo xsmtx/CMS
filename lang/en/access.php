@@ -124,6 +124,10 @@ return [
             'label' => 'See the certificate fleet',
             'description' => 'Read what is deployed, when it expires and whose it is.',
         ],
+        'security.reputation.view' => [
+            'label' => 'See sending reputation',
+            'description' => 'Read which of this installation’s addresses are on a blocklist, and whose service is on them.',
+        ],
         'security.abuse.view' => [
             'label' => 'See abuse cases',
             'description' => 'Read what was complained about, whose it was and what the desk did.',

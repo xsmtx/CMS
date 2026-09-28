@@ -711,6 +711,7 @@ return [
         'abuse' => 'Abuse',
         'certificates' => 'Certificates',
         'dns' => 'DNS',
+        'reputation' => 'Reputation',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

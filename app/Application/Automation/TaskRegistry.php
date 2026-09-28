@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Automation;
 
 use App\Application\Automation\Runs\CheckAdapterHealth;
+use App\Application\Automation\Runs\CheckReputation;
 use App\Application\Automation\Runs\CleanUpExpiredRecords;
 use App\Application\Automation\Runs\CollectCertificates;
 use App\Application\Automation\Runs\CollectDdosEvents;
@@ -60,6 +61,7 @@ final readonly class TaskRegistry
             AutomationTask::AbuseRetention => ForgetAbuseEvidence::class,
             AutomationTask::Certificates => CollectCertificates::class,
             AutomationTask::ZoneHealth => InspectZones::class,
+            AutomationTask::Reputation => CheckReputation::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

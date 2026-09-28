@@ -66,6 +66,7 @@ return [
         'automation' => 'Configuration',
         'log' => 'Logs',
         'secret' => 'Secrets',
+        'mail' => 'Mail and reputation',
         'metering' => 'Usage metering',
     ],
 
@@ -150,10 +151,22 @@ return [
         'temperature' => 'Temperature',
         'power.draw' => 'Power draw',
         'battery.charge' => 'Battery',
+        'mail.queue.depth' => 'Mail queue',
+        'mail.queue.deferred' => 'Deferred mail',
+        'mail.queue.held' => 'Held mail',
+        'mail.delivered' => 'Mail delivered',
+        'mail.rejected' => 'Mail rejected',
+        'mail.bounce_rate' => 'Bounce rate',
+        'mail.auth_failures' => 'Failed mail logins',
+        'mail.spam_score' => 'Average spam score',
         'battery.runtime' => 'Battery runtime',
     ],
 
     'capabilities' => [
+        'mail.reputation.read' => [
+            'label' => 'Read blocklist listings',
+            'description' => 'Ask whether this installation’s own sending addresses are on a blocklist. Nothing here asks for one to be lifted — that is a form with a human on the other end.',
+        ],
         'monitoring.metrics.read' => [
             'label' => 'Read measurements',
             'description' => 'Ask this source for the current numbers about resources it watches.',

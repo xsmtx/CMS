@@ -20,6 +20,8 @@ use App\Infrastructure\Resources\Models\ResourceAdapter;
 use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use App\Infrastructure\Security\Models\Certificate;
+use App\Infrastructure\Security\Models\ReputationListing;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Lang;
 use Throwable;
 
@@ -75,6 +77,7 @@ final readonly class GatherObservations
             AlertSubject::FailedOperation => $this->failedOperations(),
             AlertSubject::Capacity => $this->capacityRuns($organizationId),
             AlertSubject::CertificateExpiry => $this->certificates($organizationId),
+            AlertSubject::ReputationListing => $this->listings($organizationId),
         };
     }
 
@@ -365,6 +368,49 @@ final readonly class GatherObservations
                 label: $certificate->common_name,
                 bad: true,
                 observed: (string) __('reliability.observed.days_left', ['days' => $days]),
+                value: (float) $days,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * Every open blocklist listing, measured in days.
+     *
+     * **The row's own id is the key**, so an address that is listed, lifted
+     * and listed again next month is two alerts rather than one that appeared
+     * to flicker — they are two separate things to answer for.
+     *
+     * A lifted listing is simply absent, which is how the alert clears: the
+     * evaluator closes what is no longer among the bad observations.
+     *
+     * @return list<Observation>
+     */
+    private function listings(?string $organizationId): array
+    {
+        if ($organizationId === null) {
+            return [];
+        }
+
+        $now = CarbonImmutable::now();
+        $observations = [];
+
+        foreach (
+            ReputationListing::query()
+                ->where('organization_id', $organizationId)
+                ->open()
+                ->orderBy('first_seen_at')
+                ->limit(500)
+                ->get() as $listing
+        ) {
+            $days = (int) $listing->first_seen_at->diffInDays($now);
+
+            $observations[] = new Observation(
+                key: $listing->id,
+                label: $listing->address.' — '.$listing->list,
+                bad: true,
+                observed: (string) __('reliability.observed.days_listed', ['days' => $days]),
                 value: (float) $days,
             );
         }
