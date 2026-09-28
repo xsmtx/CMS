@@ -11,6 +11,7 @@ use App\Application\Automation\Runs\CollectCertificates;
 use App\Application\Automation\Runs\CollectDdosEvents;
 use App\Application\Automation\Runs\CollectProtections;
 use App\Application\Automation\Runs\CollectTelemetry;
+use App\Application\Automation\Runs\CollectUsage;
 use App\Application\Automation\Runs\DiscoverLoadBalancers;
 use App\Application\Automation\Runs\DiscoverStorage;
 use App\Application\Automation\Runs\DiscoverTopology;
@@ -70,6 +71,7 @@ final readonly class TaskRegistry
             AutomationTask::Storage => DiscoverStorage::class,
             AutomationTask::LoadBalancers => DiscoverLoadBalancers::class,
             AutomationTask::Machines => DiscoverVirtualMachines::class,
+            AutomationTask::Usage => CollectUsage::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

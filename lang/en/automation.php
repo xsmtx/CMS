@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'usage' => [
+            'label' => 'Usage metering',
+            'description' => 'Asks every metering source what each service used last month, and writes a snapshot the next invoice quotes.',
+        ],
         'machines' => [
             'label' => 'Machine inventory',
             'description' => 'Asks every hypervisor which hosts it has and which machines are on each of them.',

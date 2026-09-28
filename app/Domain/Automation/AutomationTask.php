@@ -181,6 +181,16 @@ enum AutomationTask: string
     case Machines = 'machines';
 
     /**
+     * Asking every metering source what was used last month (§25).
+     *
+     * **Daily, for the month that has ended**, not monthly on the first: a
+     * run that has to happen on a particular day loses a month permanently
+     * the first time a worker is down for one. Every repeat is a skip,
+     * because the snapshot's unique key says so.
+     */
+    case Usage = 'usage';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -256,7 +266,7 @@ enum AutomationTask: string
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
             self::LoadBalancers, self::Machines => 60,
-            self::ZoneHealth, self::Reputation => 1440,
+            self::ZoneHealth, self::Reputation, self::Usage => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };
     }

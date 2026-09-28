@@ -3,6 +3,17 @@
 declare(strict_types=1);
 
 return [
+    'usage' => [
+        'units' => [
+            'gigabytes' => 'GB',
+            'terabytes' => 'TB',
+            'hours' => 'saat',
+            'requests' => 'istek',
+            'items' => 'adet',
+        ],
+
+        'line' => ':service — :meter, :period: :quantity :unit kullanıldı, :included :unit dahil',
+    ],
 
     'not_permitted' => 'Bu hesabın faturalandırma bölümüne erişiminiz yok.',
     'details_saved' => 'Fatura bilgileri kaydedildi. Bir sonraki faturanızda kullanılacak.',

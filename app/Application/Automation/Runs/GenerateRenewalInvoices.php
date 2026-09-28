@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Automation\Runs;
 
 use App\Application\Billing\IssueInvoice;
+use App\Application\Billing\QuoteUsage;
 use App\Application\Shared\AllocateNumber;
 use App\Domain\Automation\Contracts\AutomationRun;
 use App\Domain\Automation\ItemOutcome;
@@ -67,6 +68,7 @@ final class GenerateRenewalInvoices implements AutomationRun
         private readonly OrganizationContext $organizations,
         private readonly AllocateNumber $numbers,
         private readonly IssueInvoice $issuer,
+        private readonly QuoteUsage $usage,
     ) {}
 
     public function handle(): RunSummary
@@ -222,6 +224,19 @@ final class GenerateRenewalInvoices implements AutomationRun
                 $service->id,
                 $position++,
             );
+
+            /*
+             * What the service used, on the invoice that renews it (§25).
+             *
+             * After the renewal line and before the next service's, so a
+             * customer reads "hosting, then what the hosting used". Each
+             * usage line quotes a snapshot and stamps it, so nothing can
+             * charge for the same period twice — which is what makes it safe
+             * to do this inside a run that may be retried.
+             */
+            $usage = $this->usage->handle($invoice, $service, $position);
+            $subtotal = $subtotal->plus($usage['total']);
+            $position += $usage['lines'];
 
             // Written before the invoice is issued: a crash after this
             // point leaves an invoice nobody sent, which is recoverable. A

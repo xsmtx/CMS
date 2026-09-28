@@ -267,6 +267,19 @@ Schedule::command('platform:run zone-health')
 /*
  * Asking every hypervisor what it is running.
  */
+/*
+ * Asking every metering source what was used last month.
+ *
+ * Daily, for the month that has ended. A run that had to happen on the
+ * first would lose a month permanently the first time a worker was down
+ * for one; every repeat here is a skip.
+ */
+Schedule::command('platform:run usage')
+    ->dailyAt('05:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run machines')
     ->hourlyAt(50)
     ->withoutOverlapping()

@@ -6,8 +6,8 @@ namespace App\Application\Infrastructure;
 
 use App\Domain\Infrastructure\Backup\ProtectedResource;
 use App\Infrastructure\Backup\Models\BackupProtection;
-use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Provisioning\Models\Service;
+use App\Support\Organizations\OrganizationSubtree;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +40,8 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class RecordProtections
 {
+    public function __construct(private OrganizationSubtree $subtree) {}
+
     /**
      * @param  list<ProtectedResource>  $found
      * @return array{recorded: int, retired: int, matched: int}
@@ -168,7 +170,7 @@ final readonly class RecordProtections
 
         $services = Service::query()
             ->withoutGlobalScope('organization')
-            ->whereIn('organization_id', $this->subtreeOf($organizationId))
+            ->whereIn('organization_id', $this->subtree->ids($organizationId))
             ->where(static fn ($query) => $query
                 ->whereIn(DB::raw('lower(domain)'), $names)
                 ->orWhereIn(DB::raw('lower(name)'), $names))
@@ -199,34 +201,5 @@ final readonly class RecordProtections
         }
 
         return array_filter($byName, static fn (Service|false $service): bool => $service !== false);
-    }
-
-    /**
-     * The organizations whose services this seller's backup source may name.
-     *
-     * A seller's customers are organizations beneath it, so a resource named
-     * after a customer's service has to be findable from a sweep that runs
-     * with no boundary at all. This is the narrowing a boundary would have
-     * done: `path` is a materialised ancestor chain, so a descendant's path
-     * begins with its ancestor's and the seller is included by construction.
-     *
-     * @return list<string>
-     */
-    private function subtreeOf(string $organizationId): array
-    {
-        $organization = Organization::query()
-            ->withoutGlobalScope('organization')
-            ->whereKey($organizationId)
-            ->first();
-
-        if (! $organization instanceof Organization) {
-            return [$organizationId];
-        }
-
-        return array_values(Organization::query()
-            ->withoutGlobalScope('organization')
-            ->where('path', 'like', $organization->path.'%')
-            ->pluck('id')
-            ->all());
     }
 }

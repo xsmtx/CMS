@@ -113,9 +113,10 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A to E
+plan before any of it was built — and its phases are lettered. **Phases A to F
 are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
-`phase-d-result.md`, `phase-e-result.md`); F to J are not started.
+`phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`); G to J are not
+started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -3239,3 +3240,62 @@ two things having happened.
 first is still going rolls the first one's rows out from under it. The failures
 have no common cause and no stack trace worth reading. Start a run only when no
 other is going — the same rule `db:wipe --env=testing` already carries.
+
+**Usage metering is in, and Phase F is complete**
+(`docs/architecture/phase-f-plan.md`). Backup coverage, storage, load
+balancers with guarded drain, hypervisors with guarded power, and the metering
+contract with its snapshots.
+
+**A meter answers quantities and the seller sets the price.** `UsageMeter`
+returns a `UsageReading` — a number and a unit — because a source that
+returned money would be a module setting prices, which is the one thing
+metering must not be able to do. The rate lives on `usage_meters` rather than
+in the catalog, and that is not a shortcut: a product price is a cycle and a
+currency (the ADR 0021 matrix), and a usage rate is per service, per meter,
+with an allowance — three dimensions that matrix cannot express, and two
+customers on one product routinely have different allowances.
+
+**The meter declares the billing unit and the source answers in it.** A
+reading in another unit is refused, never converted — `RecordSamples`' rule
+about a unit from the wrong dimension, applied where the consequence is money.
+A conversion here is a rounding error nobody can find between the invoice and
+the screen.
+
+**A snapshot is append-only and an invoice line quotes it.** §25 asks for
+immutable invoiced usage snapshots and ADR 0023 already decided what that
+means: the invoice is frozen at issue, so the number on it comes from a row
+that cannot change, and the row is stamped with the item that quoted it and
+can never be quoted again. A meter that revises history writes a *second*
+snapshot; the correction is a credit note.
+
+**Zero is a line, not nothing.** A bandwidth line that disappears the month
+somebody stayed inside their allowance reads as a billing mistake — and it is
+the month they most want to see the figure.
+
+**Rounded once at the line, never per unit.** A hundred and fifty gigabytes at
+a third of a penny is either nothing or a pound if the rate is rounded first.
+
+**The usage sweep runs daily for the month that has ended**, not monthly on
+the first: a run that has to happen on a particular day loses a month
+permanently the first time a worker is down for one. Every repeat is a skip
+because of the unique key on `(meter, period_start, period_end)` — ADR 0031's
+rule, enforced by the index rather than by a check somebody could forget.
+
+**`OrganizationSubtree` is the one place that narrows a boundary-free sweep to
+a seller's own customers.** A meter and a backup protection both belong to the
+customer's organization while the sweep runs as the seller with no boundary at
+all, and `withoutBoundary()` is the whole installation — which is exactly what
+a reseller must not see. It was about to be written a second time, which is
+the `ResolveSeller` rule again.
+
+**A helper function in a Pest file is global, and two of them is a fatal.** A
+test file has no namespace — the same fact behind "never `use` a global class
+in one". `function reading()` existed in `AlertingTest` and was written again
+in `UsageMeteringTest`; both files in one process is "Cannot redeclare", which
+takes the whole suite down rather than one test, and a file written in
+isolation passes. `tests/Feature/TestHelpersTest.php` refuses it now.
+
+It was found the long way round: **Rector reported a three-argument call as
+having extra parameters**, because it had resolved the *other* function of
+that name. A static analyser disagreeing with code that plainly works is worth
+reading twice before it is worked around.

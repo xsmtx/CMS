@@ -55,6 +55,10 @@ return [
             'label' => 'Yedek kapsamı',
             'description' => 'İlgili her yedek kaynağına şu anda neyi koruduğunu sorar ve işten çıkanları emekliye ayırır.',
         ],
+        'usage' => [
+            'label' => 'Kullanım ölçümü',
+            'description' => 'Her ölçüm kaynağına geçen ay her hizmetin ne kadar kullandığını sorar ve bir sonraki faturanın alıntılayacağı bir anı yazar.',
+        ],
         'machines' => [
             'label' => 'Makine envanteri',
             'description' => 'Her hipervizore hangi ana makinelere ve her birinin üzerinde hangi makinelere sahip olduğunu sorar.',

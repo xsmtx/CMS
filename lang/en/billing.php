@@ -3,6 +3,20 @@
 declare(strict_types=1);
 
 return [
+    'usage' => [
+        'units' => [
+            'gigabytes' => 'GB',
+            'terabytes' => 'TB',
+            'hours' => 'hours',
+            'requests' => 'requests',
+            'items' => 'items',
+        ],
+
+        // The quantity and the allowance are in the words, because a customer
+        // looking at a usage charge wants to know how far over they went —
+        // and a line that shows only money makes them ask.
+        'line' => ':service — :meter, :period: :quantity :unit used, :included :unit included',
+    ],
 
     'not_permitted' => 'You do not have access to billing on this account.',
     'details_saved' => 'Billing details saved. They will be used on your next invoice.',
