@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation\Runs;
 
+use App\Application\Intelligence\DetectOrphans;
 use App\Application\Intelligence\ReconcileServices;
 use App\Application\Intelligence\RecordFindings;
 use App\Application\Intelligence\Remediations;
@@ -42,6 +43,7 @@ final readonly class Reconcile implements AutomationRun
     public function __construct(
         private OrganizationContext $organizations,
         private ReconcileServices $services,
+        private DetectOrphans $orphans,
         private RecordFindings $findings,
         private Remediations $remediations,
         private SecretRedactor $redactor,
@@ -71,6 +73,25 @@ final readonly class Reconcile implements AutomationRun
                 ReconcileServices::Resource,
                 $differences,
             );
+
+            /*
+             * Reconciliation read from the other end, and a **separate
+             * source**: a sweep that could not reach a hypervisor must not
+             * clear every orphaned machine it found last night, and one
+             * source per question is what keeps `clearDeparted` honest.
+             */
+            $orphans = $this->findings->handle(
+                $organizationId,
+                DetectOrphans::Resource,
+                $this->orphans->handle($organizationId),
+            );
+
+            $written = [
+                'raised' => $written['raised'] + $orphans['raised'],
+                'kept' => $written['kept'] + $orphans['kept'],
+                'cleared' => $written['cleared'] + $orphans['cleared'],
+                'dismissed' => $written['dismissed'] + $orphans['dismissed'],
+            ];
 
             /*
              * A proposal per open finding, and never one an operator has

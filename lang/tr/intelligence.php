@@ -109,6 +109,10 @@ return [
     ],
 
     'resources' => [
+        'virtual_machine' => 'Sanal makine',
+        'site' => 'Site',
+        'ip_address' => 'Adres',
+        'certificate' => 'Sertifika',
         'service' => 'Hizmet',
     ],
 ];

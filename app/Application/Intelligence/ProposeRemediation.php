@@ -68,12 +68,16 @@ final readonly class ProposeRemediation
                 RemediationAction::AcceptTermination,
                 RemediationAction::Investigate,
             ],
-            ReconciliationClass::Orphan => [
-                RemediationAction::Investigate,
-                // The account exists and nobody here owns it. Destroying it
-                // is offered and never suggested.
-                RemediationAction::RemoveService,
-            ],
+            /*
+             * Destroying it is offered only where there is something here to
+             * act through. An orphan found by `DetectOrphans` has no row at
+             * all — that is what makes it an orphan — so this platform has
+             * no way to reach the machine, and a button that was offered and
+             * always refused would be worse than no button.
+             */
+            ReconciliationClass::Orphan => $finding->subject_id === null
+                ? [RemediationAction::Investigate]
+                : [RemediationAction::Investigate, RemediationAction::RemoveService],
             ReconciliationClass::Drift => $this->driftActions($finding),
         };
     }

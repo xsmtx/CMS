@@ -116,6 +116,10 @@ return [
     ],
 
     'resources' => [
+        'virtual_machine' => 'Virtual machine',
+        'site' => 'Site',
+        'ip_address' => 'Address',
+        'certificate' => 'Certificate',
         'service' => 'Service',
     ],
 ];

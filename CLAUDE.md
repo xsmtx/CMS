@@ -3642,3 +3642,32 @@ where it costs none.
 for one fact**, and on every row it is also a label ("Something else") printed
 four times. `AppMenu` in the row actions is what this product uses for a
 choice that is not the ordinary one.
+
+**Orphan detection is reconciliation read from the other end** (`DetectOrphans`).
+`ReconcileServices` starts with a row and asks the provider about it; this
+starts with what the providers reported and asks whether anything here owns
+it. A machine built by hand for a migration and never recorded is invisible to
+the first and is exactly what the second is for. Four rules:
+
+- **Absence of an adapter is not evidence.** Only what has actually been
+  discovered is considered, so a platform with no hypervisor module reports no
+  orphaned machines rather than reporting that every machine is orphaned. The
+  same rule a stale metric and an unread advisory live under.
+- **The row says what the match was made on.** A machine is matched to a
+  service by `external_id`, which is an identity; a site is matched to a domain
+  by name, which is a weaker claim. An operator deciding whether to destroy
+  something deserves to know how sure the platform is.
+- **An address is matched on bytes, never on text**, and **the mask is
+  stripped first**: a device reports `192.0.2.1/24`, `inet_pton` answers false
+  for that, and a silent false would drop every address on the network and
+  report no orphans at all — the quietest possible way for this to be wrong.
+- **Removal is not offered where there is no row to act through.** An orphan
+  found this way has no subject — that is what makes it an orphan — so this
+  platform cannot reach the machine, and a button that was offered and always
+  refused would be worse than no button.
+
+**Orphans are their own `source` in `reconciliation_findings`.** One source
+per question, because `clearDeparted` closes everything a source did not
+report this time: sharing a source with the service sweep would mean a
+hypervisor that could not be reached cleared every orphaned machine found last
+night.
