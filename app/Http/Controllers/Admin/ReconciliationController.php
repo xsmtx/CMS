@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Intelligence\ProposeRemediation;
+use App\Application\Intelligence\Remediations;
+use App\Domain\Intelligence\Exceptions\RemediationRefused;
+use App\Domain\Intelligence\ProposalState;
 use App\Domain\Intelligence\ReconciliationClass;
+use App\Domain\Intelligence\RemediationAction;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
 use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
+use App\Infrastructure\Intelligence\Models\RemediationProposal;
 use App\Support\Audit\Facades\Audit;
 use App\Support\Errors\ForbiddenException;
 use App\Support\Identity\CurrentActor;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,6 +39,11 @@ use Inertia\Response;
  */
 final class ReconciliationController extends Controller
 {
+    public function __construct(
+        private readonly Remediations $remediations,
+        private readonly ProposeRemediation $proposals,
+    ) {}
+
     public function index(Request $request, CurrentActor $actor): Response
     {
         $this->refuseUnless($actor, 'intelligence.reconciliation.view');
@@ -39,6 +51,13 @@ final class ReconciliationController extends Controller
         $showAll = $request->boolean('all');
 
         $findings = ReconciliationFinding::query()
+            // `decider` with them: strict mode only reports a lazy load when
+            // the query returned more than one row, so a queue with one
+            // finding in it would have rendered perfectly.
+            ->with(['proposals' => static fn ($query) => $query
+                ->with('decider')
+                ->latest('proposed_at')
+                ->limit(1)])
             ->unless($showAll, static fn ($query) => $query->open())
             ->orderByRaw('field(`class`, ?, ?, ?, ?)', $this->order())
             ->orderBy('first_seen_at')
@@ -46,6 +65,19 @@ final class ReconciliationController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Intelligence/Reconciliation', [
+            'actions' => array_map(
+                static fn (RemediationAction $action): array => [
+                    'value' => $action->value,
+                    'label' => (string) __($action->labelKey()),
+                    'description' => (string) __($action->descriptionKey()),
+                    // The line the confirmation's wording is drawn on:
+                    // "this changes our record" and "this changes the
+                    // customer's account" are different sentences.
+                    'remote' => $action->isRemote(),
+                    'reversible' => $action->isReversible(),
+                ],
+                RemediationAction::cases(),
+            ),
             'findings' => [
                 'data' => $this->rows(array_values($findings->items())),
                 'links' => $findings->linkCollection()->toArray(),
@@ -119,6 +151,113 @@ final class ReconciliationController extends Controller
             ->write();
 
         return back()->with('status', __('intelligence.reconciliation.dismissed'));
+    }
+
+    /**
+     * An operator choosing something other than what was suggested.
+     *
+     * It does not decide anything. Choosing and approving are two presses on
+     * purpose: the action an operator picks and the moment they agree to it
+     * are different decisions, and a screen that did both at once would let
+     * somebody terminate an account with one click on a dropdown.
+     */
+    public function choose(
+        Request $request,
+        CurrentActor $actor,
+        ReconciliationFinding $finding,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.remediate');
+
+        $data = $request->validate([
+            'action' => ['required', Rule::enum(RemediationAction::class)],
+        ]);
+
+        try {
+            $this->remediations->choose(
+                $finding,
+                RemediationAction::from($data['action']),
+                $this->staff($actor),
+            );
+        } catch (RemediationRefused $refused) {
+            return back()->withErrors([
+                'action' => __($refused->key(), $refused->replacements()),
+            ]);
+        }
+
+        return back()->with('status', __('intelligence.reconciliation.chosen'));
+    }
+
+    /**
+     * Yes or no, with a reason either way.
+     */
+    public function decide(
+        Request $request,
+        CurrentActor $actor,
+        RemediationProposal $proposal,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.remediate');
+
+        $data = $request->validate([
+            'approved' => ['required', 'boolean'],
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        try {
+            $this->remediations->decide(
+                $proposal,
+                $data['approved'],
+                $this->staff($actor),
+                $data['reason'] ?? null,
+            );
+        } catch (RemediationRefused $refused) {
+            return back()->withErrors([
+                'approved' => __($refused->key(), $refused->replacements()),
+            ]);
+        }
+
+        return back()->with('status', __('intelligence.reconciliation.decided'));
+    }
+
+    /**
+     * Carry out what somebody approved.
+     *
+     * Behind `auth.recent`, with the permission above it on the route — the
+     * rule Phase 17 learned on the Licence screen and four phases have
+     * repeated. Applying any remediation acts on a customer's account, and
+     * the screen cannot know in advance which half of the enum the operator
+     * will reach for.
+     */
+    public function apply(
+        Request $request,
+        CurrentActor $actor,
+        RemediationProposal $proposal,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'intelligence.reconciliation.remediate');
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        try {
+            $applied = $this->remediations->apply(
+                $proposal,
+                $this->staff($actor),
+                // The dialog asks for one at the two higher levels. An
+                // endpoint that discarded it would be a sentence nobody
+                // reads.
+                $data['reason'] ?? null,
+            );
+        } catch (RemediationRefused $refused) {
+            return back()->withErrors([
+                'proposal' => __($refused->key(), $refused->replacements()),
+            ]);
+        }
+
+        return back()->with('status', __(
+            $applied->state === ProposalState::Failed
+                ? 'intelligence.reconciliation.apply_failed'
+                : 'intelligence.reconciliation.applied',
+        ));
     }
 
     public function undismiss(
@@ -215,11 +354,49 @@ final class ReconciliationController extends Controller
             'firstSeenAt' => $finding->first_seen_at->toIso8601String(),
             'lastSeenAt' => $finding->last_seen_at->toIso8601String(),
             'clearedAt' => $finding->cleared_at?->toIso8601String(),
+            'available' => array_map(
+                static fn (RemediationAction $action): string => $action->value,
+                $this->proposals->available($finding),
+            ),
+            'proposal' => $this->proposal($finding),
             'dismissal' => $dismissal === null ? null : [
                 'reason' => $dismissal->reason,
                 'until' => $dismissal->until?->toIso8601String(),
                 'by' => $dismissal->staff?->name,
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function proposal(ReconciliationFinding $finding): ?array
+    {
+        $proposal = $finding->proposals->first();
+
+        if (! $proposal instanceof RemediationProposal) {
+            return null;
+        }
+
+        return [
+            'id' => $proposal->id,
+            'action' => $proposal->action->value,
+            'actionLabel' => (string) __($proposal->action->labelKey()),
+            // Two fields, always.
+            'state' => $proposal->state->value,
+            'stateLabel' => (string) __($proposal->state->labelKey()),
+            'stateTone' => $proposal->state->tone(),
+            'remote' => $proposal->action->isRemote(),
+            'reversible' => $proposal->action->isReversible(),
+            'actionable' => $proposal->action->isActionable(),
+            // Whether an operator chose it, which is what the sweep will not
+            // overwrite.
+            'chosen' => $proposal->proposed_by !== null,
+            'reason' => $proposal->reason,
+            'outcome' => $proposal->outcome,
+            'decidedBy' => $proposal->decider?->name,
+            'decidedAt' => $proposal->decided_at?->toIso8601String(),
+            'appliedAt' => $proposal->applied_at?->toIso8601String(),
         ];
     }
 

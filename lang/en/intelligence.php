@@ -33,6 +33,7 @@ return [
             'expected' => 'We say',
             'found' => 'They say',
             'since' => 'Since',
+            'answer' => 'Answer',
         ],
 
         'nothing_said' => 'The provider did not say',
@@ -50,6 +51,59 @@ return [
         'until_hint' => 'Leave empty to keep it dismissed until somebody undoes it.',
         'dismissed_until' => 'Dismissed until :date',
         'dismissed_indefinitely' => 'Dismissed',
+        'chosen' => 'Recorded. Nothing has been done yet.',
+        'decided' => 'Recorded.',
+        'applied' => 'Done.',
+        'apply_failed' => 'It did not work. The row says what the provider said.',
+        'suggestion' => 'Suggested',
+        'choose' => 'Something else',
+        'approve' => 'Agree',
+        'reject' => 'Turn down',
+        'apply' => 'Do it',
+        'decide_reason' => 'Why (optional)',
+        'chosen_by_operator' => 'Chosen by an operator',
+        'confirm_remote_title' => 'This changes the customer’s account',
+        'confirm_local_title' => 'This changes our record',
+        'type_to_confirm' => 'Type the name of the service to confirm.',
+    ],
+
+    'actions' => [
+        'accept_suspension' => 'Record it as suspended',
+        'accept_activation' => 'Record it as active',
+        'accept_termination' => 'Record it as terminated',
+        'restore_service' => 'Ask the provider to restore it',
+        'suspend_service' => 'Ask the provider to suspend it',
+        'remove_service' => 'Ask the provider to destroy it',
+        'investigate' => 'Somebody should look',
+    ],
+
+    'action_descriptions' => [
+        'accept_suspension' => 'Changes our record only. The account stays exactly as the provider has it.',
+        'accept_activation' => 'Changes our record only. The account stays exactly as the provider has it.',
+        'accept_termination' => 'Changes our record only. Nothing is billed for it after this.',
+        'restore_service' => 'Goes out to the provider and asks for the account to be unsuspended.',
+        'suspend_service' => 'Goes out to the provider and asks for the account to be suspended. The customer loses their site.',
+        'remove_service' => 'Goes out to the provider and destroys the account and its data. There is no undo, and nothing here can put it back.',
+        'investigate' => 'Records that somebody has read this and that no automatic answer fits.',
+    ],
+
+    'proposal_states' => [
+        'proposed' => 'Suggested',
+        'approved' => 'Agreed, not yet done',
+        'applied' => 'Done',
+        'failed' => 'Did not work',
+        'rejected' => 'Turned down',
+        // Not a conclusion about the account: the difference moved.
+        'stale' => 'Out of date',
+    ],
+
+    'errors' => [
+        'not_open' => 'A proposal that is “:state” cannot be decided again.',
+        'not_approved' => 'Nothing is carried out until somebody approves it.',
+        // The fingerprint check's refusal, for a comparison rather than a device.
+        'stale' => 'The difference this was written about is no longer what it was. The next sweep will suggest something for what is true now.',
+        'not_available' => 'A finding of this kind cannot be answered with “:action”.',
+        'nothing_to_act_on' => 'There is no service behind this finding to act on.',
     ],
 
     'classes' => [

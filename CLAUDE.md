@@ -3522,8 +3522,8 @@ a ratio, a number of days for a capacity forecast" was written when there were
 two numeric subjects; it is a sentence about any of them now.
 
 **Phase H has begun** (`docs/architecture/phase-h-plan.md`). The reconciliation
-engine is in; remediation proposals, orphan detection, revenue leakage, cost,
-customer health and noisy neighbour are not. The automation builder and the AI
+engine and remediation proposals are in; orphan detection, revenue leakage,
+cost, customer health and noisy neighbour are not. The automation builder and the AI
 assistant are deliberately outside the phase.
 
 **It needed no new contract.** `ProvisioningModule::sync()` and `SyncResult`
@@ -3584,3 +3584,61 @@ indication which. Same fix as the remote-hands move form, found the same way.
 either fixed or set aside, and both live behind one filter — so the filter says
 "closed" and the row's own line says which kind. A filter whose word covers one
 of the two cases is a filter that lies about the other.
+
+**Remediation is a record somebody approves** (`remediation_proposals`,
+`RemediationAction`, `ProposalState`, `Remediations`). The platform writes a
+suggestion beside every open finding; a person agrees, turns it down, or
+chooses something else; and only then does anything happen. Five decisions
+hold it up:
+
+- **The suggestion is always the action that changes the least.** Where a
+  finding could be answered by correcting the record here or by changing the
+  customer's account there, the platform proposes the first — the provider is
+  treated as right, which is usually what happened. The remote action is
+  offered beside it and never pre-selected, because "the platform suggested
+  it" is a sentence that ends up in a post-mortem.
+- **Termination is offered and never suggested.** `RemoveService` has no
+  opposite and destroys somebody's data on somebody else's machine.
+- **`RemediationAction` has no `Fix` member.** An action named after its
+  outcome rather than its direction is how somebody approves a thing that
+  terminates a hosting account believing they have corrected a spreadsheet.
+  Every member says which way it points, and `isRemote()` is the line the
+  confirmation's wording and its level are drawn on.
+- **A proposal is stale when the finding moves underneath it**, and `Stale` is
+  a state rather than a failure. This is `ApplyNetworkChange`'s fingerprint
+  check for a comparison: a proposal written at four o'clock about an account
+  the panel has since restored would, applied, terminate a live account. The
+  second time this product has needed the idea, which makes it a pattern.
+- **The sweep never overwrites a proposal an operator chose.**
+  `proposed_by` is what says so, and a sweep that put its own suggestion back
+  every hour would be one nobody could work with.
+
+**`RunServiceOperation` returns a failed result rather than throwing**, so a
+caller that only catches exceptions records every refused suspension as
+applied. `Remediations` checks the outcome. `AlreadyDone` stays a success, for
+the reason ADR 0026 gives — and it is exactly right here, because the whole
+finding is that two sides disagree and an adapter saying the account is
+already in that state is agreement.
+
+**A reason the confirmation collects and the endpoint discards is a sentence
+nobody reads** — found again, on the apply dialog. `AppConfirm` emits the
+reason at its two higher levels; the endpoint takes it, the row keeps it and
+the audit record carries it.
+
+**Strict mode caught a lazy load that a one-row queue would have hidden.** The
+proposal's `decider` was read per row, and the screen rendered perfectly until
+there were two findings on it. `Builder::hydrate()` is the heuristic, and this
+is the third time it has been the difference between a green test and a 500 on
+a real screen: eager-load a relation the presenter touches, even when the test
+fixture has one of everything.
+
+**A row of controls revealed on hover reflows the whole table.** Four actions
+appeared when the mouse crossed a row, every other column narrowed, and a
+service name re-wrapped under the cursor. The cell reserves its width now, and
+the rarest action — saying a difference is deliberate — moved into the menu
+where it costs none.
+
+**A select repeating the value the cell beside it already names is two places
+for one fact**, and on every row it is also a label ("Something else") printed
+four times. `AppMenu` in the row actions is what this product uses for a
+choice that is not the ordinary one.

@@ -31,6 +31,7 @@ return [
             'expected' => 'Biz diyoruz',
             'found' => 'Onlar diyor',
             'since' => 'Ne zamandır',
+            'answer' => 'Yanıt',
         ],
 
         'nothing_said' => 'Sağlayıcı bir şey söylemedi',
@@ -46,6 +47,57 @@ return [
         'until_hint' => 'Biri geri alana kadar kapalı kalması için boş bırakın.',
         'dismissed_until' => ':date tarihine kadar kapalı',
         'dismissed_indefinitely' => 'Kapatıldı',
+        'chosen' => 'Kaydedildi. Henüz bir şey yapılmadı.',
+        'decided' => 'Kaydedildi.',
+        'applied' => 'Yapıldı.',
+        'apply_failed' => 'Olmadı. Sağlayıcının ne dediği satırda yazıyor.',
+        'suggestion' => 'Önerilen',
+        'choose' => 'Başka bir şey',
+        'approve' => 'Onayla',
+        'reject' => 'Reddet',
+        'apply' => 'Yap',
+        'decide_reason' => 'Neden (isteğe bağlı)',
+        'chosen_by_operator' => 'Bir operatör seçti',
+        'confirm_remote_title' => 'Bu, müşterinin hesabını değiştirir',
+        'confirm_local_title' => 'Bu, bizim kaydımızı değiştirir',
+        'type_to_confirm' => 'Onaylamak için hizmetin adını yazın.',
+    ],
+
+    'actions' => [
+        'accept_suspension' => 'Askıya alınmış diye kaydet',
+        'accept_activation' => 'Aktif diye kaydet',
+        'accept_termination' => 'Sonlandırılmış diye kaydet',
+        'restore_service' => 'Sağlayıcıdan geri açmasını iste',
+        'suspend_service' => 'Sağlayıcıdan askıya almasını iste',
+        'remove_service' => 'Sağlayıcıdan yok etmesini iste',
+        'investigate' => 'Birinin bakması gerek',
+    ],
+
+    'action_descriptions' => [
+        'accept_suspension' => 'Yalnızca bizim kaydımızı değiştirir. Hesap sağlayıcıda olduğu gibi kalır.',
+        'accept_activation' => 'Yalnızca bizim kaydımızı değiştirir. Hesap sağlayıcıda olduğu gibi kalır.',
+        'accept_termination' => 'Yalnızca bizim kaydımızı değiştirir. Bundan sonra bunun için fatura kesilmez.',
+        'restore_service' => 'Sağlayıcıya gider ve hesabın askıdan indirilmesini ister.',
+        'suspend_service' => 'Sağlayıcıya gider ve hesabın askıya alınmasını ister. Müşteri sitesini kaybeder.',
+        'remove_service' => 'Sağlayıcıya gider ve hesabı ile verilerini yok eder. Geri alınmaz ve buradaki hiçbir şey onu geri getiremez.',
+        'investigate' => 'Birinin bunu okuduğunu ve otomatik bir yanıtın uymadığını kaydeder.',
+    ],
+
+    'proposal_states' => [
+        'proposed' => 'Öneriliyor',
+        'approved' => 'Onaylandı, henüz yapılmadı',
+        'applied' => 'Yapıldı',
+        'failed' => 'Olmadı',
+        'rejected' => 'Reddedildi',
+        'stale' => 'Güncelliğini yitirdi',
+    ],
+
+    'errors' => [
+        'not_open' => '“:state” durumundaki bir öneri yeniden karara bağlanamaz.',
+        'not_approved' => 'Biri onaylamadan hiçbir şey yapılmaz.',
+        'stale' => 'Bunun yazıldığı fark artık eskisi gibi değil. Bir sonraki tarama şu an doğru olan için bir şey önerecek.',
+        'not_available' => 'Bu türdeki bir bulgu “:action” ile yanıtlanamaz.',
+        'nothing_to_act_on' => 'Bu bulgunun arkasında üzerinde işlem yapılacak bir hizmet yok.',
     ],
 
     'classes' => [

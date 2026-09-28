@@ -17,11 +17,13 @@
  * operator saying a difference is deliberate, and undoing that.
  */
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
+import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppInput from '../../../Components/AppInput.vue'
 import AppPagination from '../../../Components/AppPagination.vue'
+import AppMenu from '../../../Components/AppMenu.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
 import AppTableRow from '../../../Components/AppTableRow.vue'
@@ -37,6 +39,32 @@ interface PaginationLink {
   url: string | null
   label: string
   active: boolean
+}
+
+interface ActionOption {
+  value: string
+  label: string
+  description: string
+  remote: boolean
+  reversible: boolean
+}
+
+interface Proposal {
+  id: string
+  action: string
+  actionLabel: string
+  state: string
+  stateLabel: string
+  stateTone: string
+  remote: boolean
+  reversible: boolean
+  actionable: boolean
+  chosen: boolean
+  reason: string | null
+  outcome: string | null
+  decidedBy: string | null
+  decidedAt: string | null
+  appliedAt: string | null
 }
 
 interface Dismissal {
@@ -61,6 +89,8 @@ interface FindingRow {
   firstSeenAt: string
   lastSeenAt: string
   clearedAt: string | null
+  available: string[]
+  proposal: Proposal | null
   dismissal: Dismissal | null
 }
 
@@ -73,6 +103,7 @@ const props = defineProps<{
     total: number
   }
   filters: { all: boolean }
+  actions: ActionOption[]
   compared: boolean
   can: { remediate: boolean }
 }>()
@@ -85,12 +116,73 @@ const COLUMNS: TableColumn[] = [
   { key: 'expected', label: t('intelligence.reconciliation.columns.expected') },
   { key: 'found', label: t('intelligence.reconciliation.columns.found') },
   { key: 'since', label: t('intelligence.reconciliation.columns.since') },
+  { key: 'answer', label: t('intelligence.reconciliation.columns.answer') },
   { key: 'actions', label: '' },
 ]
+
+const action = (value: string): ActionOption | undefined =>
+  props.actions.find((option) => option.value === value)
+
+/**
+ * The dialog before anything is carried out.
+ *
+ * Its level is the enum's, not the page's: a remote action changes the
+ * customer's account and an irreversible one asks for the service's own name
+ * to be typed. A page that decided this for itself would be a second copy of
+ * `RemediationAction::isRemote()`.
+ */
+const applying = ref<FindingRow | null>(null)
+
+const applyLevel = computed(() => {
+  const proposal = applying.value?.proposal
+
+  if (proposal === undefined || proposal === null) return 'consequential' as const
+  if (!proposal.reversible) return 'destructive' as const
+
+  return proposal.remote ? 'high-risk' : ('consequential' as const)
+})
 
 const dismissing = ref<FindingRow | null>(null)
 
 const form = useForm({ reason: '', until: '' })
+
+const applyForm = useForm({ reason: '' })
+
+function choose(finding: FindingRow, value: string): void {
+  router.post(
+    `/admin/intelligence/reconciliation/${finding.id}/choose`,
+    { action: value },
+    { preserveScroll: true },
+  )
+}
+
+function decide(finding: FindingRow, approved: boolean): void {
+  const proposal = finding.proposal
+
+  if (proposal === null) return
+
+  router.post(
+    `/admin/intelligence/proposals/${proposal.id}/decide`,
+    { approved },
+    { preserveScroll: true },
+  )
+}
+
+function apply(reason: string | null): void {
+  const proposal = applying.value?.proposal
+
+  if (proposal === undefined || proposal === null) return
+
+  // The dialog asks for a reason at the two higher levels, and an endpoint
+  // that discarded it would be a sentence nobody reads.
+  applyForm.reason = reason ?? ''
+  applyForm.post(`/admin/intelligence/proposals/${proposal.id}/apply`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      applying.value = null
+    },
+  })
+}
 
 function dismiss(): void {
   const finding = dismissing.value
@@ -246,8 +338,97 @@ function day(value: string): string {
           <td data-col="since" class="text-content-muted text-chrome tabular-nums">
             {{ day(finding.firstSeenAt) }}
           </td>
-          <td data-col="actions" class="text-right whitespace-nowrap">
-            <span v-if="can.remediate" class="row-actions inline-flex gap-1">
+          <td data-col="answer">
+            <template v-if="finding.proposal">
+              <span class="block font-medium">{{ finding.proposal.actionLabel }}</span>
+              <AppStatus
+                class="mt-1"
+                :tone="asTone(finding.proposal.stateTone)"
+                :label="finding.proposal.stateLabel"
+              />
+              <span v-if="finding.proposal.chosen" class="text-content-subtle text-chrome block">
+                {{ t('intelligence.reconciliation.chosen_by_operator') }}
+              </span>
+              <span
+                v-if="finding.proposal.outcome"
+                class="text-content-muted text-chrome mt-1 block max-w-[48ch]"
+              >
+                {{ finding.proposal.outcome }}
+              </span>
+            </template>
+          </td>
+          <!--
+            A reserved width, because these controls appear on hover: without
+            it every other column narrowed as the mouse crossed the row, and
+            a service name re-wrapped under the cursor.
+          -->
+          <td data-col="actions" class="w-64 text-right whitespace-nowrap">
+            <span v-if="can.remediate" class="row-actions inline-flex items-center gap-1">
+              <!--
+                A menu rather than a select on every row: the list is three
+                or four long, one of them destroys somebody's website, and
+                the cell beside it already says which one is chosen.
+              -->
+              <AppMenu
+                v-if="finding.available.length > 1 && !finding.clearedAt"
+                v-slot="{ close }"
+                :label="t('intelligence.reconciliation.choose')"
+                align="end"
+                width="18rem"
+              >
+                <button
+                  v-for="value in finding.available"
+                  :key="value"
+                  type="button"
+                  role="menuitem"
+                  class="hover:bg-surface-hover text-body block w-full rounded-sm px-2 py-1.5 text-left"
+                  :class="action(value)?.reversible === false ? 'text-danger' : ''"
+                  @click="
+                    () => {
+                      // The slot's own `close`. Without it the menu stays
+                      // open over the next row.
+                      close()
+                      choose(finding, value)
+                    }
+                  "
+                >
+                  {{ action(value)?.label ?? value }}
+                </button>
+                <!--
+                  Saying it is deliberate is another way of answering the
+                  finding, and the rarest. In the menu it costs no width.
+                -->
+                <button
+                  v-if="!finding.dismissal"
+                  type="button"
+                  role="menuitem"
+                  class="hover:bg-surface-hover text-body border-line mt-1 block w-full rounded-sm border-t px-2 py-1.5 text-left"
+                  @click="
+                    () => {
+                      close()
+                      dismissing = finding
+                    }
+                  "
+                >
+                  {{ t('intelligence.reconciliation.dismiss') }}
+                </button>
+              </AppMenu>
+              <template v-if="finding.proposal?.state === 'proposed'">
+                <AppButton size="sm" variant="ghost" @click="decide(finding, true)">
+                  {{ t('intelligence.reconciliation.approve') }}
+                </AppButton>
+                <AppButton size="sm" variant="ghost" @click="decide(finding, false)">
+                  {{ t('intelligence.reconciliation.reject') }}
+                </AppButton>
+              </template>
+              <AppButton
+                v-else-if="finding.proposal?.state === 'approved'"
+                size="sm"
+                variant="secondary"
+                @click="applying = finding"
+              >
+                {{ t('intelligence.reconciliation.apply') }}
+              </AppButton>
               <AppButton
                 v-if="finding.dismissal"
                 size="sm"
@@ -256,9 +437,6 @@ function day(value: string): string {
               >
                 {{ t('intelligence.reconciliation.undismiss') }}
               </AppButton>
-              <AppButton v-else size="sm" variant="ghost" @click="dismissing = finding">
-                {{ t('intelligence.reconciliation.dismiss') }}
-              </AppButton>
             </span>
           </td>
         </AppTableRow>
@@ -266,5 +444,21 @@ function day(value: string): string {
 
       <AppPagination :links="findings.links" :total="findings.total" />
     </div>
+
+    <AppConfirm
+      :open="applying !== null"
+      :level="applyLevel"
+      :title="
+        applying?.proposal?.remote
+          ? t('intelligence.reconciliation.confirm_remote_title')
+          : t('intelligence.reconciliation.confirm_local_title')
+      "
+      :description="action(applying?.proposal?.action ?? '')?.description"
+      :confirm-label="applying?.proposal?.actionLabel"
+      :phrase="applying?.subject"
+      :busy="applyForm.processing"
+      @confirm="apply"
+      @close="applying = null"
+    />
   </AdminLayout>
 </template>

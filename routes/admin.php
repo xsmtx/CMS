@@ -568,6 +568,22 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::delete('intelligence/reconciliation/{finding}/dismiss', [ReconciliationController::class, 'undismiss'])
         ->name('intelligence.reconciliation.undismiss');
 
+    Route::post('intelligence/reconciliation/{finding}/choose', [ReconciliationController::class, 'choose'])
+        ->name('intelligence.reconciliation.choose');
+
+    Route::post('intelligence/proposals/{proposal}/decide', [ReconciliationController::class, 'decide'])
+        ->name('intelligence.proposals.decide');
+
+    /*
+     * The permission is **above** `auth.recent`, the rule Phase 17 learned
+     * on the Licence screen: with the check only inside the controller,
+     * somebody who may not touch this is asked to confirm their password and
+     * *then* refused, which is rude and a small oracle.
+     */
+    Route::post('intelligence/proposals/{proposal}/apply', [ReconciliationController::class, 'apply'])
+        ->middleware(['can:intelligence.reconciliation.remediate', 'auth.recent'])
+        ->name('intelligence.proposals.apply');
+
     Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
         ->middleware(['can:infrastructure.power', 'auth.recent'])
         ->name('infrastructure.machines.power');

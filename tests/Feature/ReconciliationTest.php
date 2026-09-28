@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 use App\Application\Access\SyncPermissions;
 use App\Application\Automation\TaskRegistry;
+use App\Application\Intelligence\ProposeRemediation;
 use App\Application\Intelligence\ReconcileServices;
+use App\Application\Intelligence\Remediations;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
 use App\Domain\Automation\AutomationTask;
 use App\Domain\Automation\RunSummary;
+use App\Domain\Intelligence\Exceptions\RemediationRefused;
+use App\Domain\Intelligence\ProposalState;
 use App\Domain\Intelligence\ReconciliationClass;
+use App\Domain\Intelligence\RemediationAction;
 use App\Domain\Organizations\OrganizationType;
 use App\Domain\Provisioning\ConnectionResult;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
@@ -17,9 +22,12 @@ use App\Domain\Provisioning\ModuleCapabilities;
 use App\Domain\Provisioning\ProvisioningResult;
 use App\Domain\Provisioning\ServiceStatus;
 use App\Domain\Provisioning\SyncResult;
+use App\Http\Middleware\RequireRecentAuthentication;
+use App\Infrastructure\Audit\Models\AuditLog;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Intelligence\Models\ReconciliationDismissal;
 use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
+use App\Infrastructure\Intelligence\Models\RemediationProposal;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Provisioning\Models\Server;
 use App\Infrastructure\Provisioning\Models\Service;
@@ -77,6 +85,9 @@ final class PanelBelief
     public static bool $reachable = true;
 
     public static string $message = 'The panel could not be reached.';
+
+    /** Reachable, and it says no. A refusal is not an exception. */
+    public static bool $refuse = false;
 }
 
 function panelSays(?ServiceStatus $status, bool $reachable = true): void
@@ -117,7 +128,9 @@ function registerFakePanel(): void
 
         public function suspend($service, ?string $reason = null): ProvisioningResult
         {
-            return ProvisioningResult::succeeded();
+            return PanelBelief::$refuse
+                ? ProvisioningResult::failed('The panel refused.')
+                : ProvisioningResult::succeeded();
         }
 
         public function unsuspend($service): ProvisioningResult
@@ -493,4 +506,310 @@ it('leaves a provider’s own sentence exactly as it said it', function (): void
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where('findings.data.0.found', PanelBelief::$message));
+});
+
+/*
+ * Remediation (§22, step 2).
+ *
+ * A proposal is a record somebody approves, never an action a sweep takes —
+ * and never an action about a finding that has moved since. The second half
+ * is `ApplyNetworkChange`'s fingerprint check applied to a comparison: a
+ * proposal written an hour ago about an account the panel has since restored
+ * would, applied, terminate a live account because it looked terminated at
+ * four o'clock.
+ */
+
+it('suggests the change that changes the least', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+
+    // The record is treated as the stale half, which is usually what
+    // happened: somebody suspended an account in the panel during an
+    // incident. The remote action is offered and never suggested.
+    expect($proposal->action)->toBe(RemediationAction::AcceptSuspension)
+        ->and($proposal->state)->toBe(ProposalState::Proposed)
+        ->and($proposal->proposed_by)->toBeNull();
+});
+
+it('suggests nothing to do about a provider that did not answer', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(null, reachable: false);
+
+    reconcile();
+
+    // A proposal generated from a provider's outage would be a proposal to
+    // suspend four hundred accounts.
+    expect(RemediationProposal::query()->sole()->action)->toBe(RemediationAction::Investigate);
+});
+
+it('never suggests destroying an account', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Terminated);
+    panelSays(ServiceStatus::Active);
+
+    reconcile();
+
+    $finding = ReconciliationFinding::query()->sole();
+
+    expect(RemediationProposal::query()->sole()->action)->toBe(RemediationAction::Investigate)
+        // Offered, though: an orphan is exactly what somebody eventually
+        // removes.
+        ->and(app(ProposeRemediation::class)->available($finding))
+        ->toContain(RemediationAction::RemoveService);
+});
+
+it('does not overwrite an action an operator chose', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $finding = ReconciliationFinding::query()->sole();
+
+    $this->actingAs($this->admin, 'staff')
+        ->post("/admin/intelligence/reconciliation/{$finding->id}/choose", [
+            'action' => RemediationAction::RestoreService->value,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    reconcile();
+
+    // A sweep that overwrote a human's choice every hour would be a sweep
+    // nobody could work with.
+    expect(RemediationProposal::query()->sole()->action)->toBe(RemediationAction::RestoreService);
+});
+
+it('refuses an action that does not answer this kind of finding', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(null, reachable: false);
+    reconcile();
+
+    $finding = ReconciliationFinding::query()->sole();
+
+    $this->actingAs($this->admin, 'staff')
+        ->post("/admin/intelligence/reconciliation/{$finding->id}/choose", [
+            'action' => RemediationAction::RemoveService->value,
+        ])
+        ->assertSessionHasErrors('action');
+});
+
+it('carries out nothing until somebody approves it', function (): void {
+    registerFakePanel();
+    $service = aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+
+    expect(fn () => app(Remediations::class)->apply($proposal, $this->admin))
+        ->toThrow(RemediationRefused::class);
+
+    expect($service->fresh()?->status)->toBe(ServiceStatus::Active);
+});
+
+it('brings the record into line once somebody agrees', function (): void {
+    registerFakePanel();
+    $service = aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+
+    $this->actingAs($this->admin, 'staff')
+        ->post("/admin/intelligence/proposals/{$proposal->id}/decide", ['approved' => true])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    // Applying is behind the password challenge, so a request without one
+    // redirects to it — and `assertSessionHasNoErrors` would pass against
+    // that redirect while nothing had happened.
+    $this->actingAs($this->admin, 'staff')
+        ->withSession([RequireRecentAuthentication::SESSION_KEY => now()->timestamp])
+        ->post("/admin/intelligence/proposals/{$proposal->id}/apply")
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($service->fresh()?->status)->toBe(ServiceStatus::Suspended)
+        ->and(RemediationProposal::query()->sole()->state)->toBe(ProposalState::Applied);
+});
+
+/**
+ * The fingerprint check, for a comparison rather than a device. Applying a
+ * proposal about a finding that has moved would put yesterday's reading onto
+ * today's account.
+ */
+it('refuses a proposal the finding has moved underneath', function (): void {
+    registerFakePanel();
+    $service = aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Terminated);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, true, $this->admin);
+
+    // The panel put it back before anybody pressed the button.
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    expect(fn () => app(Remediations::class)->apply($proposal->fresh(), $this->admin))
+        ->toThrow(RemediationRefused::class);
+
+    expect(RemediationProposal::query()->find($proposal->id)?->state)->toBe(ProposalState::Stale)
+        // And the account is untouched, which is the whole point.
+        ->and($service->fresh()?->status)->toBe(ServiceStatus::Active);
+});
+
+it('records a refusal from the provider as a failure rather than as done', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Suspended);
+    panelSays(ServiceStatus::Active);
+    reconcile();
+
+    $finding = ReconciliationFinding::query()->sole();
+
+    app(Remediations::class)->choose($finding, RemediationAction::SuspendService, $this->admin);
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, true, $this->admin);
+
+    PanelBelief::$refuse = true;
+
+    $applied = app(Remediations::class)->apply($proposal->fresh(), $this->admin);
+
+    // `RunServiceOperation` never lets an adapter's exception escape as a
+    // 500 — it returns a failed result — so a caller that only caught
+    // exceptions would record every refused suspension as applied.
+    expect($applied->state)->toBe(ProposalState::Failed)
+        ->and($applied->outcome)->not->toBeNull();
+
+    PanelBelief::$refuse = false;
+});
+
+it('records that somebody looked, and moves nothing', function (): void {
+    registerFakePanel();
+    $service = aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(null, reachable: false);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, true, $this->admin);
+    $applied = app(Remediations::class)->apply($proposal->fresh(), $this->admin);
+
+    expect($applied->state)->toBe(ProposalState::Applied)
+        ->and($service->fresh()?->status)->toBe(ServiceStatus::Active);
+});
+
+it('refuses a second decision on a settled proposal', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, false, $this->admin);
+
+    expect(fn () => app(Remediations::class)->decide($proposal->fresh(), true, $this->admin))
+        ->toThrow(RemediationRefused::class);
+});
+
+it('refuses every decision to support', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    $agent = StaffUser::factory()->create();
+    $agent->assignRole(SystemRole::Support);
+
+    $this->actingAs($agent->fresh(), 'staff')
+        ->post("/admin/intelligence/proposals/{$proposal->id}/decide", ['approved' => true])
+        ->assertForbidden();
+
+    $this->actingAs($agent->fresh(), 'staff')
+        ->post("/admin/intelligence/proposals/{$proposal->id}/apply")
+        ->assertForbidden();
+});
+
+it('sends every action its own shape rather than letting the page guess', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $this->actingAs($this->admin, 'staff')
+        ->get('/admin/intelligence/reconciliation')
+        ->assertOk()
+        ->assertInertia(function ($page): void {
+            $sent = collect($page->toArray()['props']['actions'])->keyBy('value');
+
+            expect($sent)->toHaveCount(count(RemediationAction::cases()));
+
+            foreach (RemediationAction::cases() as $action) {
+                expect($sent[$action->value]['remote'])->toBe($action->isRemote())
+                    ->and($sent[$action->value]['reversible'])->toBe($action->isReversible());
+            }
+        });
+});
+
+/**
+ * The password challenge is on the route, and this is what proves it.
+ *
+ * The first version of the test above passed while nothing happened: a
+ * request with no recent confirmation redirects to the challenge, and
+ * `assertSessionHasNoErrors` is happy with that redirect. A test that means
+ * "this write succeeded" asserts the write.
+ */
+it('asks for a password again before carrying anything out', function (): void {
+    registerFakePanel();
+    $service = aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, true, $this->admin);
+
+    $this->actingAs($this->admin, 'staff')
+        ->post("/admin/intelligence/proposals/{$proposal->id}/apply")
+        ->assertRedirect();
+
+    expect($service->fresh()?->status)->toBe(ServiceStatus::Active)
+        ->and(RemediationProposal::query()->sole()->state)->toBe(ProposalState::Approved);
+});
+
+/**
+ * A reason a screen collects and an endpoint discards is a sentence nobody
+ * reads. The confirmation asks for one at the two higher levels, so the row
+ * and the audit record both keep it.
+ */
+it('keeps the sentence somebody typed into the confirmation', function (): void {
+    registerFakePanel();
+    aReconciledService($this->provider, ServiceStatus::Active);
+    panelSays(ServiceStatus::Suspended);
+    reconcile();
+
+    $proposal = RemediationProposal::query()->sole();
+    app(Remediations::class)->decide($proposal, true, $this->admin);
+
+    $this->actingAs($this->admin, 'staff')
+        ->withSession([RequireRecentAuthentication::SESSION_KEY => now()->timestamp])
+        ->post("/admin/intelligence/proposals/{$proposal->id}/apply", [
+            'reason' => 'They are three months overdue.',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(RemediationProposal::query()->sole()->reason)->toBe('They are three months overdue.');
+
+    $audit = AuditLog::query()->where('action', 'intelligence.remediation.applied')->sole();
+
+    expect($audit->reason)->toBe('They are three months overdue.');
 });

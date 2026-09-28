@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
@@ -92,6 +93,16 @@ final class ReconciliationFinding extends Model implements AuditLabel
     public function auditLabel(): string
     {
         return $this->subject_label;
+    }
+
+    /**
+     * What has been suggested or decided about it.
+     *
+     * @return HasMany<RemediationProposal, $this>
+     */
+    public function proposals(): HasMany
+    {
+        return $this->hasMany(RemediationProposal::class, 'reconciliation_finding_id');
     }
 
     /**

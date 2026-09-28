@@ -6,11 +6,13 @@ namespace App\Application\Automation\Runs;
 
 use App\Application\Intelligence\ReconcileServices;
 use App\Application\Intelligence\RecordFindings;
+use App\Application\Intelligence\Remediations;
 use App\Domain\Automation\Contracts\AutomationRun;
 use App\Domain\Automation\ItemOutcome;
 use App\Domain\Automation\RunItem;
 use App\Domain\Automation\RunSummary;
 use App\Domain\Organizations\OrganizationType;
+use App\Infrastructure\Intelligence\Models\ReconciliationFinding;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Support\Logging\SecretRedactor;
 use App\Support\Organizations\OrganizationContext;
@@ -41,6 +43,7 @@ final readonly class Reconcile implements AutomationRun
         private OrganizationContext $organizations,
         private ReconcileServices $services,
         private RecordFindings $findings,
+        private Remediations $remediations,
         private SecretRedactor $redactor,
     ) {}
 
@@ -68,6 +71,15 @@ final readonly class Reconcile implements AutomationRun
                 ReconcileServices::Resource,
                 $differences,
             );
+
+            /*
+             * A proposal per open finding, and never one an operator has
+             * already decided or chosen for themselves. Writing it here
+             * rather than on the screen means the queue arrives with an
+             * answer beside each row — which is the difference between a
+             * list of problems and a list of decisions.
+             */
+            $this->proposeFor($organizationId);
         } catch (Throwable $exception) {
             return $summary->failing(new RunItem(
                 ItemOutcome::Failed,
@@ -98,6 +110,30 @@ final readonly class Reconcile implements AutomationRun
                 $written['dismissed'],
             ),
         ));
+    }
+
+    /**
+     * Put the platform's own suggestion beside every open finding.
+     *
+     * One proposal failing never stops the sweep, which is the rule every
+     * task here lives under — and a suggestion is the least important thing
+     * in this run to get right.
+     */
+    private function proposeFor(string $organizationId): void
+    {
+        foreach (
+            ReconciliationFinding::query()
+                ->withoutGlobalScope('organization')
+                ->where('organization_id', $organizationId)
+                ->open()
+                ->cursor() as $finding
+        ) {
+            try {
+                $this->remediations->propose($finding);
+            } catch (Throwable) {
+                continue;
+            }
+        }
     }
 
     /**
