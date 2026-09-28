@@ -3174,3 +3174,68 @@ password screen and reads as a routing bug.
 `loadbalancing.reason_hint` was written for a hint `AppConfirm` already draws
 itself; it was found by looking at the dialog, and deleted. Before adding
 wording beside a primitive, check what the primitive already says.
+
+**Virtual machines are in, with the most consequential button in the product.**
+A power action does not stop a customer's service; it stops the machine several
+customers are on. Level 4 — the reason *plus* the machine's own name typed out,
+checked on the server as well as in the dialog — `infrastructure.power` above
+`auth.recent` on the route, and every attempt on the audit row including the
+ones that failed.
+
+**`ChangeMachinePower` reads the state from the hypervisor at the moment of the
+call, not from the page.** A page an operator has had open for ten minutes is a
+page somebody else may have acted on, and a `power_off` sent to a machine that
+was started thirty seconds ago is not harmless. Same re-read
+`ApplyNetworkChange` does of a device's fingerprint, for a smaller diff and the
+same reason.
+
+**Stopping something already stopped is refused, not treated as
+`already_done`** — the opposite of provisioning (ADR 0026) and deliberate. A
+provisioning retry that finds the account already created has found what it
+wanted; an operator pressing Shut down on a machine that is already off is
+looking at a page that does not match the world, and saying so is the useful
+answer.
+
+**`PowerAction` has no `Reset`.** A reset is a power-off and a power-on with no
+pause between them, and a single button that did both would hide the moment at
+which somebody could still change their mind. `Shutdown` and `PowerOff` are kept
+apart because one asks the operating system and one cuts the power — on the one
+action where the choice *is* the decision, an operator must be able to make it.
+Proxmox agrees: they are different endpoints, not one with a flag.
+
+**A paused Proxmox machine reports `running`, with `qmpstatus: paused`.**
+Reading only `status` shows it as serving traffic — and it is exactly the
+machine holding all its memory and answering nothing, which is the most common
+way a cluster runs out of RAM with half its guests idle.
+
+**A VMID is unique in the cluster and every call that acts on a machine needs
+the node in the path**, so a machine's key is `node/type/vmid`. A bare vmid
+would need a lookup before every action; a bare name would move.
+
+**A declared `default` on a module config field meant nothing.**
+`SaveModuleConfig` read `$input[$key] ?? null` and cast it, so a boolean nobody
+mentioned became **false** rather than its declared default — and
+`ModuleController::presentConfig()` sent `null` for any field with nothing
+stored, so a freshly installed module showed an unchecked box beside
+`default: true`. Every `default: true` in every manifest was decorative, and
+the one that mattered was `verify_tls`: **a module configured without naming it
+had certificate verification silently turned off.** The distinction is
+**absent** rather than falsy — an unchecked box posts `false` and must stay
+false — and both halves are pinned by a test in `ModuleScreenTest`. Found
+because a container list came back empty.
+
+**Never interpolate a button's label into a question.** ":name Shut down?" is
+not a sentence in English and is worse in Turkish, where the word order is
+different: a label is a button word and a title is a sentence. Each power
+action has its own title *and* its own body, because the four are four
+different promises.
+
+**`AppMenu`'s slot exposes `close`, and a row that opens a dialog has to call
+it.** Without it the menu stays open behind the dialog's scrim, which reads as
+two things having happened.
+
+**Two `pest` runs against one test database is 96 failures that mean nothing.**
+`RefreshDatabase` truncates between tests, so a second run started while the
+first is still going rolls the first one's rows out from under it. The failures
+have no common cause and no stack trace worth reading. Start a run only when no
+other is going — the same rule `db:wipe --env=testing` already carries.

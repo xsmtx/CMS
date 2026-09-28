@@ -712,6 +712,7 @@ return [
         'reputation' => 'İtibar',
         'backups' => 'Yedekler',
         'load_balancers' => 'Yük dengeleyiciler',
+        'machines' => 'Makineler',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

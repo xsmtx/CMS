@@ -124,6 +124,14 @@ return [
             'label' => 'See the certificate fleet',
             'description' => 'Read what is deployed, when it expires and whose it is.',
         ],
+        'infrastructure.machines.view' => [
+            'label' => 'See virtual machines',
+            'description' => 'Read every host and the machines on it, and what each one is doing.',
+        ],
+        'infrastructure.power' => [
+            'label' => 'Change a machine’s power',
+            'description' => 'Start, shut down, power off or restart a machine. Asks for the password again and for the machine’s own name to be typed out.',
+        ],
         'infrastructure.loadbalancers.view' => [
             'label' => 'See load balancers',
             'description' => 'Read what each balancer is listening on and which machines are behind it.',

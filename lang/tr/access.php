@@ -123,6 +123,14 @@ return [
             'label' => 'Sertifika filosunu gör',
             'description' => 'Ne sunulduğunu, ne zaman dolduğunu ve kime ait olduğunu okur.',
         ],
+        'infrastructure.machines.view' => [
+            'label' => 'Sanal makineleri gör',
+            'description' => 'Her ana makineyi, üzerindeki makineleri ve her birinin ne yaptığını okur.',
+        ],
+        'infrastructure.power' => [
+            'label' => 'Makine gücünü değiştir',
+            'description' => 'Bir makineyi başlatır, kapatır, gücünü keser veya yeniden başlatır. Parolayı ve makinenin adının yazılmasını ister.',
+        ],
         'infrastructure.loadbalancers.view' => [
             'label' => 'Yük dengeleyicileri gör',
             'description' => 'Her dengeleyicinin neyi dinlediğini ve arkasında hangi makinelerin olduğunu okur.',

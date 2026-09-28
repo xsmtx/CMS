@@ -14,6 +14,8 @@ return [
     'title' => 'Altyapı',
 
     'kinds' => [
+        'hypervisor_host' => 'Ana makine',
+        'virtual_machine' => 'Sanal makine',
         'lb_listener' => 'Dinleyici',
         'lb_backend' => 'Arka uç',
         'storage_pool' => 'Depolama havuzu',
@@ -183,6 +185,53 @@ return [
         'db.deadlocks' => 'Kilitlenmeler',
         'cache.evictions' => 'Önbellekten atılanlar',
         'battery.runtime' => 'Batarya süresi',
+    ],
+
+    'virtualisation' => [
+        'title' => 'Makineler',
+        'intro' => 'Her ana makine ve üzerindeki makineler. Bir ana makine yeniden başlatılırsa nelerin duracağını — kimse öğrenmeden önce — bu ekran yanıtlar.',
+        'empty' => 'Bildirim yapan hipervizor yok',
+        'empty_detail' => 'Ya hiç hipervizor bağdaştırıcısı tanımlanmadı ya da tanımlı olanların henüz çalıştırdığı bir şey yok.',
+        'running' => 'çalışıyor',
+        'no_machines' => 'Bu ana makinede çalışan bir şey yok.',
+        'unplaced' => 'Ana makinesi bilinmeyen makineler',
+        'unplaced_detail' => 'Hipervizor bunları bildirdi ama hangi ana makinede olduklarını söylemedi. Tek başına duran bir sunucu böyle yanıtlar; düğüm listesi okunamayan bir küme de.',
+        'power_menu' => ':name için güç işlemleri',
+        'done' => 'Hipervizor şimdi :state bildiriyor.',
+        'confirm_mismatch' => 'Bu, bu makinenin adı değil.',
+
+        'confirm' => [
+            'start' => ':name makinesi başlatılsın mı?',
+            'shutdown' => ':name makinesi kapatılsın mı?',
+            'power_off' => ':name makinesinin gücü kesilsin mi?',
+            'reboot' => ':name makinesi yeniden başlatılsın mı?',
+
+            'start_body' => 'Bu, makineyi başlatır. Hiçbir şey kaybolmaz ve başka hiçbir şey etkilenmez.',
+            'shutdown_body' => 'Bu, işletim sisteminden durmasını ister. Birkaç dakika sürebilir ve bu makinede çalışan her şey hizmet vermeyi bırakır. Tek bir müşteri değil, üzerindeki her şey durur.',
+            'power_off_body' => 'Bu, gücü keser. Makinenin diske yazmadığı her şey kaybolur ve üzerinde çalışan her şey anında durur. Bunu yalnızca işletim sistemi yanıt vermeyi bıraktığında kullanın.',
+            'reboot_body' => 'Bu, işletim sisteminden yeniden başlamasını ister. Makine geri gelene kadar üzerindeki her şey hizmet vermeyi bırakır; bu genellikle bir iki dakikadır, bazen hiç.',
+        ],
+
+        'states' => [
+            'running' => 'Çalışıyor',
+            'paused' => 'Duraklatılmış',
+            'stopped' => 'Durduruldu',
+            'unknown' => 'Bildirilmedi',
+        ],
+
+        'power' => [
+            'start' => 'Başlat',
+            'shutdown' => 'Kapat',
+            'power_off' => 'Gücü kes',
+            'reboot' => 'Yeniden başlat',
+        ],
+
+        'columns' => [
+            'machine' => 'Makine',
+            'kind' => 'Tür',
+            'vcpus' => 'vCPU',
+            'state' => 'Durum',
+        ],
     ],
 
     'loadbalancing' => [

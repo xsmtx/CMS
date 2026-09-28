@@ -210,7 +210,11 @@ final class ModuleController extends Controller
 
         return array_values(array_map(
             static function (ConfigField $field) use ($values): array {
-                $value = $values[$field->key] ?? null;
+                // The declared default where nothing is stored yet, so a
+                // freshly installed module's form shows what its author said
+                // it should — a blank box beside `default: true` is a form
+                // that lies, and saving it makes the lie true.
+                $value = $values[$field->key] ?? $field->default;
 
                 return [
                     'key' => $field->key,

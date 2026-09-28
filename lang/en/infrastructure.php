@@ -20,6 +20,8 @@ return [
     'title' => 'Infrastructure',
 
     'kinds' => [
+        'hypervisor_host' => 'Host',
+        'virtual_machine' => 'Virtual machine',
         'lb_listener' => 'Listener',
         'lb_backend' => 'Backend',
         'storage_pool' => 'Storage pool',
@@ -202,6 +204,61 @@ return [
         'db.deadlocks' => 'Deadlocks',
         'cache.evictions' => 'Cache evictions',
         'battery.runtime' => 'Battery runtime',
+    ],
+
+    'virtualisation' => [
+        'title' => 'Machines',
+        'intro' => 'Every host and the machines on it. What goes down if a host is rebooted is the question this answers — before anybody finds out.',
+        'empty' => 'No hypervisor has reported',
+        'empty_detail' => 'Either no hypervisor adapter has been configured, or the ones that are have nothing running yet.',
+        'running' => 'running',
+        'no_machines' => 'Nothing is running on this host.',
+        'unplaced' => 'Machines with no host',
+        'unplaced_detail' => 'The hypervisor named these and did not say which host they are on. A standalone box answers this way, and so does one this platform could not read the node list from.',
+        'power_menu' => 'Power actions for :name',
+        'done' => 'The hypervisor now reports :state.',
+        'confirm_mismatch' => 'That is not the name of this machine.',
+
+        'confirm' => [
+            // A title per action rather than one with the button's label
+            // interpolated into it: ":name Shut down?" is not a sentence, and
+            // in Turkish the word order is different again. A label is a
+            // button word and a title is a question.
+            'start' => 'Start :name?',
+            'shutdown' => 'Shut :name down?',
+            'power_off' => 'Cut the power to :name?',
+            'reboot' => 'Restart :name?',
+
+            // And a sentence per action, because the four are four different
+            // promises.
+            'start_body' => 'This starts the machine. Nothing is lost and nothing else is affected.',
+            'shutdown_body' => 'This asks the operating system to stop. It can take several minutes, and whatever is running on this machine will stop serving. Everything on it goes down, not just one customer.',
+            'power_off_body' => 'This cuts the power. Anything the machine has not written to disk is lost, and whatever is running on it stops at once. Use this only when the operating system has stopped listening.',
+            'reboot_body' => 'This asks the operating system to restart. Everything on this machine stops serving until it comes back, which is usually a minute or two and occasionally never.',
+        ],
+
+        'states' => [
+            'running' => 'Running',
+            // The most common way a cluster runs out of memory with half its
+            // machines idle.
+            'paused' => 'Paused',
+            'stopped' => 'Stopped',
+            'unknown' => 'Not reported',
+        ],
+
+        'power' => [
+            'start' => 'Start',
+            'shutdown' => 'Shut down',
+            'power_off' => 'Cut the power',
+            'reboot' => 'Restart',
+        ],
+
+        'columns' => [
+            'machine' => 'Machine',
+            'kind' => 'Kind',
+            'vcpus' => 'vCPU',
+            'state' => 'State',
+        ],
     ],
 
     'loadbalancing' => [

@@ -173,6 +173,14 @@ enum AutomationTask: string
     case LoadBalancers = 'load-balancers';
 
     /**
+     * Asking every hypervisor what it is running (§10).
+     *
+     * Hourly. A machine's *power state* changes faster, which is why the
+     * power screen reads one machine back rather than trusting this.
+     */
+    case Machines = 'machines';
+
+    /**
      * Telling the vendor this installation is still here.
      *
      * A task rather than a middleware or a boot hook, because it is a remote
@@ -246,7 +254,8 @@ enum AutomationTask: string
             // checking every five minutes, and a deletion sweep that ran
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
-            self::Certificates, self::Backups, self::Storage, self::LoadBalancers => 60,
+            self::Certificates, self::Backups, self::Storage,
+            self::LoadBalancers, self::Machines => 60,
             self::ZoneHealth, self::Reputation => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

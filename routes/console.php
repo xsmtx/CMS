@@ -264,6 +264,15 @@ Schedule::command('platform:run zone-health')
 /*
  * Asking every load balancer what it is serving.
  */
+/*
+ * Asking every hypervisor what it is running.
+ */
+Schedule::command('platform:run machines')
+    ->hourlyAt(50)
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 Schedule::command('platform:run load-balancers')
     ->hourlyAt(40)
     ->withoutOverlapping()

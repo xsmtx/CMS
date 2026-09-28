@@ -55,6 +55,10 @@ return [
             'label' => 'Backup coverage',
             'description' => 'Asks every backup source what it is currently protecting, and retires what has left the job.',
         ],
+        'machines' => [
+            'label' => 'Machine inventory',
+            'description' => 'Asks every hypervisor which hosts it has and which machines are on each of them.',
+        ],
         'load_balancers' => [
             'label' => 'Load balancer inventory',
             'description' => 'Asks every load balancer what it is listening on and which machines are behind each listener.',

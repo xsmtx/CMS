@@ -137,6 +137,9 @@ final class SystemRoleSeeder extends Seeder
                 // taking a backend out is a change to what the world
                 // reaches.
                 'infrastructure.loadbalancers.view',
+                // And which machine a customer is on, which is the first
+                // question of every “the site is down”. Not the power.
+                'infrastructure.machines.view',
                 // And a way into the panel to fix what they find. Without this
                 // the alternative is somebody emailing them a root password.
                 'infrastructure.connect',

@@ -68,6 +68,7 @@ use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
 use App\Http\Controllers\Admin\TodoController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\VirtualMachineController;
 use App\Http\Controllers\Admin\ZoneHealthController;
 use Illuminate\Support\Facades\Route;
 
@@ -487,6 +488,18 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::get('infrastructure/load-balancers', [LoadBalancerController::class, 'index'])
         ->name('infrastructure.loadbalancers');
+
+    /*
+     * Virtual machines (§10). The power endpoint is the most
+     * consequential in this product: permission **above** `auth.recent`,
+     * and the screen asks for the machine's own name to be typed out.
+     */
+    Route::get('infrastructure/machines', [VirtualMachineController::class, 'index'])
+        ->name('infrastructure.machines');
+
+    Route::post('infrastructure/machines/{node}/power', [VirtualMachineController::class, 'power'])
+        ->middleware(['can:infrastructure.power', 'auth.recent'])
+        ->name('infrastructure.machines.power');
 
     Route::post('infrastructure/load-balancers/{node}/drain', [LoadBalancerController::class, 'drain'])
         ->middleware(['can:infrastructure.drain', 'auth.recent'])

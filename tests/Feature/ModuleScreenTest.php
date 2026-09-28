@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use App\Application\Access\SyncPermissions;
+use App\Application\Modules\InstallModule;
+use App\Application\Modules\SaveModuleConfig;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
+use App\Domain\Modules\ConfigField;
+use App\Domain\Modules\ConfigFieldType;
 use App\Domain\Modules\ModuleState;
 use App\Http\Middleware\RequireRecentAuthentication;
 use App\Infrastructure\Identity\Models\StaffUser;
@@ -172,4 +176,42 @@ it('asks for a password again before uninstalling, and refuses a stranger first'
     $this->actingAs($this->administrator, 'staff')
         ->delete('/admin/apps/modules/status-board')
         ->assertForbidden();
+});
+
+/**
+ * A declared default means what it says, and `verify_tls` is why.
+ *
+ * `SaveModuleConfig` used `$input[$field->key] ?? null` and cast that, so a
+ * boolean nobody mentioned became **false** rather than its declared default
+ * — which made every `default: true` in every manifest decorative, and
+ * silently turned certificate verification off for a module configured
+ * without naming it. The screen had the other half: it sent `null` for any
+ * field with nothing stored, so a freshly installed module showed an
+ * unchecked box beside `default: true`, and saving that form made the lie
+ * true.
+ *
+ * An unchecked box still posts `false` and must stay false, which is why the
+ * distinction is **absent** rather than falsy.
+ */
+it('gives an absent boolean its declared default, and keeps an explicit false', function (): void {
+    $record = app(InstallModule::class)->handle('file-probe', $this->owner);
+    $schema = [
+        new ConfigField('path', 'Path', ConfigFieldType::Text, required: true),
+        new ConfigField('verify_tls', 'Verify the certificate', ConfigFieldType::Boolean, default: true),
+    ];
+
+    // Nobody mentioned it.
+    app(SaveModuleConfig::class)->handle($record, $schema, ['path' => '/tmp/probe'], $this->owner);
+
+    expect($record->fresh()?->config['verify_tls'])->toBeTrue();
+
+    // Somebody unchecked it.
+    app(SaveModuleConfig::class)->handle(
+        $record->fresh(),
+        $schema,
+        ['path' => '/tmp/probe', 'verify_tls' => false],
+        $this->owner,
+    );
+
+    expect($record->fresh()?->config['verify_tls'])->toBeFalse();
 });

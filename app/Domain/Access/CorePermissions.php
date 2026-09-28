@@ -195,6 +195,20 @@ final class CorePermissions
              * else awake at two in the morning.
              */
             new PermissionDefinition('infrastructure.loadbalancers.view', 'infrastructure', RoleScope::Staff),
+
+            /*
+             * Virtual machines (§10). The view is Support's; the power is
+             * not, and it is the most consequential permission in this
+             * product — it does not stop a customer's service, it stops the
+             * machine several customers are on.
+             */
+            new PermissionDefinition('infrastructure.machines.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition(
+                'infrastructure.power',
+                'infrastructure',
+                RoleScope::Staff,
+                highRisk: true,
+            ),
             new PermissionDefinition(
                 'infrastructure.drain',
                 'infrastructure',

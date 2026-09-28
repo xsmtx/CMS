@@ -156,6 +156,7 @@ final class FrontEndTranslations
         'infrastructure.telemetry',
         'infrastructure.backups',
         'infrastructure.loadbalancing',
+        'infrastructure.virtualisation',
         'infrastructure.backup',
 
         // Addressing is operator vocabulary end to end - no customer sees a

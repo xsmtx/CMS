@@ -1,0 +1,55 @@
+{
+    "slug": "hypervisor-proxmox",
+    "name": "Proxmox VE (fleet)",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads a Proxmox cluster's nodes and the machines on them, so the graph can answer what goes down if one host is rebooted — and can change a machine's power state behind the guarded action.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.9",
+    "platform": "*",
+    "namespace": "InfraCMS\\HypervisorProxmox",
+    "entrypoint": "ProxmoxFleetModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "Proxmox address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the API answers, for example https://pve1.dc2.example.com:8006. Any node of the cluster will do; they all answer for the whole of it."
+        },
+        {
+            "key": "token_id",
+            "label": "API token id",
+            "type": "text",
+            "required": true,
+            "hint": "The whole identifier, for example infracms@pve!fleet. The secret half is written separately, on the Adapters screen, and is never stored here."
+        },
+        {
+            "key": "include_containers",
+            "label": "Include containers",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Read LXC containers as well as virtual machines. Turn this off only if containers are somebody else's to look after."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a cluster using its own self-signed certificate on a management network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "20",
+            "hint": "A busy node answers slowly, and an inventory read must not become an operator staring at a spinner."
+        }
+    ]
+}

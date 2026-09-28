@@ -14,6 +14,7 @@ use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\DiscoverLoadBalancers;
 use App\Application\Automation\Runs\DiscoverStorage;
 use App\Application\Automation\Runs\DiscoverTopology;
+use App\Application\Automation\Runs\DiscoverVirtualMachines;
 use App\Application\Automation\Runs\EvaluateAlerts;
 use App\Application\Automation\Runs\ExpireAccessGrants;
 use App\Application\Automation\Runs\ForgetAbuseEvidence;
@@ -68,6 +69,7 @@ final readonly class TaskRegistry
             AutomationTask::Backups => CollectProtections::class,
             AutomationTask::Storage => DiscoverStorage::class,
             AutomationTask::LoadBalancers => DiscoverLoadBalancers::class,
+            AutomationTask::Machines => DiscoverVirtualMachines::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,
             AutomationTask::Licence => SendLicenceHeartbeat::class,
         });

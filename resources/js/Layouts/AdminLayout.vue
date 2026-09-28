@@ -536,6 +536,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/infrastructure/load-balancers',
         permission: 'infrastructure.loadbalancers.view',
       },
+      {
+        label: nav('machines', 'Machines'),
+        href: '/admin/infrastructure/machines',
+        permission: 'infrastructure.machines.view',
+      },
     ],
   },
   {

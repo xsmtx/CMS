@@ -44,7 +44,20 @@ final readonly class SaveModuleConfig
         $changed = [];
 
         foreach ($schema as $field) {
-            $value = $input[$field->key] ?? null;
+            /*
+             * A key that is **absent** takes the field's declared default; a
+             * key that is present takes what was sent, even when that is
+             * false.
+             *
+             * The distinction is the whole of it. An unchecked box posts
+             * `false` and must stay false, so `?? null` would be right for
+             * that — but it was also what a caller who never mentioned the
+             * field got, and `(bool) null` is false. Every `default: true` in
+             * every manifest was therefore decorative, and the one that
+             * mattered was `verify_tls`: a module configured without naming
+             * it had certificate verification silently turned off.
+             */
+            $value = array_key_exists($field->key, $input) ? $input[$field->key] : $field->default;
 
             if ($field->isSecret() && ($value === null || $value === '')) {
                 // Untouched. Keep whatever is there, including nothing.
