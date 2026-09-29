@@ -65,6 +65,72 @@ return [
         'type_to_confirm' => 'Onaylamak için hizmetin adını yazın.',
     ],
 
+    'costs' => [
+        'title' => 'Maliyetler',
+        'intro' => 'Bu işletmenin başkasına ödedikleri. Buradaki hiçbir şey keşfedilmez — hiçbir adaptör bir barındırma faturasını ya da kirayı bildirmez — ve hiçbiri muhasebe defterine dokunmaz.',
+        'empty' => 'Kayıtlı maliyet yok',
+        'empty_detail' => 'Bir sunucunun, bir lisansın ya da ofisin ne tuttuğunu girin; kârlılık raporunun çalışacağı bir şey olsun.',
+        'add' => 'Maliyet kaydet',
+        'saved' => 'Kaydedildi.',
+        'removed' => 'Kaldırıldı.',
+        'remove' => 'Kaldır',
+        'remove_title' => ':label kaldırılsın mı?',
+        'remove_body' => 'Rakamlar bir sonraki rapordan itibaren bunu içermez. Kesilmiş faturalarda hiçbir şey değişmez — maliyet hiçbir zaman defterde değildi.',
+        'edit' => 'Düzenle',
+
+        'columns' => [
+            'label' => 'Maliyet',
+            'scope' => 'Neye karşılık',
+            'amount' => 'Tutar',
+            'shared' => 'Paylaştırma',
+            'period' => 'Sıklık',
+        ],
+
+        'fields' => [
+            'label' => 'Bu nedir',
+            'label_hint' => 'Faturada nasıl söylerdiniz. “Hetzner AX102 — web-7”.',
+            'vendor' => 'Kime ödeniyor',
+            'scope' => 'Neye karşılık',
+            'server' => 'Hangi sunucu',
+            'product' => 'Hangi ürün',
+            'amount' => 'Tutar',
+            'currency' => 'Para birimi',
+            'period' => 'Ne sıklıkta',
+            'strategy' => 'Nasıl paylaştırılıyor',
+            'metric' => 'Şuna göre ağırlıklı',
+            'metric_hint' => 'Bu makine aslında neye göre satılıyor. Ölçümü olmayan bir hizmet bedava değil, ortalama sayılır.',
+            'starts_on' => 'Başlangıç',
+            'ends_on' => 'Bitiş',
+            'dates_hint' => 'Haziranda alınan bir sunucu mayısta bir şey tutmuyordu. “Her zaman” için boş bırakın.',
+            'note' => 'Not',
+            'save' => 'Kaydet',
+            'none' => 'Yok',
+        ],
+
+        'scopes' => [
+            'server' => 'Bir sunucu',
+            'product' => 'Bir ürün',
+            'licence' => 'Bir lisans',
+            'installation' => 'Tüm kurulum',
+        ],
+
+        'periods' => [
+            'monthly' => 'Ay',
+            'yearly' => 'Yıl',
+            'one_off' => 'Bir kez',
+        ],
+
+        'strategies' => [
+            'even' => 'Eşit olarak',
+            'weighted' => 'Bir ölçüme göre',
+        ],
+
+        'strategy_descriptions' => [
+            'even' => 'Üzerindeki her hizmet aynı payı alır. Kimin ne kullandığı hakkında hiçbir iddiası yoktur; makul varsayılan olmasının nedeni budur.',
+            'weighted' => 'Grafiğin zaten sahip olduğu bir ölçümle orantılı paylaştırılır. Hiçbir ölçümü olmayan bir hizmet bedava değil, ortalama sayılır.',
+        ],
+    ],
+
     'leakage' => [
         'title' => 'Gelir kaçağı',
         'intro' => 'Sessizce gelmeyi bırakan para. Buradaki her satır, bu platformun zaten sahip olduğu kayıtlar üzerinde bir hesaptan ibaret — hiçbir sağlayıcıya sorulmaz ve hiçbir şey varsayılmaz.',

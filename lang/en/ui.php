@@ -723,6 +723,7 @@ return [
         'remote_hands' => 'Remote hands',
         'reconciliation' => 'Reconciliation',
         'leakage' => 'Revenue leakage',
+        'costs' => 'Costs',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

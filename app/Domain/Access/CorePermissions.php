@@ -257,6 +257,14 @@ final class CorePermissions
             new PermissionDefinition('intelligence.commercial.view', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Stating what something costs (§21). Separate from reading
+             * the figures: the person who knows the Hetzner invoice is
+             * not always the person allowed to see every customer's
+             * margin.
+             */
+            new PermissionDefinition('intelligence.costs.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on

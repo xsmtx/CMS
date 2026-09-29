@@ -3522,8 +3522,8 @@ a ratio, a number of days for a capacity forecast" was written when there were
 two numeric subjects; it is a sentence about any of them now.
 
 **Phase H has begun** (`docs/architecture/phase-h-plan.md`). The reconciliation
-engine, remediation proposals, orphan detection and revenue leakage are in;
-cost, customer health and noisy neighbour are not. The automation builder and the AI
+engine, remediation proposals, orphan detection, revenue leakage and cost
+entries are in; profitability, customer health and noisy neighbour are not. The automation builder and the AI
 assistant are deliberately outside the phase.
 
 **It needed no new contract.** `ProvisioningModule::sync()` and `SyncResult`
@@ -3730,3 +3730,66 @@ instead, which is the fact it was missing. And that count is worded with an
 **The figure is what would have been invoiced, not what is owed**, and the
 sentence under the strip says so. Nobody has been invoiced, so nothing is owed
 — and this table must never be mistaken for a ledger.
+
+**Cost entries are rows an operator types** (`cost_entries`, §21). No adapter
+reports a Hetzner invoice or the rent, so this is the same shape tax rules and
+dunning steps have, and core ships none of them either.
+
+**This is not the ledger and must never be mistaken for it.** The ledger is
+append-only because a financial history that can be rewritten is not a history
+(ADR 0024); a cost entry is a *statement* and is edited when the price changes.
+A negative amount is refused — a cost that is income is a credit note, and
+letting one in here would be a second way to move money.
+
+**Core ships no allocation.** A server costs €200 and carries forty accounts;
+how that lands on the forty is somebody's commercial judgement. Two strategies
+to begin with and a third when somebody asks: `Even`, which makes no claim and
+is wrong in a way everybody understands, and `Weighted`, which makes a claim
+the graph can support.
+
+- **Whichever produced a figure is written on the figure**, and where an entry
+  asked for weighted and nothing was measured the share says `even` — a row
+  claiming a weighting that did not happen is the lie the whole class is
+  arranged against.
+- **An unmeasured service is assumed to be average, never free.** Zero would
+  make the unmonitored box carry no cost at all and look like the most
+  profitable thing on the estate. `ScorePlacement` settled this once; the same
+  reasoning applies to money.
+- **A stale reading is not a service using nothing**, so it is left out and
+  falls to the average rather than to zero.
+
+**A cost that reached no service is kept, not dropped.** A server bought last
+week with nothing on it costs exactly as much as a full one, and a report that
+quietly dropped it would understate the month — the one direction a cost report
+must never be wrong in. `unallocated()` is where those land.
+
+**A one-off is charged in its own month and no other.** A migration paid for
+once in March is not a twelfth of anything: spreading it makes eleven months
+look worse than they were and March look better. Same rule `MonthlyRecurring`
+follows when it skips a one-time line rather than counting it as zero.
+
+**`starts_on` and `ends_on` bound a cost in time.** A server bought in June did
+not cost anything in May. Without them the first month a provider ran this
+report would charge every historical month with today's estate.
+
+**A presenter that touches a relation eager-loads it, and a one-row fixture
+will not tell you.** The costs screen read `subject` per row and 500'd on the
+first page with four entries — the second time this exact shape reached a
+browser in one phase, after the reconciliation queue's `decider`. Strict mode
+reports a lazy load only above one row (`Builder::hydrate()`), so the rule has
+to be applied by reading the presenter, not by waiting for a test.
+
+**And the metric printed its own key again.** `MetricNames` was written in
+Phase F for exactly this and the new screen still sent `MetricKind->value` to
+be rendered raw. A wording that exists and is not read is the same bug as a
+setting that is stored and read by nothing — grep for the reader when you send
+an enum value to a screen.
+
+**A pest run that is killed mid-way still prints its summary line.** Two
+background runs were stopped by the harness for host memory pressure and each
+reported hundreds of failures with a clean `Tests: 404 failed, 1931 passed`
+footer — which reads exactly like a real breakage and is not one. The whole
+suite, run afterwards in three foreground chunks, passed 2373 with nothing
+failing. Before chasing a mass failure, check whether the run was killed: a
+genuine break shows the same failure shape in a targeted run, and this one
+never did.

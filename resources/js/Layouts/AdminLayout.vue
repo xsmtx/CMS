@@ -566,6 +566,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/intelligence/leakage',
         permission: 'intelligence.commercial.view',
       },
+      {
+        label: nav('costs', 'Costs'),
+        href: '/admin/intelligence/costs',
+        permission: 'intelligence.costs.manage',
+      },
     ],
   },
   {

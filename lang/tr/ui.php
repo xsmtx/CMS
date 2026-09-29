@@ -718,6 +718,7 @@ return [
         'remote_hands' => 'Saha desteği',
         'reconciliation' => 'Mutabakat',
         'leakage' => 'Gelir kaçağı',
+        'costs' => 'Maliyetler',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

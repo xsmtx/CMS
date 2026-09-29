@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContentController;
+use App\Http\Controllers\Admin\CostController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerUserController;
@@ -585,6 +586,22 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * Revenue leakage (§21). Read-only but for a dismissal: nothing here
      * raises an invoice, because some of these are deliberate.
      */
+    /*
+     * What the provider pays somebody else (§21). Stated by an operator —
+     * no adapter reports a Hetzner invoice — and never on the ledger.
+     */
+    Route::get('intelligence/costs', [CostController::class, 'index'])
+        ->name('intelligence.costs');
+
+    Route::post('intelligence/costs', [CostController::class, 'store'])
+        ->name('intelligence.costs.store');
+
+    Route::put('intelligence/costs/{entry}', [CostController::class, 'update'])
+        ->name('intelligence.costs.update');
+
+    Route::delete('intelligence/costs/{entry}', [CostController::class, 'destroy'])
+        ->name('intelligence.costs.destroy');
+
     Route::get('intelligence/leakage', [LeakageController::class, 'index'])
         ->name('intelligence.leakage');
 

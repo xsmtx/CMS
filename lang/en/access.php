@@ -132,6 +132,10 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'intelligence.costs.manage' => [
+            'label' => 'State what things cost',
+            'description' => 'Record what the provider pays somebody else — a server, a licence, the office — and choose how each one is shared out. Nothing here touches the ledger.',
+        ],
         'intelligence.commercial.view' => [
             'label' => 'See what is not being billed',
             'description' => 'Read the revenue leakage list: active services nothing has invoiced, domains with no renewal, addons left off an invoice, and payments attached to nothing.',

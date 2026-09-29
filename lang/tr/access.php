@@ -131,6 +131,10 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'intelligence.costs.manage' => [
+            'label' => 'Maliyetleri belirt',
+            'description' => 'Sağlayıcının başkasına ödediğini — bir sunucu, bir lisans, ofis — kaydeder ve her birinin nasıl pay edileceğini seçer. Buradaki hiçbir şey muhasebe defterine dokunmaz.',
+        ],
         'intelligence.commercial.view' => [
             'label' => 'Faturalanmayanları gör',
             'description' => 'Gelir kaçağı listesini okur: hiç faturalanmamış aktif hizmetler, yenilenmemiş alan adları, faturada unutulmuş ekler ve hiçbir şeye bağlanmamış ödemeler.',

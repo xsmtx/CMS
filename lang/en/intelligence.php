@@ -71,6 +71,72 @@ return [
         'type_to_confirm' => 'Type the name of the service to confirm.',
     ],
 
+    'costs' => [
+        'title' => 'Costs',
+        'intro' => 'What this business pays somebody else. Nothing here is discovered — no adapter reports a hosting invoice or the rent — and nothing here touches the ledger.',
+        'empty' => 'No costs recorded',
+        'empty_detail' => 'Record what a server, a licence or the office costs, and the profitability report has something to work from.',
+        'add' => 'Record a cost',
+        'saved' => 'Recorded.',
+        'removed' => 'Removed.',
+        'remove' => 'Remove',
+        'remove_title' => 'Remove :label?',
+        'remove_body' => 'The figures stop including it from the next report. Nothing that has already been invoiced changes — a cost has never been on the ledger.',
+        'edit' => 'Edit',
+
+        'columns' => [
+            'label' => 'Cost',
+            'scope' => 'Against',
+            'amount' => 'Amount',
+            'shared' => 'Shared',
+            'period' => 'Every',
+        ],
+
+        'fields' => [
+            'label' => 'What it is',
+            'label_hint' => 'How you would say it on an invoice. “Hetzner AX102 — web-7”.',
+            'vendor' => 'Who it is paid to',
+            'scope' => 'What it is against',
+            'server' => 'Which server',
+            'product' => 'Which product',
+            'amount' => 'Amount',
+            'currency' => 'Currency',
+            'period' => 'How often',
+            'strategy' => 'How it is shared',
+            'metric' => 'Weighted by',
+            'metric_hint' => 'What this machine is really sold by. A service with no reading is assumed to be average, never free.',
+            'starts_on' => 'From',
+            'ends_on' => 'Until',
+            'dates_hint' => 'A server bought in June did not cost anything in May. Leave empty for “always”.',
+            'note' => 'Note',
+            'save' => 'Record it',
+            'none' => 'None',
+        ],
+
+        'scopes' => [
+            'server' => 'A server',
+            'product' => 'A product',
+            'licence' => 'A licence',
+            'installation' => 'The whole installation',
+        ],
+
+        'periods' => [
+            'monthly' => 'Month',
+            'yearly' => 'Year',
+            'one_off' => 'Once',
+        ],
+
+        'strategies' => [
+            'even' => 'Evenly',
+            'weighted' => 'By a measurement',
+        ],
+
+        'strategy_descriptions' => [
+            'even' => 'Every service on it takes the same share. It makes no claim about who is using what, which is why it is the sensible default.',
+            'weighted' => 'Shared in proportion to a reading the graph already holds. A service nothing has measured is assumed to be average rather than free.',
+        ],
+    ],
+
     'leakage' => [
         'title' => 'Revenue leakage',
         'intro' => 'Money that quietly stopped arriving. Every line here is arithmetic over rows this platform already owns — no provider is asked and nothing is assumed.',
