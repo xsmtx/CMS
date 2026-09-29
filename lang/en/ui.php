@@ -725,6 +725,7 @@ return [
         'leakage' => 'Revenue leakage',
         'costs' => 'Costs',
         'profitability' => 'Profitability',
+        'customer_health' => 'Customer health',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

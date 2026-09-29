@@ -576,6 +576,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/intelligence/profitability',
         permission: 'intelligence.commercial.view',
       },
+      {
+        label: nav('customer_health', 'Customer health'),
+        href: '/admin/intelligence/customer-health',
+        permission: 'crm.customers.view',
+      },
     ],
   },
   {

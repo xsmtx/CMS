@@ -71,6 +71,58 @@ return [
         'type_to_confirm' => 'Type the name of the service to confirm.',
     ],
 
+    'health' => [
+        'title' => 'Customer health',
+        'intro' => 'Which customers somebody should look at, and why. There is no score — a number between 0 and 100 is a number somebody acts on and nobody can reproduce. Each signal carries its own arithmetic.',
+        'empty' => 'Nothing to look at',
+        'empty_detail' => 'Every customer examined has nothing against them: no overdue invoice, no failed service, no breached ticket, no open abuse case.',
+        'examined' => 'Examined :count customer.|Examined :count customers.',
+        'worst' => 'Worst',
+        'no_score' => 'Ordered by the worst thing that is true of each customer, never by a total. Two of these signals cannot be added together, and adding them is what a score would do.',
+
+        'columns' => [
+            'customer' => 'Customer',
+            'signals' => 'What is true',
+        ],
+
+        'signals' => [
+            'overdue' => 'Owes money',
+            'service_failed' => 'A service never came up',
+            'operation_failed' => 'An operation needs somebody',
+            'ticket_breached' => 'A ticket is past its SLA',
+            'card_expiring' => 'Their card is about to expire',
+            'abuse_open' => 'An open abuse case',
+            'not_billed' => 'Something is not being invoiced',
+        ],
+
+        'descriptions' => [
+            'overdue' => 'Issued, past its due date and not paid. Measured from the due date and by what is outstanding.',
+            'service_failed' => 'A service that could not be set up and is sitting in failed — the customer is paying for something that never arrived.',
+            'operation_failed' => 'An operation that ended badly, or one waiting for a person. Nobody is told about these unless somebody looks.',
+            'ticket_breached' => 'Past the SLA the department states. They are waiting and we said we would not make them.',
+            'card_expiring' => 'The card the next renewal would be charged to. A renewal that fails on an expired card is a suspension nobody meant.',
+            'abuse_open' => 'A complaint somebody still has to answer. It ends in a decision either way.',
+            'not_billed' => 'Revenue leakage against this customer — a service, a domain or an addon nothing has invoiced.',
+        ],
+
+        /*
+         * Choice strings, worded by `trans_choice` on the **server**. The
+         * browser has no `trans_choice`, so a count worded there reads as
+         * “1 invoices” — and building the sentence here also keeps the
+         * per-signal mapping out of the page, where it would be a second
+         * copy of something the enum owns.
+         */
+        'counts' => [
+            'invoices' => ':count invoice, oldest :days days overdue|:count invoices, oldest :days days overdue',
+            'services' => ':count service|:count services',
+            'operations' => ':count operation|:count operations',
+            'tickets' => ':count ticket|:count tickets',
+            'card' => ':count day left|:count days left',
+            'cases' => ':count case|:count cases',
+            'findings' => ':count finding|:count findings',
+        ],
+    ],
+
     'costs' => [
         'title' => 'Costs',
         'intro' => 'What this business pays somebody else. Nothing here is discovered — no adapter reports a hosting invoice or the rent — and nothing here touches the ledger.',

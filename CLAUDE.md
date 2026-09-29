@@ -3849,3 +3849,34 @@ its docblock says so.
 the most important thing on that row, and it was a `title` attribute. It is a
 sentence under the table now, shown only when something actually is not
 comparable.
+
+**Customer health is signals, and there is deliberately no score.** §21 asks
+for it to be explainable, and the only honest way to be explainable is not to
+compute the thing that would need explaining: a number between 0 and 100 is a
+number somebody acts on and nobody can reproduce, and the weights that built
+it are a commercial opinion this platform has no standing to hold. Each signal
+carries its own arithmetic, the rows are ordered by the **worst thing that is
+true** of each customer — an ordering the product already has words for — and
+the screen says so in a sentence rather than leaving a reader to wonder where
+the total went. `CustomerHealthTest` is what keeps it that way: it walks the
+row's own keys and refuses one named anything like `score`, `rating` or
+`total`.
+
+**A signal with nothing to say is absent.** A wall of zeroes is a wall
+somebody stops reading, and the one figure that is not zero disappears into
+it — so a customer with nothing against them is not listed at all, and the
+meta line says how many were examined so the absence means something.
+
+**Seven questions asked once for the page, not seven per row.**
+`CustomerHealth::across()` is the implementation and `for()` delegates to it.
+A `count()` inside a loop is not a lazy load, so strict mode says nothing and
+nothing else would have either — the test is the only thing that can.
+
+**Every sentence with a number in it is built on the server.**
+`useTranslations()` has no `trans_choice`, so a count worded in the browser
+reads as "1 invoices" — found on the rendered screen, for the third time in
+this product. Wording it in the controller also deletes the `switch` on the
+signal kind that the page was carrying, which was a second copy of a mapping
+the enum already owns. Turkish needs no plural on a counted noun and
+`trans_choice` returns a string with no `|` in it unchanged, so one call is
+right for both languages.

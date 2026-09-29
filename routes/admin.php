@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\CostController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerHealthController;
 use App\Http\Controllers\Admin\CustomerUserController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DcimController;
@@ -609,6 +610,14 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::get('intelligence/profitability', [ProfitabilityController::class, 'index'])
         ->name('intelligence.profitability');
+
+    /*
+     * Which customers somebody should look at (§21). Signals, never a
+     * score, and it reads `crm.customers.view` rather than a permission of
+     * its own — it shows what somebody may already see.
+     */
+    Route::get('intelligence/customer-health', [CustomerHealthController::class, 'index'])
+        ->name('intelligence.customer_health');
 
     Route::get('intelligence/leakage', [LeakageController::class, 'index'])
         ->name('intelligence.leakage');

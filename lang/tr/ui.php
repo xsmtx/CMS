@@ -720,6 +720,7 @@ return [
         'leakage' => 'Gelir kaçağı',
         'costs' => 'Maliyetler',
         'profitability' => 'Kârlılık',
+        'customer_health' => 'Müşteri durumu',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

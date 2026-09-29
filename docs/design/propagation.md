@@ -212,6 +212,7 @@ it, so the four count columns are empty by construction.
 | [x] | `Admin/Intelligence/Leakage.vue` | list | H | yes |
 | [x] | `Admin/Intelligence/Costs.vue` | list | H | yes |
 | [x] | `Admin/Intelligence/Profitability.vue` | overview | H | yes |
+| [x] | `Admin/Intelligence/CustomerHealth.vue` | list | H | yes |
 
 The public status page (`themes/storefront/core/views/status.blade.php`) is
 not here and should not be: the storefront is Blade themes and out of the

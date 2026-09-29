@@ -65,6 +65,54 @@ return [
         'type_to_confirm' => 'Onaylamak için hizmetin adını yazın.',
     ],
 
+    'health' => [
+        'title' => 'Müşteri durumu',
+        'intro' => 'Kime bakılması gerektiği ve nedeni. Puan yok — 0 ile 100 arası bir sayı, birinin ona göre hareket edip kimsenin yeniden üretemediği bir sayıdır. Her işaret kendi hesabını taşır.',
+        'empty' => 'Bakılacak bir şey yok',
+        'empty_detail' => 'İncelenen her müşteride bir sorun yok: vadesi geçmiş fatura, kurulamamış hizmet, süresi aşan kayıt ya da açık kötüye kullanım dosyası yok.',
+        'examined' => ':count müşteri incelendi.',
+        'worst' => 'En kötüsü',
+        'no_score' => 'Her müşteri için doğru olan en kötü şeye göre sıralanır, hiçbir toplama göre değil. Bu işaretlerin ikisi toplanamaz ve bir puan tam da bunu yapardı.',
+
+        'columns' => [
+            'customer' => 'Müşteri',
+            'signals' => 'Ne doğru',
+        ],
+
+        'signals' => [
+            'overdue' => 'Borçlu',
+            'service_failed' => 'Bir hizmet hiç açılmadı',
+            'operation_failed' => 'Bir işlem birini bekliyor',
+            'ticket_breached' => 'Bir kaydın süresi aştı',
+            'card_expiring' => 'Kartının süresi doluyor',
+            'abuse_open' => 'Açık kötüye kullanım dosyası',
+            'not_billed' => 'Faturalanmayan bir şey var',
+        ],
+
+        'descriptions' => [
+            'overdue' => 'Kesilmiş, vadesi geçmiş ve ödenmemiş. Vade tarihinden ve kalan tutar üzerinden ölçülür.',
+            'service_failed' => 'Kurulamamış ve başarısız durumda duran bir hizmet — müşteri hiç gelmemiş bir şey için ödüyor.',
+            'operation_failed' => 'Kötü biten ya da bir kişiyi bekleyen bir işlem. Kimse bakmazsa kimseye söylenmez.',
+            'ticket_breached' => 'Departmanın belirttiği süre aşıldı. Bekliyorlar ve bekletmeyeceğimizi söylemiştik.',
+            'card_expiring' => 'Bir sonraki yenilemenin çekileceği kart. Süresi dolmuş bir kartta başarısız olan yenileme, kimsenin istemediği bir askıya almadır.',
+            'abuse_open' => 'Birinin hâlâ yanıtlaması gereken bir şikâyet. Her durumda bir kararla biter.',
+            'not_billed' => 'Bu müşteriye ait gelir kaçağı — faturalanmamış bir hizmet, alan adı ya da ek.',
+        ],
+
+        // A counted noun takes no plural in Turkish, so one form is right
+        // for every number — `trans_choice` returns a string with no pipe
+        // in it unchanged.
+        'counts' => [
+            'invoices' => ':count fatura, en eskisi :days gün gecikmiş',
+            'services' => ':count hizmet',
+            'operations' => ':count işlem',
+            'tickets' => ':count kayıt',
+            'card' => ':count gün kaldı',
+            'cases' => ':count dosya',
+            'findings' => ':count bulgu',
+        ],
+    ],
+
     'costs' => [
         'title' => 'Maliyetler',
         'intro' => 'Bu işletmenin başkasına ödedikleri. Buradaki hiçbir şey keşfedilmez — hiçbir adaptör bir barındırma faturasını ya da kirayı bildirmez — ve hiçbiri muhasebe defterine dokunmaz.',
