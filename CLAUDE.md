@@ -113,11 +113,11 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A to H
+plan before any of it was built — and its phases are lettered. **Phases A to I
 are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
 `phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`,
-`phase-g-result.md`, `phase-h-result.md`); **I has begun** and J is not
-started.
+`phase-g-result.md`, `phase-h-result.md`, `phase-i-plan.md`); **only J is not
+started**.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -4025,3 +4025,47 @@ invalid.
 scripted edit containing a PHP namespace aborts before writing anything —
 three times in one session. The repo's own rule is the answer: anything with
 a backslash goes through Write or Edit.
+
+**Nine refusal classes print English at whoever reads them, and that is a
+named piece of work rather than a footnote.** The rule is already written
+here — the sentence an operator reads is `key()`, and the message is English
+and belongs in a log — and `RackRefused`, `RemoteHandsRefused`,
+`RemediationRefused`, `IncidentRefused` and `ChangeRefused` follow it. These
+do not: `BackendRefused`, `PowerRefused`, `GrantRefused`, `CreditRefused`,
+`MaintenanceRefused`, `AbuseRefused`, `LicenceRefused`, `PackageRefused`. Two
+of them were fixed the day a second caller was about to repeat the mistake,
+which is the usual way these surface; the remaining eight are about fifty
+constructors and a hundred sentences in two languages, and doing two more of
+nine would be worse than doing none.
+
+It wants the shape the other sweeps had: a guard test that every
+`*Refused` under `app/Domain` exposes `key()`, and that every key it can
+produce is worded in both locales. `SessionRefused` is the one exemption and
+has to be named — its reasons are deliberately never shown to a caller.
+
+**Phase I is complete** (`docs/architecture/phase-i-plan.md`), and it built no
+application: ADR 0044 put mobile in a separate repository, so this phase is
+the four things that repository cannot exist without. The surface is alerts,
+incidents, tickets, device changes, access grants, remote hands and the
+asset-tag lookup — fifteen scopes, each with its permissions declared and its
+wording in both languages.
+
+**The staff API decides a device change and never applies one.** The apply
+carries the password challenge, backs the device up, checks the fingerprint
+is still the one the diff was read against, and rolls back on a failed
+verify — and `ApplyNetworkChangeJob` runs with `tries = 1` because a device
+configuration is not idempotent. Approving is a person saying yes, which is
+what a phone is for at two in the morning.
+
+**The asset-tag lookup is exact, never fuzzy.** A technician is holding the
+label, so a near match is the wrong machine confidently identified — and the
+consequence is somebody pulling a disk out of a customer's server. It is the
+`RecordSamples::byHostname()` rule where it matters most, and a test asserts
+that a prefix of a real key answers nothing.
+
+**Opening an incident is deliberately not on the staff API**, although §26
+asks the app to acknowledge, assign and escalate — all of which this product
+expresses as updates on an incident somebody already opened. Opening is the
+act with a severity, a start time and a public flag to choose, and a form at
+two in the morning on a phone is how an incident gets opened with the wrong
+severity.
