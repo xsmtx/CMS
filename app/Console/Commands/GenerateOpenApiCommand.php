@@ -253,14 +253,26 @@ final class GenerateOpenApiCommand extends Command
         };
     }
 
+    /**
+     * The scope a route demands, in whichever vocabulary it speaks.
+     *
+     * Both middleware are named, and the staff one first: `RequireApiScope`
+     * is not a substring of `RequireStaffApiScope`, but relying on that would
+     * make the order here a fact nobody had written down. The staff surface
+     * was invisible in this document until this method knew about it — every
+     * staff endpoint was published with no security at all, which is the
+     * worst thing a generated contract can say.
+     */
     private function scopeOf(RoutingRoute $route): ?string
     {
-        foreach ($route->gatherMiddleware() as $middleware) {
-            if (! is_string($middleware) || ! str_contains($middleware, 'RequireApiScope:')) {
-                continue;
-            }
+        foreach (['RequireStaffApiScope:', 'RequireApiScope:'] as $marker) {
+            foreach ($route->gatherMiddleware() as $middleware) {
+                if (! is_string($middleware) || ! str_contains($middleware, $marker)) {
+                    continue;
+                }
 
-            return Str::after($middleware, 'RequireApiScope:');
+                return Str::after($middleware, $marker);
+            }
         }
 
         return null;

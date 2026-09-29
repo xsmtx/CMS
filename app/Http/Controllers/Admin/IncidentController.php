@@ -179,7 +179,7 @@ final class IncidentController extends Controller
                 $this->staff($actor),
             );
         } catch (IncidentRefused $refusal) {
-            return back()->withErrors(['postmortem' => $refusal->getMessage()]);
+            return back()->withErrors(['postmortem' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.incidents.postmortem_saved'));
@@ -277,7 +277,7 @@ final class IncidentController extends Controller
                 ? $incidents->resolve($incident, $data['body'], $this->staff($actor), $public)
                 : $incidents->note($incident, $data['body'], $state, $this->staff($actor), $public);
         } catch (IncidentRefused $refusal) {
-            return back()->withErrors(['body' => $refusal->getMessage()]);
+            return back()->withErrors(['body' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.incidents.noted'));

@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 return [
+    /*
+     * What will not be done to an incident, and why — read through
+     * `IncidentRefused::worded()`. The exception's own message is English
+     * and belongs in a log; this is what somebody reads.
+     */
+    'errors' => [
+        'already_resolved' => ':reference is resolved. Open a new incident rather than reopening this one.',
+        'resolve_separately' => 'An incident is resolved through its own action, not by posting an update.',
+        'evidence_settled' => ':reference is resolved and its impact is frozen. The alerts it was computed from cannot change.',
+        'not_resolved_yet' => ':reference has not been resolved. A postmortem is written once it has ended.',
+        'different_organization' => 'That alert belongs to a different organization.',
+    ],
+
     'alerts' => [
         'title' => 'Alerts',
         'intro' => 'What is currently wrong, and what stopped being wrong.',

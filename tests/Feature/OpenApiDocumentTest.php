@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Domain\Api\ApiScope;
+use App\Domain\Api\ScopeVocabulary;
+use App\Domain\Identity\Guard;
 
 /**
  * The specification is generated from the routes, and this is what stops it
@@ -40,6 +41,9 @@ it('documents every route with the scope its middleware demands', function (): v
         // could not would leave an application no way to sign out.
         '/api/v1/auth/token',
         '/api/v1/auth/refresh',
+        // The staff surface's own three, for the same three reasons.
+        '/api/v1/staff/auth/token',
+        '/api/v1/staff/auth/refresh',
     ];
 
     $scoped = 0;
@@ -52,8 +56,18 @@ it('documents every route with the scope its middleware demands', function (): v
 
             $scopes = $operation['security'][0]['bearer'] ?? [];
 
-            expect($scopes)->toHaveCount(1)
-                ->and(ApiScope::tryFrom($scopes[0]))->toBeInstanceOf(ApiScope::class);
+            expect($scopes)->toHaveCount(1);
+
+            /*
+             * Either vocabulary, and the right one for the surface. A staff
+             * scope published against a client route would be a contract
+             * telling an integrator to ask for something that means
+             * something else there — which is why the two are separate enums
+             * and why this asks the right one rather than both.
+             */
+            $guard = str_starts_with($path, '/api/v1/staff/') ? Guard::Staff : Guard::Client;
+
+            expect(ScopeVocabulary::permissionsFor($guard, $scopes[0]))->toBeArray();
 
             $scoped++;
         }

@@ -3,6 +3,16 @@
 declare(strict_types=1);
 
 return [
+    // Bir olaya ne yapılmayacağı ve nedeni — `IncidentRefused::worded()`
+    // üzerinden okunur.
+    'errors' => [
+        'already_resolved' => ':reference kapatıldı. Bunu yeniden açmak yerine yeni bir olay açın.',
+        'resolve_separately' => 'Bir olay, güncelleme gönderilerek değil kendi eylemiyle kapatılır.',
+        'evidence_settled' => ':reference kapatıldı ve etkisi donduruldu. Hesaplandığı uyarılar artık değiştirilemez.',
+        'not_resolved_yet' => ':reference henüz kapatılmadı. Olay sonrası değerlendirme, olay bittikten sonra yazılır.',
+        'different_organization' => 'Bu uyarı başka bir organizasyona ait.',
+    ],
+
     'alerts' => [
         'title' => 'Uyarılar',
         'intro' => 'Şu anda neyin yanlış olduğu ve neyin düzeldiği.',

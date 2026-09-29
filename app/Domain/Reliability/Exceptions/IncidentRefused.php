@@ -13,12 +13,46 @@ use RuntimeException;
  * did not work" makes a resolved incident, a cross-organization alert and a
  * caller taking a shortcut look identical in a log, and they are three
  * different conversations.
+ *
+ * **The sentence an operator reads is `key()`, not the message.** The message
+ * is English and belongs in a log; it was the only thing here for a phase,
+ * and the admin screen put it straight into a form error — so a Turkish
+ * operator resolving an incident twice was answered in English. That is the
+ * lesson `RackRefused` cost, arriving through a door that was already open.
  */
 final class IncidentRefused extends RuntimeException
 {
+    /**
+     * @param  array<string, string>  $replacements
+     */
+    private function __construct(
+        string $message,
+        private readonly string $key,
+        private readonly array $replacements = [],
+    ) {
+        parent::__construct($message);
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function replacements(): array
+    {
+        return $this->replacements;
+    }
+
     public static function alreadyResolved(string $reference): self
     {
-        return new self($reference.' is resolved. Open a new incident rather than reopening this one.');
+        return new self(
+            $reference.' is resolved. Open a new incident rather than reopening this one.',
+            'reliability.errors.already_resolved',
+            ['reference' => $reference],
+        );
     }
 
     /**
@@ -27,7 +61,10 @@ final class IncidentRefused extends RuntimeException
      */
     public static function resolveSeparately(): self
     {
-        return new self('An incident is resolved through its own action, not by posting an update.');
+        return new self(
+            'An incident is resolved through its own action, not by posting an update.',
+            'reliability.errors.resolve_separately',
+        );
     }
 
     /**
@@ -37,7 +74,11 @@ final class IncidentRefused extends RuntimeException
      */
     public static function evidenceIsSettled(string $reference): self
     {
-        return new self($reference.' is resolved and its impact is frozen. The alerts it was computed from cannot change.');
+        return new self(
+            $reference.' is resolved and its impact is frozen. The alerts it was computed from cannot change.',
+            'reliability.errors.evidence_settled',
+            ['reference' => $reference],
+        );
     }
 
     /**
@@ -46,11 +87,26 @@ final class IncidentRefused extends RuntimeException
      */
     public static function notResolvedYet(string $reference): self
     {
-        return new self($reference.' has not been resolved. A postmortem is written once it has ended.');
+        return new self(
+            $reference.' has not been resolved. A postmortem is written once it has ended.',
+            'reliability.errors.not_resolved_yet',
+            ['reference' => $reference],
+        );
     }
 
     public static function differentOrganization(): self
     {
-        return new self('That alert belongs to a different organization.');
+        return new self(
+            'That alert belongs to a different organization.',
+            'reliability.errors.different_organization',
+        );
+    }
+
+    /**
+     * The sentence somebody reads, in their own language.
+     */
+    public function worded(): string
+    {
+        return (string) __($this->key, $this->replacements);
     }
 }

@@ -98,4 +98,22 @@ enum Guard: string
 
         return null;
     }
+
+    /**
+     * The guard an API route belongs to.
+     *
+     * Separate from `fromRouteName()` because the browser areas and the API
+     * do not share a naming convention and must not be made to: the staff
+     * browser area is `admin.*` and its API surface is `api.v1.staff.*`,
+     * and renaming either to satisfy the other would be the tail wagging the
+     * dog. Anything else under `api.v1.` is the client surface — which is
+     * the right default, because the client API is the one that existed
+     * first and every route in it predates this method.
+     */
+    public static function fromApiRouteName(?string $routeName): self
+    {
+        return $routeName !== null && str_starts_with($routeName, 'api.v1.staff.')
+            ? self::Staff
+            : self::Client;
+    }
 }

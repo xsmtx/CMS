@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
-use App\Domain\Api\ApiScope;
 use App\Domain\Api\DevicePlatform;
+use App\Domain\Api\ScopeVocabulary;
+use App\Domain\Identity\Guard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,7 +46,9 @@ final class DeviceTokenRequest extends FormRequest
             'two_factor_code' => ['nullable', 'string', 'max:64'],
 
             'scopes' => ['nullable', 'array'],
-            'scopes.*' => ['string', Rule::in(array_column(ApiScope::cases(), 'value'))],
+            // The guard's own vocabulary: a staff scope on the client
+            // route is not a scope at all.
+            'scopes.*' => ['string', Rule::in(ScopeVocabulary::valuesFor($this->guard()))],
         ];
     }
 
@@ -63,5 +66,10 @@ final class DeviceTokenRequest extends FormRequest
     public function platform(): DevicePlatform
     {
         return DevicePlatform::match($this->input('platform'));
+    }
+
+    public function guard(): Guard
+    {
+        return Guard::fromApiRouteName($this->route()?->getName());
     }
 }

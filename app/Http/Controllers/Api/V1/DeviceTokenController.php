@@ -8,10 +8,10 @@ use App\Application\Api\Devices\DeviceOwners;
 use App\Application\Api\Devices\DeviceSessions;
 use App\Application\Identity\AuthenticateUser;
 use App\Application\Identity\TwoFactorAuthenticator;
-use App\Domain\Api\ApiScope;
 use App\Domain\Api\DevicePlatform;
 use App\Domain\Api\DeviceSession;
 use App\Domain\Api\Exceptions\SessionRefused;
+use App\Domain\Api\ScopeVocabulary;
 use App\Domain\Identity\Guard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DeviceTokenRequest;
@@ -82,7 +82,7 @@ final class DeviceTokenController extends Controller
             owner: $subject,
             name: $request->string('device_name')->toString(),
             platform: DevicePlatform::match($request->input('platform')),
-            scopes: $this->grantable($subject, $request),
+            scopes: $this->grantable($subject, $request, $guard),
             staff: $guard === Guard::Staff,
         );
 
@@ -172,24 +172,29 @@ final class DeviceTokenController extends Controller
      *
      * @return list<string>
      */
-    private function grantable(Model $subject, DeviceTokenRequest $request): array
+    private function grantable(Model $subject, DeviceTokenRequest $request, Guard $guard): array
     {
         /** @var list<string> $requested */
         $requested = $request->validated('scopes') ?? [];
 
-        return array_values(array_filter($requested, function (string $value) use ($subject): bool {
-            $scope = ApiScope::tryFrom($value);
+        return array_values(array_filter($requested, function (string $value) use ($subject, $guard): bool {
+            $permissions = ScopeVocabulary::permissionsFor($guard, $value);
 
-            if (! $scope instanceof ApiScope) {
+            // Null rather than an empty list when the guard has no such
+            // scope at all: an empty list would read as "nothing needed".
+            if ($permissions === null) {
                 return false;
             }
 
-            return array_all($scope->requiredPermissions(), fn (string $permission): bool => $this->owners->may($subject, $permission));
+            return array_all(
+                $permissions,
+                fn (string $permission): bool => $this->owners->may($subject, $permission),
+            );
         }));
     }
 
     private function guard(Request $request): Guard
     {
-        return Guard::fromRouteName($request->route()?->getName()) ?? Guard::Client;
+        return Guard::fromApiRouteName($request->route()?->getName());
     }
 }

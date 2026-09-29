@@ -10,12 +10,17 @@ use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ServiceController;
+use App\Http\Controllers\Api\V1\Staff\AlertController as StaffAlertController;
+use App\Http\Controllers\Api\V1\Staff\IncidentController as StaffIncidentController;
+use App\Http\Controllers\Api\V1\Staff\RemoteHandsController as StaffRemoteHandsController;
 use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\WebhookEndpointController;
 use App\Http\Middleware\AuthenticateApiToken;
+use App\Http\Middleware\AuthenticateStaffApiToken;
 use App\Http\Middleware\EnforceIdempotency;
 use App\Http\Middleware\RecordApiRequest;
 use App\Http\Middleware\RequireApiScope;
+use App\Http\Middleware\RequireStaffApiScope;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -136,6 +141,64 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('webhooks/deliveries/{delivery}/redeliver', [WebhookEndpointController::class, 'redeliver'])
             ->middleware(RequireApiScope::class.':webhooks:write')
             ->name('webhooks.redeliver');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staff surface (ADR 0049)
+    |--------------------------------------------------------------------------
+    |
+    | Deliberately smaller than the admin area, permanently. Every endpoint
+    | calls an application use case that already exists; the ones that would
+    | need a new use case written are the ones that do not belong on a phone.
+    |
+    | **What is absent is the policy.** Firewall apply, power actions,
+    | termination, restore, drain and every bulk endpoint have no route here,
+    | because a client can be rewritten — so leaving a button out of an
+    | application enforces nothing and the refusal has to be the absence of
+    | the endpoint. `StaffApiSurfaceTest` walks these routes and fails if one
+    | appears.
+    |
+    */
+    Route::prefix('staff')->name('staff.')->group(function (): void {
+        // The authentication itself, throttled like the client's.
+        Route::middleware([RecordApiRequest::class, 'throttle:api-device'])->group(function (): void {
+            Route::post('auth/token', [DeviceTokenController::class, 'store'])->name('auth.token');
+            Route::post('auth/refresh', [DeviceTokenController::class, 'refresh'])->name('auth.refresh');
+        });
+
+        Route::middleware([
+            RecordApiRequest::class,
+            AuthenticateStaffApiToken::class,
+            'throttle:api',
+            EnforceIdempotency::class,
+        ])->group(function (): void {
+            Route::delete('auth/token', [DeviceTokenController::class, 'destroy'])->name('auth.revoke');
+
+            Route::get('alerts', [StaffAlertController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':alerts:read')
+                ->name('alerts.index');
+
+            Route::get('incidents', [StaffIncidentController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':incidents:read')
+                ->name('incidents.index');
+            Route::get('incidents/{incident}', [StaffIncidentController::class, 'show'])
+                ->middleware(RequireStaffApiScope::class.':incidents:read')
+                ->name('incidents.show');
+            Route::post('incidents/{incident}/updates', [StaffIncidentController::class, 'update'])
+                ->middleware(RequireStaffApiScope::class.':incidents:write')
+                ->name('incidents.update');
+            Route::post('incidents/{incident}/resolve', [StaffIncidentController::class, 'resolve'])
+                ->middleware(RequireStaffApiScope::class.':incidents:write')
+                ->name('incidents.resolve');
+
+            Route::get('remote-hands', [StaffRemoteHandsController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':remote_hands:read')
+                ->name('remote_hands.index');
+            Route::post('remote-hands/{task}/move', [StaffRemoteHandsController::class, 'move'])
+                ->middleware(RequireStaffApiScope::class.':remote_hands:write')
+                ->name('remote_hands.move');
+        });
     });
 });
 
