@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\GatewayWebhookController;
+use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\DomainController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\InvoiceController;
@@ -40,12 +41,32 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         ->middleware('throttle:60,1')
         ->name('health');
 
+    /*
+     * Where a device session begins and renews (ADR 0049).
+     *
+     * Unauthenticated by necessity: the first takes a password and the
+     * second takes a refresh token, and each *is* the credential. Both are
+     * throttled by address, and the first is throttled a second time by
+     * identity inside `AuthenticateUser`.
+     */
+    Route::middleware([RecordApiRequest::class, 'throttle:api-device'])->group(function (): void {
+        Route::post('auth/token', [DeviceTokenController::class, 'store'])->name('auth.token');
+        Route::post('auth/refresh', [DeviceTokenController::class, 'refresh'])->name('auth.refresh');
+    });
+
     Route::middleware([
         RecordApiRequest::class,
         AuthenticateApiToken::class,
         'throttle:api',
         EnforceIdempotency::class,
     ])->group(function (): void {
+        /*
+         * Signing out: the calling device, everywhere. No scope, because a
+         * token being able to end itself is not a privilege — and a token
+         * that could not would leave an app with no way to sign out.
+         */
+        Route::delete('auth/token', [DeviceTokenController::class, 'destroy'])->name('auth.revoke');
+
         Route::get('profile', ProfileController::class)
             ->middleware(RequireApiScope::class.':profile:read')
             ->name('profile');

@@ -51,6 +51,22 @@ final class ApiServiceProvider extends ServiceProvider
                 ->by('api:token:'.$token->getKey().':'.($writing ? 'w' : 'r'))
                 ->response($this->refusal(...));
         });
+
+        /*
+         * Opening or renewing a device session is limited far harder than
+         * anything else, and by address rather than by token: these are the
+         * two endpoints that mint a session from a string somebody might be
+         * guessing at, and neither has a token to count against yet.
+         *
+         * `AuthenticateUser` already throttles per identity, which is the
+         * other half — one attacker against many accounts, and many attempts
+         * against one, are different shapes and need different counters.
+         */
+        RateLimiter::for('api-device', fn (Request $request): Limit => Limit::perMinute(
+            $this->limit('device_sessions_per_minute', 10),
+        )
+            ->by('api:device:'.$request->ip())
+            ->response($this->refusal(...)));
     }
 
     /**

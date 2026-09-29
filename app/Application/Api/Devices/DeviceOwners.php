@@ -60,6 +60,24 @@ final readonly class DeviceOwners
         };
     }
 
+    /**
+     * Whether this person holds a permission.
+     *
+     * Here for the reason `createToken()` is: `can()` comes from a trait
+     * rather than from anything the account contract declares, so a
+     * parameter typed `Model` cannot see it, and a caller that narrowed by
+     * hand would be the second place that knows how many kinds of owner
+     * there are.
+     */
+    public function may(Model $owner, string $permission): bool
+    {
+        return match (true) {
+            $owner instanceof Contact,
+            $owner instanceof StaffUser => $owner->can($permission),
+            default => throw new RuntimeException('A device belongs to a contact or a staff user.'),
+        };
+    }
+
     public function organizationOf(Model $owner): string
     {
         return match (true) {

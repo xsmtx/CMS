@@ -516,6 +516,8 @@ return [
             'per_minute' => (int) env('API_RATE_LIMIT', 120),
             'writes_per_minute' => (int) env('API_WRITE_RATE_LIMIT', 30),
             'anonymous_per_minute' => (int) env('API_ANONYMOUS_RATE_LIMIT', 20),
+            // Opening or renewing a device session, by address.
+            'device_sessions_per_minute' => (int) env('API_DEVICE_RATE_LIMIT', 10),
         ],
 
         'idempotency' => [
