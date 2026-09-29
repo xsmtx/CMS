@@ -3522,8 +3522,8 @@ a ratio, a number of days for a capacity forecast" was written when there were
 two numeric subjects; it is a sentence about any of them now.
 
 **Phase H has begun** (`docs/architecture/phase-h-plan.md`). The reconciliation
-engine, remediation proposals, orphan detection, revenue leakage and cost
-entries are in; profitability, customer health and noisy neighbour are not. The automation builder and the AI
+engine, remediation proposals, orphan detection, revenue leakage, cost entries
+and profitability are in; customer health and noisy neighbour are not. The automation builder and the AI
 assistant are deliberately outside the phase.
 
 **It needed no new contract.** `ProvisioningModule::sync()` and `SyncResult`
@@ -3793,3 +3793,59 @@ suite, run afterwards in three foreground chunks, passed 2373 with nothing
 failing. Before chasing a mass failure, check whether the run was killed: a
 genuine break shows the same failure shape in a targeted run, and this one
 never did.
+
+**A margin is not always a number, and the profitability report says so.**
+There is no rate anywhere in this product, so a customer earning euros on a
+server costing lira has a revenue, a cost and **no margin** — printing the
+revenue as though the cost were zero would be the most misleading figure this
+product could produce. The rule is narrow and checkable: a margin is stated
+when **every currency that has a cost also has revenue**. A currency with
+revenue and no cost is fine; it means nobody recorded a cost against it.
+
+The same data answers two ways, which is the point: grouped by customer it is
+not comparable, because a customer earning only euros carries a share of a
+lira cost; grouped by server it *is*, because the server earns both. Neither
+answer is a compromise.
+
+**Revenue comes from the services, never from invoice lines** — a line copies
+its description (ADR 0021), so grouping by one merges two products renamed the
+same thing. MRR is integer division by the cycle's own length and a one-time
+price is skipped rather than counted as zero.
+
+**It is a snapshot, not a history, and there is deliberately no month-by-month
+chart.** A cost entry is a statement somebody edits when the price changes,
+not an append-only record, so a trend line would redraw itself every time a
+typo was fixed — and a trend that changes when you correct a figure is a trend
+nobody can use.
+
+**A customer is an organization of its own, so a service belongs to the
+customer's organization and never to the seller's.** Three classes written in
+this phase narrowed through `whereHas('customer', … organization_id = seller)`
+and therefore matched **nothing at all on a real installation** — the leakage
+sweep would have reported no leaks for ever. Every test passed, because the
+fixtures forced the customer into the provider's own organization, which
+`CustomerFactory` goes out of its way *not* to do: its docblock says in as
+many words that "a customer sharing an organization with its reseller would
+not be a separate customer at all". `OrganizationSubtree` is the one place
+that answers "whose customers are these", and it is what these sweeps use now.
+
+The fixtures stopped overriding `organization_id`, and the guard was checked
+against the bug before being trusted: reverting the filter fails the test.
+**A factory that builds a realistic shape is worth more than one that builds a
+convenient one** — an override in a `beforeEach` is the cheapest way to make a
+whole family of tests agree with a bug.
+
+**`toLocaleDateString()` with no locale follows the operating system, not the
+reader.** Invisible on `24.09.2026` and glaring on a month name: an English
+page headed "Eylül 2026". The shared `locale` prop is what a date is worded
+with when the wording has words in it.
+
+**`MetricStrip`'s named slot is for exactly this.** A cell per currency
+printed the word "Cost" twice with nothing to tell the two apart; two cells,
+each stacking its own currencies, is what the component was built for — and
+its docblock says so.
+
+**Essential information never lives in a tooltip.** Why a margin is missing is
+the most important thing on that row, and it was a `title` attribute. It is a
+sentence under the table now, shown only when something actually is not
+comparable.

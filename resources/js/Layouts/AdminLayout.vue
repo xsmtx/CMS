@@ -571,6 +571,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/intelligence/costs',
         permission: 'intelligence.costs.manage',
       },
+      {
+        label: nav('profitability', 'Profitability'),
+        href: '/admin/intelligence/profitability',
+        permission: 'intelligence.commercial.view',
+      },
     ],
   },
   {

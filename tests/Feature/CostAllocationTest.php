@@ -50,10 +50,14 @@ beforeEach(function (): void {
     $this->admin->assignRole(SystemRole::Administrator);
     $this->admin = $this->admin->fresh();
 
-    $this->customer = Customer::factory()->create([
-        'organization_id' => $this->provider->id,
-        'company_name' => 'Acme Ltd',
-    ]);
+    /*
+     * No `organization_id` here on purpose. `CustomerFactory` creates the
+     * customer its own child organization, which is what a real customer
+     * has — forcing it into the provider's own organization is what hid a
+     * scoping bug that made these sweeps find nothing on a real
+     * installation.
+     */
+    $this->customer = Customer::factory()->create(['company_name' => 'Acme Ltd']);
 
     $this->month = CarbonImmutable::parse('2026-10-01');
     $this->allocator = app(AllocateCosts::class);

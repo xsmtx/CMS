@@ -53,6 +53,7 @@ use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductGroupController;
 use App\Http\Controllers\Admin\ProductPricingController;
+use App\Http\Controllers\Admin\ProfitabilityController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReconciliationController;
 use App\Http\Controllers\Admin\RemoteHandsController;
@@ -601,6 +602,13 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::delete('intelligence/costs/{entry}', [CostController::class, 'destroy'])
         ->name('intelligence.costs.destroy');
+
+    /*
+     * What a month earned and what it cost (§21). Read-only: a margin is
+     * a conclusion, and there is nothing here to press.
+     */
+    Route::get('intelligence/profitability', [ProfitabilityController::class, 'index'])
+        ->name('intelligence.profitability');
 
     Route::get('intelligence/leakage', [LeakageController::class, 'index'])
         ->name('intelligence.leakage');

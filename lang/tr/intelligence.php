@@ -131,6 +131,37 @@ return [
         ],
     ],
 
+    'profit' => [
+        'title' => 'Kârlılık',
+        'intro' => 'Bir ayda ne kazanıldığı ve bunu kazanmanın ne tuttuğu. Gelir, fatura satırlarından değil hizmetlerin kendisinden gelir — bir satır açıklamayı kopyalar ve ona göre gruplamak aynı ada getirilmiş iki ürünü birleştirir.',
+        'empty' => 'Raporlanacak bir şey yok',
+        'empty_detail' => 'Bu ay hiçbir hizmet bir şey kazanmıyor. Bir maliyet girin ve bir şey satın; burası kendiliğinden dolar.',
+        'revenue' => 'Kazanılan',
+        'cost' => 'Maliyet',
+        'margin' => 'Kalan',
+        'unallocated' => 'Paylaştırılmayan',
+        'unallocated_hint' => 'Hiçbir hizmete ulaşmayan maliyetler — boş bir sunucu, kullanılmayan bir lisans. Ayın toplamında var, kimsenin satırında yok.',
+        'previous' => 'Önceki ay',
+        'next' => 'Sonraki ay',
+        'mixed' => 'Karşılaştırılamaz',
+        'mixed_hint' => 'Burada, hiçbir şey kazanılmayan bir para biriminde maliyet var ve bu ürünün hiçbir yerinde kur yok. İki rakam da doğru; aralarındaki fark bir sayı değil.',
+        'services' => 'Hizmet',
+
+        'columns' => [
+            'group' => 'Ad',
+            'services' => 'Hizmet',
+            'revenue' => 'Kazanılan',
+            'cost' => 'Maliyet',
+            'margin' => 'Kalan',
+        ],
+
+        'groupings' => [
+            'customer' => 'Müşteriye göre',
+            'product' => 'Ürüne göre',
+            'server' => 'Sunucuya göre',
+        ],
+    ],
+
     'leakage' => [
         'title' => 'Gelir kaçağı',
         'intro' => 'Sessizce gelmeyi bırakan para. Buradaki her satır, bu platformun zaten sahip olduğu kayıtlar üzerinde bir hesaptan ibaret — hiçbir sağlayıcıya sorulmaz ve hiçbir şey varsayılmaz.',

@@ -724,6 +724,7 @@ return [
         'reconciliation' => 'Reconciliation',
         'leakage' => 'Revenue leakage',
         'costs' => 'Costs',
+        'profitability' => 'Profitability',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

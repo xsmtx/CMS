@@ -719,6 +719,7 @@ return [
         'reconciliation' => 'Mutabakat',
         'leakage' => 'Gelir kaçağı',
         'costs' => 'Maliyetler',
+        'profitability' => 'Kârlılık',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

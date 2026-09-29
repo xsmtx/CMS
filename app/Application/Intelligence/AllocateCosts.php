@@ -15,6 +15,7 @@ use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use App\Support\Organizations\OrganizationContext;
+use App\Support\Organizations\OrganizationSubtree;
 use Carbon\CarbonImmutable;
 
 /**
@@ -54,7 +55,21 @@ final readonly class AllocateCosts
         'cancel_pending',
     ];
 
-    public function __construct(private OrganizationContext $organizations) {}
+    /*
+     * A customer is an organization of its own, so a service, a domain, an
+     * addon and a transaction all belong to the **customer's** organization
+     * and never to the seller's. Narrowing through `customers.organization_id`
+     * matched nothing at all on a real installation, and passed every test
+     * because the fixture had forced the customer into the provider's own
+     * organization — which `CustomerFactory` goes out of its way not to do.
+     *
+     * `OrganizationSubtree` is the one place that answers "whose customers
+     * are these", which is exactly why it exists.
+     */
+    public function __construct(
+        private OrganizationContext $organizations,
+        private OrganizationSubtree $subtree,
+    ) {}
 
     /**
      * Every service's shares, keyed by service id.
@@ -319,8 +334,7 @@ final readonly class AllocateCosts
             Service::query()
                 ->withoutGlobalScope('organization')
                 ->whereIn('status', self::Occupying)
-                ->whereHas('customer', static fn ($query) => $query
-                    ->where('organization_id', $organizationId))
+                ->whereIn('organization_id', $this->subtree->ids($organizationId))
                 ->get()
                 ->all(),
         ));

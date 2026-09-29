@@ -137,6 +137,39 @@ return [
         ],
     ],
 
+    'profit' => [
+        'title' => 'Profitability',
+        'intro' => 'What the estate earns in a month and what it costs to earn it. Revenue comes from the services themselves, never from invoice lines — a line copies a description, and grouping by one merges two products renamed the same thing.',
+        'empty' => 'Nothing to report',
+        'empty_detail' => 'No service is earning anything this month. Record a cost and sell something, and this fills itself in.',
+        'revenue' => 'Earned',
+        'cost' => 'Cost',
+        'margin' => 'Left over',
+        'unallocated' => 'Not shared out',
+        'unallocated_hint' => 'Costs that reached no service — an empty server, a licence nothing is using. In the month’s total and in nobody’s row.',
+        'previous' => 'Previous month',
+        'next' => 'Next month',
+        // Never a number: there is no rate in this product, so a cost in a
+        // currency nothing earns cannot be taken off anything.
+        'mixed' => 'Not comparable',
+        'mixed_hint' => 'There is a cost here in a currency this earns nothing in, and no exchange rate anywhere in this product. The two figures are both true; the difference between them is not a number.',
+        'services' => 'Services',
+
+        'columns' => [
+            'group' => 'Name',
+            'services' => 'Services',
+            'revenue' => 'Earned',
+            'cost' => 'Cost',
+            'margin' => 'Left over',
+        ],
+
+        'groupings' => [
+            'customer' => 'By customer',
+            'product' => 'By product',
+            'server' => 'By server',
+        ],
+    ],
+
     'leakage' => [
         'title' => 'Revenue leakage',
         'intro' => 'Money that quietly stopped arriving. Every line here is arithmetic over rows this platform already owns — no provider is asked and nothing is assumed.',

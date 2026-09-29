@@ -15,6 +15,7 @@ use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Domains\Models\Domain;
 use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\Models\ServiceAddon;
+use App\Support\Organizations\OrganizationSubtree;
 use Carbon\CarbonImmutable;
 
 /**
@@ -55,6 +56,19 @@ final readonly class DetectLeakage
      */
     private const int UnmatchedAfterDays = 2;
 
+    /*
+     * A customer is an organization of its own, so a service, a domain, an
+     * addon and a transaction all belong to the **customer's** organization
+     * and never to the seller's. Narrowing through `customers.organization_id`
+     * matched nothing at all on a real installation, and passed every test
+     * because the fixture had forced the customer into the provider's own
+     * organization — which `CustomerFactory` goes out of its way not to do.
+     *
+     * `OrganizationSubtree` is the one place that answers "whose customers
+     * are these", which is exactly why it exists.
+     */
+    public function __construct(private OrganizationSubtree $subtree) {}
+
     /**
      * @return list<Leak>
      */
@@ -94,8 +108,7 @@ final readonly class DetectLeakage
                 ->whereNotNull('next_due_on')
                 ->where('next_due_on', '<', $at->toDateString())
                 ->with(Customer::displayNameWith('customer'))
-                ->whereHas('customer', static fn ($query) => $query
-                    ->where('organization_id', $organizationId))
+                ->whereIn('organization_id', $this->subtree->ids($organizationId))
                 ->limit(2000)
                 ->cursor() as $service
         ) {
@@ -151,8 +164,7 @@ final readonly class DetectLeakage
                 ->whereNotNull('expires_on')
                 ->where('expires_on', '<', $at->toDateString())
                 ->with(Customer::displayNameWith('customer'))
-                ->whereHas('customer', static fn ($query) => $query
-                    ->where('organization_id', $organizationId))
+                ->whereIn('organization_id', $this->subtree->ids($organizationId))
                 ->limit(2000)
                 ->cursor() as $domain
         ) {
@@ -202,7 +214,7 @@ final readonly class DetectLeakage
         foreach (
             ServiceAddon::query()
                 ->withoutGlobalScope('organization')
-                ->where('organization_id', $organizationId)
+                ->whereIn('organization_id', $this->subtree->ids($organizationId))
                 ->where('status', AddonStatus::Active->value)
                 ->where('recurring_minor', '>', 0)
                 ->whereNotNull('next_due_on')
@@ -271,7 +283,7 @@ final readonly class DetectLeakage
         foreach (
             Transaction::query()
                 ->withoutGlobalScope('organization')
-                ->where('organization_id', $organizationId)
+                ->whereIn('organization_id', $this->subtree->ids($organizationId))
                 ->where('kind', TransactionKind::Payment->value)
                 ->whereNull('invoice_id')
                 ->where('occurred_at', '<', $cutoff)
