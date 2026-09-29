@@ -53,6 +53,35 @@ return [
         'not_permitted' => 'You do not have access to API tokens on this account.',
         'api_coming' => 'The public API arrives in a later release. Tokens created now will work with it.',
     ],
+    'devices' => [
+        'title' => 'Devices',
+        'description' => 'Applications you have signed into. A device holds a short-lived key that renews itself while you use it; revoking one stops it immediately, everywhere.',
+        'none' => 'No applications have been signed into.',
+        'revoke' => 'Revoke',
+        'revoked' => 'Device revoked.',
+        'last_seen' => 'Last seen :date',
+        'never_seen' => 'Never used',
+        'revoked_on' => 'Revoked :date',
+        'confirm_title' => 'Revoke this device?',
+        'confirm_body' => 'Whatever is signed in on :name stops working straight away and has to sign in again. Nothing else you are signed into is affected.',
+
+        'platforms' => [
+            'ios' => 'iPhone or iPad',
+            'android' => 'Android',
+            'web' => 'Browser',
+            // What a client did not say, never guessed from a header a
+            // client controls.
+            'other' => 'Unknown',
+        ],
+
+        'reasons' => [
+            'lost' => 'You revoked it',
+            // The two this platform decides for itself.
+            'reused' => 'A key was presented twice',
+            'owner_unavailable' => 'The account could no longer sign in',
+        ],
+    ],
+
     'auth' => [
         // One message for every credential failure. Distinguishing "no such
         // account" from "wrong password" is an enumeration oracle.

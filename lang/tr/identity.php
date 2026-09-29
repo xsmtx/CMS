@@ -53,6 +53,32 @@ return [
         'not_permitted' => 'Bu hesabın API anahtarlarına erişiminiz yok.',
         'api_coming' => 'Herkese açık API sonraki bir sürümde geliyor. Şimdi oluşturulan anahtarlar onunla çalışacak.',
     ],
+    'devices' => [
+        'title' => 'Cihazlar',
+        'description' => 'Oturum açtığınız uygulamalar. Bir cihaz, kullandığınız sürece kendini yenileyen kısa ömürlü bir anahtar taşır; birini iptal etmek onu her yerde anında durdurur.',
+        'none' => 'Hiçbir uygulamadan oturum açılmamış.',
+        'revoke' => 'İptal et',
+        'revoked' => 'Cihaz iptal edildi.',
+        'last_seen' => 'Son görülme :date',
+        'never_seen' => 'Hiç kullanılmadı',
+        'revoked_on' => ':date tarihinde iptal edildi',
+        'confirm_title' => 'Bu cihaz iptal edilsin mi?',
+        'confirm_body' => ':name üzerinde oturum açmış olan her şey hemen çalışmayı durdurur ve yeniden oturum açması gerekir. Oturum açtığınız diğer hiçbir yer etkilenmez.',
+
+        'platforms' => [
+            'ios' => 'iPhone veya iPad',
+            'android' => 'Android',
+            'web' => 'Tarayıcı',
+            'other' => 'Bilinmiyor',
+        ],
+
+        'reasons' => [
+            'lost' => 'Siz iptal ettiniz',
+            'reused' => 'Bir anahtar iki kez sunuldu',
+            'owner_unavailable' => 'Hesap artık oturum açamıyor',
+        ],
+    ],
+
     'auth' => [
         'failed' => 'Bu bilgiler kayıtlarımızla eşleşmiyor.',
         'throttled' => 'Çok fazla deneme yapıldı. Lütfen :seconds saniye sonra tekrar deneyin.',

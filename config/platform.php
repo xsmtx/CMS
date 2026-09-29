@@ -526,6 +526,21 @@ return [
             'retain_days' => (int) env('API_ACTIVITY_RETAIN_DAYS', 30),
         ],
 
+        /*
+         * A device session: short access, long refresh, rotated on every
+         * exchange (ADR 0049).
+         *
+         * The access lifetime is minutes because the refresh makes a short
+         * one painless — an app exchanges in the background and nobody signs
+         * in again. A staff device is capped harder than a customer's: the
+         * customer app reads invoices and the staff app approves changes.
+         */
+        'devices' => [
+            'access_minutes' => (int) env('API_DEVICE_ACCESS_MINUTES', 15),
+            'refresh_days' => (int) env('API_DEVICE_REFRESH_DAYS', 30),
+            'staff_refresh_days' => (int) env('API_STAFF_DEVICE_REFRESH_DAYS', 7),
+        ],
+
         'webhooks' => [
             'timeout' => (int) env('WEBHOOK_TIMEOUT', 10),
             'max_attempts' => (int) env('WEBHOOK_MAX_ATTEMPTS', 6),
