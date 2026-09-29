@@ -113,10 +113,10 @@ operational docs updated. No `TODO` silently defers an acceptance criterion.
 
 **Handoff #2 has begun.** `CLAUDE_ADVANCED_HOSTING_OPERATIONS_HANDOFF_2.md` is
 planned in `docs/architecture/advanced-operations-plan.md` — its §30 required that
-plan before any of it was built — and its phases are lettered. **Phases A to G
+plan before any of it was built — and its phases are lettered. **Phases A to H
 are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
 `phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`,
-`phase-g-result.md`); H to J are not started.
+`phase-g-result.md`, `phase-h-result.md`); I and J are not started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -3880,3 +3880,73 @@ signal kind that the page was carrying, which was a second copy of a mapping
 the enum already owns. Turkish needs no plural on a counted noun and
 `trans_choice` returns a string with no `|` in it unchanged, so one call is
 right for both languages.
+
+**Noisy neighbour is a comparison, not a threshold, and Phase H is complete**
+(`docs/architecture/phase-h-result.md`). 40% of a machine's CPU is fine on a
+box with two services and a problem on one with forty, so there is no number
+in `NoisyNeighbours` that says "too much": every reading is measured against
+the median of the services on its own machine, and the median is printed
+beside it so the claim can be checked rather than believed.
+
+**The median, never the mean, and that is the whole design.** The mean of
+thirty-nine idle accounts and one runaway is a mean the runaway moved — it
+rises with the thing it is supposed to measure against, and with two runaways
+it rises far enough to hide both. The median does not move at all, and the
+test that pins it builds exactly that fleet.
+
+**It declines more often than it answers**, like `CapacityForecast`. Fewer
+than four services on a machine is not a distribution: with two, the median is
+the midpoint between them, so one of the two is always "twice the median" —
+arithmetic wearing a finding's clothes. And where only per-node metrics exist
+the answer is **"nothing can be said", in words**. That makes three different
+empty answers — nothing is noisy, nothing reports per service, nothing carries
+enough neighbours — and `NeighbourReport` carries the counts so the screen can
+keep them apart. One empty state for all three would tell an operator
+everything is fine when the truth is that nothing was measured.
+
+**A median of nought is the common shape, not a divide-by-zero.** Thirty-nine
+idle sites and one busy one is what this feature was built for and is exactly
+what produces a zero median, so the row is reported with **no multiple** —
+"every other service uses none" — rather than with an invented infinity. There
+is deliberately no floor under which a reading is called insignificant: 0.1%
+of a 128-core machine is not nothing, and core has no way to know what is.
+
+**`MetricKind::isContended()` is a different question from
+`higherIsWorse()`.** Disk *latency* is worse when higher and is what the
+**victims** of a noisy neighbour suffer — comparing it across neighbours names
+the wrong service. Disk *IOPS* is what the noisy one is doing. It is
+conservative with `default => false` for the reason the alias table is: a
+metric core does not recognise as shared is left out rather than guessed in,
+and the cost of leaving one out is a question nobody asks, while the cost of
+guessing one in is a service named for something it is not doing to anybody.
+
+**A control that cannot change the screen is absent, not disabled.** The
+multiple is a filter over a list, so where nothing could be compared there is
+no list for it to narrow and the filter is not drawn at all.
+
+**`resources/js/metrics.ts` is the one place a reading is written down**, for
+the reason `status.ts` is one place: the Telemetry screen and this one print
+the same numbers about the same nodes, and two screens that format them
+differently are two screens an operator has to reconcile. The formatter was
+copied out of `Telemetry.vue` the moment a second caller existed.
+
+**A reading with no unit is a number nobody can read.** "412" under a heading
+saying "This service" was the first browser finding; `unitLabel` comes from
+the server like everywhere else, and the screen prints "412 /s".
+
+**A page's description and the note under its table were explaining the same
+thing.** The intro said "measured against the median of its own neighbours"
+and the `AppAlert` underneath said it again at more length. The description
+says what the screen *is*; the note carries the part that is not obvious.
+Worth reading a new screen's two longest sentences next to each other before
+calling it done.
+
+Two Python traps, both of which aborted a scripted edit before it wrote
+anything: `\N` in a non-raw string (`App\Http\...\NoisyNeighboursController`)
+is a named-unicode escape and a syntax error, and so is a lone `\u`. A PHP
+namespace in a Python string wants `r"..."`.
+
+**A whole float is an integer once it has been through JSON.** `5.0` reaches
+the browser as `5`, which is why the multiple's select options are strings
+built with `(string)` on both sides — and why an `assertInertia` comparing
+against `5.0` fails against a response that is plainly correct.

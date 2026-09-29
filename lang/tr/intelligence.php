@@ -65,6 +65,35 @@ return [
         'type_to_confirm' => 'Onaylamak için hizmetin adını yazın.',
     ],
 
+    'noisy' => [
+        'title' => 'Gürültücü komşular',
+        'intro' => 'Bir makinede hangi hizmetin, yanındaki hizmetlerden daha fazla ortak kaynak kullandığı.',
+        'multiple' => 'En az',
+        'multiple_option' => 'ortancanın :times katı',
+
+        'empty' => 'Kimse kimseyi sıkıştırmıyor',
+        // Türkçede sayılan ad çoğul almaz, bu yüzden tek biçim her sayı için
+        // doğrudur — `trans_choice` borusuz bir metni olduğu gibi döndürür.
+        'empty_detail' => 'Karşılaştırılabilen :count makinenin hiçbirinde katın üzerinde bir hizmet yok.',
+
+        'unmeasured' => 'Bu konuda bir şey söylenemez',
+        'unmeasured_none' => 'Bu soru hizmet başına ölçüm ister ve grafikte hizmet taşıyan hiçbir makine yok.',
+        'unmeasured_hosts' => ':count makine kendisi için ölçüm gönderiyor, üzerindeki hizmetler için göndermiyor.',
+        'unmeasured_few' => ':count makine hizmet başına ölçüm gönderiyor ama :minimum hizmetten azını taşıyor; bu, bir ortancanın anlam taşıması için fazla az.',
+
+        'no_median' => 'diğer hizmetlerin hiçbiri kullanmıyor',
+        'method' => 'Bir eşik değil, bir karşılaştırma: iki hizmetli bir makinede %40 normaldir, kırk hizmetlide sorundur. Aynı makinedeki hizmetlerin ortancasına göre ölçülür, ortalamasına göre değil — otuz dokuz boş hesabın ve bir başıboşun ortalaması, o başıboşun yukarı çektiği bir ortalamadır. Karşılaştırmanın bir şey söyleyebilmesi için bir makinede en az :minimum hizmet olmalı.',
+
+        'columns' => [
+            'service' => 'Hizmet',
+            'host' => 'Makine',
+            'metric' => 'Kullanımı',
+            'reading' => 'Bu hizmet',
+            'median' => 'Ortanca komşu',
+            'times' => 'Kat',
+        ],
+    ],
+
     'health' => [
         'title' => 'Müşteri durumu',
         'intro' => 'Kime bakılması gerektiği ve nedeni. Puan yok — 0 ile 100 arası bir sayı, birinin ona göre hareket edip kimsenin yeniden üretemediği bir sayıdır. Her işaret kendi hesabını taşır.',

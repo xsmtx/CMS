@@ -26,6 +26,7 @@ import EmptyState from '../../../Components/EmptyState.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { useTranslations } from '../../../composables/useTranslations'
+import { formatReading } from '../../../metrics'
 
 interface PaginationLink {
   url: string | null
@@ -133,30 +134,6 @@ function percent(ratio: number): string {
   return `${(ratio * 100).toFixed(1)}%`
 }
 
-function reading(metric: MetricRow): string {
-  if (metric.unit === 'ratio') return `${(metric.value * 100).toFixed(1)}%`
-  if (metric.unit === 'bytes') return scaled(metric.value, ['B', 'kB', 'MB', 'GB', 'TB'])
-  if (metric.unit === 'bits_per_second') {
-    return scaled(metric.value, ['bit/s', 'kbit/s', 'Mbit/s', 'Gbit/s'])
-  }
-
-  const rounded = Math.abs(metric.value) >= 100 ? Math.round(metric.value) : metric.value
-
-  return `${rounded}${metric.unitLabel === '' ? '' : ' ' + metric.unitLabel}`
-}
-
-function scaled(value: number, units: string[]): string {
-  let index = 0
-  let current = value
-
-  while (current >= 1000 && index < units.length - 1) {
-    current /= 1000
-    index++
-  }
-
-  return `${current.toFixed(index === 0 ? 0 : 1)} ${units[index]}`
-}
-
 function when(value: string): string {
   return new Date(value).toLocaleString()
 }
@@ -258,7 +235,7 @@ function when(value: string): string {
           </td>
           <td data-col="metric">{{ metric.metricLabel }}</td>
           <td data-col="value" class="numeric font-medium tabular-nums">
-            {{ reading(metric) }}
+            {{ formatReading(metric.value, metric.unit, metric.unitLabel) }}
           </td>
           <td data-col="sampled" class="text-chrome tabular-nums">
             {{ when(metric.sampledAt) }}

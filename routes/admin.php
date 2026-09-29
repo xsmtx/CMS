@@ -44,6 +44,7 @@ use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MarketplaceController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NetworkChangeController;
+use App\Http\Controllers\Admin\NoisyNeighboursController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OperationController;
 use App\Http\Controllers\Admin\OperationsCalendarController;
@@ -618,6 +619,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::get('intelligence/customer-health', [CustomerHealthController::class, 'index'])
         ->name('intelligence.customer_health');
+
+    /*
+     * Which service is crowding its neighbours (§21). It reads
+     * `infrastructure.telemetry.view`, because that is exactly what it is:
+     * telemetry this installation already holds, arranged to answer one
+     * question.
+     */
+    Route::get('intelligence/noisy-neighbours', [NoisyNeighboursController::class, 'index'])
+        ->name('intelligence.noisy_neighbours');
 
     Route::get('intelligence/leakage', [LeakageController::class, 'index'])
         ->name('intelligence.leakage');

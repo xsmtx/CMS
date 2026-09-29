@@ -71,6 +71,34 @@ return [
         'type_to_confirm' => 'Type the name of the service to confirm.',
     ],
 
+    'noisy' => [
+        'title' => 'Noisy neighbours',
+        'intro' => 'Which service on a machine is using more of a shared thing than the services beside it.',
+        'multiple' => 'At least',
+        'multiple_option' => ':times× the median',
+
+        'empty' => 'Nobody is crowding anybody',
+        // A choice string, worded by `trans_choice` on the server.
+        'empty_detail' => 'No service is above the multiple on the one machine that could be compared.|No service is above the multiple on any of the :count machines that could be compared.',
+
+        'unmeasured' => 'Nothing can be said about this',
+        'unmeasured_none' => 'This question needs per-service readings and there are no machines with services in the graph at all.',
+        'unmeasured_hosts' => 'One machine reports for itself but not for the services on it.|:count machines report for themselves but not for the services on them.',
+        'unmeasured_few' => 'One machine reports per service but carries fewer than :minimum of them, which is too few for a median to mean anything.|:count machines report per service but carry fewer than :minimum of them, which is too few for a median to mean anything.',
+
+        'no_median' => 'every other service uses none',
+        'method' => 'A comparison, never a threshold: 40% of a machine is fine on a box with two services and a problem on one with forty. Measured against the median of the services on the same machine, never the mean — the mean of thirty-nine idle accounts and one runaway is a mean the runaway moved. A machine needs at least :minimum services before the comparison says anything.',
+
+        'columns' => [
+            'service' => 'Service',
+            'host' => 'Machine',
+            'metric' => 'Using',
+            'reading' => 'This service',
+            'median' => 'Median neighbour',
+            'times' => 'Multiple',
+        ],
+    ],
+
     'health' => [
         'title' => 'Customer health',
         'intro' => 'Which customers somebody should look at, and why. There is no score — a number between 0 and 100 is a number somebody acts on and nobody can reproduce. Each signal carries its own arithmetic.',

@@ -168,6 +168,37 @@ enum MetricKind: string
     }
 
     /**
+     * Whether this is a finite thing the neighbours share.
+     *
+     * The question noisy neighbour asks, and a different question from
+     * `higherIsWorse()`. Disk **latency** is worse when it is higher and is
+     * not contended: it is what the *victims* of a noisy neighbour suffer, so
+     * comparing it across neighbours would name the wrong service. Disk
+     * **IOPS** is contended, and is what the noisy one is doing.
+     *
+     * Deliberately conservative, with `default => false`, for the reason the
+     * alias table is: a metric core does not recognise as shared is left out
+     * of the comparison rather than guessed into it, and the cost of leaving
+     * one out is a question nobody asks — while the cost of guessing one in is
+     * a service named for something it is not doing to anybody.
+     */
+    public function isContended(): bool
+    {
+        return match ($this) {
+            self::CpuUtilisation, self::MemoryUsed, self::DiskUsed, self::DiskIops,
+            self::NetworkIn, self::NetworkOut, self::RequestRate,
+            // Connections to a database are a hard-limited pool, and one
+            // tenant holding all of them starves every other.
+            self::Sessions,
+            // A shared mail server where one customer queued forty thousand
+            // messages is the classic case, on a machine that is not a
+            // hypervisor.
+            self::MailQueueDepth => true,
+            default => false,
+        };
+    }
+
+    /**
      * Whether a bigger number is worse.
      *
      * Not a threshold — there are none in this phase — but the direction a
