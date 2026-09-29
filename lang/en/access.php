@@ -6,6 +6,12 @@ return [
     'roles_saved' => 'Role saved.',
     'roles_deleted' => 'Role deleted.',
 
+    'errors' => [
+        // Named rather than a 404, because the caller sent a field and
+        // the honest answer names the field.
+        'unknown_holder' => 'There is nobody here with that id.',
+    ],
+
     'scopes' => [
         'staff' => 'Staff',
         'customer' => 'Customer',

@@ -6,6 +6,10 @@ return [
     'roles_saved' => 'Rol kaydedildi.',
     'roles_deleted' => 'Rol silindi.',
 
+    'errors' => [
+        'unknown_holder' => 'Bu kimliğe sahip kimse yok.',
+    ],
+
     'scopes' => [
         'staff' => 'Personel',
         'customer' => 'Müşteri',

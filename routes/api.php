@@ -10,9 +10,13 @@ use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ServiceController;
+use App\Http\Controllers\Api\V1\Staff\AccessGrantController as StaffAccessGrantController;
 use App\Http\Controllers\Api\V1\Staff\AlertController as StaffAlertController;
 use App\Http\Controllers\Api\V1\Staff\IncidentController as StaffIncidentController;
+use App\Http\Controllers\Api\V1\Staff\LookupController as StaffLookupController;
+use App\Http\Controllers\Api\V1\Staff\NetworkChangeController as StaffNetworkChangeController;
 use App\Http\Controllers\Api\V1\Staff\RemoteHandsController as StaffRemoteHandsController;
+use App\Http\Controllers\Api\V1\Staff\TicketController as StaffTicketController;
 use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\WebhookEndpointController;
 use App\Http\Middleware\AuthenticateApiToken;
@@ -198,6 +202,43 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             Route::post('remote-hands/{task}/move', [StaffRemoteHandsController::class, 'move'])
                 ->middleware(RequireStaffApiScope::class.':remote_hands:write')
                 ->name('remote_hands.move');
+
+            Route::get('tickets', [StaffTicketController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':tickets:read')
+                ->name('tickets.index');
+            Route::get('tickets/{ticket}', [StaffTicketController::class, 'show'])
+                ->middleware(RequireStaffApiScope::class.':tickets:read')
+                ->name('tickets.show');
+            Route::post('tickets/{ticket}/replies', [StaffTicketController::class, 'reply'])
+                ->middleware(RequireStaffApiScope::class.':tickets:write')
+                ->name('tickets.reply');
+
+            /*
+             * Deciding a device change, never applying one. The apply carries
+             * the password challenge and pushes a configuration to a box,
+             * which is not something a bearer token in a pocket may do.
+             */
+            Route::get('device-changes', [StaffNetworkChangeController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':changes:read')
+                ->name('device_changes.index');
+            Route::post('device-changes/{change}/decision', [StaffNetworkChangeController::class, 'decide'])
+                ->middleware(RequireStaffApiScope::class.':changes:write')
+                ->name('device_changes.decide');
+
+            Route::get('access-grants', [StaffAccessGrantController::class, 'index'])
+                ->middleware(RequireStaffApiScope::class.':access:read')
+                ->name('access_grants.index');
+            Route::post('access-grants', [StaffAccessGrantController::class, 'store'])
+                ->middleware(RequireStaffApiScope::class.':access:write')
+                ->name('access_grants.store');
+
+            // What a scanned asset tag resolves to, and the list behind it.
+            Route::get('lookup', [StaffLookupController::class, 'show'])
+                ->middleware(RequireStaffApiScope::class.':dcim:read')
+                ->name('lookup');
+            Route::get('machines', [StaffLookupController::class, 'servers'])
+                ->middleware(RequireStaffApiScope::class.':infrastructure:read')
+                ->name('machines.index');
         });
     });
 });

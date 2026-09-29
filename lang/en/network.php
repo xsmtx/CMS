@@ -6,6 +6,24 @@ return [
     'title' => 'Addressing',
     'intro' => 'The address space this installation has, and who is holding each address.',
 
+    /*
+     * Why a device change will not go ahead — read through
+     * `ChangeRefused::worded()`. The exception's own message is English and
+     * belongs in the log; this is what somebody reads, on a screen or on a
+     * phone.
+     */
+    'errors' => [
+        'nothing_to_apply' => 'A change has to say what the configuration should become.',
+        'device_not_readable' => 'No adapter on this installation may read :device, so there is nothing to compare a change against.',
+        'device_moved' => 'The configuration on :device is not the one this change was reviewed against. Request it again so the diff is against what the device says now.',
+        'not_applicable' => 'A change that is :state cannot be applied.',
+        'not_decidable' => 'A change that is :state is already decided.',
+        'not_withdrawable' => 'A change that is :state can no longer be withdrawn.',
+        'own_approval' => 'A change has to be approved by somebody other than the person who asked for it.',
+        'no_writer' => 'No adapter on this installation is permitted to change :device. An operator turns that on per adapter, deliberately.',
+        'backup_failed' => 'The configuration of :device could not be backed up, so nothing was applied.',
+    ],
+
     'families' => [
         'v4' => 'IPv4',
         'v6' => 'IPv6',

@@ -8,12 +8,17 @@ use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
 use App\Domain\Api\DevicePlatform;
 use App\Domain\Identity\AccountStatus;
+use App\Domain\Infrastructure\ResourceKind;
+use App\Domain\Network\GrantableCapability;
 use App\Domain\Organizations\OrganizationType;
 use App\Domain\Reliability\AlertSeverity;
 use App\Domain\Reliability\IncidentState;
+use App\Domain\Support\TicketStatus;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
 use App\Infrastructure\Reliability\Models\Incident;
+use App\Infrastructure\Resources\Models\ResourceNode;
+use App\Infrastructure\Support\Models\Ticket;
 use App\Support\Organizations\OrganizationContext;
 use Carbon\CarbonImmutable;
 use Database\Seeders\ProviderOrganizationSeeder;
@@ -267,4 +272,124 @@ it('signs a staff device out through the staff route', function (): void {
     test()->withToken($token)
         ->getJson('/api/v1/staff/incidents')
         ->assertUnauthorized();
+});
+
+it('lists the tickets whose turn it is, first', function (): void {
+    $waiting = Ticket::factory()->create([
+        'organization_id' => $this->provider->id,
+        'subject' => 'Site is down',
+        'status' => TicketStatus::CustomerReply,
+    ]);
+
+    Ticket::factory()->create([
+        'organization_id' => $this->provider->id,
+        'subject' => 'Already answered',
+        'status' => TicketStatus::Answered,
+    ]);
+
+    test()->withToken(staffToken(['tickets:read']))
+        ->getJson('/api/v1/staff/tickets')
+        ->assertOk()
+        // Whose turn it is is the one question an agent opens this for.
+        ->assertJsonPath('data.0.subject', $waiting->subject)
+        ->assertJsonPath('data.0.awaitingUs', true);
+});
+
+it('replies to a ticket through the one place that moves its clock', function (): void {
+    $ticket = Ticket::factory()->create([
+        'organization_id' => $this->provider->id,
+        'status' => TicketStatus::CustomerReply,
+    ]);
+
+    test()->withToken(staffToken(['tickets:write']))
+        ->postJson('/api/v1/staff/tickets/'.$ticket->id.'/replies', [
+            'body' => 'We have restarted the pool; please try again.',
+        ])
+        ->assertCreated()
+        // ReplyToTicket decided the status, not this controller (ADR 0030).
+        ->assertJsonPath('data.status', 'answered');
+});
+
+it('will not reply with a token that can only read', function (): void {
+    $ticket = Ticket::factory()->create([
+        'organization_id' => $this->provider->id,
+    ]);
+
+    test()->withToken(staffToken(['tickets:read']))
+        ->postJson('/api/v1/staff/tickets/'.$ticket->id.'/replies', ['body' => 'Hello there.'])
+        ->assertForbidden();
+});
+
+it('offers no route that applies a device change', function (): void {
+    // The guard in StaffApiSurfaceTest says this in general; this says it
+    // about the one endpoint somebody would most plausibly add.
+    test()->withToken(staffToken(['changes:write']))
+        ->postJson('/api/v1/staff/device-changes/nonexistent/apply')
+        ->assertNotFound();
+});
+
+it('grants access to somebody else and refuses granting it to yourself', function (): void {
+    $colleague = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+
+    test()->withToken(staffToken(['access:write']))
+        ->postJson('/api/v1/staff/access-grants', [
+            'holder_id' => $colleague->id,
+            'capability' => GrantableCapability::cases()[0]->value,
+            'reason' => 'Console access to finish the migration.',
+            'minutes' => 60,
+        ])
+        ->assertCreated();
+
+    // A permission says who may grant and cannot say to whom.
+    test()->withToken(staffToken(['access:write']))
+        ->postJson('/api/v1/staff/access-grants', [
+            'holder_id' => $this->staff->id,
+            'capability' => GrantableCapability::cases()[0]->value,
+            'reason' => 'Because I want it.',
+            'minutes' => 60,
+        ])
+        ->assertStatus(422);
+});
+
+it('refuses a window shorter than the floor', function (): void {
+    $colleague = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+
+    // Under five minutes is a grant somebody is about to give again.
+    test()->withToken(staffToken(['access:write']))
+        ->postJson('/api/v1/staff/access-grants', [
+            'holder_id' => $colleague->id,
+            'capability' => GrantableCapability::cases()[0]->value,
+            'reason' => 'Just a moment.',
+            'minutes' => 2,
+        ])
+        ->assertStatus(422);
+});
+
+it('resolves a machine by its node key and says what is underneath', function (): void {
+    $node = ResourceNode::factory()->keyed('web-7')->create([
+        'organization_id' => $this->provider->id,
+        'kind' => ResourceKind::Server,
+    ]);
+
+    test()->withToken(staffToken(['dcim:read']))
+        ->getJson('/api/v1/staff/lookup?key='.$node->node_key)
+        ->assertOk()
+        ->assertJsonPath('data.key', 'web-7')
+        ->assertJsonPath('data.kind', 'server')
+        // The thing only this platform can answer.
+        ->assertJsonPath('data.impact.services', 0);
+});
+
+it('answers nothing rather than a near miss', function (): void {
+    ResourceNode::factory()->keyed('web-7')->create([
+        'organization_id' => $this->provider->id,
+        'kind' => ResourceKind::Server,
+    ]);
+
+    // A technician is holding the label. A near match would be the wrong
+    // machine confidently identified, and somebody pulls the wrong disk.
+    test()->withToken(staffToken(['dcim:read']))
+        ->getJson('/api/v1/staff/lookup?key=web-')
+        ->assertOk()
+        ->assertJsonPath('data', null);
 });

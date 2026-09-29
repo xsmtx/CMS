@@ -172,20 +172,27 @@ half-building it would be a channel that silently delivers nothing.
 
 ## 6a. Where it stands (2026-09-29)
 
-Steps 1, 2, 5 and 6 are done, and step 3 is half done.
+Every step is in. Phase I is complete bar one thing it declined.
 
 | Step | State |
 | --- | --- |
 | 1. Token lifetime, refresh family, reuse detection | **in** — both guards |
 | 2. Device inventory and remote revocation | **in** — on the Security screen |
-| 3. Staff guard, `StaffApiScope`, the read surface | **partly** — the guard, the scopes and alerts / incidents / remote hands. Tickets, infrastructure health, abuse, changes, maintenance, access and the rack lookup are not routed yet |
-| 4. The staff write surface | **partly** — incident update, incident resolve, remote hands move. Ticket reply, deciding a change and JIT request / grant are not routed yet |
+| 3. Staff guard, `StaffApiScope`, the read surface | **in** |
+| 4. The staff write surface | **in** — the six acts §26 names |
 | 5. The web-only list, enforced by a test | **in** — `StaffApiSurfaceTest` |
 | 6. `platform:openapi` | **in**, and it had to be taught about the staff middleware first |
 
-What is left is more of the same shape rather than anything undecided: each
-remaining endpoint calls a use case that already exists, behind a scope that
-already has its permissions declared and its wording in both languages.
+The surface, in full: alerts; incidents with their timelines, updates and
+resolution; tickets with replies; device changes with a decision but never an
+apply; access grants asked for and given; remote hands with its moves; and
+the asset-tag lookup with what is underneath a machine. Fifteen scopes, each
+with its permissions declared and its wording in both languages.
+
+**What is declined, with the reason recorded**: opening an incident (a form
+with a severity and a public flag to choose, which at two in the morning on a
+phone is how one gets opened wrong), the push transport (§6), and every
+action §26 calls web-only.
 
 ---
 

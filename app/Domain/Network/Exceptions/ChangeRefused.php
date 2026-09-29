@@ -17,19 +17,59 @@ use RuntimeException;
  *
  * None of these messages carries a configuration, an address or a credential.
  * They are rendered on a screen and written to a log.
+ *
+ * **The sentence somebody reads is `worded()`, not the message.** The message
+ * is English and belongs in the log; it was the only thing here until the
+ * staff API arrived, and a refusal reaching a phone in the wrong language is
+ * worse than one reaching a browser, because there is no surrounding screen
+ * to make sense of it.
  */
 final class ChangeRefused extends RuntimeException
 {
+    /**
+     * @param  array<string, string>  $replacements
+     */
+    private function __construct(
+        string $message,
+        private readonly string $key,
+        private readonly array $replacements = [],
+    ) {
+        parent::__construct($message);
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function replacements(): array
+    {
+        return $this->replacements;
+    }
+
+    public function worded(): string
+    {
+        return (string) __($this->key, $this->replacements);
+    }
+
     public static function nothingToApply(): self
     {
-        return new self('A change has to say what the configuration should become.');
+        return new self(
+            'A change has to say what the configuration should become.',
+            'network.errors.nothing_to_apply',
+        );
     }
 
     public static function deviceNotReadable(string $device): self
     {
         return new self(
             'No adapter on this installation may read '.$device.', '
-            .'so there is nothing to compare a change against.'
+            .'so there is nothing to compare a change against.',
+            'network.errors.device_not_readable',
+            ['device' => $device],
         );
     }
 
@@ -42,23 +82,37 @@ final class ChangeRefused extends RuntimeException
         return new self(
             'The configuration on '.$device.' is not the one this change was '
             .'reviewed against. Request it again so the diff is against what '
-            .'the device says now.'
+            .'the device says now.',
+            'network.errors.device_moved',
+            ['device' => $device],
         );
     }
 
     public static function notApplicable(string $state): self
     {
-        return new self('A change that is '.$state.' cannot be applied.');
+        return new self(
+            'A change that is '.$state.' cannot be applied.',
+            'network.errors.not_applicable',
+            ['state' => $state],
+        );
     }
 
     public static function notDecidable(string $state): self
     {
-        return new self('A change that is '.$state.' is already decided.');
+        return new self(
+            'A change that is '.$state.' is already decided.',
+            'network.errors.not_decidable',
+            ['state' => $state],
+        );
     }
 
     public static function notWithdrawable(string $state): self
     {
-        return new self('A change that is '.$state.' can no longer be withdrawn.');
+        return new self(
+            'A change that is '.$state.' can no longer be withdrawn.',
+            'network.errors.not_withdrawable',
+            ['state' => $state],
+        );
     }
 
     /**
@@ -67,14 +121,19 @@ final class ChangeRefused extends RuntimeException
      */
     public static function ownApproval(): self
     {
-        return new self('A change has to be approved by somebody other than the person who asked for it.');
+        return new self(
+            'A change has to be approved by somebody other than the person who asked for it.',
+            'network.errors.own_approval',
+        );
     }
 
     public static function noWriter(string $device): self
     {
         return new self(
             'No adapter on this installation is permitted to change '.$device.'. '
-            .'An operator turns that on per adapter, deliberately.'
+            .'An operator turns that on per adapter, deliberately.',
+            'network.errors.no_writer',
+            ['device' => $device],
         );
     }
 
@@ -85,7 +144,9 @@ final class ChangeRefused extends RuntimeException
     public static function backupFailed(string $device): self
     {
         return new self(
-            'The configuration of '.$device.' could not be backed up, so nothing was applied.'
+            'The configuration of '.$device.' could not be backed up, so nothing was applied.',
+            'network.errors.backup_failed',
+            ['device' => $device],
         );
     }
 }

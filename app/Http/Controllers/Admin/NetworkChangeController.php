@@ -131,7 +131,7 @@ final class NetworkChangeController extends Controller
                 ticket: $data['ticket'] ?? null,
             );
         } catch (ChangeRefused $refusal) {
-            return back()->withErrors(['intended' => $refusal->getMessage()])->withInput();
+            return back()->withErrors(['intended' => $refusal->worded()])->withInput();
         }
 
         return to_route('admin.network.changes.show', $change)
@@ -161,7 +161,7 @@ final class NetworkChangeController extends Controller
                 default => $decisions->cancel($change, $staff, $note),
             };
         } catch (ChangeRefused $refusal) {
-            return back()->withErrors(['decision' => $refusal->getMessage()]);
+            return back()->withErrors(['decision' => $refusal->worded()]);
         }
 
         return back()->with('status', __('network.changes.flash.decided'));
@@ -177,7 +177,7 @@ final class NetworkChangeController extends Controller
 
         if (! $change->state->isApplicable()) {
             return back()->withErrors([
-                'decision' => ChangeRefused::notApplicable($change->state->value)->getMessage(),
+                'decision' => ChangeRefused::notApplicable((string) __($change->state->labelKey()))->worded(),
             ]);
         }
 

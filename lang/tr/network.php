@@ -6,6 +6,20 @@ return [
     'title' => 'Adresleme',
     'intro' => 'Bu kurulumun sahip olduğu adres alanı ve her adresi kimin tuttuğu.',
 
+    // Bir cihaz değişikliğinin neden yapılmayacağı — `ChangeRefused::worded()`
+    // üzerinden okunur. İstisnanın kendi mesajı İngilizcedir ve günlüğe aittir.
+    'errors' => [
+        'nothing_to_apply' => 'Bir değişiklik, yapılandırmanın ne olması gerektiğini belirtmelidir.',
+        'device_not_readable' => 'Bu kurulumdaki hiçbir bağdaştırıcı :device cihazını okuyamaz, bu yüzden değişikliğin karşılaştırılacağı bir şey yok.',
+        'device_moved' => ':device üzerindeki yapılandırma, bu değişikliğin incelendiği yapılandırma değil. Farkın cihazın şu anki durumuna göre alınması için değişikliği yeniden isteyin.',
+        'not_applicable' => ':state durumundaki bir değişiklik uygulanamaz.',
+        'not_decidable' => ':state durumundaki bir değişiklik zaten karara bağlanmış.',
+        'not_withdrawable' => ':state durumundaki bir değişiklik artık geri çekilemez.',
+        'own_approval' => 'Bir değişikliği, onu isteyen kişiden başka biri onaylamalıdır.',
+        'no_writer' => 'Bu kurulumdaki hiçbir bağdaştırıcının :device cihazını değiştirme izni yok. Operatör bunu bağdaştırıcı başına, bilerek açar.',
+        'backup_failed' => ':device yapılandırması yedeklenemedi, bu yüzden hiçbir şey uygulanmadı.',
+    ],
+
     'families' => [
         'v4' => 'IPv4',
         'v6' => 'IPv6',
