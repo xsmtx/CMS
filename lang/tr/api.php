@@ -134,6 +134,73 @@ return [
         'all' => 'Hepsi',
     ],
 
+    // Bir personel cihazının neye erişebileceği (ADR 0049). Yukarıdaki
+    // `scopes` listesinden ayrı bir söz dağarcığı: biri müşterinin kendi
+    // hesabı hakkında paylaştığını, bu ise bir operatörün herkesin hesabına
+    // ne yapabileceğini daraltır.
+    'staff_scopes' => [
+        'alerts_read' => [
+            'label' => 'Uyarıları oku',
+            'description' => 'Platformun fark ettiği şeyler; açık ve kapanmış olanlar.',
+        ],
+        'incidents_read' => [
+            'label' => 'Olayları oku',
+            'description' => 'Açık olaylar, zaman çizelgeleri ve kimleri etkiledikleri.',
+        ],
+        'incidents_write' => [
+            'label' => 'Olayları güncelle ve kapat',
+            'description' => 'Güncelleme yaz, durumu taşı ve olayı kapat. Yeni olay açmak web tarafında kalır.',
+        ],
+        'tickets_read' => [
+            'label' => 'Kayıtları oku',
+            'description' => 'Müşterilerle yazışmalar ve sıranın kimde olduğu.',
+        ],
+        'tickets_write' => [
+            'label' => 'Kayıtları yanıtla',
+            'description' => 'Müşteriye yanıt yaz. Kayıt silmek asla.',
+        ],
+        'infrastructure_read' => [
+            'label' => 'Altyapıyı oku',
+            'description' => 'Sunucular, hizmetler ve haklarında bildirilenler. Hiçbir yazma yok.',
+        ],
+        'abuse_read' => [
+            'label' => 'Kötüye kullanım dosyalarını oku',
+            'description' => 'Şikâyetler ve kime atfedildikleri. Bir karar vermek web tarafında kalır.',
+        ],
+        'changes_read' => [
+            'label' => 'Cihaz değişikliklerini oku',
+            'description' => 'Ne istendiği, farkı ve kimin onayladığı.',
+        ],
+        'changes_write' => [
+            'label' => 'Bir cihaz değişikliğini onayla',
+            'description' => 'Başkasının istediği bir değişikliği onayla ya da reddet. Uygulamak asla.',
+        ],
+        'maintenance_read' => [
+            'label' => 'Bakım pencerelerini oku',
+            'description' => 'Ne planlandı, ne şu an sürüyor ve neleri bastırdığı.',
+        ],
+        'remote_hands_read' => [
+            'label' => 'Saha görevlerini oku',
+            'description' => 'Kuyruk, talimatları eksiksiz olarak.',
+        ],
+        'remote_hands_write' => [
+            'label' => 'Bir saha görevini ilerlet',
+            'description' => 'Görevi üstlen, bitir ya da geri bırak.',
+        ],
+        'access_read' => [
+            'label' => 'Erişim yetkilerini oku',
+            'description' => 'Kim fazladan bir şey tutuyor ve ne zamana kadar.',
+        ],
+        'access_write' => [
+            'label' => 'Erişim iste ya da ver',
+            'description' => 'Kısa süreli bir yetki iste ya da başkasına ver. Kendine asla.',
+        ],
+        'dcim_read' => [
+            'label' => 'Kabin ya da makine ara',
+            'description' => 'Bir şeyin nerede olduğu — okutulan bir varlık etiketinin yanıtladığı soru.',
+        ],
+    ],
+
     'errors' => [
         'unauthenticated' => 'Geçerli bir API tokenı sunulmadı.',
         'forbidden' => 'Bu token bunu yapamaz.',

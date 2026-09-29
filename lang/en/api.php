@@ -134,6 +134,75 @@ return [
         'all' => 'All',
     ],
 
+    /*
+     * What a staff device may reach (ADR 0049). A separate vocabulary from
+     * `scopes` above, because the two narrow different things: a client
+     * scope narrows what a customer shares about their own account, and
+     * these narrow what an operator can do to everybody's.
+     */
+    'staff_scopes' => [
+        'alerts_read' => [
+            'label' => 'Read alerts',
+            'description' => 'What the platform has noticed, open and cleared.',
+        ],
+        'incidents_read' => [
+            'label' => 'Read incidents',
+            'description' => 'Open incidents, their timelines and who they affected.',
+        ],
+        'incidents_write' => [
+            'label' => 'Update and resolve incidents',
+            'description' => 'Post an update, move the state, and end one. Opening an incident stays on the web.',
+        ],
+        'tickets_read' => [
+            'label' => 'Read tickets',
+            'description' => 'Conversations with customers, and whose turn it is.',
+        ],
+        'tickets_write' => [
+            'label' => 'Reply to tickets',
+            'description' => 'Answer a customer. Never deleting one.',
+        ],
+        'infrastructure_read' => [
+            'label' => 'Read infrastructure',
+            'description' => 'Servers, services and what is reported about them. No writes of any kind.',
+        ],
+        'abuse_read' => [
+            'label' => 'Read abuse cases',
+            'description' => 'Complaints and who they were attributed to. Acting on one stays on the web.',
+        ],
+        'changes_read' => [
+            'label' => 'Read device changes',
+            'description' => 'What has been asked for, the diff, and who agreed.',
+        ],
+        'changes_write' => [
+            'label' => 'Agree to a device change',
+            'description' => 'Approve or reject a change somebody else asked for. Never applying one.',
+        ],
+        'maintenance_read' => [
+            'label' => 'Read maintenance windows',
+            'description' => 'What is planned, what is running, and what it is holding back.',
+        ],
+        'remote_hands_read' => [
+            'label' => 'Read remote hands tasks',
+            'description' => 'The queue, with the instructions in full.',
+        ],
+        'remote_hands_write' => [
+            'label' => 'Move a remote hands task',
+            'description' => 'Take one on, finish it, or hand it back.',
+        ],
+        'access_read' => [
+            'label' => 'Read access grants',
+            'description' => 'Who is holding something extra, and until when.',
+        ],
+        'access_write' => [
+            'label' => 'Ask for or grant access',
+            'description' => 'Request a short-lived grant, or give somebody else one. Never to yourself.',
+        ],
+        'dcim_read' => [
+            'label' => 'Look up a rack or a machine',
+            'description' => 'Where something is, which is what a scanned asset tag answers.',
+        ],
+    ],
+
     'errors' => [
         'unauthenticated' => 'No valid API token was presented.',
         'forbidden' => 'This token may not do that.',

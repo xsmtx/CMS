@@ -54,12 +54,12 @@ enum StaffApiScope: string
 
     public function labelKey(): string
     {
-        return 'api.staff_scopes.'.str_replace(':', '.', $this->value).'.label';
+        return 'api.staff_scopes.'.$this->slug().'.label';
     }
 
     public function descriptionKey(): string
     {
-        return 'api.staff_scopes.'.str_replace(':', '.', $this->value).'.description';
+        return 'api.staff_scopes.'.$this->slug().'.description';
     }
 
     public function group(): string
@@ -119,5 +119,15 @@ enum StaffApiScope: string
     public static function values(): array
     {
         return array_column(self::cases(), 'value');
+    }
+
+    /*
+     * Underscores rather than the colon, matching `ApiScope`: a dotted key
+     * asks the translator to walk a level of nesting per segment, which is
+     * the permission-slug trap through another door.
+     */
+    private function slug(): string
+    {
+        return str_replace(':', '_', $this->value);
     }
 }

@@ -116,7 +116,8 @@ planned in `docs/architecture/advanced-operations-plan.md` — its §30 required
 plan before any of it was built — and its phases are lettered. **Phases A to H
 are complete** (`phase-a-result.md`, `phase-b-result.md`, `phase-c-plan.md`,
 `phase-d-result.md`, `phase-e-result.md`, `phase-f-result.md`,
-`phase-g-result.md`, `phase-h-result.md`); I and J are not started.
+`phase-g-result.md`, `phase-h-result.md`); **I has begun** and J is not
+started.
 
 Two things are deliberately unproven and the owner deferred them: **the provider
 adapters (Stripe, cPanel, Namecheap) have never talked to their real
@@ -3950,3 +3951,77 @@ namespace in a Python string wants `r"..."`.
 the browser as `5`, which is why the multiple's select options are strings
 built with `(string)` on both sides — and why an `assertInertia` comparing
 against `5.0` fails against a response that is plainly correct.
+
+**Phase I has begun** (`docs/architecture/phase-i-plan.md`, ADR 0049), and it
+**builds no application**. ADR 0044 already put mobile in a separate
+repository consuming `/api/v1`, so what this phase owes is the four things
+that ADR's consequences say the apps cannot exist without — a staff API
+surface, a token lifetime, refresh rotation, and a device inventory with
+remote revocation. Every one is a decision about this product's security
+rather than about a phone.
+
+**A staff API token is always scoped, always expires, and cannot do the
+dangerous things** (ADR 0049). The reason it is not one line of middleware is
+a fact this product has hit twice: **an Administrator holds every staff
+permission by design** — which is why `resellers.administer` is a gate and
+the tax screen is owner-only — so a staff token issued the way a client token
+is issued would be a bearer string that is root on the installation, never
+expires, and lives in a pocket. There is no `*`, a token carrying no scope is
+refused outright, and one with no expiry is refused too: nothing here can
+issue a staff token without one, so a token that has none came from somewhere
+else.
+
+**What is absent from the staff API is the policy.** §26 says some actions
+are web-only, and a client can be rewritten — so leaving a button out of an
+app enforces nothing and the refusal has to be **the absence of the
+endpoint**. No firewall apply, no power action, no termination, no restore,
+no drain, no bulk route. `StaffApiSurfaceTest` walks the routes and fails if
+one appears, and it is a list of **forbidden words rather than an allow-list**:
+an allow-list needing an edit for every ordinary read gets edited without
+thought, and the one edit that mattered goes through with the rest.
+
+**`StaffApiScope` is a separate enum from `ApiScope`**, not an extension.
+They narrow different things — what a customer shares about their own
+account, against what an operator can do to everybody's — and `tickets:read`
+exists in both meaning two different things, which a test asserts.
+`ScopeVocabulary` is the one place a guard maps to its list, so the request
+that validates a scope and the controller that filters one cannot read
+different enums.
+
+**Rotation without reuse detection is theatre**, and the first version of it
+did nothing at all. The revocation was written **inside the transaction the
+refusal then rolled back**, so a detected reuse revoked nothing and the thief
+kept working — with every other test in the file passing. The device is
+carried on the exception now and revoked outside the transaction. Anything
+that must survive a throw cannot be written in the transaction that throw
+aborts.
+
+**Every staff endpoint was published in `openapi.json` with no security at
+all**, because the generator only knew `RequireApiScope`. The document is the
+contract an integrator writes against, and saying an endpoint is
+unauthenticated when it is not is the worst thing a generated one can say.
+When adding a second middleware of an existing kind, grep for what reads the
+first.
+
+**`VocabularyTest` caught a new enum's `labelKey()` with nothing behind it**
+before anything rendered it — the designed symptom working, and the guard
+getting there first. A dotted key would have been the permission-slug trap
+again, so `StaffApiScope` uses underscores like `ApiScope` does.
+
+**The admin incident screen printed its refusals in English at a Turkish
+operator.** `IncidentRefused` carried only a message and both call sites put
+it straight into a form error. It has `key()` and `worded()` now, in both
+languages. The rule `RackRefused` cost, found because a second caller was
+about to make the same mistake — which is the usual way these surface.
+
+**`Guard::fromApiRouteName()` is separate from `fromRouteName()`** because the
+browser areas and the API do not share a naming convention and must not be
+made to: the staff browser area is `admin.*` and its API surface is
+`api.v1.staff.*`. A staff route name resolved to the *client* guard silently,
+and the symptom was the staff sign-in endpoint refusing every staff scope as
+invalid.
+
+**A `\N` or a lone `\u` in a non-raw Python string is a syntax error**, so a
+scripted edit containing a PHP namespace aborts before writing anything —
+three times in one session. The repo's own rule is the answer: anything with
+a backslash goes through Write or Edit.
