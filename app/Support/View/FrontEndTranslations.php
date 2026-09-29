@@ -132,6 +132,9 @@ final class FrontEndTranslations
         'identity.users',
         'identity.statuses',
         'identity.tokens',
+        // The whole group: it is one audience — the person whose
+        // devices these are — and the Security screen draws all of it.
+        'identity.devices',
         'api.tokens',
         'api.scopes',
         'api.webhooks',

@@ -1580,7 +1580,7 @@ return [
         'codes_title' => 'Bu kurtarma kodlarını şimdi kaydedin.',
         'codes_body' => 'Doğrulayıcınızı kaybederseniz her biri bir kez kullanılabilir. Bir daha gösterilmeyecekler.',
 
-        'devices' => 'Oturum açılmış cihazlar',
+        'devices' => 'Oturum açılmış tarayıcılar',
         'device' => 'Cihaz',
         'address' => 'Adres',
         'last_active' => 'Son etkinlik',

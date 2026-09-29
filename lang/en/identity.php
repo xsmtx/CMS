@@ -54,7 +54,10 @@ return [
         'api_coming' => 'The public API arrives in a later release. Tokens created now will work with it.',
     ],
     'devices' => [
-        'title' => 'Devices',
+        'title' => 'Applications',
+        'name' => 'Application',
+        'platform' => 'Platform',
+        'last_used' => 'Last used',
         'description' => 'Applications you have signed into. A device holds a short-lived key that renews itself while you use it; revoking one stops it immediately, everywhere.',
         'none' => 'No applications have been signed into.',
         'revoke' => 'Revoke',

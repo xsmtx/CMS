@@ -239,3 +239,66 @@ it('leaves a token that belongs to no device alone', function (): void {
 
     expect(PersonalAccessToken::query()->find($existing->accessToken->getKey()))->not->toBeNull();
 });
+
+/**
+ * The screen, and the button on it.
+ *
+ * Rendering proves the props; only a request proves the path the form posts
+ * to is the path the router serves — the rule `AdminActionRoutesTest` exists
+ * for, applied by hand where the route is not an admin one.
+ */
+it('lists a device on the security screen and revokes it from there', function (): void {
+    $session = $this->sessions->open($this->contact, 'iPhone', DevicePlatform::Ios, ['profile:read']);
+
+    $this->actingAs($this->contact, 'client')
+        ->get('/security')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('devices', 1)
+            ->where('devices.0.name', 'iPhone')
+            // Two fields: the value and the word.
+            ->where('devices.0.platform', 'ios')
+            ->where('devices.0.platformLabel', 'iPhone or iPad')
+            ->where('devices.0.revokedAt', null));
+
+    $this->actingAs($this->contact, 'client')
+        ->delete('/security/devices/'.$session->deviceId)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(ApiDevice::query()->findOrFail($session->deviceId)->isLive())->toBeFalse();
+});
+
+it('keeps a revoked device on the screen, with why', function (): void {
+    $session = $this->sessions->open($this->contact, 'iPhone', DevicePlatform::Ios, []);
+    $this->sessions->revoke(ApiDevice::query()->findOrFail($session->deviceId), reason: 'reused');
+
+    $this->actingAs($this->contact, 'client')
+        ->get('/security')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('devices', 1)
+            ->where('devices.0.revokedReason', 'A key was presented twice'));
+});
+
+/**
+ * A 404 rather than a 403: a 403 confirms the row exists, which on a table
+ * of somebody's devices is an answer nobody is owed.
+ */
+it('answers 404 for a device belonging to somebody else', function (): void {
+    $other = Contact::factory()->create(['portal_access' => true]);
+    $session = $this->sessions->open($other, 'Their phone', DevicePlatform::Android, []);
+
+    $this->actingAs($this->contact, 'client')
+        ->delete('/security/devices/'.$session->deviceId)
+        ->assertNotFound();
+
+    // Read outside the boundary on purpose: the other contact's own
+    // organization is what hides the row from this one, which is the
+    // narrowing doing its job before the owner check is even reached.
+    $theirs = ApiDevice::query()
+        ->withoutGlobalScope('organization')
+        ->findOrFail($session->deviceId);
+
+    expect($theirs->isLive())->toBeTrue();
+});

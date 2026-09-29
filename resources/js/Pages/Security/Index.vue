@@ -32,6 +32,16 @@ interface SessionRow {
   current: boolean
 }
 
+interface DeviceRow {
+  id: string
+  name: string
+  platform: string
+  platformLabel: string
+  lastSeenAt: string | null
+  revokedAt: string | null
+  revokedReason: string | null
+}
+
 interface LoginRow {
   id: string
   successful: boolean
@@ -44,6 +54,7 @@ const props = defineProps<{
   guard: string
   twoFactor: { enabled: boolean; pending: boolean; recoveryCodeCount: number }
   sessions: SessionRow[]
+  devices: DeviceRow[]
   loginHistory: LoginRow[]
 }>()
 
@@ -54,6 +65,13 @@ const layout = computed(() => (props.guard === 'staff' ? AdminLayout : ClientLay
 const base = computed(() => (props.guard === 'staff' ? '/admin/security' : '/security'))
 
 const recoveryCodes = computed<string[] | null>(() => page.props.flash.recoveryCodes ?? null)
+
+const DEVICE_COLUMNS: TableColumn[] = [
+  { key: 'name', label: t('identity.devices.name') },
+  { key: 'platform', label: t('identity.devices.platform') },
+  { key: 'seen', label: t('identity.devices.last_used') },
+  { key: 'actions', label: '' },
+]
 
 const SESSION_COLUMNS: TableColumn[] = [
   { key: 'device', label: t('ui.security.device') },
@@ -105,6 +123,22 @@ function revokeOthers(): void {
 
 function revoke(id: string): void {
   router.delete(`${base.value}/sessions/${id}`, { preserveScroll: true })
+}
+
+/*
+ * A device is a level-2 confirmation and a browser session is not: signing
+ * a browser out is one click away from signing back in, and revoking an
+ * application stops whatever it was doing, everywhere, immediately.
+ */
+const revokingDevice = ref<DeviceRow | null>(null)
+
+function revokeDevice(): void {
+  const device = revokingDevice.value
+
+  if (device === null) return
+
+  revokingDevice.value = null
+  router.delete(`${base.value}/devices/${device.id}`, { preserveScroll: true })
 }
 
 function formatTime(value: string): string {
@@ -246,6 +280,53 @@ function describeDevice(agent: string | null): string {
         </AppTable>
       </DetailSection>
 
+      <!--
+        Drawn only when there is one. An empty panel on every account that
+        has never opened an application is noise on a screen everybody
+        visits.
+      -->
+      <DetailSection
+        v-if="devices.length > 0"
+        :title="t('identity.devices.title')"
+        :description="t('identity.devices.description')"
+        :divided="false"
+      >
+        <AppTable name="security-devices" :columns="DEVICE_COLUMNS">
+          <AppTableRow v-for="device in devices" :key="device.id">
+            <td data-col="name">
+              <span class="font-medium" :class="device.revokedAt ? 'text-content-muted' : ''">
+                {{ device.name }}
+              </span>
+              <!--
+                A row's state belongs beside its name, not in the column
+                that holds a date: "Last used" above "Revoked, a key was
+                presented twice" is a heading that does not describe its
+                cell.
+              -->
+              <div v-if="device.revokedAt" class="text-chrome text-content-muted">
+                {{ t('identity.devices.revoked_on', { date: formatTime(device.revokedAt) }) }}
+                <template v-if="device.revokedReason">
+                  &middot; {{ device.revokedReason }}</template
+                >
+              </div>
+            </td>
+            <td data-col="platform" class="text-content-muted">{{ device.platformLabel }}</td>
+            <td data-col="seen" class="text-content-muted">
+              {{
+                device.lastSeenAt ? formatTime(device.lastSeenAt) : t('identity.devices.never_seen')
+              }}
+            </td>
+            <td data-col="actions" class="text-right">
+              <span v-if="!device.revokedAt" class="row-actions">
+                <AppButton size="sm" variant="danger-subtle" @click="revokingDevice = device">
+                  {{ t('identity.devices.revoke') }}
+                </AppButton>
+              </span>
+            </td>
+          </AppTableRow>
+        </AppTable>
+      </DetailSection>
+
       <DetailSection
         :title="t('ui.security.attempts')"
         :description="t('ui.security.attempts_intro')"
@@ -267,6 +348,16 @@ function describeDevice(agent: string | null): string {
         </AppTable>
       </DetailSection>
     </div>
+
+    <AppConfirm
+      :open="revokingDevice !== null"
+      level="consequential"
+      :title="t('identity.devices.confirm_title')"
+      :description="t('identity.devices.confirm_body', { name: revokingDevice?.name ?? '' })"
+      :confirm-label="t('identity.devices.revoke')"
+      @close="revokingDevice = null"
+      @confirm="revokeDevice"
+    />
 
     <AppConfirm
       v-model:open="confirmingTwoFactor"

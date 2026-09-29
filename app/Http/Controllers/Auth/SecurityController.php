@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Application\Api\Devices\DeviceSessions;
 use App\Application\Identity\SessionRegistry;
 use App\Application\Identity\TwoFactorAuthenticator;
 use App\Http\Controllers\Auth\Concerns\ResolvesGuard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Identity\PasswordUpdateRequest;
 use App\Http\Requests\Identity\TwoFactorConfirmRequest;
+use App\Infrastructure\Api\Models\ApiDevice;
 use App\Infrastructure\Identity\Contracts\AuthenticatableAccount;
 use App\Infrastructure\Identity\Models\AuthenticatedSession;
 use App\Infrastructure\Identity\Models\LoginHistory;
@@ -38,6 +40,7 @@ final class SecurityController extends Controller
     public function __construct(
         private readonly TwoFactorAuthenticator $twoFactor,
         private readonly SessionRegistry $sessions,
+        private readonly DeviceSessions $devices,
         private readonly CurrentActor $actor,
         private readonly CurrentBrand $brands,
     ) {}
@@ -62,6 +65,34 @@ final class SecurityController extends Controller
                     'current' => $session->isCurrent($request->session()->getId()),
                 ],
             )->values(),
+            /*
+             * Applications, beside browsers. A revoked device is listed too,
+             * greyed and with why: "this phone was revoked on the 14th" is
+             * the record somebody wants, and a row that vanished is a
+             * question nobody can answer afterwards.
+             */
+            'devices' => ApiDevice::query()
+                ->where('owner_type', $subject->getMorphClass())
+                ->where('owner_id', (string) $subject->getKey())
+                ->orderByRaw('revoked_at is not null')
+                ->latest('last_seen_at')
+                ->orderByDesc('id')
+                ->limit(50)
+                ->get()
+                ->map(fn (ApiDevice $device): array => [
+                    'id' => $device->id,
+                    'name' => $device->name,
+                    // Two fields, always: the value for the tone and the
+                    // word for the screen.
+                    'platform' => $device->platform->value,
+                    'platformLabel' => (string) __($device->platform->labelKey()),
+                    'lastSeenAt' => $device->last_seen_at?->toIso8601String(),
+                    'revokedAt' => $device->revoked_at?->toIso8601String(),
+                    'revokedReason' => $device->revoked_reason === null
+                        ? null
+                        : (string) __('identity.devices.reasons.'.$device->revoked_reason),
+                ])
+                ->values(),
             'loginHistory' => LoginHistory::query()
                 ->where('subject_type', $subject->getMorphClass())
                 ->where('subject_id', (string) $subject->getKey())
@@ -168,6 +199,31 @@ final class SecurityController extends Controller
         $this->twoFactor->disable($this->subject());
 
         return back()->with('status', __('identity.two_factor.disabled'));
+    }
+
+    /**
+     * End an application's session, everywhere, now.
+     *
+     * The device is looked up **narrowed to the person asking** rather than
+     * by id alone, and the mismatch answers 404 rather than 403: a 403
+     * confirms the row exists, which on a table of somebody's devices is an
+     * answer nobody is owed. The client area's ownership rule, applied here.
+     */
+    public function revokeDevice(Request $request, string $device): RedirectResponse
+    {
+        $subject = $this->subject();
+
+        $record = ApiDevice::query()
+            ->where('owner_type', $subject->getMorphClass())
+            ->where('owner_id', (string) $subject->getKey())
+            ->whereNull('revoked_at')
+            ->findOrFail($device);
+
+        // Audited inside, with the actor, because this is one of the two
+        // revocations a person performs rather than the platform.
+        $this->devices->revoke($record, reason: 'lost', by: $subject);
+
+        return back()->with('status', __('identity.devices.revoked'));
     }
 
     public function revokeSession(Request $request, string $session): RedirectResponse

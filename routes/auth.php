@@ -96,6 +96,14 @@ return function (Guard $guard): void {
 
             Route::delete('sessions', [SecurityController::class, 'revokeOtherSessions'])->name('sessions.others');
             Route::delete('sessions/{session}', [SecurityController::class, 'revokeSession'])->name('sessions.revoke');
+
+            /*
+             * A device is a session too — an application's rather than a
+             * browser's — so it is revoked from the same screen. Somebody
+             * looking for "where am I signed in" should find both answers
+             * in one place.
+             */
+            Route::delete('devices/{device}', [SecurityController::class, 'revokeDevice'])->name('devices.revoke');
         });
     });
 };

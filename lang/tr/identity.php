@@ -54,7 +54,10 @@ return [
         'api_coming' => 'Herkese açık API sonraki bir sürümde geliyor. Şimdi oluşturulan anahtarlar onunla çalışacak.',
     ],
     'devices' => [
-        'title' => 'Cihazlar',
+        'title' => 'Uygulamalar',
+        'name' => 'Uygulama',
+        'platform' => 'Platform',
+        'last_used' => 'Son kullanım',
         'description' => 'Oturum açtığınız uygulamalar. Bir cihaz, kullandığınız sürece kendini yenileyen kısa ömürlü bir anahtar taşır; birini iptal etmek onu her yerde anında durdurur.',
         'none' => 'Hiçbir uygulamadan oturum açılmamış.',
         'revoke' => 'İptal et',

@@ -1585,7 +1585,7 @@ return [
         'codes_title' => 'Save these recovery codes now.',
         'codes_body' => 'Each one can be used once if you lose your authenticator. They will not be shown again.',
 
-        'devices' => 'Signed-in devices',
+        'devices' => 'Signed-in browsers',
         'device' => 'Device',
         'address' => 'Address',
         'last_active' => 'Last active',
