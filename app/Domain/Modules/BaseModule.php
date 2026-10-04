@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Modules;
 
 use App\Domain\Access\PermissionDefinition;
+use App\Domain\Ai\Contracts\AiProvider;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
@@ -82,6 +83,21 @@ abstract class BaseModule implements Module
      * @return list<InfrastructureAdapter>
      */
     public function adapters(): array
+    {
+        return [];
+    }
+
+    /**
+     * Providers that can answer a prompt (ADR 0050).
+     *
+     * A list rather than one, like gateways and unlike the risk evaluator: a
+     * seller may reasonably hold a contract with two vendors and want a
+     * cheaper model for summaries than for a customer-facing draft. Which one
+     * answers a given feature is the installation's setting, not the module's.
+     *
+     * @return list<AiProvider>
+     */
+    public function aiProviders(): array
     {
         return [];
     }

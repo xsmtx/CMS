@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Modules\Contracts;
 
 use App\Domain\Access\PermissionDefinition;
+use App\Domain\Ai\Contracts\AiProvider;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
@@ -91,6 +92,18 @@ interface Module
      * @return list<InfrastructureAdapter>
      */
     public function adapters(): array;
+
+    /**
+     * Providers that can answer a prompt (ADR 0050).
+     *
+     * A list rather than one: a seller may hold a contract with two vendors
+     * and want a cheaper model for an internal summary than for a draft a
+     * customer will read. Which one answers a given feature is the
+     * installation's setting rather than the module's.
+     *
+     * @return list<AiProvider>
+     */
+    public function aiProviders(): array;
 
     /**
      * Permissions this module needs, which become real permissions: they

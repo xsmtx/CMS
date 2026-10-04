@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Modules;
 
 use App\Domain\Access\PermissionDefinition;
+use App\Domain\Ai\Contracts\AiProvider;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
@@ -101,6 +102,10 @@ final readonly class InspectModule
             [ExtensionPoint::InfrastructureAdapter, array_map(
                 static fn (InfrastructureAdapter $adapter): string => $adapter->key(),
                 $module->adapters(),
+            )],
+            [ExtensionPoint::AiProvider, array_map(
+                static fn (AiProvider $provider): string => $provider->key(),
+                $module->aiProviders(),
             )],
             [ExtensionPoint::HealthCheck, array_map(
                 static fn (HealthCheck $check): string => $check->key(),

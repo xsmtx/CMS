@@ -41,6 +41,18 @@ enum ExtensionPoint: string
      */
     case InfrastructureAdapter = 'infrastructure_adapter';
 
+    /**
+     * Something that can answer a prompt (ADR 0050).
+     *
+     * Its own member rather than an `InfrastructureAdapter`, because an
+     * operator reading a module's row is being asked a different question
+     * about it. An infrastructure adapter reads their machines; **an AI
+     * provider is a third party that a customer's words may be sent to**, and
+     * filing the two under one heading would hide the only fact somebody
+     * needs before enabling it.
+     */
+    case AiProvider = 'ai_provider';
+
     public function labelKey(): string
     {
         return 'modules.extension_points.'.$this->value;

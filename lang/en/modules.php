@@ -80,6 +80,10 @@ return [
         'navigation' => 'Menu item',
         'widget' => 'Dashboard widget',
         'infrastructure_adapter' => 'Infrastructure adapter',
+        // Named as what it is rather than as "AI": an operator reading a
+        // module's row is being told a third party may receive their
+        // customers' words.
+        'ai_provider' => 'AI provider',
     ],
     'settings' => [
         'title' => 'Settings',

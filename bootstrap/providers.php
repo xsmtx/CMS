@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Providers\AccessServiceProvider;
+use App\Providers\AiServiceProvider;
 use App\Providers\ApiServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AutomationServiceProvider;
@@ -27,6 +28,7 @@ return [
     ApiServiceProvider::class,
     AutomationServiceProvider::class,
     DomainServiceProvider::class,
+    AiServiceProvider::class,
     NotificationServiceProvider::class,
     PlatformServiceProvider::class,
     AccessServiceProvider::class,

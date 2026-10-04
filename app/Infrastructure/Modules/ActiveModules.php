@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Modules;
 
 use App\Domain\Access\PermissionDefinition;
+use App\Domain\Ai\Contracts\AiProvider;
 use App\Domain\Billing\Contracts\PaymentGateway;
 use App\Domain\Domains\Contracts\DomainRegistrar;
 use App\Domain\Health\Contracts\HealthCheck;
@@ -108,6 +109,16 @@ final class ActiveModules
     public function channels(): array
     {
         return $this->collect(static fn (Module $module): array => $module->channels());
+    }
+
+    /**
+     * Providers that can answer a prompt (ADR 0050).
+     *
+     * @return list<AiProvider>
+     */
+    public function aiProviders(): array
+    {
+        return $this->collect(static fn (Module $module): array => $module->aiProviders());
     }
 
     /**

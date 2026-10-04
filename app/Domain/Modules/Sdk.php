@@ -33,11 +33,19 @@ namespace App\Domain\Modules;
  * in (§18), plus `AdapterArea::Site` and two capabilities. New members on
  * enums a module only reads, and a contract nothing has implemented.
  *
+ * 1.12 is the borderline one, and it is minor by this file's own rule:
+ * `AiProvider` is a contract nothing had implemented, but `aiProviders()`
+ * was added to the `Module` **interface** as well as to `BaseModule`. A
+ * module extending `BaseModule` — which is the documented extension path and
+ * what every module in `modules/` does — gains the default and has nothing
+ * to look at. One implementing the interface directly would not compile, and
+ * that is the case this paragraph exists to warn about rather than to hide.
+ *
  * Changing or removing anything a module implements or calls is a major one.
  * A major bump is a decision, not a consequence — it makes every existing
  * module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.11';
+    public const string VERSION = '1.12';
 }
