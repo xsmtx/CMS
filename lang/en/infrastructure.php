@@ -97,6 +97,7 @@ return [
     ],
 
     'areas' => [
+        'kubernetes' => 'Clusters',
         'site' => 'Web applications',
         'monitoring' => 'Monitoring',
         'network_device' => 'Network devices',
@@ -337,6 +338,17 @@ return [
             'address' => 'Address',
             'weight' => 'Weight',
             'state' => 'State',
+        ],
+    ],
+
+    'kubernetes' => [
+        'health' => [
+            'healthy' => 'Healthy',
+            // The member a three-state scale loses: a deployment with three of
+            // four replicas is serving traffic and is one failure from not.
+            'degraded' => 'Degraded',
+            'critical' => 'Critical',
+            'unknown' => 'Not reported',
         ],
     ],
 

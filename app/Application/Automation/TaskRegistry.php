@@ -13,6 +13,7 @@ use App\Application\Automation\Runs\CollectDdosEvents;
 use App\Application\Automation\Runs\CollectProtections;
 use App\Application\Automation\Runs\CollectTelemetry;
 use App\Application\Automation\Runs\CollectUsage;
+use App\Application\Automation\Runs\DiscoverKubernetes;
 use App\Application\Automation\Runs\DiscoverLoadBalancers;
 use App\Application\Automation\Runs\DiscoverPower;
 use App\Application\Automation\Runs\DiscoverSites;
@@ -80,6 +81,7 @@ final readonly class TaskRegistry
             AutomationTask::Power => DiscoverPower::class,
             AutomationTask::Sites => DiscoverSites::class,
             AutomationTask::Workspaces => DiscoverWorkspaces::class,
+            AutomationTask::Kubernetes => DiscoverKubernetes::class,
             AutomationTask::Reconcile => Reconcile::class,
             AutomationTask::Leakage => CheckLeakage::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,

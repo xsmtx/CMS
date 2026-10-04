@@ -1,0 +1,47 @@
+{
+    "slug": "kubernetes",
+    "name": "Kubernetes",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Reads a cluster's nodes and workloads so the graph can say which customer is affected when a node drains. Reads only: it will not scale, drain or delete anything.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.14",
+    "platform": "*",
+    "namespace": "InfraCMS\\Kubernetes",
+    "entrypoint": "KubernetesModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "API server address",
+            "type": "text",
+            "required": true,
+            "hint": "Where the Kubernetes API answers, for example https://k8s.dc2.example.com:6443."
+        },
+        {
+            "key": "cluster_name",
+            "label": "What to call this cluster",
+            "type": "text",
+            "required": false,
+            "hint": "A cluster does not know its own name. Leave it empty and the address is used."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a cluster using its own certificate authority on a network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "15",
+            "hint": "A busy API server must not become an operator staring at a spinner."
+        }
+    ]
+}

@@ -63,6 +63,10 @@ return [
             'label' => 'Gelir kaçağı',
             'description' => 'Bu kurulumun kendi kayıtlarına dört soru sorar: hangi aktif hizmet, alan adı ve ek için fatura kesilmemiş ve hangi ödemeler hiçbir faturaya bağlanmamış.',
         ],
+        'kubernetes' => [
+            'label' => 'Küme envanteri',
+            'description' => 'Her kümeye hangi makinelere sahip olduğunu ve üzerlerinde ne çalıştığını sorar; böylece bir düğüm boşaltıldığında kimin etkilendiğini grafik söyleyebilir.',
+        ],
         'workspaces' => [
             'label' => 'Çalışma alanı envanteri',
             'description' => 'Her kod-olarak-altyapı aracına hangi çalışma alanlarına sahip olduğunu sorar; böylece biri için değişiklik istenebilir.',

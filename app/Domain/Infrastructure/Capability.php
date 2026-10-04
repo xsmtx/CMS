@@ -110,6 +110,18 @@ enum Capability: string
     case UsageRead = 'metering.usage.read';
 
     /**
+     * What a cluster is running (§25).
+     *
+     * Read only, and there is deliberately no write beside it. Scaling a
+     * deployment, draining a node and deleting a namespace are all things a
+     * cluster would accept over the same API; each belongs behind §6's
+     * guarded workflow rather than behind a capability anything could claim,
+     * which is what `FirewallPolicyWrite` and `DnsRecordWrite` each say from
+     * their own side.
+     */
+    case KubernetesRead = 'kubernetes.workload.read';
+
+    /**
      * Whether an address is on a blocklist (§13).
      *
      * Read only, and there is deliberately no write beside it: asking a
@@ -176,6 +188,7 @@ enum Capability: string
             self::UpsStatusRead => AdapterArea::Ups,
             self::BackupStatusRead, self::BackupRunWrite, self::RestoreWrite => AdapterArea::Backup,
             self::AutomationStateRead, self::AutomationApplyWrite => AdapterArea::Automation,
+            self::KubernetesRead => AdapterArea::Kubernetes,
             self::LogQueryRead => AdapterArea::Log,
             self::SiteInventoryRead, self::SiteVulnerabilityRead => AdapterArea::Site,
             self::SecretRead, self::SecretWrite => AdapterArea::Secret,

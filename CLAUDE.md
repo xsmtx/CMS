@@ -4526,3 +4526,42 @@ failed to load — and the status beside the heading already says nobody has.
 **SDK 1.13**: `InfrastructureAsCodeProvider`, `InfrastructureAsCodeWriter` and
 the three value objects they speak in, plus `ChangeTarget`. Minor — contracts
 nothing had implemented, and an enum core branches on that a module only reads.
+
+**Phase J is complete** (`docs/architecture/phase-j-result.md`): vendors and
+contracts, licence pools and their three-way difference, `ChangeTarget` with
+the Terraform contracts and module, and the Kubernetes read. Handoff #2's
+lettered phases A to J are finished.
+
+**Kubernetes is the graph, narrowed, and it has no screens of its own.** §25
+asks for "hosting-service context rather than replacing Rancher", which the
+Explorer and the impact figures already draw. The edge that earns the family is
+**server hosts cluster-node**, matched by hostname with ambiguity refused: it
+is what joins a workload to the services a customer bought, without a workload
+ever pointing at a customer's service — which `ResourceGraph::attach()` would
+refuse anyway, the wall IPAM and storage each hit.
+
+Four Kubernetes particulars, each pinned by a test:
+
+- **A cluster does not know its own name.** There is no endpoint for it, so the
+  name is configuration and the key is the address — a node key built from a
+  name an operator can retype would move the moment they did.
+- **A node's condition is a list and `Ready` is not the first entry.** Reading
+  `status.conditions[0]` answers whatever the kubelet reported first, which on
+  a healthy node is usually `MemoryPressure: "False"` — and that read would
+  report every node in every cluster as critical.
+- **`Ready` carries the *string* `"True"`, `"False"` or `"Unknown"`.** A JSON
+  boolean is the obvious reading and is wrong, and `"Unknown"` is what a node
+  whose kubelet went quiet says — which is not the same answer as `"False"`.
+- **An unscheduled pod has no `spec.nodeName`**, and reading that as `''` puts
+  every pending pod on a node called "", which is one more node than the
+  cluster has.
+
+**`KubernetesProviderAdapter`, not `KubernetesProvider`** — that name belongs
+to the contract it implements, and two classes one `use` statement apart is two
+classes somebody has to disambiguate on every line. The same collision
+`LicencePoolController` avoided, caught before it happened this time.
+
+**`resource_edges` names its ends `from_node_id` and `to_node_id`**, not
+`container_id`/`contained_id` — which is what `ResourceGraph::attach()`'s named
+arguments are called. A test querying the table directly wants the column
+names.

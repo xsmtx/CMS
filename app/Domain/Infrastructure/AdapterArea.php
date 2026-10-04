@@ -67,6 +67,17 @@ enum AdapterArea: string
      */
     case Site = 'site';
 
+    /**
+     * A container platform, read for hosting-service context (§25).
+     *
+     * The third area §27's list does not name, and `Automation` is again the
+     * nearest and not near: Terraform describes infrastructure a provider
+     * intends, and a cluster reports what is running. An operator turning on
+     * "automation" has not agreed to let this platform read every namespace
+     * they have.
+     */
+    case Kubernetes = 'kubernetes';
+
     public function labelKey(): string
     {
         return 'infrastructure.areas.'.$this->value;

@@ -86,6 +86,7 @@ return [
     ],
 
     'areas' => [
+        'kubernetes' => 'Kümeler',
         'site' => 'Web uygulamaları',
         'monitoring' => 'İzleme',
         'network_device' => 'Ağ cihazları',
@@ -301,6 +302,15 @@ return [
             'address' => 'Adres',
             'weight' => 'Ağırlık',
             'state' => 'Durum',
+        ],
+    ],
+
+    'kubernetes' => [
+        'health' => [
+            'healthy' => 'Sağlıklı',
+            'degraded' => 'Bozulmuş',
+            'critical' => 'Kritik',
+            'unknown' => 'Bildirilmedi',
         ],
     ],
 

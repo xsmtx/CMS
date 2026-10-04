@@ -219,6 +219,15 @@ enum AutomationTask: string
     case Workspaces = 'workspaces';
 
     /**
+     * Asking every cluster what it is running (§25).
+     *
+     * Hourly. A workload list moves when somebody deploys, and a node that
+     * stopped answering is found by whatever is monitoring it rather than by
+     * this.
+     */
+    case Kubernetes = 'kubernetes';
+
+    /**
      * Comparing what this platform believes against what providers report
      * (§22).
      *
@@ -315,7 +324,7 @@ enum AutomationTask: string
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
-            self::LoadBalancers, self::Machines, self::Reconcile, self::Workspaces => 60,
+            self::LoadBalancers, self::Machines, self::Reconcile, self::Workspaces, self::Kubernetes => 60,
             self::ZoneHealth, self::Reputation, self::Usage, self::Sites, self::Leakage => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

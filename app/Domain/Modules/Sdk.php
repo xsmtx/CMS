@@ -47,11 +47,16 @@ namespace App\Domain\Modules;
  * reads. Two contracts nothing had implemented, so no existing module has
  * anything to look at.
  *
+ * 1.14 is the last of that shape: `KubernetesProvider` and the four value
+ * objects it speaks in (§25), plus `AdapterArea::Kubernetes` and one
+ * capability. A contract nothing had implemented, and members on enums a
+ * module only reads.
+ *
  * Changing or removing anything a module implements or calls is a major one.
  * A major bump is a decision, not a consequence — it makes every existing
  * module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.13';
+    public const string VERSION = '1.14';
 }

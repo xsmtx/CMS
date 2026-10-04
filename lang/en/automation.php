@@ -63,6 +63,10 @@ return [
             'label' => 'Revenue leakage',
             'description' => 'Asks four questions about this installation’s own rows: which active services, domains and addons nothing has invoiced, and which payments are attached to no invoice.',
         ],
+        'kubernetes' => [
+            'label' => 'Cluster inventory',
+            'description' => 'Asks every cluster which machines it has and what is running on them, so the graph can say who is affected when a node drains.',
+        ],
         'workspaces' => [
             'label' => 'Workspace inventory',
             'description' => 'Asks every infrastructure-as-code tool what workspaces it has, so a change can be requested against one.',
