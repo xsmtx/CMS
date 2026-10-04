@@ -39,6 +39,7 @@ use App\Infrastructure\Support\Models\TicketReply;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -385,6 +386,7 @@ final class TicketController extends Controller
             'ai' => [
                 'reply' => $assistant->allows(AiFeature::TicketReply),
                 'summary' => $assistant->allows(AiFeature::TicketSummary),
+                'triage' => $assistant->allows(AiFeature::TicketTriage),
             ],
         ]);
     }
@@ -456,6 +458,68 @@ final class TicketController extends Controller
         ]);
     }
 
+    /**
+     * Which department this ticket looks like (ADR 0050).
+     *
+     * **A suggestion beside the field, never the stored value.** Nothing here
+     * writes `department_id`: the answer comes back as a flashed suggestion
+     * and an operator presses the select themselves. Routing a customer’s
+     * ticket is a decision with a queue and an SLA behind it, and a model
+     * inferring it is not the same thing as somebody choosing it.
+     *
+     * **The answer is matched back exactly**, against the names that were
+     * sent. A model asked "which department" returns a plausible word, and a
+     * platform that fuzzy-matched it would put a customer in whichever queue
+     * was nearest — the `RecordSamples::byHostname()` rule, where ambiguity
+     * is refused rather than resolved. No match is no suggestion, and the
+     * screen says so rather than drawing a blank.
+     */
+    public function triage(Ticket $ticket, Draft $drafts, TicketPrompts $prompts): RedirectResponse
+    {
+        $this->authorize('update', $ticket);
+
+        /** @var StaffUser $author */
+        $author = $this->actor->model();
+
+        $departments = Department::query()->orderBy('name')->get();
+
+        if ($departments->isEmpty()) {
+            // Nothing to choose from is not a failure of the assistant, and
+            // asking a vendor to pick from an empty list would be paying for
+            // an answer that cannot exist.
+            return back()->withErrors(['department_id' => __('ai.errors.no_departments')]);
+        }
+
+        try {
+            $completion = $drafts->write(
+                $prompts->triage($ticket, array_values(array_map(
+                    static fn (Department $department): string => $department->name,
+                    $departments->all(),
+                ))),
+                $author,
+            );
+        } catch (AiUnavailable $refusal) {
+            return back()->withErrors(['department_id' => $refusal->worded()]);
+        }
+
+        $answer = trim($completion->text);
+
+        $match = $departments->first(
+            static fn (Department $department): bool => mb_strtolower($department->name) === mb_strtolower($answer),
+        );
+
+        if (! $match instanceof Department) {
+            return back()->withErrors(['department_id' => __('ai.errors.no_department_matched')]);
+        }
+
+        return back()->with('suggestion', [
+            'field' => 'department_id',
+            'value' => $match->id,
+            'label' => $match->name,
+            'model' => $completion->model,
+        ]);
+    }
+
     public function update(
         Request $request,
         Ticket $ticket,
@@ -463,17 +527,35 @@ final class TicketController extends Controller
     ): RedirectResponse {
         $this->authorize('update', $ticket);
 
+        /*
+         * Validated here and not only on the open form. Nothing checked these
+         * before, so a department id that named nothing was written — and an
+         * unrouted ticket saved `''` into `department_id`, because the filter
+         * below only drops nulls and an empty select posts an empty string.
+         * A rule naming a table names the **table**: `support_departments`.
+         */
+        $data = $request->validate([
+            'department_id' => ['nullable', 'string', 'exists:support_departments,id'],
+            'assigned_to' => ['nullable', 'string', 'exists:staff_users,id'],
+            'priority' => ['nullable', 'string', Rule::enum(TicketPriority::class)],
+            'status' => ['nullable', 'string', Rule::enum(TicketStatus::class)],
+        ]);
+
         $attributes = array_filter([
-            'department_id' => $request->input('department_id'),
-            'assigned_to' => $request->input('assigned_to'),
-            'priority' => $request->input('priority'),
-        ], static fn (mixed $value): bool => $value !== null);
+            // An empty choice is "nobody", which is null rather than ''.
+            'department_id' => ($data['department_id'] ?? '') === '' ? null : $data['department_id'],
+            'assigned_to' => ($data['assigned_to'] ?? '') === '' ? null : $data['assigned_to'],
+            'priority' => ($data['priority'] ?? '') === '' ? null : $data['priority'],
+        ], static fn (mixed $value, string $key): bool => $value !== null || in_array($key, [
+            // These two are legitimately cleared; a priority is not.
+            'department_id', 'assigned_to',
+        ], strict: true), ARRAY_FILTER_USE_BOTH);
 
         if ($attributes !== []) {
             $ticket->update($attributes);
         }
 
-        $status = $request->input('status');
+        $status = $data['status'] ?? null;
 
         if (is_string($status) && $status !== '') {
             $transitions->handle($ticket, TicketStatus::from($status), $this->actor->model());

@@ -16,7 +16,7 @@
  * The timeline is newest first and append-only. What was believed at half past
  * two is what a postmortem is written from, so nothing here edits or deletes.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -122,8 +122,11 @@ const props = defineProps<{
   unattached: { id: string; subject: string; rule: string | null }[]
   affected: AffectedCustomer[]
   can: { manage: boolean; credit: boolean; confirmed: boolean }
+  // Whether this seller turned the incident draft on (ADR 0050).
+  ai: { update: boolean }
 }>()
 
+const page = usePage()
 const { t } = useTranslations()
 
 const ALERT_COLUMNS: TableColumn[] = [
@@ -158,6 +161,42 @@ const update = useForm({
 })
 
 const resolving = ref(false)
+
+/*
+ * The draft, flashed rather than stored: a draft is not an update until
+ * somebody posts it, and a table of drafts nobody posted would be a second
+ * copy of what this incident said (ADR 0050).
+ */
+const drafting = ref(false)
+
+const draft = computed(() => page.props.flash.draft ?? null)
+
+function askForDraft(): void {
+  drafting.value = true
+
+  router.post(
+    `/admin/reliability/incidents/${props.incident.id}/draft`,
+    {},
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        drafting.value = false
+      },
+      onSuccess: () => {
+        // Appended rather than replacing: somebody who has already started
+        // typing has not asked to lose it.
+        if (draft.value !== null) {
+          update.body =
+            update.body === ''
+              ? draft.value.text
+              : `${update.body}
+
+${draft.value.text}`
+        }
+      },
+    },
+  )
+}
 
 const postmortem = useForm({ postmortem: props.incident.postmortem ?? '' })
 
@@ -351,6 +390,16 @@ function lasted(seconds: number | null): string {
         v-if="can.manage && incident.state !== 'resolved'"
         :title="t('reliability.incidents.post_update')"
       >
+        <!--
+          Beside the box it fills. §15's rule that the state and the sentence
+          are one act is untouched: this writes nothing, and `note()` still
+          moves the state when the operator presses the button below.
+        -->
+        <template v-if="ai.update" #actions>
+          <AppButton size="sm" variant="ghost" :loading="drafting" @click="askForDraft">
+            {{ t('ai.draft_update') }}
+          </AppButton>
+        </template>
         <form class="flex max-w-[80ch] flex-col gap-4" @submit.prevent="submit">
           <AppTextarea
             v-model="update.body"
@@ -358,6 +407,11 @@ function lasted(seconds: number | null): string {
             :rows="3"
             :error="update.errors.body"
           />
+
+          <!-- Said rather than assumed: a model wrote what is in the box. -->
+          <AppAlert v-if="draft" tone="info">
+            {{ t('ai.drafted', { model: draft.model }) }}
+          </AppAlert>
 
           <AppSelect
             v-model="update.state"

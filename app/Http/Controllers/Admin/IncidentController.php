@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Ai\AiSettings;
+use App\Application\Ai\Draft;
+use App\Application\Ai\IncidentPrompts;
 use App\Application\Billing\Exceptions\PaymentRefused;
 use App\Application\Reliability\AffectedCustomers;
 use App\Application\Reliability\Incidents;
 use App\Application\Reliability\IssueSlaCredit;
 use App\Application\Reports\MoneyByCurrency;
+use App\Domain\Ai\AiFeature;
+use App\Domain\Ai\Exceptions\AiUnavailable;
 use App\Domain\Reliability\AlertSeverity;
 use App\Domain\Reliability\Exceptions\CreditRefused;
 use App\Domain\Reliability\Exceptions\IncidentRefused;
@@ -83,6 +88,7 @@ final class IncidentController extends Controller
         Incident $incident,
         CurrentActor $actor,
         AffectedCustomers $affected,
+        AiSettings $settings,
     ): Response {
         $this->refuseUnless($actor, 'reliability.incidents.view');
 
@@ -155,6 +161,13 @@ final class IncidentController extends Controller
                 // product is a bare button press; this is the first one with
                 // a form behind it.
                 'confirmed' => $this->recentlyConfirmed(),
+            ],
+            // Whether this seller turned the incident draft on. Absent rather
+            // than disabled on the screen: a control that cannot do anything
+            // is a control that lies.
+            'ai' => [
+                'update' => $settings->forOrganization($incident->organization_id)
+                    ->allows(AiFeature::IncidentUpdate),
             ],
         ]);
     }
@@ -286,6 +299,40 @@ final class IncidentController extends Controller
         }
 
         return back()->with('status', __('reliability.incidents.noted'));
+    }
+
+    /**
+     * Ask for a draft of the next update (ADR 0050).
+     *
+     * It answers with text and writes nothing. The draft lands in the box the
+     * operator was going to type in, and `note()` still moves the state and
+     * writes the timeline when they press the button — §15’s rule that the
+     * state and the sentence are one act is untouched, because nothing here
+     * is an act.
+     *
+     * Behind `reliability.incidents.manage`, the same permission as writing
+     * the update by hand: somebody who may say what happened may ask for help
+     * wording it.
+     */
+    public function draft(
+        Incident $incident,
+        CurrentActor $actor,
+        Draft $drafts,
+        IncidentPrompts $prompts,
+    ): RedirectResponse {
+        $this->refuseUnless($actor, 'reliability.incidents.manage');
+
+        try {
+            $completion = $drafts->write($prompts->update($incident), $this->staff($actor));
+        } catch (AiUnavailable $refusal) {
+            return back()->withErrors(['body' => $refusal->worded()]);
+        }
+
+        return back()->with('draft', [
+            'text' => $completion->text,
+            'model' => $completion->model,
+            'kind' => 'incident_update',
+        ]);
     }
 
     public function attach(Request $request, Incident $incident, CurrentActor $actor, Incidents $incidents): RedirectResponse

@@ -4232,3 +4232,52 @@ translating one surface's call into another's is the interface layer's job.
 **MCP is absent from `openapi.json` on purpose.** It is not REST, and
 `tools/list` is the protocol's own answer to the question that document
 answers. A generated contract describing it would describe it twice.
+
+**I shipped two settings that nothing read, and this file warns about exactly
+that.** `AiFeature::TicketTriage` and `AiFeature::IncidentUpdate` were
+declared, offered as checkboxes on the assistant's settings screen, and
+consulted by no code: an owner could tick "Suggest a department" and nothing
+would happen. "A setting that is stored and read by nothing is worse than a
+setting that is absent" was written after the tax screen shipped three of
+them; writing the rule down did not stop me adding two more a few hours
+later. Both are wired now, and `AiDraftTest` greps the controllers for
+`allows(AiFeature::X)` so the next one fails at the gate.
+
+**That guard's first version could only agree with itself.** It searched for
+the member's *name* anywhere under `app/`, which matches the prompt builder —
+so it passed while the feature was unwired. `allows(AiFeature::X)` is what
+"the setting is read" actually means, because that is the call deciding
+whether a screen offers the thing. The same trap `CapacityPanelTest` cost
+once: **an assertion built the way the code builds its answer can only agree
+with it.** It was checked against the real defect before being trusted, and
+`glob` with `**` does not recurse in PHP — `File::allFiles()` does.
+
+**Triage suggests and never chooses.** The departments travel *in* the prompt
+and the answer is matched back against them exactly, trimmed and case-folded.
+A model asked "which department" with no list invents a plausible one, and a
+platform that fuzzy-matched it would put a customer in whichever queue was
+nearest — `RecordSamples::byHostname()`'s rule, where the cost is somebody
+waiting in the wrong place. No match is **no suggestion**, said in words. The
+answer is capped at 24 tokens, which is also a guard: a model that started
+explaining itself gets truncated rather than matched against a department
+called "Billing, because the".
+
+**An incident's alerts and impact do not travel.** The timeline does, because
+that is what a next update is written from; the alerts name hostnames and the
+impact says what the outage was worth. `PublicStatus` refuses to publish both
+to customers, and a vendor is no more entitled to them than the internet is.
+
+**Three bugs on the ticket screen, none of them about AI**, all about the
+ticket nobody has routed — which is the ticket triage exists for, so adding
+the button is what put them in front of me:
+
+- **The Department select rendered blank.** No option had an empty value, so
+  a native `<select>` bound to `''` showed nothing — which reads as a control
+  that failed to load rather than as a ticket nobody has routed. The
+  "Assigned to" select beside it had the pattern right all along.
+- **Saving an unrouted ticket wrote `''` into `department_id`.** The handler
+  filtered on `!== null` and an empty select posts an empty string, so a
+  column holding a ULID got two quote marks.
+- **Nothing validated it at all.** `exists:support_departments,id` was on the
+  open form and not on this one, so any string was written. A rule naming a
+  table names the **table**, for the third time in this product.

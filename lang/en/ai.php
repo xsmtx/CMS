@@ -60,6 +60,9 @@ return [
     'internal_only' => 'Read by your staff only',
 
     'draft' => 'Draft a reply',
+    'draft_update' => 'Draft an update',
+    'suggest_department' => 'Suggest a department',
+    'suggested' => ':model suggests :value. Choose it yourself if you agree.',
     'drafting' => 'Writing…',
     'drafted' => 'Drafted by :model. Read it before you send it.',
     'summarise' => 'Summarise',
@@ -73,6 +76,10 @@ return [
     'tasks' => [
         'ticket_reply' => 'Write the next reply to this customer, as the support team. Be brief and concrete. Do not invent facts, prices, dates or promises. If something is unknown, say what you will find out.',
         'ticket_summary' => 'Summarise this conversation for a colleague picking it up: what the customer wants, what has been tried, and what is outstanding.',
+        // One name, chosen from the list above. Anything else is matched
+        // against nothing and shown as no suggestion.
+        'ticket_triage' => 'Answer with exactly one department name from the list, copied character for character, and nothing else. If none of them fits, answer with the single word NONE.',
+        'incident_update' => 'Write the next update on this incident, for the people affected by it. Say what is known now and what happens next. Do not promise a time you were not given, do not name a cause that is not in the timeline, and do not apologise more than once.',
     ],
 
     'errors' => [
@@ -83,6 +90,11 @@ return [
         'refused' => ':provider would not answer this one.',
         'empty_answer' => ':provider answered with nothing.',
         'not_permitted' => 'You do not have access to the assistant’s settings.',
+        // Nothing to choose from is not a failure of the assistant.
+        'no_departments' => 'There are no departments to choose between.',
+        // Matched exactly or not at all: a near miss would put a customer
+        // in whichever queue was nearest.
+        'no_department_matched' => 'No department was suggested — none of yours matched. Choose one yourself.',
     ],
 
     'usage' => [

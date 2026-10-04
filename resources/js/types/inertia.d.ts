@@ -74,6 +74,12 @@ export interface FlashProps {
    * customers' correspondence (ADR 0050).
    */
   draft?: { text: string; model: string; kind: string } | null
+  /**
+   * A value a model thinks belongs in a field. Shown beside it and never
+   * written: routing a customer's ticket is a decision with a queue and
+   * an SLA behind it (ADR 0050).
+   */
+  suggestion?: { field: string; value: string; label: string; model: string } | null
 }
 
 /**

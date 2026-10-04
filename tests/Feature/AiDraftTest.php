@@ -6,12 +6,15 @@ use App\Application\Access\SyncPermissions;
 use App\Application\Ai\AiProviders;
 use App\Application\Ai\Draft;
 use App\Application\Ai\TicketPrompts;
+use App\Application\Reliability\Incidents;
 use App\Domain\Access\PermissionRegistry;
 use App\Domain\Access\SystemRole;
 use App\Domain\Ai\AiFeature;
 use App\Domain\Ai\AiPrompt;
 use App\Domain\Ai\Exceptions\AiUnavailable;
 use App\Domain\Organizations\OrganizationType;
+use App\Domain\Reliability\AlertSeverity;
+use App\Domain\Reliability\IncidentState;
 use App\Domain\Support\TicketStatus;
 use App\Infrastructure\Ai\Models\AiSetting;
 use App\Infrastructure\Ai\Models\AiUsage;
@@ -20,11 +23,16 @@ use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Identity\Models\Contact;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Models\Organization;
+use App\Infrastructure\Reliability\Models\Alert;
+use App\Infrastructure\Reliability\Models\AlertRule;
+use App\Infrastructure\Reliability\Models\Incident;
+use App\Infrastructure\Support\Models\Department;
 use App\Infrastructure\Support\Models\Ticket;
 use App\Infrastructure\Support\Models\TicketReply;
 use App\Support\Organizations\OrganizationContext;
 use Database\Seeders\ProviderOrganizationSeeder;
 use Database\Seeders\SystemRoleSeeder;
+use Illuminate\Support\Facades\File;
 use Tests\Support\FakeAiProvider;
 
 /**
@@ -421,4 +429,303 @@ it('turns every feature off when the provider is cleared', function (): void {
     expect($setting->provider_key)->toBeNull()
         ->and($setting->enabled_features)->toBe([])
         ->and($setting->allows(AiFeature::TicketReply))->toBeFalse();
+});
+
+/**
+ * Triage: a suggestion beside the field, never the stored value.
+ */
+it('suggests a department and does not choose it', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::TicketTriage]);
+    $ticket = aiTicket();
+
+    $billing = Department::factory()->create([
+        'organization_id' => $this->provider->id,
+        'name' => 'Billing',
+    ]);
+
+    $answering = new FakeAiProvider(answer: 'Billing');
+    $registry = new AiProviders;
+    $registry->register($answering);
+    app()->instance(AiProviders::class, $registry);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/triage')
+        ->assertRedirect()
+        ->assertSessionHas('suggestion');
+
+    // Routing somebody's ticket is a decision with a queue and an SLA behind
+    // it, and nothing here made it.
+    expect($ticket->refresh()->department_id)->not->toBe($billing->id);
+});
+
+/**
+ * The one that would put a customer in the wrong queue.
+ */
+it('suggests nothing when the answer matches no department', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::TicketTriage]);
+    $ticket = aiTicket();
+
+    Department::factory()->create([
+        'organization_id' => $this->provider->id,
+        'name' => 'Billing',
+    ]);
+
+    // A plausible word that is not one of theirs. Fuzzy-matching it would put
+    // the customer in whichever queue was nearest.
+    $registry = new AiProviders;
+    $registry->register(new FakeAiProvider(answer: 'Accounts'));
+    app()->instance(AiProviders::class, $registry);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/triage')
+        ->assertRedirect()
+        ->assertSessionHasErrors('department_id')
+        ->assertSessionMissing('suggestion');
+});
+
+it('matches a department whatever case the model answered in', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::TicketTriage]);
+    $ticket = aiTicket();
+
+    Department::factory()->create([
+        'organization_id' => $this->provider->id,
+        'name' => 'Billing',
+    ]);
+
+    $registry = new AiProviders;
+    $registry->register(new FakeAiProvider(answer: '  billing  '));
+    app()->instance(AiProviders::class, $registry);
+
+    // Trimmed and case-folded is not fuzzy: it is the same name written
+    // untidily, which is different from a name they do not have.
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/triage')
+        ->assertRedirect()
+        ->assertSessionHas('suggestion');
+});
+
+it('says so rather than asking a vendor to choose from nothing', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::TicketTriage]);
+    $ticket = aiTicket();
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/triage')
+        ->assertRedirect()
+        ->assertSessionHasErrors('department_id');
+
+    // Nothing to choose from is not a failure of the assistant, and paying
+    // for an answer that cannot exist is still paying.
+    expect($this->ai->calls)->toBe(0);
+});
+
+it('sends the departments so the answer can be matched back', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::TicketTriage]);
+    $ticket = aiTicket();
+
+    Department::factory()->create([
+        'organization_id' => $this->provider->id,
+        'name' => 'Billing',
+    ]);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/triage');
+
+    // A model asked "which department" with no list invents a plausible one.
+    expect($this->ai->lastPrompt?->render() ?? '')->toContain('Billing');
+});
+
+/**
+ * Drafting an incident update: it writes nothing, so §15's rule that the
+ * state and the sentence are one act is untouched.
+ */
+it('drafts an incident update without posting it', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::IncidentUpdate]);
+
+    $incident = Incident::factory()->create([
+        'organization_id' => $this->provider->id,
+        'state' => IncidentState::Investigating,
+        'severity' => AlertSeverity::Critical,
+    ]);
+
+    $before = $incident->updates()->count();
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/reliability/incidents/'.$incident->id.'/draft')
+        ->assertRedirect()
+        ->assertSessionHas('draft');
+
+    // Nothing moved and nothing was written. `note()` still does both when
+    // the operator presses the button.
+    expect($incident->refresh()->updates()->count())->toBe($before)
+        ->and($incident->state)->toBe(IncidentState::Investigating);
+});
+
+/**
+ * An incident's alerts name hostnames and node keys, and its impact says what
+ * the outage was worth. The status page refuses to publish either; a vendor
+ * is no more entitled to them than the internet is.
+ */
+it('sends an incident’s timeline and neither its alerts nor its impact', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled([AiFeature::IncidentUpdate]);
+
+    $incident = Incident::factory()->create([
+        'organization_id' => $this->provider->id,
+        'title' => 'Storage degraded',
+        'state' => IncidentState::Investigating,
+        'severity' => AlertSeverity::Critical,
+    ]);
+
+    app(Incidents::class)->note(
+        incident: $incident,
+        body: 'Failover started.',
+        state: IncidentState::Identified,
+        actor: $admin->fresh(),
+    );
+
+    $rule = AlertRule::factory()->create(['organization_id' => $this->provider->id]);
+
+    $alert = Alert::factory()->create([
+        'organization_id' => $this->provider->id,
+        'alert_rule_id' => $rule->id,
+        'subject_label' => 'db1.internal.example',
+        'incident_id' => $incident->id,
+    ]);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/reliability/incidents/'.$incident->id.'/draft');
+
+    $sent = $this->ai->lastPrompt?->render() ?? '';
+
+    expect($sent)->toContain('Storage degraded')
+        ->and($sent)->toContain('Failover started.')
+        ->and($sent)->not->toContain($alert->subject_label);
+});
+
+it('refuses an incident draft to somebody who may not write one', function (): void {
+    aiEnabled([AiFeature::IncidentUpdate]);
+
+    $incident = Incident::factory()->create([
+        'organization_id' => $this->provider->id,
+        'state' => IncidentState::Investigating,
+        'severity' => AlertSeverity::Critical,
+    ]);
+
+    $nobody = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+
+    $this->actingAs($nobody->fresh(), 'staff')
+        ->post('/admin/reliability/incidents/'.$incident->id.'/draft')
+        ->assertForbidden();
+
+    expect($this->ai->calls)->toBe(0);
+});
+
+/**
+ * The defect this increment exists to close: two features were declared,
+ * offered on the settings screen, and read by nothing.
+ */
+it('reads every feature it offers', function (): void {
+    /*
+     * Greps for `allows(AiFeature::X)` specifically, not for the member's
+     * name. The first version of this looked for the name anywhere under
+     * `app/` and passed while a feature was unwired, because the *prompt
+     * builder* mentions it — an assertion that could only agree with itself,
+     * which is the trap `CapacityPanelTest` cost once already.
+     *
+     * Asking the settings object is what "the setting is read" means: it is
+     * the call that decides whether a screen offers the thing at all.
+     */
+    $sources = '';
+
+    // `glob` with `**` does not recurse in PHP, which the first attempt at
+    // this quietly relied on.
+    foreach (File::allFiles(app_path('Http/Controllers')) as $file) {
+        $sources .= (string) file_get_contents($file->getPathname());
+    }
+
+    foreach (AiFeature::cases() as $feature) {
+        // A setting that is stored and read by nothing is worse than a
+        // setting that is absent: an operator ticks it and nothing happens.
+        expect(str_contains($sources, 'allows(AiFeature::'.$feature->name.')'))->toBeTrue(
+            $feature->value.' is offered on the settings screen and nothing reads it.',
+        );
+    }
+});
+
+/**
+ * Three things the triage work found on the screen it was added to, none of
+ * them about AI. All three are about the ticket nobody has routed — which is
+ * exactly the ticket triage exists for.
+ */
+it('leaves an unrouted ticket unrouted rather than writing an empty string', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    $ticket = aiTicket();
+    $ticket->forceFill(['department_id' => null])->save();
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->put('/admin/support/'.$ticket->id, [
+            'department_id' => '',
+            'assigned_to' => '',
+            'priority' => 'normal',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    // `array_filter` only dropped nulls, so an empty select wrote '' into a
+    // column that holds a ULID.
+    expect($ticket->refresh()->department_id)->toBeNull();
+});
+
+it('refuses a department id that names nothing', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    $ticket = aiTicket();
+
+    // Nothing validated this before, so any string was written. A rule
+    // naming a table names the table: support_departments.
+    $this->actingAs($admin->fresh(), 'staff')
+        ->put('/admin/support/'.$ticket->id, ['department_id' => 'not-an-id'])
+        ->assertSessionHasErrors('department_id');
+});
+
+it('still routes a ticket when a real department is chosen', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    $ticket = aiTicket();
+
+    $department = Department::factory()->create([
+        'organization_id' => $this->provider->id,
+        'name' => 'Billing',
+    ]);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->put('/admin/support/'.$ticket->id, ['department_id' => $department->id])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($ticket->refresh()->department_id)->toBe($department->id);
 });

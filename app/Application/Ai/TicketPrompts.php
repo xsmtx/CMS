@@ -68,6 +68,52 @@ final readonly class TicketPrompts
     }
 
     /**
+     * Which department this looks like.
+     *
+     * **The departments travel in the prompt and the answer is matched back
+     * against them exactly.** A model asked "which department" with no list
+     * invents a plausible one, and a platform that then fuzzy-matched it
+     * would route a ticket to whichever name was nearest — the
+     * `RecordSamples::byHostname()` rule, where the cost is a customer
+     * waiting in the wrong queue.
+     *
+     * Only the subject and the **first** message: triage is the question
+     * asked before anybody has replied, and sending a thread that already has
+     * six replies would be paying to route a ticket somebody is already
+     * working on.
+     *
+     * @param  list<string>  $departments
+     */
+    public function triage(Ticket $ticket, array $departments): AiPrompt
+    {
+        $ticket->loadMissing('replies');
+
+        $first = $ticket->replies
+            ->reject(static fn (TicketReply $reply): bool => $reply->is_internal)
+            ->sortBy('created_at')
+            ->first();
+
+        $context = [
+            ['label' => 'Subject', 'value' => $ticket->subject],
+            ['label' => 'Departments', 'value' => implode(' | ', $departments)],
+        ];
+
+        if ($first instanceof TicketReply) {
+            $context[] = ['label' => 'Message', 'value' => $first->body];
+        }
+
+        return new AiPrompt(
+            feature: AiFeature::TicketTriage,
+            task: (string) __('ai.tasks.ticket_triage'),
+            context: $context,
+            // One name. A ceiling this low is also a guard: a model that
+            // started explaining itself would be truncated rather than
+            // matched against a department called "Billing, because the".
+            maxTokens: 24,
+        );
+    }
+
+    /**
      * @return list<array{label: string, value: string}>
      */
     private function context(Ticket $ticket): array

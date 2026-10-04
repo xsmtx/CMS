@@ -69,7 +69,7 @@ const props = defineProps<{
   // Whether this seller has turned the assistant on for replies. Sent per
   // feature rather than as one flag, because drafting what a customer reads
   // and summarising for a colleague are different decisions (ADR 0050).
-  ai: { reply: boolean; summary: boolean }
+  ai: { reply: boolean; summary: boolean; triage: boolean }
 }>()
 
 const page = usePage()
@@ -111,6 +111,33 @@ const showCanned = ref(false)
 const drafting = ref(false)
 
 const draft = computed(() => page.props.flash.draft ?? null)
+
+const triaging = ref(false)
+
+const suggestion = computed(() => {
+  const flashed = page.props.flash.suggestion ?? null
+
+  // Keyed by field, so a suggestion for one control never appears under
+  // another when a second kind is added.
+  return flashed !== null && flashed.field === 'department_id' ? flashed : null
+})
+
+const errors = computed(() => page.props.errors ?? {})
+
+function askForDepartment(): void {
+  triaging.value = true
+
+  router.post(
+    `/admin/support/${props.ticket.id}/triage`,
+    {},
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        triaging.value = false
+      },
+    },
+  )
+}
 
 function askForDraft(kind: 'reply' | 'summary'): void {
   drafting.value = true
@@ -354,11 +381,32 @@ function formatDateTime(value: string | null): string {
           :description="t('ui.ticket.assignment_intro')"
         >
           <form class="flex flex-col gap-3" @submit.prevent="saveSettings">
-            <AppSelect
-              v-model="settingsForm.department_id"
-              :label="t('ui.ticket.department')"
-              :options="options.departments"
-            />
+            <div>
+              <AppSelect
+                v-model="settingsForm.department_id"
+                :label="t('ui.ticket.department')"
+                :options="[
+                  { value: '', label: t('ui.ticket.no_department') },
+                  ...options.departments,
+                ]"
+                :error="errors.department_id"
+              />
+
+              <!--
+                A suggestion beside the field, never written into it: routing
+                somebody's ticket is a decision with a queue and an SLA behind
+                it, and a model inferring it is not somebody choosing it.
+              -->
+              <p v-if="suggestion" class="text-chrome text-content-muted mt-1">
+                {{ t('ai.suggested', { model: suggestion.model, value: suggestion.label }) }}
+              </p>
+
+              <div v-if="ai.triage" class="mt-2">
+                <AppButton size="sm" variant="ghost" :loading="triaging" @click="askForDepartment">
+                  {{ t('ai.suggest_department') }}
+                </AppButton>
+              </div>
+            </div>
             <AppSelect
               v-model="settingsForm.assigned_to"
               :label="t('ui.ticket.assigned_to')"

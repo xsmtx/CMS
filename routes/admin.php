@@ -204,6 +204,13 @@ Route::middleware(['auth:staff'])->group(function (): void {
      */
     Route::post('support/{ticket}/draft', [TicketController::class, 'draft'])->name('support.draft');
 
+    /*
+     * Which department this looks like. A suggestion beside the field and
+     * never the stored value: routing somebody's ticket is a decision with
+     * a queue and an SLA behind it.
+     */
+    Route::post('support/{ticket}/triage', [TicketController::class, 'triage'])->name('support.triage');
+
     Route::put('support/{ticket}', [TicketController::class, 'update'])->name('support.update');
 
     Route::get('content/announcements', [ContentController::class, 'announcements'])
@@ -717,6 +724,14 @@ Route::middleware(['auth:staff'])->group(function (): void {
         ->name('reliability.incidents.store');
     Route::post('reliability/incidents/{incident}/updates', [IncidentController::class, 'update'])
         ->name('reliability.incidents.update');
+    /*
+     * Ask for a draft of the next update (ADR 0050). It answers with text
+     * and writes nothing — §15's rule that the state and the sentence are
+     * one act is untouched, because nothing here is an act.
+     */
+    Route::post('reliability/incidents/{incident}/draft', [IncidentController::class, 'draft'])
+        ->name('reliability.incidents.draft');
+
     Route::post('reliability/incidents/{incident}/alerts', [IncidentController::class, 'attach'])
         ->name('reliability.incidents.attach');
     Route::delete('reliability/alerts/{alert}/incident', [IncidentController::class, 'detach'])

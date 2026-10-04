@@ -1053,6 +1053,7 @@ return [
     'ticket' => [
         'overdue' => 'Gecikmiş',
         'unassigned' => 'Atanmamış',
+        'no_department' => 'Departman yok',
         'internal' => 'Dahili',
 
         'reply' => 'Yanıtla',

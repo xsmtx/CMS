@@ -56,6 +56,9 @@ return [
     'internal_only' => 'Yalnızca personeliniz okur',
 
     'draft' => 'Yanıt taslağı yaz',
+    'draft_update' => 'Güncelleme taslağı yaz',
+    'suggest_department' => 'Departman öner',
+    'suggested' => ':model şunu öneriyor: :value. Katılıyorsanız kendiniz seçin.',
     'drafting' => 'Yazıyor…',
     'drafted' => ':model tarafından yazıldı. Göndermeden önce okuyun.',
     'summarise' => 'Özetle',
@@ -66,6 +69,8 @@ return [
     'tasks' => [
         'ticket_reply' => 'Destek ekibi olarak bu müşteriye bir sonraki yanıtı yaz. Kısa ve somut ol. Olmayan bilgi, fiyat, tarih ya da söz uydurma. Bilinmeyen bir şey varsa neyi araştıracağını yaz.',
         'ticket_summary' => 'Bu yazışmayı, kaydı devralacak bir meslektaş için özetle: müşteri ne istiyor, neler denendi ve geriye ne kaldı.',
+        'ticket_triage' => 'Yalnızca listedeki departman adlarından birini, harfi harfine kopyalayarak yaz; başka hiçbir şey yazma. Hiçbiri uymuyorsa yalnızca NONE yaz.',
+        'incident_update' => 'Bu olay için bir sonraki güncellemeyi, olaydan etkilenenler için yaz. Şu an ne bilindiğini ve bundan sonra ne olacağını söyle. Sana verilmeyen bir süre sözü verme, zaman çizelgesinde olmayan bir sebep adlandırma ve birden fazla kez özür dileme.',
     ],
 
     'errors' => [
@@ -76,6 +81,8 @@ return [
         'refused' => ':provider bunu yanıtlamadı.',
         'empty_answer' => ':provider boş bir yanıt verdi.',
         'not_permitted' => 'Asistan ayarlarına erişiminiz yok.',
+        'no_departments' => 'Aralarından seçilecek bir departman yok.',
+        'no_department_matched' => 'Departman önerilmedi — sizinkilerin hiçbiri eşleşmedi. Kendiniz seçin.',
     ],
 
     'usage' => [

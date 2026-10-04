@@ -98,6 +98,8 @@ final class HandleInertiaRequests extends Middleware
                 // A draft a model wrote. Flashed once into the box the
                 // operator was going to type in, and never stored.
                 'draft' => fn (): ?array => $request->session()->get('draft'),
+                // A suggestion beside a field, never the stored value.
+                'suggestion' => fn (): ?array => $request->session()->get('suggestion'),
             ],
             'correlationId' => app(CorrelationContext::class)->id(),
 

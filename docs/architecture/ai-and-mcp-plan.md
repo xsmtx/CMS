@@ -166,7 +166,7 @@ All six steps are in.
 | 1. ADR 0050 and ADR 0051 | **in** |
 | 2. The AI seam, the vault key, the usage row, one module | **in** — `modules/infracms/ai-anthropic` |
 | 3. Drafting a ticket reply | **in**, with the settings screen that turns it on |
-| 4. Summarising a thread | **in**. Triage and incident drafts are declared and not wired to a screen yet |
+| 4. Summarising a thread, triage, incident drafts | **in** — all four features are wired, and a test refuses a fifth that is offered and unread |
 | 5. The MCP server | **in** — ten read tools, `McpSurfaceTest` keeps them read |
 | 6. `platform:openapi` unaffected | **in** — and a test confirms MCP stays out of it |
 

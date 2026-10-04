@@ -1058,6 +1058,9 @@ return [
     'ticket' => [
         'overdue' => 'Overdue',
         'unassigned' => 'Unassigned',
+        // An unrouted ticket had a blank select, which reads as a control
+        // that failed to load rather than as a ticket nobody has routed.
+        'no_department' => 'No department',
         'internal' => 'Internal',
 
         'reply' => 'Reply',
