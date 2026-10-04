@@ -57,3 +57,5 @@ Status values: `proposed`, `accepted`, `superseded by NNNN`, `deprecated`.
 | [0047](0047-a-package-is-verified-before-it-touches-disk.md) | A package is verified before it touches disk | accepted |
 | [0048](0048-sections-not-cards-and-one-status-vocabulary.md) | Sections, not cards; one status vocabulary; skills govern the UI | accepted |
 | [0049](0049-a-staff-api-token-is-scoped-and-expires.md) | A staff API token is scoped, expires, and cannot do the dangerous things | accepted |
+| [0050](0050-ai-assists-and-never-acts.md) | AI assists, never acts, and a provider is a module | accepted |
+| [0051](0051-mcp-is-a-read-only-surface.md) | MCP is a third surface, and it is read only | accepted |
