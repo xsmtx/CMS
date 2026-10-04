@@ -139,6 +139,7 @@ final class FrontEndTranslations
         // that says a model wrote what is in the box, and the refusals
         // that all mean "write it yourself".
         'ai',
+        'vendors',
         'api.tokens',
         'api.scopes',
         'api.webhooks',

@@ -123,6 +123,9 @@ return [
         'capacity' => 'Something running out',
         'site_updates' => 'How much of a site is out of date',
         'site_vulnerability' => 'A site with a known-vulnerable plugin or theme',
+        // Days until the **decision**, which on an auto-renewing contract
+        // is the last day to give notice rather than the end date.
+        'contract_expiry' => 'Days until a vendor contract has to be decided',
     ],
 
     'comparisons' => [

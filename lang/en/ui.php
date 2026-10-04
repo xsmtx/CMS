@@ -727,6 +727,7 @@ return [
         'profitability' => 'Profitability',
         'customer_health' => 'Customer health',
         'noisy_neighbours' => 'Noisy neighbours',
+        'vendors' => 'Vendors',
         'utilities' => 'Utilities',
         'connect' => 'Connect',
         'module_queue' => 'Module Queue',

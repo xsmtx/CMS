@@ -104,6 +104,7 @@ return [
         'backup_age' => 'Son başarılı yedeğin ne kadar eski olduğu',
         'site_updates' => 'Bir sitenin ne kadarının güncel olmadığı',
         'site_vulnerability' => 'Bilinen açığı olan eklentisi ya da teması olan site',
+        'contract_expiry' => 'Bir tedarikçi sözleşmesine karar verilmesine kalan gün',
         'capacity' => 'Tükenmekte olan bir şey',
     ],
 

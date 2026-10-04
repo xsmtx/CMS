@@ -150,6 +150,14 @@ return [
             'label' => 'Change the datacenter',
             'description' => 'Add rooms and racks, and record what occupies which units.',
         ],
+        'vendors.view' => [
+            'label' => 'See vendors and contracts',
+            'description' => 'Who this business buys from, what was agreed and when somebody has to decide again. A contract carries a price, which is why this is not open to everybody.',
+        ],
+        'vendors.manage' => [
+            'label' => 'Record vendors and contracts',
+            'description' => 'Add and change suppliers, their contracts, the renewal dates and the notice periods. Nothing here charges anybody or touches the ledger.',
+        ],
         'intelligence.costs.manage' => [
             'label' => 'State what things cost',
             'description' => 'Record what the provider pays somebody else — a server, a licence, the office — and choose how each one is shared out. Nothing here touches the ledger.',

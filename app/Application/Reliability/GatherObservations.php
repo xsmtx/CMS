@@ -23,6 +23,7 @@ use App\Infrastructure\Resources\Models\ResourceMetric;
 use App\Infrastructure\Resources\Models\ResourceNode;
 use App\Infrastructure\Security\Models\Certificate;
 use App\Infrastructure\Security\Models\ReputationListing;
+use App\Infrastructure\Vendors\Models\Contract;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Lang;
 use Throwable;
@@ -84,6 +85,7 @@ final readonly class GatherObservations
             AlertSubject::BackupAge => $this->protections($organizationId),
             AlertSubject::SiteUpdates => $this->siteUpdates($organizationId),
             AlertSubject::SiteVulnerability => $this->siteVulnerabilities($organizationId),
+            AlertSubject::ContractExpiry => $this->contracts($organizationId),
         };
     }
 
@@ -344,6 +346,62 @@ final readonly class GatherObservations
      * a negative figure, because "below 14" has to catch "minus 3" — a
      * certificate that lapsed last night is the one somebody most needs to
      * hear about.
+     *
+     * @return list<Observation>
+     */
+    /**
+     * Days until each contract has to be decided (§24).
+     *
+     * **To the decision, not the end.** On an auto-renewing contract the date
+     * that matters is the last day to give notice, and alerting on the end
+     * would be telling somebody about a deadline they had already missed.
+     *
+     * A contract with no end date produces nothing, which is the truth about
+     * a rolling agreement rather than a gap — `ending()` is what filters it.
+     *
+     * Every one is emitted, including those already past, for the reason the
+     * certificate gatherer gives: "below 30" has to catch "minus 3".
+     *
+     * @return list<Observation>
+     */
+    private function contracts(?string $organizationId): array
+    {
+        if ($organizationId === null) {
+            return [];
+        }
+
+        $observations = [];
+
+        foreach (
+            Contract::query()
+                ->where('organization_id', $organizationId)
+                ->ending()
+                ->with('vendor')
+                ->limit(500)
+                ->get() as $contract
+        ) {
+            $days = $contract->daysRemaining();
+
+            if ($days === null) {
+                continue;
+            }
+
+            $observations[] = new Observation(
+                key: $contract->id,
+                // The vendor beside the title, because "Transit, 10G" on its
+                // own does not say who somebody has to telephone.
+                label: trim(($contract->vendor->name ?? '').' — '.$contract->title, ' — '),
+                bad: true,
+                observed: (string) __('reliability.observed.days_left', ['days' => $days]),
+                value: (float) $days,
+            );
+        }
+
+        return $observations;
+    }
+
+    /**
+     * Every live certificate, including the expired ones.
      *
      * @return list<Observation>
      */

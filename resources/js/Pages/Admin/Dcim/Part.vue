@@ -11,8 +11,8 @@
  * the answer to that is that nothing is ever edited — taking a part out
  * closes its fitting and leaves the row.
  */
-import { Head, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
@@ -54,6 +54,9 @@ const props = defineProps<{
 
 const { t } = useTranslations()
 
+// The reader's own locale, not the operating system's.
+const locale = computed(() => usePage().props.locale ?? 'en')
+
 const removing = ref(false)
 const fitForm = useForm({ server_id: '', note: '' })
 const removeForm = useForm({ note: '' })
@@ -76,7 +79,7 @@ const rows = [
 ].filter((row) => row.value !== '')
 
 function day(value: string | null): string {
-  return value === null ? '' : new Date(value).toLocaleDateString()
+  return value === null ? '' : new Date(value).toLocaleDateString(locale.value)
 }
 
 function fit(): void {

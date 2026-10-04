@@ -4281,3 +4281,70 @@ the button is what put them in front of me:
 - **Nothing validated it at all.** `exists:support_departments,id` was on the
   open form and not on this one, so any string was written. A rule naming a
   table names the **table**, for the third time in this product.
+
+**Phase J has begun** (`docs/architecture/phase-j-plan.md`), and vendors and
+contracts are the first thing in it. Who this business buys from and what it
+agreed — rows an operator types, because no API says what a transit contract
+costs or when the licences renew. The same family as the DCIM spine, cost
+entries, tax rules and dunning steps, and core ships none of them.
+
+**The date that matters is the decision, not the end.** On a contract that
+renews itself the last day to say no is `ends_on` minus the notice period, and
+showing the end would be telling somebody about a deadline they had already
+missed. `Contract::decideBy()` is the one place that works it out and
+`daysRemaining()` **goes negative** rather than clamping: a notice period that
+closed last night is the row somebody most needs to see, and "below 30" has to
+catch "minus four".
+
+**A rolling agreement answers null, never zero.** A contract with no end date
+is not overdue and never will be; zero would make it the most urgent row on
+the screen. The same reasoning `ContractTerm::Once->months()` follows — a
+one-off purchase divided into a monthly figure is a one-off spread across
+months.
+
+**Every contract is offered to the alert rules, including the expired ones**,
+and `AlertSubject::ContractExpiry` is a rule an operator writes rather than a
+constant core chose: thirty days is right for a business renewing by hand and
+absurd for a monthly licence with a week's notice. A rolling agreement
+produces no observation at all rather than a zero.
+
+**A currency is upper-cased at the write**, which is `CreateClient`'s country
+lesson arriving on money. It is typed rather than chosen from the currencies
+this installation sells in, because what a business *buys* in is a different
+list: a seller invoicing in euros still pays a transit provider in dollars.
+
+**Deleting a vendor with contracts is refused, not cascaded.** The migration
+cascades because a database has to answer *something* when an organization
+goes; an operator pressing Delete has not asked to lose four renewal dates.
+
+Four things the browser found that 2555 tests could not, every one of them a
+rule already written in this file:
+
+- **A column header borrowed from the heading above it**, for the sixth time.
+  The contracts table used `vendors.title` for its vendor column, so
+  "VENDORS" sat above one supplier's name. Every column needs a word written
+  *for* that column.
+- **An em dash under "No end date".** The absence is the whole answer, and a
+  dash beside it reads as a date that failed to load.
+- **`toLocaleDateString()` with no locale**, which follows the operating
+  system rather than the reader — found here and on the three DCIM screens
+  that had the same line. Invisible on `01.11.2026` and glaring the moment a
+  month name appears.
+- **A submit button labelled with its own heading**, twice on one screen
+  ("Add a vendor" under *Add a vendor*). It is "Add it" now, which is the
+  incidents screen's fix for the same thing.
+
+**A form that can only be closed by submitting it** is a form somebody opened
+by mistake and is now stuck with. The contract form had no cancel at all —
+`addingContractFor` was cleared only on success.
+
+**A field in the payload with no control is dead the other way round.** The
+vendor form carried `note: ''` and no textarea; a setting nothing reads and a
+field nothing fills are the same bug. After writing a form's `useForm`, check
+every key has something to fill it.
+
+**A test asserting one boundary direction can assert the wrong one.** A
+boundary is a *subtree*, so a provider sees its reseller's suppliers — which
+is right. What must never happen is the other direction, because what the
+provider pays for transit is the reseller's cost of goods, and that is what
+the test pins.

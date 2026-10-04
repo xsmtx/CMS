@@ -143,6 +143,14 @@ return [
             'label' => 'Veri merkezini düzenle',
             'description' => 'Oda ve kabinet ekler, hangi ünitede ne olduğunu kaydeder.',
         ],
+        'vendors.view' => [
+            'label' => 'Tedarikçileri ve sözleşmeleri gör',
+            'description' => 'Bu işletmenin kimden satın aldığı, neyin kabul edildiği ve ne zaman yeniden karar verilmesi gerektiği. Bir sözleşme fiyat taşır; bu yüzden herkese açık değildir.',
+        ],
+        'vendors.manage' => [
+            'label' => 'Tedarikçi ve sözleşme kaydet',
+            'description' => 'Tedarikçileri, sözleşmelerini, yenileme tarihlerini ve bildirim sürelerini ekleyin ve değiştirin. Buradaki hiçbir şey kimseden ücret almaz ya da deftere dokunmaz.',
+        ],
         'intelligence.costs.manage' => [
             'label' => 'Maliyetleri belirt',
             'description' => 'Sağlayıcının başkasına ödediğini — bir sunucu, bir lisans, ofis — kaydeder ve her birinin nasıl pay edileceğini seçer. Buradaki hiçbir şey muhasebe defterine dokunmaz.',

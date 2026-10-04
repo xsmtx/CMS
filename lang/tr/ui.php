@@ -722,6 +722,7 @@ return [
         'profitability' => 'Kârlılık',
         'customer_health' => 'Müşteri durumu',
         'noisy_neighbours' => 'Gürültücü komşular',
+        'vendors' => 'Tedarikçiler',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

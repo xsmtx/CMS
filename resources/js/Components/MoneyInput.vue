@@ -18,6 +18,17 @@ const props = withDefaults(
     disabled?: boolean
     allowNegative?: boolean
     ariaLabel?: string
+    /**
+     * The refusal, under the control, like every other input primitive.
+     *
+     * It had none until a vendor contract form passed one and
+     * `ComponentPropsTest` refused it — correctly, because an unknown prop
+     * falls through to the root element and vanishes. A money field that
+     * cannot show its own error is a validation message nobody reads, which
+     * on the one field in a form that holds money is the worst place for it.
+     */
+    error?: string
+    hint?: string
   }>(),
   {
     label: undefined,
@@ -25,6 +36,8 @@ const props = withDefaults(
     disabled: false,
     allowNegative: false,
     ariaLabel: undefined,
+    error: undefined,
+    hint: undefined,
   },
 )
 
@@ -83,12 +96,20 @@ function onBlur(): void {
         :disabled="disabled"
         :placeholder="placeholder"
         :aria-label="ariaLabel"
-        class="border-line bg-surface-primary text-content placeholder:text-content-subtle focus:border-brand text-body w-full rounded-sm border py-2 text-right tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
-        :class="symbol ? 'pr-3 pl-9' : 'px-3'"
+        class="bg-surface-primary text-content placeholder:text-content-subtle focus:border-brand text-body w-full rounded-sm border py-2 text-right tabular-nums transition-colors duration-(--duration-fast) ease-(--ease-out) disabled:opacity-60"
+        :class="[symbol ? 'pr-3 pl-9' : 'px-3', error ? 'border-danger' : 'border-line']"
         @focus="focused = true"
         @input="onInput"
         @blur="onBlur"
       />
     </span>
+
+    <!--
+      Only one of the two classes is ever present, which is the `border-line`
+      beside `border-danger` lesson: two utilities setting one property is a
+      coin toss decided by the order Tailwind emitted them in.
+    -->
+    <span v-if="error" class="text-danger text-chrome">{{ error }}</span>
+    <span v-else-if="hint" class="text-content-muted text-chrome">{{ hint }}</span>
   </label>
 </template>

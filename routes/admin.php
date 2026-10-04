@@ -78,6 +78,7 @@ use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TldController;
 use App\Http\Controllers\Admin\TodoController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VirtualMachineController;
 use App\Http\Controllers\Admin\ZoneHealthController;
 use Illuminate\Support\Facades\Route;
@@ -641,6 +642,23 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * telemetry this installation already holds, arranged to answer one
      * question.
      */
+    /*
+     * Who this business buys from, and what it agreed (§24). Commercial
+     * rather than operational, behind the same wall as costs: what a seller
+     * pays their datacenter is not something a support agent needs.
+     */
+    Route::get('vendors', [VendorController::class, 'index'])->name('vendors.index');
+    Route::post('vendors', [VendorController::class, 'store'])->name('vendors.store');
+    Route::put('vendors/{vendor}', [VendorController::class, 'update'])->name('vendors.update');
+    Route::delete('vendors/{vendor}', [VendorController::class, 'destroy'])->name('vendors.destroy');
+
+    Route::post('vendors/{vendor}/contracts', [VendorController::class, 'storeContract'])
+        ->name('vendors.contracts.store');
+    Route::put('vendors/contracts/{contract}', [VendorController::class, 'updateContract'])
+        ->name('vendors.contracts.update');
+    Route::delete('vendors/contracts/{contract}', [VendorController::class, 'destroyContract'])
+        ->name('vendors.contracts.destroy');
+
     Route::get('intelligence/noisy-neighbours', [NoisyNeighboursController::class, 'index'])
         ->name('intelligence.noisy_neighbours');
 

@@ -14,8 +14,8 @@
  * three fields are the register for the next warranty claim — and a task
  * closed with nothing written is a visit nobody can read afterwards.
  */
-import { Head, router, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, router, useForm, usePage } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -82,6 +82,9 @@ const props = defineProps<{
 
 const { t } = useTranslations()
 
+// The reader's own locale, not the operating system's.
+const locale = computed(() => usePage().props.locale ?? 'en')
+
 const COLUMNS: TableColumn[] = [
   { key: 'task', label: t('dcim.remote_hands.columns.task') },
   { key: 'where', label: t('dcim.remote_hands.columns.where') },
@@ -147,7 +150,7 @@ function toggleAll(): void {
 }
 
 function day(value: string | null): string {
-  return value === null ? '' : new Date(value).toLocaleDateString()
+  return value === null ? '' : new Date(value).toLocaleDateString(locale.value)
 }
 </script>
 

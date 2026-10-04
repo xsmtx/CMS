@@ -586,6 +586,11 @@ const groups = computed<NavGroup[]>(() => [
         href: '/admin/intelligence/noisy-neighbours',
         permission: 'infrastructure.telemetry.view',
       },
+      {
+        label: nav('vendors', 'Vendors'),
+        href: '/admin/vendors',
+        permission: 'vendors.view',
+      },
     ],
   },
   {

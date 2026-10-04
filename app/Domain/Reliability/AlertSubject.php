@@ -131,6 +131,23 @@ enum AlertSubject: string
     case SiteVulnerability = 'site_vulnerability';
 
     /**
+     * How many days until a vendor contract has to be decided (§24).
+     *
+     * The certificate rule's shape, and core ships no number for the same
+     * reason: ninety days is right for a datacenter contract with a
+     * negotiation behind it and absurd for a monthly cloud bill.
+     *
+     * It counts to the **decision**, not the end — on an auto-renewing
+     * contract the date that matters is the last day to give notice, and
+     * alerting on the end date would be telling somebody about a deadline
+     * they had already missed.
+     *
+     * A contract with no end date never produces an observation, which is
+     * the truth about a rolling agreement rather than a gap.
+     */
+    case ContractExpiry = 'contract_expiry';
+
+    /**
      * Whether this subject needs a target naming which thing.
      *
      * A metric rule is about a measurement across everything that reports it;
@@ -148,7 +165,9 @@ enum AlertSubject: string
             // have to rewrite at every renewal.
             self::CertificateExpiry, self::ReputationListing, self::BackupAge,
             // Nor here: a rule about out-of-date sites is about the fleet.
-            self::SiteUpdates, self::SiteVulnerability => false,
+            self::SiteUpdates, self::SiteVulnerability,
+            // Nor here: a rule about contracts is about all of them.
+            self::ContractExpiry => false,
         };
     }
 
@@ -168,7 +187,9 @@ enum AlertSubject: string
             // because how long it has been true is what decides whether
             // anybody should be woken for it.
             self::Metric, self::Capacity, self::CertificateExpiry,
-            self::ReputationListing, self::BackupAge, self::SiteUpdates => true,
+            self::ReputationListing, self::BackupAge, self::SiteUpdates,
+            // Days until the decision, and negative when it has passed.
+            self::ContractExpiry => true,
             self::HealthCheck, self::AdapterHealth, self::AutomationRun,
             // One vulnerable plugin is the alert; a threshold would be
             // somebody writing “wake me at three of them”.

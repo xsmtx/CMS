@@ -10,8 +10,8 @@
  * the third is a gap in the register, and drawing it as expired would send
  * somebody to argue with a vendor who is still obliged.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -67,6 +67,9 @@ const props = defineProps<{
 
 const { t } = useTranslations()
 
+// The reader's own locale, not the operating system's.
+const locale = computed(() => usePage().props.locale ?? 'en')
+
 const COLUMNS: TableColumn[] = [
   { key: 'part', label: t('dcim.parts.columns.part') },
   { key: 'kind', label: t('dcim.parts.columns.kind') },
@@ -106,7 +109,7 @@ function add(): void {
 }
 
 function day(value: string | null): string {
-  return value === null ? '' : new Date(value).toLocaleDateString()
+  return value === null ? '' : new Date(value).toLocaleDateString(locale.value)
 }
 
 function warrantyTone(part: PartRow): 'healthy' | 'warning' | 'unknown' {

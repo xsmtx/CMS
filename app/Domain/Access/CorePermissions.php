@@ -265,6 +265,21 @@ final class CorePermissions
             new PermissionDefinition('intelligence.costs.manage', 'infrastructure', RoleScope::Staff),
 
             /*
+             * Vendors and contracts (§24). Commercial rather than
+             * operational, and behind the same wall as costs for the same
+             * reason: what a seller pays their datacenter is not something
+             * a support agent needs, and a contract carries a price.
+             *
+             * Not owner-only, unlike tax: a wrong rate misstates a legal
+             * document for every customer at once, where a wrong renewal
+             * date is somebody's diary. Two permissions, because reading
+             * when transit renews and changing what it says it costs are
+             * different jobs.
+             */
+            new PermissionDefinition('vendors.view', 'infrastructure', RoleScope::Staff),
+            new PermissionDefinition('vendors.manage', 'infrastructure', RoleScope::Staff),
+
+            /*
              * Zone health (§8). A view and nothing else: core reads a
              * zone and reports what is wrong with it, and changing a
              * record belongs behind §6's guarded workflow rather than on
