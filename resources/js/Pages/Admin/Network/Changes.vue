@@ -10,9 +10,15 @@
  * a paragraph and a configuration, and a wizard for two fields is a wizard
  * nobody thanks you for. It is hidden until pressed: an operator arrives here
  * to read the queue far more often than to add to it.
+ *
+ * **One form, two shapes** (§25). A device change is a configuration somebody
+ * types; a workspace change is a revision and a plan the tool produces. The
+ * target decides which fields are drawn, and it comes from the server rather
+ * than from a literal here — the alert rule form drifted from its enum for
+ * three phases by deciding that in a template.
  */
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 import AppButton from '../../../Components/AppButton.vue'
 import AppInput from '../../../Components/AppInput.vue'
@@ -42,6 +48,8 @@ interface ChangeRow {
   statusLabel: string
   device: string | null
   deviceKey: string | null
+  target: string
+  targetLabel: string
   requester: string | null
   decider: string | null
   requiresApproval: boolean
@@ -59,24 +67,59 @@ const props = defineProps<{
   }
   filters: { all: boolean }
   devices: { id: string; label: string; key: string }[]
+  workspaces: { id: string; label: string; key: string }[]
+  targets: { value: string; label: string }[]
   can: { request: boolean; approve: boolean; apply: boolean }
 }>()
 
 const { t } = useTranslations()
 
+const locale = computed(() => usePage().props.locale ?? 'en')
+
 const asking = ref(false)
 
 const form = useForm({
+  target: 'device',
   device: props.devices[0]?.id ?? '',
   summary: '',
   reason: '',
   ticket: '',
   intended: '',
+  ref: '',
 })
+
+const isWorkspace = computed(() => form.target === 'workspace')
+
+/** Whichever list the chosen target is about. */
+const subjects = computed(() => (isWorkspace.value ? props.workspaces : props.devices))
+
+/**
+ * Only the targets this installation can actually act on.
+ *
+ * A choice with nothing discovered behind it is an empty required select
+ * above an enabled button, which this product has found four times.
+ */
+const available = computed(() =>
+  props.targets.filter((target) =>
+    target.value === 'workspace' ? props.workspaces.length > 0 : props.devices.length > 0,
+  ),
+)
+
+const canAsk = computed(() => available.value.length > 0)
+
+/** Re-point the subject when the target changes, or the select keeps an id
+ *  from the other list and the server refuses a row of the wrong kind. */
+function chooseTarget(value: string): void {
+  form.target = value
+  form.device = (value === 'workspace' ? props.workspaces : props.devices)[0]?.id ?? ''
+}
 
 const columns: TableColumn[] = [
   { key: 'summary', label: t('network.changes.columns.summary') },
-  { key: 'device', label: t('network.changes.columns.device') },
+  // "Device" no longer names what is in the cell: half of them are
+  // workspaces. A column header names what is in a row, which is a rule this
+  // product has broken seven times.
+  { key: 'device', label: t('network.changes.columns.subject') },
   { key: 'state', label: t('network.changes.columns.state') },
   { key: 'requester', label: t('network.changes.columns.requester') },
   { key: 'requested', label: t('network.changes.columns.requested') },
@@ -96,7 +139,7 @@ function toggleAll(): void {
 
 /** A date the server sends as an instant, read where the operator is. */
 function when(value: string | null): string {
-  return value === null ? '—' : new Date(value).toLocaleString()
+  return value === null ? '' : new Date(value).toLocaleString(locale.value)
 }
 </script>
 
@@ -109,7 +152,7 @@ function when(value: string | null): string {
         {{ filters.all ? t('network.changes.show_open') : t('network.changes.show_all') }}
       </AppButton>
       <AppButton
-        v-if="can.request && devices.length > 0"
+        v-if="can.request && canAsk"
         variant="primary"
         icon="add"
         @click="asking = !asking"
@@ -125,7 +168,7 @@ function when(value: string | null): string {
         cannot be submitted, which is worse than no form.
       -->
       <EmptyState
-        v-if="devices.length === 0"
+        v-if="!canAsk"
         :title="t('network.changes.no_devices')"
         :description="t('network.changes.no_devices_detail')"
         icon="connection"
@@ -133,16 +176,31 @@ function when(value: string | null): string {
       />
 
       <DetailSection
-        v-if="asking && can.request && devices.length > 0"
+        v-if="asking && can.request && canAsk"
         :title="t('network.changes.request')"
         :description="t('network.changes.request_intro')"
       >
         <form class="flex flex-col gap-4" @submit.prevent="submit">
           <div class="grid gap-4 md:grid-cols-2">
+            <!--
+              Drawn only when there is a choice to make. An installation with
+              devices and no workspaces should not be asked which kind of
+              thing it means.
+            -->
+            <AppSelect
+              v-if="available.length > 1"
+              :model-value="form.target"
+              :label="t('network.changes.target')"
+              :options="available"
+              :error="form.errors.target"
+              @update:model-value="chooseTarget(String($event))"
+            />
             <AppSelect
               v-model="form.device"
-              :label="t('network.changes.columns.device')"
-              :options="devices.map((device) => ({ value: device.id, label: device.label }))"
+              :label="
+                isWorkspace ? t('network.workspace.title') : t('network.changes.columns.device')
+              "
+              :options="subjects.map((row) => ({ value: row.id, label: row.label }))"
               :error="form.errors.device"
             />
             <AppInput
@@ -167,7 +225,22 @@ function when(value: string | null): string {
             :error="form.errors.reason"
           />
 
+          <!--
+            A workspace has no configuration to type: core holds no Terraform
+            code, and what is asked for is a revision. The plan is produced by
+            the tool when this is submitted.
+          -->
+          <AppInput
+            v-if="isWorkspace"
+            v-model="form.ref"
+            :label="t('network.workspace.ref')"
+            :hint="t('network.workspace.ref_hint')"
+            mono
+            :error="form.errors.ref"
+          />
+
           <AppTextarea
+            v-else
             v-model="form.intended"
             :label="t('network.changes.intended')"
             :hint="t('network.changes.intended_hint')"
@@ -178,7 +251,7 @@ function when(value: string | null): string {
 
           <div>
             <AppButton type="submit" variant="primary" :loading="form.processing">
-              {{ t('network.changes.request') }}
+              {{ t('network.changes.request_submit') }}
             </AppButton>
           </div>
         </form>
@@ -205,7 +278,7 @@ function when(value: string | null): string {
             </Link>
           </td>
           <td data-col="device">
-            {{ change.device ?? '—' }}
+            {{ change.device ?? '' }}
             <span class="text-content-subtle text-chrome block font-mono">
               {{ change.deviceKey }}
             </span>
@@ -216,7 +289,7 @@ function when(value: string | null): string {
                  untoned, which this product has learned four times. -->
             <AppStatus :tone="statusTone(change.status)" :label="change.statusLabel" />
           </td>
-          <td data-col="requester" class="text-content-muted">{{ change.requester ?? '—' }}</td>
+          <td data-col="requester" class="text-content-muted">{{ change.requester ?? '' }}</td>
           <td data-col="requested" class="text-content-muted text-chrome tabular-nums">
             {{ when(change.requestedAt) }}
           </td>

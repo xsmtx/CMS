@@ -1,0 +1,48 @@
+{
+    "slug": "iac-terraform",
+    "name": "Terraform",
+    "type": "infrastructure",
+    "version": "1.0.0",
+    "description": "Lists Terraform workspaces, produces a plan somebody can read, and runs one that has been approved through the guarded change workflow.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.13",
+    "platform": "*",
+    "namespace": "InfraCMS\\IacTerraform",
+    "entrypoint": "TerraformModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "base_url",
+            "label": "API address",
+            "type": "text",
+            "required": false,
+            "default": "https://app.terraform.io",
+            "hint": "Terraform Cloud, or the address of a Terraform Enterprise installation."
+        },
+        {
+            "key": "organization",
+            "label": "Terraform organization",
+            "type": "text",
+            "required": true,
+            "hint": "The organization whose workspaces this installation may see. Not this platform's own organization."
+        },
+        {
+            "key": "verify_tls",
+            "label": "Verify the certificate",
+            "type": "boolean",
+            "required": false,
+            "default": true,
+            "hint": "Turn this off only for a private installation using its own certificate on a network you control."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "30",
+            "hint": "A plan takes longer than a read. This is the wait for one HTTP call, not for a run to finish."
+        }
+    ]
+}

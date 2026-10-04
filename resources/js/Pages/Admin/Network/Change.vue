@@ -15,7 +15,7 @@
  *
  * Approve and reject are level 2: they change a record, not a firewall.
  */
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -37,6 +37,8 @@ interface Change {
   statusLabel: string
   device: string | null
   deviceKey: string | null
+  target: string
+  targetLabel: string
   requester: string | null
   decider: string | null
   requiresApproval: boolean
@@ -46,6 +48,7 @@ interface Change {
   ticket: string | null
   decisionNote: string | null
   diff: string | null
+  workspaceRef: string | null
   result: string | null
   backedUpAt: string | null
   appliedAt: string | null
@@ -59,29 +62,61 @@ const props = defineProps<{
 
 const { t } = useTranslations()
 
+const locale = computed(() => usePage().props.locale ?? 'en')
+
+const isWorkspace = computed(() => props.change.target === 'workspace')
+
 const decision = useForm({ decision: 'approve', note: '' })
 const applying = useForm({ note: '' })
 
 const confirming = ref<'approve' | 'reject' | 'cancel' | 'apply' | null>(null)
 
 const facts = computed(() => [
-  { key: 'device', label: t('network.changes.columns.device'), value: props.change.device ?? '—' },
+  {
+    key: 'device',
+    // Labelled with what it is: a workspace under a heading that says Device
+    // is a borrowed column label through a third door.
+    label: isWorkspace.value ? t('network.workspace.title') : t('network.changes.columns.device'),
+    value: props.change.device ?? '',
+  },
+  ...(isWorkspace.value
+    ? [
+        {
+          key: 'ref',
+          label: t('network.workspace.ref'),
+          // Empty means "whatever the workspace tracks", which is a sentence
+          // rather than a dash — a dash reads as a fact that failed to load.
+          value: props.change.workspaceRef ?? t('network.workspace.tracked'),
+        },
+      ]
+    : []),
   {
     key: 'requester',
     label: t('network.changes.columns.requester'),
-    value: props.change.requester ?? '—',
+    value: props.change.requester ?? '',
   },
-  { key: 'ticket', label: t('network.changes.ticket'), value: props.change.ticket ?? '—' },
+  ...(props.change.ticket
+    ? [{ key: 'ticket', label: t('network.changes.ticket'), value: props.change.ticket }]
+    : []),
   {
     key: 'requested',
     label: t('network.changes.columns.requested'),
     value: when(props.change.requestedAt),
   },
-  {
-    key: 'decided',
-    label: t('network.changes.decided'),
-    value: props.change.decider ? `${props.change.decider} · ${when(props.change.decidedAt)}` : '—',
-  },
+  /*
+   * Only once there is one. A row headed "Decided" with nothing beside it
+   * reads as a fact that failed to load, and the status beside the heading
+   * already says nobody has.
+   */
+  ...(props.change.decider
+    ? [
+        {
+          key: 'decided',
+          label: t('network.changes.decided'),
+          value: `${props.change.decider} · ${when(props.change.decidedAt)}`,
+        },
+      ]
+    : []),
 ])
 
 /** The diff, split so each line can carry its own colour. */
@@ -121,7 +156,7 @@ function apply(reason: string | null): void {
 }
 
 function when(value: string | null): string {
-  return value === null ? '—' : new Date(value).toLocaleString()
+  return value === null ? '' : new Date(value).toLocaleString(locale.value)
 }
 </script>
 
@@ -187,7 +222,9 @@ function when(value: string | null): string {
 
       <DetailSection
         :title="t('network.changes.diff')"
-        :description="t('network.changes.diff_intro')"
+        :description="
+          isWorkspace ? t('network.workspace.plan_intro') : t('network.changes.diff_intro')
+        "
       >
         <pre
           v-if="change.diff"
@@ -244,7 +281,11 @@ function when(value: string | null): string {
       :open="confirming === 'apply'"
       level="destructive"
       :title="t('network.changes.apply')"
-      :description="t('network.changes.apply_body')"
+      :description="
+        isWorkspace
+          ? `${t('network.changes.apply_workspace_body')} ${t('network.workspace.no_rollback')}`
+          : t('network.changes.apply_body')
+      "
       :confirm-label="t('network.changes.apply')"
       :phrase="change.deviceKey ?? ''"
       :busy="applying.processing"

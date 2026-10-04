@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Network;
 
 use App\Application\Network\RequestNetworkChange;
+use App\Domain\Network\ChangeTarget;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Asking for a change to a device's configuration.
@@ -18,6 +20,13 @@ use Illuminate\Foundation\Http\FormRequest;
  * `exists` names the **table**, which is `resource_nodes` — the mistake this
  * product has found twice on `departments`, so the rule is written out with
  * the table beside it.
+ *
+ * **A workspace wants neither of those two fields** (§25): there is no
+ * configuration to type, because core holds no Terraform code, and the plan is
+ * produced by the tool rather than diffed here. So `intended` is required only
+ * for a device, and `ref` is the revision — nullable, because "whatever the
+ * workspace tracks" is the ordinary case and defaulting to `main` would be
+ * this platform planning code nobody named.
  */
 final class RequestNetworkChangeRequest extends FormRequest
 {
@@ -33,10 +42,20 @@ final class RequestNetworkChangeRequest extends FormRequest
     {
         return [
             'device' => ['required', 'string', 'exists:resource_nodes,id'],
+            'target' => ['nullable', 'string', Rule::enum(ChangeTarget::class)],
             'summary' => ['required', 'string', 'max:160'],
             'reason' => ['required', 'string', 'max:2000'],
             'ticket' => ['nullable', 'string', 'max:64'],
-            'intended' => ['required', 'string', 'max:2000000'],
+            /*
+             * `required_unless`, not `required_if`. A form that posts no
+             * target at all is the device form — which is every caller before
+             * §25 — and `required_if:target,device` does not fire on an absent
+             * field, so the rule would have quietly stopped applying.
+             */
+            'intended' => ['required_unless:target,workspace', 'nullable', 'string', 'max:2000000'],
+            // A branch, a tag or a commit. Bounded well short of anything a
+            // revision could be, and never defaulted.
+            'ref' => ['nullable', 'string', 'max:160'],
         ];
     }
 

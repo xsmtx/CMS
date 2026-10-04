@@ -7,9 +7,13 @@ namespace App\Application\Network;
 use App\Application\Infrastructure\AdapterRegistry;
 use App\Application\Infrastructure\RegisteredAdapter;
 use App\Domain\Infrastructure\Capability;
+use App\Domain\Infrastructure\Contracts\InfrastructureAsCodeProvider;
+use App\Domain\Infrastructure\Contracts\InfrastructureAsCodeWriter;
 use App\Domain\Infrastructure\Contracts\NetworkDeviceProvider;
 use App\Domain\Infrastructure\Contracts\NetworkDeviceWriter;
+use App\Domain\Infrastructure\Iac\IacPlan;
 use App\Domain\Infrastructure\Network\DeviceConfiguration;
+use App\Domain\Network\ChangeTarget;
 use App\Domain\Network\Exceptions\ChangeRefused;
 use App\Domain\Network\NetworkChangeState;
 use App\Infrastructure\Network\Models\NetworkChange;
@@ -52,6 +56,24 @@ use Throwable;
  * slow part and holding a transaction across one is the rule this product has
  * had since provisioning (ADR 0026); the row is saved at each step instead, so
  * a process that dies mid-apply leaves a record saying where it got to.
+ *
+ * **A workspace follows the same five steps and two of them mean something
+ * different** (§25), which is why `ChangeTarget` is a branch here rather than
+ * a label on a screen:
+ *
+ * - There is no backup to take. The state belongs to whoever runs the tool and
+ *   the code is in somebody's repository, so step two is **the lock**: a
+ *   workspace another run holds is one where two applies would interleave, and
+ *   refusing is the precondition that makes this safe.
+ * - The fingerprint is the **state serial**, which is what a state file
+ *   carries instead of text that hashes. An adapter that cannot report one
+ *   refuses rather than guesses.
+ * - Verification is a second **plan**: an empty plan is the proof it took,
+ *   which is exactly what re-reading a device's configuration proves.
+ * - **There is no rollback.** Putting a workspace back means applying the
+ *   previous revision, which is another apply with its own plan and its own
+ *   approval - so a failed verify leaves the record `failed` and says so in
+ *   words, rather than pretending to a `rolled_back` that never happened.
  */
 final readonly class ApplyNetworkChange
 {
@@ -76,6 +98,12 @@ final readonly class ApplyNetworkChange
 
         $change->state = NetworkChangeState::Applying;
         $change->save();
+
+        if ($change->change_target === ChangeTarget::Workspace) {
+            // What the adapter calls it, which is not what the graph calls
+            // it. One place answers that, for both this and the request.
+            return $this->runPlan($change, $device->organization_id, WorkspaceKey::of($device));
+        }
 
         try {
             /*
@@ -119,6 +147,123 @@ final readonly class ApplyNetworkChange
         }
 
         return $this->verify($change, $registered, $key);
+    }
+
+    /**
+     * The workspace half: lock, serial, run, re-plan (§25).
+     *
+     * Every refusal is caught and written onto the change for the reason the
+     * device path gives - one thrown out of here would leave the row saying
+     * `authorized` while the operation beside it said failed.
+     */
+    private function runPlan(NetworkChange $change, string $organizationId, string $key): NetworkChange
+    {
+        try {
+            $registered = $this->runnerFor($organizationId, $key);
+
+            $reader = $registered->adapter();
+
+            if (! $reader instanceof InfrastructureAsCodeProvider) {
+                // Nothing can say where the workspace stands, so nothing may
+                // run against it. The same shape as a backup that failed.
+                throw ChangeRefused::workspaceNotReadable($key);
+            }
+
+            $workspace = $reader->describe($key);
+
+            // Step two, in this family's terms.
+            if ($workspace->isLocked()) {
+                throw ChangeRefused::workspaceLocked($key, (string) $workspace->lockedBy);
+            }
+
+            if ($workspace->stateSerial === null) {
+                throw ChangeRefused::noStateSerial($key);
+            }
+
+            // Step three, and the reason all of this exists.
+            if ((string) $workspace->stateSerial !== (string) $change->fingerprint_before) {
+                throw ChangeRefused::workspaceMoved($key);
+            }
+
+            /** @var InfrastructureAsCodeWriter $runner */
+            $runner = $registered->adapter();
+
+            $outcome = $runner->apply(new IacPlan(
+                workspace: $key,
+                // The plan's text is on the record already; what the adapter
+                // needs back is the reference it gave out, which is what makes
+                // "run exactly the plan that was approved" mean anything.
+                text: (string) $change->diff,
+                reference: $change->plan_reference,
+                stateSerial: $workspace->stateSerial,
+            ));
+        } catch (ChangeRefused $refusal) {
+            return $this->fail($change, $refusal->getMessage());
+        } catch (Throwable $exception) {
+            return $this->fail($change, $this->redactor->redactString($exception->getMessage()));
+        }
+
+        if (! $outcome->succeeded) {
+            return $this->fail($change, $this->redactor->redactString($outcome->output));
+        }
+
+        return $this->verifyPlan($change, $reader, $key, $outcome->output);
+    }
+
+    /**
+     * Plan again. An empty plan is the proof it took.
+     *
+     * A second read rather than the runner's word, exactly as the device path
+     * re-reads a configuration: a run that reported success and left half the
+     * estate unchanged is the failure worth catching, and no adapter can
+     * report that about itself.
+     */
+    private function verifyPlan(
+        NetworkChange $change,
+        InfrastructureAsCodeProvider $reader,
+        string $key,
+        string $output,
+    ): NetworkChange {
+        try {
+            $after = $reader->plan($key, $change->workspace_ref);
+        } catch (Throwable $exception) {
+            return $this->fail($change, $this->redactor->redactString($exception->getMessage()));
+        }
+
+        if ($after->changesNothing()) {
+            return $this->complete($change, $this->redactor->redactString($output));
+        }
+
+        /*
+         * No rollback, and said plainly. Putting a workspace back means
+         * applying the previous revision, which is another plan and another
+         * approval; a `rolled_back` here would claim something this platform
+         * did not do.
+         */
+        return $this->fail(
+            $change,
+            'The run finished and the workspace still has changes outstanding. '
+            .'Nothing was put back: reverting a workspace is another plan, with its own approval. '
+            .$this->redactor->redactString($output),
+        );
+    }
+
+    /**
+     * The adapter this installation permits to run a plan for this workspace.
+     */
+    private function runnerFor(string $organizationId, string $key): RegisteredAdapter
+    {
+        foreach ($this->registry->all($organizationId) as $registered) {
+            if (! $registered->adapter() instanceof InfrastructureAsCodeWriter) {
+                continue;
+            }
+
+            if ($registered->permitted()->has(Capability::AutomationApplyWrite)) {
+                return $registered;
+            }
+        }
+
+        throw ChangeRefused::noRunner($key);
     }
 
     /**

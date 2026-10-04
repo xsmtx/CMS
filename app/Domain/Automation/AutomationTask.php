@@ -209,6 +209,16 @@ enum AutomationTask: string
     case Sites = 'sites';
 
     /**
+     * Asking every infrastructure-as-code tool what workspaces it has (§25).
+     *
+     * Hourly. A workspace list changes when somebody adds one, and the state
+     * serial that guards an apply is read fresh at the moment of the run
+     * rather than from whatever this sweep last saw — a cached serial used as
+     * the safety check would be a check against an hour ago.
+     */
+    case Workspaces = 'workspaces';
+
+    /**
      * Comparing what this platform believes against what providers report
      * (§22).
      *
@@ -305,7 +315,7 @@ enum AutomationTask: string
             // constantly would be one nobody watched.
             self::AbuseRetention => 1440,
             self::Certificates, self::Backups, self::Storage,
-            self::LoadBalancers, self::Machines, self::Reconcile => 60,
+            self::LoadBalancers, self::Machines, self::Reconcile, self::Workspaces => 60,
             self::ZoneHealth, self::Reputation, self::Usage, self::Sites, self::Leakage => 1440,
             self::Renewals, self::Dunning, self::Overdue, self::DomainExpiry, self::Cleanup => 1440,
         };

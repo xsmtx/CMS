@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Application\Network\DecideNetworkChange;
 use App\Application\Operations\WatchedDispatch;
+use App\Domain\Network\ChangeTarget;
 use App\Domain\Network\Exceptions\ChangeRefused;
 use App\Domain\Network\NetworkChangeState;
 use App\Domain\Operations\OperationType;
@@ -72,6 +73,14 @@ final class NetworkChangeController extends Controller
             ],
             'filters' => ['all' => $showAll],
             'devices' => $this->devices(),
+            'workspaces' => $this->workspaces(),
+            'targets' => array_values(array_map(
+                static fn (ChangeTarget $target): array => [
+                    'value' => $target->value,
+                    'label' => (string) __($target->labelKey()),
+                ],
+                ChangeTarget::cases(),
+            )),
             'can' => [
                 'request' => $actor->can('network.changes.request'),
                 'approve' => $actor->can('network.changes.approve'),
@@ -94,6 +103,7 @@ final class NetworkChangeController extends Controller
                 'ticket' => $change->ticket,
                 'decisionNote' => $change->decision_note,
                 'diff' => $change->diff,
+                'workspaceRef' => $change->workspace_ref,
                 'result' => $change->result,
                 'backedUpAt' => $change->backed_up_at?->toIso8601String(),
                 'appliedAt' => $change->applied_at?->toIso8601String(),
@@ -121,17 +131,38 @@ final class NetworkChangeController extends Controller
 
         $device = ResourceNode::query()->whereKey($data['device'])->firstOrFail();
 
+        // A nullable field read with `??`, because `validate()` returns only
+        // the keys that were submitted: a form that posts no target is the
+        // device form, which is what every caller before §25 was.
+        $target = ChangeTarget::tryFrom($data['target'] ?? '') ?? ChangeTarget::Device;
+
         try {
-            $change = $request->use()->handle(
-                device: $device,
-                requester: $this->staff($actor),
-                summary: $data['summary'],
-                reason: $data['reason'],
-                intended: $data['intended'],
-                ticket: $data['ticket'] ?? null,
-            );
+            $change = $target === ChangeTarget::Workspace
+                ? $request->use()->forWorkspace(
+                    workspace: $device,
+                    requester: $this->staff($actor),
+                    summary: $data['summary'],
+                    reason: $data['reason'],
+                    ref: ($data['ref'] ?? '') === '' ? null : $data['ref'],
+                    ticket: $data['ticket'] ?? null,
+                )
+                : $request->use()->handle(
+                    device: $device,
+                    requester: $this->staff($actor),
+                    summary: $data['summary'],
+                    reason: $data['reason'],
+                    intended: $data['intended'] ?? '',
+                    ticket: $data['ticket'] ?? null,
+                );
         } catch (ChangeRefused $refusal) {
-            return back()->withErrors(['intended' => $refusal->worded()])->withInput();
+            /*
+             * On the field the operator can act on. A workspace refusal is
+             * about the revision or the workspace itself, and putting it on
+             * `intended` would attach it to a field that form does not draw.
+             */
+            $field = $target === ChangeTarget::Workspace ? 'ref' : 'intended';
+
+            return back()->withErrors([$field => $refusal->worded()])->withInput();
         }
 
         return to_route('admin.network.changes.show', $change)
@@ -241,6 +272,30 @@ final class NetworkChangeController extends Controller
     }
 
     /**
+     * The workspaces a change can be asked about: what discovery has found.
+     *
+     * The same shape as `devices()`, and the same reason — asking an operator
+     * to type a workspace id would be asking them to type the thing the
+     * adapter already knows.
+     *
+     * @return list<array{id: string, label: string, key: string}>
+     */
+    private function workspaces(): array
+    {
+        return array_values(ResourceNode::query()
+            ->where('kind', 'iac_workspace')
+            ->whereNull('retired_at')
+            ->orderBy('label')
+            ->get()
+            ->map(static fn (ResourceNode $node): array => [
+                'id' => $node->id,
+                'label' => $node->label,
+                'key' => $node->node_key,
+            ])
+            ->all());
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function row(NetworkChange $change): array
@@ -255,6 +310,10 @@ final class NetworkChangeController extends Controller
             'statusLabel' => (string) __($change->state->labelKey()),
             'device' => $change->device?->label,
             'deviceKey' => $change->device?->node_key,
+            // Two fields again: the value decides which form and which
+            // sentences, the label is the word.
+            'target' => $change->change_target->value,
+            'targetLabel' => (string) __($change->change_target->labelKey()),
             'requester' => $change->requester?->name,
             'decider' => $change->decider?->name,
             'requiresApproval' => $change->requires_approval,

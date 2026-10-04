@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Network\Models;
 
+use App\Domain\Network\ChangeTarget;
 use App\Domain\Network\NetworkChangeState;
 use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Operations\Models\Operation;
@@ -18,7 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One requested change to a device's configuration.
+ * One requested change to a device's configuration, or to a workspace kept in
+ * code (§25).
  *
  * The record §6 asks for, and the state machine that decides what may happen
  * to it next. Nothing here talks to a device: `ApplyNetworkChange` does that,
@@ -34,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $id
  * @property string $organization_id
  * @property string $resource_node_id
+ * @property ChangeTarget $change_target
  * @property NetworkChangeState $state
  * @property string|null $requested_by
  * @property string|null $decided_by
@@ -43,6 +46,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $decision_note
  * @property bool $requires_approval
  * @property string $intended
+ * @property string|null $workspace_ref
+ * @property string|null $plan_reference
  * @property string|null $baseline
  * @property string|null $diff
  * @property string|null $fingerprint_before
@@ -67,6 +72,7 @@ final class NetworkChange extends Model implements AuditLabel
     protected $fillable = [
         'organization_id',
         'resource_node_id',
+        'change_target',
         'state',
         'requested_by',
         'decided_by',
@@ -76,6 +82,8 @@ final class NetworkChange extends Model implements AuditLabel
         'decision_note',
         'requires_approval',
         'intended',
+        'workspace_ref',
+        'plan_reference',
         'baseline',
         'diff',
         'fingerprint_before',
@@ -100,10 +108,19 @@ final class NetworkChange extends Model implements AuditLabel
      */
     protected $attributes = [
         'state' => 'requested',
+        'change_target' => 'device',
         'requires_approval' => true,
     ];
 
     /**
+     * The thing this change is about, whatever kind of thing it is.
+     *
+     * Still called `device` because that is what it was and what every
+     * existing caller says; a workspace is the same column pointing at a node
+     * of a different kind. `change_target` is what decides which contract
+     * reads it — a node's kind is an open vocabulary and the workflow is
+     * core's.
+     *
      * @return BelongsTo<ResourceNode, $this>
      */
     public function device(): BelongsTo
@@ -147,6 +164,7 @@ final class NetworkChange extends Model implements AuditLabel
     {
         return [
             'state' => NetworkChangeState::class,
+            'change_target' => ChangeTarget::class,
             'requires_approval' => 'boolean',
             'backed_up_at' => 'immutable_datetime',
             'decided_at' => 'immutable_datetime',

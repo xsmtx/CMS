@@ -4438,3 +4438,91 @@ took the whole suite down rather than one test. `TestHelpersTest` exists for
 this and the redeclaration fatal still gets there first — so a new helper in a
 feature test wants a name with its subject in it (`licensedServer`), not the
 shortest thing that reads well in one file.
+
+**A guarded change may be about something other than a device** (§25,
+`ChangeTarget`). "Show plans/diffs and require approval to apply" is
+`network_changes` described in nine words, so Terraform is a **column on that
+table** rather than a second workflow: who asked, why, which ticket, the exact
+diff, who agreed and what the thing said afterwards are identical questions,
+and two tables answering them would be two queues an operator has to remember
+to look at.
+
+**Two of the five steps mean something different, and that is why the branch
+is in the code rather than a label on a screen.**
+
+- **There is no backup to take.** The state belongs to whoever runs the tool
+  and the code is in somebody's repository, so step two is **the lock**: a
+  workspace another run holds is one where two applies would interleave.
+  Refusing on it is the precondition that makes the apply safe, and it stands
+  exactly where the backup stands for a device.
+- **The fingerprint is the state serial.** A state file carries a version
+  instead of text that hashes, and an adapter that cannot report one **refuses
+  rather than guesses** — a workflow that proceeded there would be one with its
+  only safety check switched off.
+- **Verification is a second plan.** An empty plan is the proof it took, which
+  is what re-reading a configuration proves for a device.
+- **There is no rollback, and the record says so in words.** Putting a
+  workspace back means applying the previous revision, which is another plan
+  with its own approval — so a failed verify leaves `failed` rather than
+  claiming a `rolled_back` that never happened. `ChangeTarget::canRollBack()`
+  is a method rather than a comparison at each call site, because the case
+  somebody writing the check by hand gets backwards is the negative one.
+
+**Core holds no Terraform code and will not.** The configuration lives in
+somebody's repository, so `intended` for a workspace is a **revision** — and
+it is nullable, because "whatever the workspace tracks" is the ordinary case
+and defaulting to `main` would be this platform planning code nobody named.
+
+**`required_unless:target,workspace`, not `required_if:target,device`.** A form
+that posts no target at all is the device form — every caller before §25 was
+one — and `required_if` does not fire on an absent field, so the rule would
+have quietly stopped applying to exactly the path that has always needed it.
+
+**`WorkspaceKey` is the one place that answers what the adapter calls a
+workspace.** A node key is qualified by its adapter (`terraform/ws-1`) because
+`production` is what half an estate is called; the adapter knows only `ws-1`,
+and unlike a storage volume this target is **handed back** on every later call.
+Splitting at the **first** slash, in one class, because two private copies is
+two chances to write the one that splits at the last — and `team/production`
+would then be asked for as `production`.
+
+**A plan that changes nothing is refused when the change is requested.** There
+is nothing to approve, and a queue entry whose whole content is "no changes" is
+one somebody has to read and dismiss.
+
+**`has-changes`, not the three counts.** A Terraform run that only moves
+resources within state reports no adds, changes or destroys while plainly
+having something to do — reading the counts alone would call that an empty
+plan, which this platform would then refuse as nothing to approve.
+
+**A workspace that has never been applied answers serial 0, not null.** Its
+`current-state-version` is a 404, and "there is no state yet" is a known
+position where null means "I could not tell" — which makes the workflow refuse.
+Reading the first as the second would make a brand-new workspace impossible to
+apply anything to, for ever.
+
+**The summary line is composed before the log is fetched, and kept whatever
+happens.** Terraform keeps the plan behind a presigned URL; a plan that came
+back as an empty box because one had expired would be a change somebody
+approved without reading anything.
+
+**A poll loop needs every terminal status, not only the failures.** `awaitPlan`
+listed `errored`, `canceled` and `force_canceled` and not `applied` — so a run
+in a state a plan-only run cannot normally reach was polled for a minute and
+then reported as "it did not finish in time", which reads as a slow Terraform
+rather than as the wrong run. The test took 57 seconds and that was the clue.
+
+**The page was called "Device changes" and half its rows were workspaces.** The
+borrowed-label rule at page level this time — a heading names what is on the
+page, and the nav row and the breadcrumb went with it. The submit said
+"Request a change" under a heading reading *Request a change*, beside a topbar
+button of the same words: three identical labels, which is the same fix the
+incidents and vendors screens needed.
+
+**A fact that is not yet true is better absent than blank.** The detail screen
+drew a "Decided" row with nothing beside it, which reads as something that
+failed to load — and the status beside the heading already says nobody has.
+
+**SDK 1.13**: `InfrastructureAsCodeProvider`, `InfrastructureAsCodeWriter` and
+the three value objects they speak in, plus `ChangeTarget`. Minor — contracts
+nothing had implemented, and an enum core branches on that a module only reads.

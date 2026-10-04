@@ -120,4 +120,81 @@ final class ChangeRefused extends Refused
             ['device' => $device],
         );
     }
+
+    public static function workspaceNotReadable(string $workspace): self
+    {
+        return new self(
+            'No adapter on this installation may read '.$workspace.', '
+            .'so there is no plan to show.',
+            'network.errors.workspace_not_readable',
+            ['workspace' => $workspace],
+        );
+    }
+
+    /**
+     * This family's "back up first".
+     *
+     * There is no backup of a workspace to take — the state is the provider's
+     * and the code is in somebody's repository — but a workspace another run
+     * holds is one where two applies would interleave. Refusing on the lock is
+     * the precondition that makes the apply safe, and it stands where the
+     * backup stands for a device.
+     */
+    public static function workspaceLocked(string $workspace, string $holder): self
+    {
+        return new self(
+            $workspace.' is locked by '.$holder.', so nothing was applied.',
+            'network.errors.workspace_locked',
+            ['workspace' => $workspace, 'holder' => $holder],
+        );
+    }
+
+    /**
+     * The whole point of the guarded workflow, in this family's terms: the
+     * state moved between the plan somebody agreed to and the apply.
+     */
+    public static function workspaceMoved(string $workspace): self
+    {
+        return new self(
+            'The state of '.$workspace.' is not the one this plan was built '
+            .'against. Ask for it again so the plan is against what the '
+            .'workspace holds now.',
+            'network.errors.workspace_moved',
+            ['workspace' => $workspace],
+        );
+    }
+
+    /**
+     * An adapter that cannot say where a workspace stands cannot say whether
+     * anything has changed, and a workflow that proceeded anyway would be one
+     * with its only safety check switched off.
+     */
+    public static function noStateSerial(string $workspace): self
+    {
+        return new self(
+            'The adapter for '.$workspace.' cannot say which version of the '
+            .'state it is looking at, so a plan cannot be applied safely.',
+            'network.errors.no_state_serial',
+            ['workspace' => $workspace],
+        );
+    }
+
+    public static function nothingToPlan(string $workspace): self
+    {
+        return new self(
+            'The plan for '.$workspace.' changes nothing, so there is nothing to approve.',
+            'network.errors.nothing_to_plan',
+            ['workspace' => $workspace],
+        );
+    }
+
+    public static function noRunner(string $workspace): self
+    {
+        return new self(
+            'No adapter on this installation is permitted to run a plan for '
+            .$workspace.'. An operator turns that on per adapter, deliberately.',
+            'network.errors.no_runner',
+            ['workspace' => $workspace],
+        );
+    }
 }

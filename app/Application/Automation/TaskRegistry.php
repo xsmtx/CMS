@@ -19,6 +19,7 @@ use App\Application\Automation\Runs\DiscoverSites;
 use App\Application\Automation\Runs\DiscoverStorage;
 use App\Application\Automation\Runs\DiscoverTopology;
 use App\Application\Automation\Runs\DiscoverVirtualMachines;
+use App\Application\Automation\Runs\DiscoverWorkspaces;
 use App\Application\Automation\Runs\EvaluateAlerts;
 use App\Application\Automation\Runs\ExpireAccessGrants;
 use App\Application\Automation\Runs\ForgetAbuseEvidence;
@@ -78,6 +79,7 @@ final readonly class TaskRegistry
             AutomationTask::Usage => CollectUsage::class,
             AutomationTask::Power => DiscoverPower::class,
             AutomationTask::Sites => DiscoverSites::class,
+            AutomationTask::Workspaces => DiscoverWorkspaces::class,
             AutomationTask::Reconcile => Reconcile::class,
             AutomationTask::Leakage => CheckLeakage::class,
             AutomationTask::AdapterHealth => CheckAdapterHealth::class,

@@ -63,6 +63,10 @@ return [
             'label' => 'Gelir kaçağı',
             'description' => 'Bu kurulumun kendi kayıtlarına dört soru sorar: hangi aktif hizmet, alan adı ve ek için fatura kesilmemiş ve hangi ödemeler hiçbir faturaya bağlanmamış.',
         ],
+        'workspaces' => [
+            'label' => 'Çalışma alanı envanteri',
+            'description' => 'Her kod-olarak-altyapı aracına hangi çalışma alanlarına sahip olduğunu sorar; böylece biri için değişiklik istenebilir.',
+        ],
         'sites' => [
             'label' => 'Site envanteri',
             'description' => 'Her panele hangi web uygulamalarını barındırdığını, her birinin ne kadar geride kaldığını ve bir eklenti ya da tema hakkında bir şey yayımlanıp yayımlanmadığını sorar.',

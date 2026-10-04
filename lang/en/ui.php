@@ -705,7 +705,7 @@ return [
         'telemetry' => 'Telemetry',
         'adapters' => 'Adapters',
         'addressing' => 'Addressing',
-        'device_changes' => 'Device changes',
+        'device_changes' => 'Guarded changes',
         'attacks' => 'Attacks',
         'alerts' => 'Alerts',
         'incidents' => 'Incidents',

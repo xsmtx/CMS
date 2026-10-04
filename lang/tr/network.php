@@ -8,7 +8,31 @@ return [
 
     // Bir cihaz değişikliğinin neden yapılmayacağı — `ChangeRefused::worded()`
     // üzerinden okunur. İstisnanın kendi mesajı İngilizcedir ve günlüğe aittir.
+    'targets' => [
+        'device' => 'Bir cihaz',
+        'workspace' => 'Bir çalışma alanı',
+    ],
+
+    'workspace' => [
+        'title' => 'Çalışma alanı',
+        'ref' => 'Hangi sürüm',
+        'ref_hint' => 'Bir dal, bir etiket ya da bir commit. Çalışma alanının zaten izlediği şeyi planlamak için boş bırakın — bu platform asla bir dal tahmin etmez.',
+        'plan' => 'Ne yapacağı',
+        'plan_intro' => 'Bu istendiği andaki duruma göre araç tarafından üretildi. Durum, çalıştırılmadan hemen önce yeniden okunur ve çalışan plan onaylanan plandır.',
+        'tracked' => 'Çalışma alanının izlediği her neyse',
+        'add' => 'Ekler',
+        'change' => 'Değiştirir',
+        'destroy' => 'Siler',
+        'no_rollback' => 'Bir çalışma alanı geri alınamaz. Birini geri almak, kendi onayı olan başka bir plandır.',
+    ],
+
     'errors' => [
+        'workspace_not_readable' => 'Bu kurulumdaki hiçbir bağdaştırıcı :workspace alanını okuyamaz, bu yüzden gösterilecek bir plan yok.',
+        'workspace_locked' => ':workspace, :holder tarafından kilitlenmiş, bu yüzden hiçbir şey uygulanmadı.',
+        'workspace_moved' => ':workspace alanının durumu, bu planın karşısında oluşturulduğu durum değil. Planın çalışma alanının şu an tuttuğu şeye göre olması için yeniden isteyin.',
+        'no_state_serial' => ':workspace için bağdaştırıcı, duruma ait hangi sürüme baktığını söyleyemiyor; bu yüzden bir plan güvenle uygulanamaz.',
+        'nothing_to_plan' => ':workspace için plan hiçbir şeyi değiştirmiyor, dolayısıyla onaylanacak bir şey yok.',
+        'no_runner' => 'Bu kurulumdaki hiçbir bağdaştırıcının :workspace için plan çalıştırma izni yok. Bunu bir operatör, bağdaştırıcı başına, bilerek açar.',
         'nothing_to_apply' => 'Bir değişiklik, yapılandırmanın ne olması gerektiğini belirtmelidir.',
         'device_not_readable' => 'Bu kurulumdaki hiçbir bağdaştırıcı :device cihazını okuyamaz, bu yüzden değişikliğin karşılaştırılacağı bir şey yok.',
         'device_moved' => ':device üzerindeki yapılandırma, bu değişikliğin incelendiği yapılandırma değil. Farkın cihazın şu anki durumuna göre alınması için değişikliği yeniden isteyin.',
@@ -39,7 +63,7 @@ return [
 
     'pools' => [
         'title' => 'Havuzlar',
-        'intro' => 'Havuz, adres alanının belirli bir ağdan önce gruplandığı yerdir.',
+        'intro' => 'Birinin üzerinde bekleyen değişiklikler ve geri kalanına ne olduğu. Buradaki hiçbir şey bir gerekçe ve ikinci bir kişi olmadan uygulanmaz.',
         'empty' => 'Henüz havuz yok. Bir havuz, tek bir ailenin ve tek bir amacın ağlarını tutar.',
         'name' => 'Ad',
         'family' => 'Aile',
@@ -95,13 +119,14 @@ return [
     ],
 
     'changes' => [
-        'title' => 'Cihaz değişiklikleri',
+        'title' => 'Korumalı değişiklikler',
         'intro' => 'Birini bekleyen yapılandırma değişiklikleri ve diğerlerine ne olduğu.',
         'empty' => 'Bekleyen bir şey yok',
         'empty_detail' => 'Henüz değişiklik talep edilmedi. Bir değişiklik önce yazılır, sonra başkası onayladığında uygulanır.',
-        'no_devices' => 'Henüz cihaz bulunmadı',
-        'no_devices_detail' => 'Topoloji keşfi, bir bağdaştırıcı cevap verdiğinde cihazı grafiğe yazar. O zamana kadar hakkında değişiklik istenecek bir şey yok.',
+        'no_devices' => 'Henüz değiştirilecek bir şey bulunmadı',
+        'no_devices_detail' => 'Keşif, bir bağdaştırıcı cevap verdiğinde cihazı ya da çalışma alanını grafiğe yazar. O zamana kadar hakkında değişiklik istenecek bir şey yok.',
         'request' => 'Değişiklik talep et',
+        'request_submit' => 'Talep et',
         'request_intro' => 'Neyin niçin değişeceğini yazın. Talep etmek uygulamak değildir.',
         'show_all' => 'Hepsini göster',
         'show_open' => 'Açık olanları göster',
@@ -127,10 +152,13 @@ return [
         'cancel' => 'Geri çek',
         'cancel_body' => 'Değişiklik geri çekilir. Cihaza hiçbir şey gitmez, kayıt durur.',
         'apply' => 'Cihaza uygula',
+        'target' => 'Neyle ilgili',
         'apply_body' => 'Önce yapılandırma yedeklenir; cihaz bu farkın okunduğu cihaz değilse değişiklik reddedilir. Cihaz yeni yapılandırmayı tutmazsa yedek geri yüklenir.',
+        'apply_workspace_body' => 'Çalışma alanı kilitliyse ya da durumu artık bu planın oluşturulduğu durum değilse değişiklik reddedilir. Çalışan plan, onaylanan plandır.',
         'columns' => [
             'summary' => 'Değişiklik',
             'device' => 'Cihaz',
+            'subject' => 'Neyle ilgili',
             'state' => 'Durum',
             'requester' => 'Talep eden',
             'requested' => 'Talep',

@@ -700,7 +700,7 @@ return [
         'telemetry' => 'Telemetri',
         'adapters' => 'Bağdaştırıcılar',
         'addressing' => 'Adresleme',
-        'device_changes' => 'Cihaz değişiklikleri',
+        'device_changes' => 'Korumalı değişiklikler',
         'attacks' => 'Saldırılar',
         'alerts' => 'Uyarılar',
         'incidents' => 'Olaylar',

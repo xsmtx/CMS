@@ -7,12 +7,44 @@ return [
     'intro' => 'The address space this installation has, and who is holding each address.',
 
     /*
+     * What a guarded change is about (§25). Two workflows on one table,
+     * because who asked, why, which ticket, what changed and who agreed are
+     * identical questions - and two queues would be two places to forget to
+     * look.
+     */
+    'targets' => [
+        'device' => 'A device',
+        'workspace' => 'A workspace',
+    ],
+
+    'workspace' => [
+        'title' => 'Workspace',
+        'ref' => 'Which revision',
+        'ref_hint' => 'A branch, a tag or a commit. Leave it empty to plan whatever the workspace already tracks — this platform never guesses a branch.',
+        'plan' => 'What it would do',
+        'plan_intro' => 'Produced by the tool against the state as it was when this was asked for. The state is read again immediately before it runs, and the plan that was approved is the one that runs.',
+        'tracked' => 'Whatever the workspace tracks',
+        'add' => 'Add',
+        'change' => 'Change',
+        'destroy' => 'Destroy',
+        // Said on the record rather than left to be discovered: a device can
+        // be put back and a workspace cannot.
+        'no_rollback' => 'A workspace cannot be rolled back. Reverting one is another plan, with its own approval.',
+    ],
+
+    /*
      * Why a device change will not go ahead — read through
      * `ChangeRefused::worded()`. The exception's own message is English and
      * belongs in the log; this is what somebody reads, on a screen or on a
      * phone.
      */
     'errors' => [
+        'workspace_not_readable' => 'No adapter on this installation may read :workspace, so there is no plan to show.',
+        'workspace_locked' => ':workspace is locked by :holder, so nothing was applied.',
+        'workspace_moved' => 'The state of :workspace is not the one this plan was built against. Ask for it again so the plan is against what the workspace holds now.',
+        'no_state_serial' => 'The adapter for :workspace cannot say which version of the state it is looking at, so a plan cannot be applied safely.',
+        'nothing_to_plan' => 'The plan for :workspace changes nothing, so there is nothing to approve.',
+        'no_runner' => 'No adapter on this installation is permitted to run a plan for :workspace. An operator turns that on per adapter, deliberately.',
         'nothing_to_apply' => 'A change has to say what the configuration should become.',
         'device_not_readable' => 'No adapter on this installation may read :device, so there is nothing to compare a change against.',
         'device_moved' => 'The configuration on :device is not the one this change was reviewed against. Request it again so the diff is against what the device says now.',
@@ -107,13 +139,18 @@ return [
      * moved" are sentences the dialog says out loud.
      */
     'changes' => [
-        'title' => 'Device changes',
-        'intro' => 'Configuration changes waiting on somebody, and what happened to the rest.',
+        // Not "Device changes" any more: half the queue is workspaces,
+        // and a page heading names what is on the page.
+        'title' => 'Guarded changes',
+        'intro' => 'Changes waiting on somebody, and what happened to the rest. Nothing here is applied without a reason and a second person.',
         'empty' => 'Nothing is waiting',
         'empty_detail' => 'No change has been asked for. One is written down before it is applied, and applied only after somebody else has agreed.',
-        'no_devices' => 'No devices have been found yet',
-        'no_devices_detail' => 'Topology discovery writes a device onto the graph when an adapter answers for one. Until then there is nothing a change could be asked about.',
+        'no_devices' => 'Nothing has been found to change yet',
+        'no_devices_detail' => 'Discovery writes a device or a workspace onto the graph when an adapter answers for one. Until then there is nothing a change could be asked about.',
         'request' => 'Request a change',
+        // The submit, which is not its own heading and not the button
+        // that opened the form.
+        'request_submit' => 'Ask for it',
         'request_intro' => 'Write down what should change and why. Asking is not applying.',
         'show_all' => 'Show everything',
         'show_open' => 'Show what is open',
@@ -139,10 +176,18 @@ return [
         'cancel' => 'Withdraw',
         'cancel_body' => 'The change is withdrawn. Nothing goes to the device and the record stays.',
         'apply' => 'Apply to the device',
+        'target' => 'What it is about',
         'apply_body' => 'The configuration is backed up first, and the change is refused if the device is no longer the one this diff was read against. If the device does not keep it, the backup goes back on.',
+        // A different promise, because the steps are different. Saying
+        // "backed up first" about a workspace would be a sentence this
+        // platform could not keep.
+        'apply_workspace_body' => 'The change is refused if the workspace is locked, or if its state is no longer the one this plan was built against. The plan that was approved is the one that runs.',
         'columns' => [
             'summary' => 'Change',
             'device' => 'Device',
+            // Names what is in the cell, which is a device on half the
+            // rows and a workspace on the other half.
+            'subject' => 'What it is about',
             'state' => 'State',
             'requester' => 'Asked by',
             'requested' => 'Asked',

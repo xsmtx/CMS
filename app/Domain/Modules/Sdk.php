@@ -41,11 +41,17 @@ namespace App\Domain\Modules;
  * to look at. One implementing the interface directly would not compile, and
  * that is the case this paragraph exists to warn about rather than to hide.
  *
+ * 1.13 is additive again: `InfrastructureAsCodeProvider` and
+ * `InfrastructureAsCodeWriter` with the three value objects they speak in
+ * (§25), plus `ChangeTarget` — an enum core branches on and a module only
+ * reads. Two contracts nothing had implemented, so no existing module has
+ * anything to look at.
+ *
  * Changing or removing anything a module implements or calls is a major one.
  * A major bump is a decision, not a consequence — it makes every existing
  * module refuse until its author has looked.
  */
 final class Sdk
 {
-    public const string VERSION = '1.12';
+    public const string VERSION = '1.13';
 }

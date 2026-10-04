@@ -477,7 +477,7 @@ const groups = computed<NavGroup[]>(() => [
         permission: 'network.ipam.view',
       },
       {
-        label: nav('device_changes', 'Device changes'),
+        label: nav('device_changes', 'Guarded changes'),
         href: '/admin/network/changes',
         permission: 'network.devices.view',
       },
