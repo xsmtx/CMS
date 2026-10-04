@@ -13,6 +13,20 @@ return [
         'different_organization' => 'Bu uyarı başka bir organizasyona ait.',
     ],
 
+    // Bir alacağın neden oluşturulmadığı — `CreditRefused::worded()`.
+    'credit_errors' => [
+        'incident_open' => ':reference hâlâ açık. Bir olay için alacak, olay bittikten sonra oluşturulur.',
+        'already_credited' => ':number bu olay için zaten alacaklandırılmış.',
+        'different_seller' => 'Bu fatura başka bir satıcının müşterisine ait.',
+        'no_customer' => ':number için alacaklandırılacak bir müşteri yok.',
+    ],
+
+    // Bir bakım penceresinin neden reddedildiği — `MaintenanceRefused::worded()`.
+    'maintenance_errors' => [
+        'ends_before_start' => 'Bir bakım penceresi, başladıktan sonra bitmelidir.',
+        'already_over' => '“:title” bitti. Çalışmış bir pencere iptal edilemez, çünkü bastırdığı uyarılar onun kimliğini taşıyor.',
+    ],
+
     'alerts' => [
         'title' => 'Uyarılar',
         'intro' => 'Şu anda neyin yanlış olduğu ve neyin düzeldiği.',

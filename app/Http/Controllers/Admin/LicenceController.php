@@ -127,7 +127,7 @@ final class LicenceController extends Controller
         try {
             $state = $licensing->heartbeat($this->actor->model());
         } catch (LicenceRefused $refused) {
-            return back()->with('error', $refused->getMessage());
+            return back()->with('error', $refused->worded());
         }
 
         if ($state->lastFailure !== null) {

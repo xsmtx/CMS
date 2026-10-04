@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Dcim\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A remote-hands task that could not be moved (§11).
@@ -21,19 +21,8 @@ use RuntimeException;
  * moment they are already confused — `LicenceCheck` shipped three hard-coded
  * sentences and nothing caught it for four phases.
  */
-final class RemoteHandsRefused extends RuntimeException
+final class RemoteHandsRefused extends Refused
 {
-    /**
-     * @param  array<string, string>  $replacements
-     */
-    private function __construct(
-        string $message,
-        private readonly string $key,
-        private readonly array $replacements = [],
-    ) {
-        parent::__construct($message);
-    }
-
     public static function cannotMove(string $from, string $to): self
     {
         return new self(
@@ -49,18 +38,5 @@ final class RemoteHandsRefused extends RuntimeException
             'Say what happened before closing this.',
             'dcim.remote_hands.errors.needs_outcome',
         );
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function replacements(): array
-    {
-        return $this->replacements;
     }
 }

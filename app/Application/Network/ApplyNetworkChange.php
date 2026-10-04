@@ -106,6 +106,13 @@ final readonly class ApplyNetworkChange
             $writer = $registered->adapter();
             $writer->applyConfiguration($key, $change->intended);
         } catch (ChangeRefused $refusal) {
+            /*
+             * `getMessage()` and not `worded()`, deliberately: this goes into
+             * a column. A sentence stored in the language of whichever worker
+             * happened to run is a sentence the next operator cannot read —
+             * the `health_message` rule, and the reason the English message
+             * exists at all.
+             */
             return $this->fail($change, $refusal->getMessage());
         } catch (Throwable $exception) {
             return $this->fail($change, $this->redactor->redactString($exception->getMessage()));

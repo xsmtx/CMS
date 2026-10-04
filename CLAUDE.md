@@ -4069,3 +4069,38 @@ expresses as updates on an incident somebody already opened. Opening is the
 act with a severity, a start time and a public flag to choose, and a form at
 two in the morning on a phone is how an incident gets opened with the wrong
 severity.
+
+**Every refusal in this product is worded in both languages, and a base class
+is what makes it a mechanism.** `App\Domain\Shared\Refused` carries the key,
+the replacements and `worded()`; thirteen `*Refused` classes extend it. Eight
+of them had been printing English at operators since they were written — a
+Turkish operator approving their own device change, draining a backend,
+crediting an invoice or refusing a package was answered in English on a screen
+that was otherwise entirely Turkish.
+
+**The rule was already written here and five classes followed it**, which is
+the point: *a rule somebody has to remember is not a mechanism.* Each class had
+to think to carry a key, and the ones written in a hurry did not. A base class
+cannot be constructed without one.
+
+`RefusalWordingTest` walks the classes rather than a list, and **calls every
+constructor** in both locales rather than reading the source — so a reason
+added next year is covered the day it is written. `argumentsFor()` builds
+plausible arguments by reflection and **throws on a type it does not know**,
+because a skipped constructor is an unworded reason nobody is told about.
+
+**`SessionRefused` is the one exemption and it is named.** Its reasons —
+expired, spent, stolen — exist for the audit row alone, and every one of them
+reaches the caller as the same `unauthenticated`. Wording it would be wording
+something nobody reads.
+
+**Two registers, and the English one still has a job.**
+`ApplyNetworkChange::fail()` writes `getMessage()` into a column on purpose: a
+sentence stored in the language of whichever worker happened to run is a
+sentence the next operator cannot read — the `health_message` rule, and the
+reason the English message exists at all.
+
+**A union catch flattens two exception types to their worst common
+ancestor.** `catch (CreditRefused|PaymentRefused $refusal)` could only call
+`getMessage()`, because `PaymentRefused` is a `PlatformException` with no key.
+Split, so the one that can be worded is.

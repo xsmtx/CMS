@@ -131,7 +131,7 @@ final class VirtualMachineController extends Controller
         } catch (PowerRefused $refused) {
             // Every refusal reaches the form as a sentence; anything else
             // still reaches the handler, because anything else is a bug.
-            return back()->withErrors(['reason' => $refused->getMessage()]);
+            return back()->withErrors(['reason' => $refused->worded()]);
         }
 
         return back()->with('status', __('infrastructure.virtualisation.done', [

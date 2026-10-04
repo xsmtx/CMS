@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 return [
+    // Bir kötüye kullanım dosyasına neden bir şey yapılmadığı —
+    // `AbuseRefused::worded()`.
+    'abuse_errors' => [
+        'already_closed' => ':reference kapatıldı. Bunu yeniden açmak yerine yeni bir dosya açın.',
+        'needs_a_service' => 'Askıya alma için askıya alınacak bir hizmet gerekir ve bu dosya kimseye atfedilmemiş.',
+    ],
+
     'abuse' => [
         'title' => 'Kötüye kullanım',
         'intro' => 'Dışarıdan birinin şikâyeti, o sırada kimin olduğu ve ne yapıldığı.',

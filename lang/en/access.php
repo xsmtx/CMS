@@ -12,6 +12,18 @@ return [
         'unknown_holder' => 'There is nobody here with that id.',
     ],
 
+    /*
+     * Why a just-in-time grant was not given — `GrantRefused::worded()`.
+     * The window is bounded at both ends on purpose, and the refusals say
+     * which end.
+     */
+    'grant_errors' => [
+        'own_grant' => 'A grant has to be given to somebody other than the person giving it.',
+        'too_short' => 'A grant of less than five minutes is a grant somebody is about to give again.',
+        'too_long' => 'A grant may run for at most :maximumMinutes minutes. Longer than that is a permission with extra steps, and this platform has roles for those.',
+        'already_revoked' => 'That grant has already ended.',
+    ],
+
     'scopes' => [
         'staff' => 'Staff',
         'customer' => 'Customer',

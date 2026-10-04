@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Intelligence\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A remediation that did not go ahead (§22).
@@ -17,19 +17,8 @@ use RuntimeException;
  * The sentence an operator reads is `key()` rather than the message, which
  * is English and belongs in a log — the lesson `RackRefused` cost.
  */
-final class RemediationRefused extends RuntimeException
+final class RemediationRefused extends Refused
 {
-    /**
-     * @param  array<string, string>  $replacements
-     */
-    private function __construct(
-        string $message,
-        private readonly string $key,
-        private readonly array $replacements = [],
-    ) {
-        parent::__construct($message);
-    }
-
     public static function notOpen(string $state): self
     {
         return new self(
@@ -77,18 +66,5 @@ final class RemediationRefused extends RuntimeException
             'There is no service behind this finding to act on.',
             'intelligence.errors.nothing_to_act_on',
         );
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function replacements(): array
-    {
-        return $this->replacements;
     }
 }

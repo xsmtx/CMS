@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A drain or an undrain that did not go ahead (§9).
@@ -24,30 +24,50 @@ use RuntimeException;
  * Nothing here echoes a URL or a credential. A balancer's own message reaches
  * this only through `SecretRedactor`.
  */
-final class BackendRefused extends RuntimeException
+final class BackendRefused extends Refused
 {
     public static function notAddressable(string $backend): self
     {
-        return new self('This platform does not know how to reach '.$backend.' on its balancer.');
+        return new self(
+            'This platform does not know how to reach '.$backend.' on its balancer.',
+            'infrastructure.loadbalancing.errors.not_addressable',
+            ['backend' => $backend],
+        );
     }
 
     public static function readOnly(string $backend): self
     {
-        return new self('The balancer holding '.$backend.' cannot be written to.');
+        return new self(
+            'The balancer holding '.$backend.' cannot be written to.',
+            'infrastructure.loadbalancing.errors.read_only',
+            ['backend' => $backend],
+        );
     }
 
     public static function writesNotEnabled(string $adapter): self
     {
-        return new self('Writes are not enabled for '.$adapter.'.');
+        return new self(
+            'Writes are not enabled for '.$adapter.'.',
+            'infrastructure.loadbalancing.errors.writes_not_enabled',
+            ['adapter' => $adapter],
+        );
     }
 
     public static function balancerRefused(string $backend, string $because): self
     {
-        return new self('The balancer refused to change '.$backend.': '.$because);
+        return new self(
+            'The balancer refused to change '.$backend.': '.$because,
+            'infrastructure.loadbalancing.errors.balancer_refused',
+            ['backend' => $backend, 'because' => $because],
+        );
     }
 
     public static function unverifiable(string $backend): self
     {
-        return new self('The balancer took the command and could not then describe '.$backend.'.');
+        return new self(
+            'The balancer took the command and could not then describe '.$backend.'.',
+            'infrastructure.loadbalancing.errors.unverifiable',
+            ['backend' => $backend],
+        );
     }
 }

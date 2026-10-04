@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reliability\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * Something that will not be done to an incident, and why.
@@ -20,32 +20,8 @@ use RuntimeException;
  * operator resolving an incident twice was answered in English. That is the
  * lesson `RackRefused` cost, arriving through a door that was already open.
  */
-final class IncidentRefused extends RuntimeException
+final class IncidentRefused extends Refused
 {
-    /**
-     * @param  array<string, string>  $replacements
-     */
-    private function __construct(
-        string $message,
-        private readonly string $key,
-        private readonly array $replacements = [],
-    ) {
-        parent::__construct($message);
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function replacements(): array
-    {
-        return $this->replacements;
-    }
-
     public static function alreadyResolved(string $reference): self
     {
         return new self(
@@ -100,13 +76,5 @@ final class IncidentRefused extends RuntimeException
             'That alert belongs to a different organization.',
             'reliability.errors.different_organization',
         );
-    }
-
-    /**
-     * The sentence somebody reads, in their own language.
-     */
-    public function worded(): string
-    {
-        return (string) __($this->key, $this->replacements);
     }
 }

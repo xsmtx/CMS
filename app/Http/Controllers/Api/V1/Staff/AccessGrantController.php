@@ -119,7 +119,7 @@ final class AccessGrantController extends Controller
         } catch (GrantRefused $refused) {
             // Granting yourself something, or a window at either end of the
             // bounds. All three are a caller's mistake.
-            throw new ValidationFailedException($refused->getMessage());
+            throw new ValidationFailedException($refused->worded());
         }
 
         return response()->json([

@@ -87,7 +87,7 @@ final class MaintenanceController extends Controller
                 actor: $this->staff($actor),
             );
         } catch (MaintenanceRefused $refusal) {
-            return back()->withErrors(['ends_at' => $refusal->getMessage()]);
+            return back()->withErrors(['ends_at' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.maintenance.scheduled'));
@@ -103,7 +103,7 @@ final class MaintenanceController extends Controller
         try {
             $windows->cancel($window, $this->staff($actor));
         } catch (MaintenanceRefused $refusal) {
-            return back()->withErrors(['window' => $refusal->getMessage()]);
+            return back()->withErrors(['window' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.maintenance.cancelled'));

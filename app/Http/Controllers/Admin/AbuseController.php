@@ -189,7 +189,7 @@ final class AbuseController extends Controller
         try {
             $cases->note($case, $data['body'], AbuseState::from($data['state']), $this->staff($actor));
         } catch (AbuseRefused $refusal) {
-            return back()->withErrors(['body' => $refusal->getMessage()]);
+            return back()->withErrors(['body' => $refusal->worded()]);
         }
 
         return back()->with('status', __('security.abuse.noted'));
@@ -214,7 +214,7 @@ final class AbuseController extends Controller
                 $this->staff($actor),
             );
         } catch (AbuseRefused $refusal) {
-            return back()->withErrors(['action' => $refusal->getMessage()]);
+            return back()->withErrors(['action' => $refusal->worded()]);
         }
 
         return back()->with('status', __('security.abuse.acted'));

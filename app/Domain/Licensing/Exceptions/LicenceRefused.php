@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Licensing\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A token the installation will not accept.
@@ -19,21 +19,31 @@ use RuntimeException;
  * could be pinned to a revoked licence by anybody able to replay one captured
  * response.
  */
-final class LicenceRefused extends RuntimeException
+final class LicenceRefused extends Refused
 {
     public static function badSignature(): self
     {
-        return new self('The licence token was not signed by this vendor.');
+        return new self(
+            'The licence token was not signed by this vendor.',
+            'licensing.errors.bad_signature',
+        );
     }
 
     public static function malformed(string $why): self
     {
-        return new self("The licence token could not be read: {$why}.");
+        return new self(
+            "The licence token could not be read: {$why}.",
+            'licensing.errors.malformed',
+            ['why' => $why],
+        );
     }
 
     public static function forAnotherInstallation(): self
     {
-        return new self('The licence token was issued to a different installation.');
+        return new self(
+            'The licence token was issued to a different installation.',
+            'licensing.errors.another_installation',
+        );
     }
 
     /**
@@ -44,7 +54,10 @@ final class LicenceRefused extends RuntimeException
      */
     public static function issuedInTheFuture(): self
     {
-        return new self('The licence token is dated in the future.');
+        return new self(
+            'The licence token is dated in the future.',
+            'licensing.errors.issued_in_future',
+        );
     }
 
     /**
@@ -56,11 +69,17 @@ final class LicenceRefused extends RuntimeException
      */
     public static function replayed(): self
     {
-        return new self('The licence token is older than the one this installation already holds.');
+        return new self(
+            'The licence token is older than the one this installation already holds.',
+            'licensing.errors.replayed',
+        );
     }
 
     public static function noPublicKey(): self
     {
-        return new self('This distribution has no licence public key, so no token can be verified.');
+        return new self(
+            'This distribution has no licence public key, so no token can be verified.',
+            'licensing.errors.no_public_key',
+        );
     }
 }

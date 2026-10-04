@@ -222,6 +222,17 @@ return [
     ],
 
     'virtualisation' => [
+        // Why a power action did not go ahead — `PowerRefused::worded()`.
+        'errors' => [
+            'not_addressable' => 'This platform does not know how to reach :machine on its hypervisor.',
+            'read_only' => 'The hypervisor running :machine cannot be written to.',
+            'writes_not_enabled' => 'Writes are not enabled for :adapter.',
+            'missing' => 'The hypervisor no longer knows about :machine.',
+            'already_there' => ':machine is already :state. Reload the page — it is showing something that is no longer true.',
+            'hypervisor_refused' => 'The hypervisor refused to change :machine: :because',
+            'unverifiable' => 'The hypervisor took the command and could not then describe :machine, so this platform cannot say what it is doing.',
+        ],
+
         'title' => 'Machines',
         'intro' => 'Every host and the machines on it. What goes down if a host is rebooted is the question this answers — before anybody finds out.',
         'empty' => 'No hypervisor has reported',
@@ -277,6 +288,19 @@ return [
     ],
 
     'loadbalancing' => [
+        /*
+         * Why a drain or an undrain did not go ahead — read through
+         * `BackendRefused::worded()`. The exception's own message is English
+         * and belongs in the log; this is what somebody reads.
+         */
+        'errors' => [
+            'not_addressable' => 'This platform does not know how to reach :backend on its balancer.',
+            'read_only' => 'The balancer holding :backend cannot be written to.',
+            'writes_not_enabled' => 'Writes are not enabled for :adapter.',
+            'balancer_refused' => 'The balancer refused to change :backend: :because',
+            'unverifiable' => 'The balancer took the command and could not then describe :backend, so this platform cannot say what it is doing.',
+        ],
+
         'title' => 'Load balancers',
         'intro' => 'What each balancer is listening on and which machines are behind it. Draining stops new connections; the ones already open are left to finish.',
         'empty' => 'No balancer has reported',

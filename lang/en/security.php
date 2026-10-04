@@ -12,6 +12,13 @@ return [
      * doing" and "the complaint was wrong" are three different answers, and a
      * word that flattened them would tell the next reader nothing.
      */
+    // Why something was not done to an abuse case —
+    // `AbuseRefused::worded()`.
+    'abuse_errors' => [
+        'already_closed' => ':reference is closed. Open a new case rather than reopening this one.',
+        'needs_a_service' => 'Suspending needs a service to suspend, and this case is attributed to nobody.',
+    ],
+
     'abuse' => [
         'title' => 'Abuse',
         'intro' => 'What somebody outside is complaining about, who it was about at the time, and what was done.',

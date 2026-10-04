@@ -195,7 +195,7 @@ final class ConnectController extends Controller
                 ticket: $data['ticket'] ?? null,
             );
         } catch (GrantRefused $refusal) {
-            return back()->withErrors(['staff' => $refusal->getMessage()])->withInput();
+            return back()->withErrors(['staff' => $refusal->worded()])->withInput();
         }
 
         return back()->with('status', __('network.access.flash.granted'));
@@ -223,7 +223,7 @@ final class ConnectController extends Controller
                 'revoked by an operator',
             );
         } catch (GrantRefused $refusal) {
-            return back()->withErrors(['grant' => $refusal->getMessage()]);
+            return back()->withErrors(['grant' => $refusal->worded()]);
         }
 
         return back()->with('status', __('network.access.flash.revoked'));

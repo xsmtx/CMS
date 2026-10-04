@@ -16,6 +16,25 @@ return [
         'different_organization' => 'That alert belongs to a different organization.',
     ],
 
+    /*
+     * Why a credit was not raised — `CreditRefused::worded()`. This one
+     * moves money, so an audit log in which "credited the same invoice
+     * twice" and "credited somebody else's customer" look alike is a log
+     * that cannot answer the only question anybody asks it.
+     */
+    'credit_errors' => [
+        'incident_open' => ':reference is still open. An incident is credited once it has ended.',
+        'already_credited' => ':number has already been credited for this incident.',
+        'different_seller' => 'That invoice belongs to a customer of a different seller.',
+        'no_customer' => ':number has no customer to credit.',
+    ],
+
+    // Why a maintenance window was refused — `MaintenanceRefused::worded()`.
+    'maintenance_errors' => [
+        'ends_before_start' => 'A maintenance window has to end after it starts.',
+        'already_over' => '“:title” is over. A window that has run cannot be called off, because the alerts it suppressed carry its id.',
+    ],
+
     'alerts' => [
         'title' => 'Alerts',
         'intro' => 'What is currently wrong, and what stopped being wrong.',

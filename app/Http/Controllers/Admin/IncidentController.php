@@ -216,7 +216,12 @@ final class IncidentController extends Controller
                 $data['reason'],
                 $this->staff($actor),
             );
-        } catch (CreditRefused|PaymentRefused $refusal) {
+        } catch (CreditRefused $refusal) {
+            return back()->withErrors(['amount_minor' => $refusal->worded()]);
+        } catch (PaymentRefused $refusal) {
+            // Caught separately rather than in a union: `PaymentRefused` is a
+            // `PlatformException` with no key, so a union would have to print
+            // the English of whichever one arrived.
             return back()->withErrors(['amount_minor' => $refusal->getMessage()]);
         }
 
@@ -296,7 +301,7 @@ final class IncidentController extends Controller
         try {
             $incidents->attach($incident, $alert, $this->staff($actor));
         } catch (IncidentRefused $refusal) {
-            return back()->withErrors(['alert' => $refusal->getMessage()]);
+            return back()->withErrors(['alert' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.incidents.attached'));
@@ -309,7 +314,7 @@ final class IncidentController extends Controller
         try {
             $incidents->detach($alert, $this->staff($actor));
         } catch (IncidentRefused $refusal) {
-            return back()->withErrors(['alert' => $refusal->getMessage()]);
+            return back()->withErrors(['alert' => $refusal->worded()]);
         }
 
         return back()->with('status', __('reliability.incidents.detached'));

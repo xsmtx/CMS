@@ -27,5 +27,18 @@ return [
 
     'errors' => [
         'not_permitted' => 'Only the owner of this installation can see its licence.',
+
+        /*
+         * A token this installation will not accept. Each is a security
+         * event rather than a configuration problem, which is why each has
+         * its own sentence — "licence invalid" tells an incident review
+         * nothing.
+         */
+        'bad_signature' => 'The licence token was not signed by this vendor.',
+        'malformed' => 'The licence token could not be read: :why.',
+        'another_installation' => 'The licence token was issued to a different installation.',
+        'issued_in_future' => 'The licence token is dated in the future. Either the clocks disagree or somebody is constructing tokens.',
+        'replayed' => 'The licence token is older than the one this installation already holds.',
+        'no_public_key' => 'This distribution has no licence public key, so no token can be verified.',
     ],
 ];

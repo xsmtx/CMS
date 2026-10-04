@@ -27,5 +27,15 @@ return [
 
     'errors' => [
         'not_permitted' => 'Bu kurulumun lisansını yalnızca kurulum sahibi görebilir.',
+
+        // Bu kurulumun kabul etmeyeceği bir belirteç. Her biri bir
+        // yapılandırma sorunu değil bir güvenlik olayıdır; bu yüzden her
+        // birinin kendi cümlesi vardır.
+        'bad_signature' => 'Lisans belirteci bu sağlayıcı tarafından imzalanmamış.',
+        'malformed' => 'Lisans belirteci okunamadı: :why.',
+        'another_installation' => 'Lisans belirteci başka bir kuruluma verilmiş.',
+        'issued_in_future' => 'Lisans belirtecinin tarihi gelecekte. Ya saatler uyuşmuyor ya da birisi belirteç üretiyor.',
+        'replayed' => 'Lisans belirteci, bu kurulumun halihazırda tuttuğundan daha eski.',
+        'no_public_key' => 'Bu dağıtımda lisans genel anahtarı yok, bu yüzden hiçbir belirteç doğrulanamaz.',
     ],
 ];

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Network\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A device change that will not be going ahead, and why.
@@ -24,37 +24,8 @@ use RuntimeException;
  * worse than one reaching a browser, because there is no surrounding screen
  * to make sense of it.
  */
-final class ChangeRefused extends RuntimeException
+final class ChangeRefused extends Refused
 {
-    /**
-     * @param  array<string, string>  $replacements
-     */
-    private function __construct(
-        string $message,
-        private readonly string $key,
-        private readonly array $replacements = [],
-    ) {
-        parent::__construct($message);
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function replacements(): array
-    {
-        return $this->replacements;
-    }
-
-    public function worded(): string
-    {
-        return (string) __($this->key, $this->replacements);
-    }
-
     public static function nothingToApply(): self
     {
         return new self(

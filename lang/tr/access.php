@@ -10,6 +10,14 @@ return [
         'unknown_holder' => 'Bu kimliğe sahip kimse yok.',
     ],
 
+    // Kısa süreli bir yetkinin neden verilmediği — `GrantRefused::worded()`.
+    'grant_errors' => [
+        'own_grant' => 'Bir yetki, onu verenden başka birine verilmelidir.',
+        'too_short' => 'Beş dakikadan kısa bir yetki, birinin birazdan yeniden vereceği bir yetkidir.',
+        'too_long' => 'Bir yetki en fazla :maximumMinutes dakika sürebilir. Bundan uzunı, adımları fazla bir izindir; bu platformun bunun için rolleri var.',
+        'already_revoked' => 'Bu yetki zaten sona ermiş.',
+    ],
+
     'scopes' => [
         'staff' => 'Personel',
         'customer' => 'Müşteri',

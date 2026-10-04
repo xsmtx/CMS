@@ -53,6 +53,11 @@ arch('domain objects are final or abstract')
         // it so that a package providing one thing writes one method.
         // `final` would make the SDK unusable.
         'App\Domain\Modules\BaseModule',
+        // The second, and subclassed only inside this repository: every
+        // refusal extends it so that carrying a translation key is a
+        // mechanism rather than something each class remembers. Eight of
+        // them did not remember.
+        'App\Domain\Shared\Refused',
     ]);
 
 arch('enums live where they are declared and are backed')

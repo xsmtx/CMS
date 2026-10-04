@@ -3,6 +3,25 @@
 declare(strict_types=1);
 
 return [
+    /*
+     * Bir paketin neden alınmadığı. Her biri kodda ayrı ayrı adlandırılır,
+     * çünkü "indirme başarısız" demek, bozuk bir yansıyla bir saldırıyı
+     * denetim kaydında aynı gösterirdi (ADR 0047).
+     */
+    'errors' => [
+        'not_offered' => 'Mağazada :slug adında bir paket yok.',
+        'disabled' => 'Bu kurulum için bir mağaza yapılandırılmamış, dolayısıyla alınacak bir yer yok.',
+        'unreachable' => 'Sağlayıcı :slug için yanıt vermedi.',
+        'too_large' => ':slug paketi, bu kurulumun indireceğinden büyük (:limitBytes bayt).',
+        'digest' => ':slug paketi, katalogun onun için yayımladığı özetle eşleşmiyor.',
+        'signature' => ':slug paketi bu sağlayıcı tarafından imzalanmamış.',
+        'unsigned' => 'Bu dağıtımda paketleme genel anahtarı yok, bu yüzden hiçbir paket doğrulanamaz.',
+        'unreadable_archive' => ':slug paketi, bu platformun açabileceği bir arşiv değil.',
+        'unsafe_path' => ':slug paketi, kendi dizininin dışına yazılacak bir girdi içeriyor (:entry).',
+        'slug_mismatch' => ':offered olarak sunulan paket kendisine :declared diyor.',
+        'not_ours' => ':slug modülü diskten kurulmuş, bu yüzden mağaza onun yerine bir şey koymaz.',
+    ],
+
     'title' => 'Mağaza',
     'intro' => 'Bu kurulumun ekleyebileceği paketler. Buradaki hiçbir şey siz kurup ardından etkinleştirmeden çalışmaz.',
 

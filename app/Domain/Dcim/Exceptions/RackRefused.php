@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Dcim\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * Something that could not be put in a rack (§11).
@@ -22,19 +22,8 @@ use RuntimeException;
  * `replacements()`. These shipped as hard-coded English in the DCIM spine and
  * were the only untranslated refusals in the product.
  */
-final class RackRefused extends RuntimeException
+final class RackRefused extends Refused
 {
-    /**
-     * @param  array<string, string|int>  $replacements
-     */
-    private function __construct(
-        string $message,
-        private readonly string $key,
-        private readonly array $replacements = [],
-    ) {
-        parent::__construct($message);
-    }
-
     public static function doesNotFit(string $rack, int $startUnit, int $height, int $units): self
     {
         return new self(
@@ -80,18 +69,5 @@ final class RackRefused extends RuntimeException
             'Choose a server, or give this position a name.',
             'dcim.rack.errors.nothing_to_place',
         );
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * @return array<string, string|int>
-     */
-    public function replacements(): array
-    {
-        return $this->replacements;
     }
 }

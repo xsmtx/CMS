@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Exceptions;
 
-use RuntimeException;
+use App\Domain\Shared\Refused;
 
 /**
  * A power action that did not go ahead (§10).
@@ -24,40 +24,74 @@ use RuntimeException;
  * Nothing here echoes a URL or a credential; a hypervisor's own message
  * reaches this only through `SecretRedactor`.
  */
-final class PowerRefused extends RuntimeException
+final class PowerRefused extends Refused
 {
     public static function notAddressable(string $machine): self
     {
-        return new self('This platform does not know how to reach '.$machine.' on its hypervisor.');
+        return new self(
+            'This platform does not know how to reach '.$machine.' on its hypervisor.',
+            'infrastructure.virtualisation.errors.not_addressable',
+            ['machine' => $machine],
+        );
     }
 
     public static function readOnly(string $machine): self
     {
-        return new self('The hypervisor running '.$machine.' cannot be written to.');
+        return new self(
+            'The hypervisor running '.$machine.' cannot be written to.',
+            'infrastructure.virtualisation.errors.read_only',
+            ['machine' => $machine],
+        );
     }
 
     public static function writesNotEnabled(string $adapter): self
     {
-        return new self('Writes are not enabled for '.$adapter.'.');
+        return new self(
+            'Writes are not enabled for '.$adapter.'.',
+            'infrastructure.virtualisation.errors.writes_not_enabled',
+            ['adapter' => $adapter],
+        );
     }
 
     public static function missing(string $machine): self
     {
-        return new self('The hypervisor no longer knows about '.$machine.'.');
+        return new self(
+            'The hypervisor no longer knows about '.$machine.'.',
+            'infrastructure.virtualisation.errors.missing',
+            ['machine' => $machine],
+        );
     }
 
+    /**
+     * Stopping something already stopped is refused rather than treated as
+     * `already_done` — the opposite of provisioning (ADR 0026) and
+     * deliberate: an operator pressing Shut down on a machine that is
+     * already off is looking at a page that does not match the world.
+     */
     public static function alreadyThere(string $machine, string $state): self
     {
-        return new self($machine.' is already '.$state.'.');
+        return new self(
+            $machine.' is already '.$state.'.',
+            'infrastructure.virtualisation.errors.already_there',
+            ['machine' => $machine, 'state' => $state],
+        );
     }
 
     public static function hypervisorRefused(string $machine, string $because): self
     {
-        return new self('The hypervisor refused to change '.$machine.': '.$because);
+        return new self(
+            'The hypervisor refused to change '.$machine.': '.$because,
+            'infrastructure.virtualisation.errors.hypervisor_refused',
+            ['machine' => $machine, 'because' => $because],
+        );
     }
 
     public static function unverifiable(string $machine): self
     {
-        return new self('The hypervisor took the command and could not then describe '.$machine.'.');
+        return new self(
+            'The hypervisor took the command and could not then describe '.$machine.'.',
+            'infrastructure.virtualisation.errors.unverifiable',
+            ['machine' => $machine],
+        );
     }
 }

@@ -203,6 +203,17 @@ return [
     ],
 
     'virtualisation' => [
+        // Bir güç eyleminin neden yapılmadığı — `PowerRefused::worded()`.
+        'errors' => [
+            'not_addressable' => 'Bu platform :machine makinesine hipervizörü üzerinden nasıl ulaşacağını bilmiyor.',
+            'read_only' => ':machine makinesini çalıştıran hipervizöre yazılamıyor.',
+            'writes_not_enabled' => ':adapter için yazma açık değil.',
+            'missing' => 'Hipervizör artık :machine makinesini tanımıyor.',
+            'already_there' => ':machine zaten :state durumunda. Sayfayı yenileyin — artık doğru olmayan bir şey gösteriyor.',
+            'hypervisor_refused' => 'Hipervizör :machine makinesini değiştirmeyi reddetti: :because',
+            'unverifiable' => 'Hipervizör komutu aldı ama sonrasında :machine makinesinin durumunu bildiremedi; bu yüzden bu platform da ne yaptığını söyleyemiyor.',
+        ],
+
         'title' => 'Makineler',
         'intro' => 'Her ana makine ve üzerindeki makineler. Bir ana makine yeniden başlatılırsa nelerin duracağını — kimse öğrenmeden önce — bu ekran yanıtlar.',
         'empty' => 'Bildirim yapan hipervizor yok',
@@ -250,6 +261,15 @@ return [
     ],
 
     'loadbalancing' => [
+        // Bir boşaltmanın neden yapılmadığı — `BackendRefused::worded()`.
+        'errors' => [
+            'not_addressable' => 'Bu platform :backend sunucusuna dengeleyicisi üzerinden nasıl ulaşacağını bilmiyor.',
+            'read_only' => ':backend sunucusunu tutan dengeleyiciye yazılamıyor.',
+            'writes_not_enabled' => ':adapter için yazma açık değil.',
+            'balancer_refused' => 'Dengeleyici :backend sunucusunu değiştirmeyi reddetti: :because',
+            'unverifiable' => 'Dengeleyici komutu aldı ama sonrasında :backend sunucusunun durumunu bildiremedi; bu yüzden bu platform da ne yaptığını söyleyemiyor.',
+        ],
+
         'title' => 'Yük dengeleyiciler',
         'intro' => 'Her dengeleyicinin neyi dinlediği ve arkasında hangi makinelerin olduğu. Boşaltma yeni bağlantıları durdurur; açık olanların bitmesi beklenir.',
         'empty' => 'Bildirim yapan dengeleyici yok',
