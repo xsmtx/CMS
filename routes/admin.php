@@ -71,6 +71,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\ServiceAddonController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ServiceUpgradeController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TaxController;
@@ -276,7 +277,23 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('services', [ServiceController::class, 'index'])->name('services.index');
     // Before `services/{service}`, or the word "addons" is read as an id.
     Route::get('services/addons', [ServiceAddonController::class, 'index'])->name('services.addons');
+    /*
+     * Moving a service between plans. Declared **before**
+     * `services/{service}`, or the word "upgrades" is read as a service id —
+     * which is the comment the addons route already carries two lines above.
+     */
+    Route::get('services/upgrades', [ServiceUpgradeController::class, 'index'])
+        ->name('services.upgrades');
+    Route::post('services/upgrades/{upgrade}/apply', [ServiceUpgradeController::class, 'apply'])
+        ->name('services.upgrades.apply');
+    Route::delete('services/upgrades/{upgrade}', [ServiceUpgradeController::class, 'destroy'])
+        ->name('services.upgrades.destroy');
+
     Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
+    Route::post('services/{service}/upgrade/preview', [ServiceUpgradeController::class, 'preview'])
+        ->name('services.upgrade.preview');
+    Route::post('services/{service}/upgrade', [ServiceUpgradeController::class, 'store'])
+        ->name('services.upgrade');
     Route::post('services/{service}/provision', [ServiceController::class, 'provision'])
         ->name('services.provision');
     /*

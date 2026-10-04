@@ -459,6 +459,13 @@ final class CorePermissions
             // It destroys an account at a provider, and nothing brings it
             // back.
             new PermissionDefinition('services.terminate', 'services', RoleScope::Staff, highRisk: true),
+            /*
+             * Moving an account between plans. Its own permission rather than
+             * `services.manage`, because it raises an invoice: somebody who
+             * may edit a service's notes has not thereby been given the
+             * ability to charge its owner.
+             */
+            new PermissionDefinition('services.upgrade', 'services', RoleScope::Staff),
 
             new PermissionDefinition('infrastructure.view', 'infrastructure', RoleScope::Staff),
             // Holds the credentials for somebody's production fleet.
@@ -543,6 +550,9 @@ final class CorePermissions
             // do in the portal.
             new PermissionDefinition('portal.tokens.manage', 'portal', RoleScope::Customer, highRisk: true),
             new PermissionDefinition('portal.services.view', 'portal', RoleScope::Customer),
+            // Asking to move to another plan, which raises an invoice the
+            // customer then pays. Separate from viewing for that reason.
+            new PermissionDefinition('portal.services.upgrade', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.domains.view', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.domains.manage', 'portal', RoleScope::Customer),
             new PermissionDefinition('portal.tickets.view', 'portal', RoleScope::Customer),

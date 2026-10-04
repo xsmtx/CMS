@@ -292,4 +292,71 @@ return [
         'empty' => 'Henüz eklenti yok',
         'empty_description' => 'İçinde eklenti olan bir sipariş ödendiğinde burada bir eklenti belirir.',
     ],
+    'upgrades' => [
+        'title' => 'Plan değiştir',
+        'intro' => 'Bu hizmeti başka bir plana taşıyın. Ödenecek tutar, mevcut dönemden kalan günlere göre hesaplanır.',
+
+        'queue' => 'Plan değişiklikleri',
+        'queue_intro' => 'Bir ödemeyi, bir sağlayıcıyı ya da birini bekleyen plan geçişleri.',
+        'empty' => 'Bekleyen bir şey yok',
+        'empty_detail' => 'Bir plan değişikliği, istenmesiyle gerçekleştirilmesi arasında burada görünür. Aynı gün tamamlanan bir değişiklik burada hiç durmaz.',
+
+        'request' => 'Plan değiştir',
+        'request_submit' => 'Ne tutacağını hesapla',
+        'confirm_submit' => 'Değiştir',
+        'withdraw' => 'Geri çek',
+        'current' => ':name (şu anki plan)',
+        'withdraw_body' => 'Talep geri çekilir ve hiçbir şey taşınmaz. Bunun için oluşturulmuş fatura kalır ve ayrıca iptal edilebilir.',
+        'invoice' => 'Fatura',
+
+        'service' => 'Hizmet',
+        'state' => 'Durum',
+        'requested' => 'İstendi',
+        'show_all' => 'Hepsini göster',
+        'show_open' => 'Açık olanları göster',
+
+        'plan' => 'Şuna taşı',
+        'cycle' => 'Faturalama',
+        'note' => 'Not',
+
+        'from' => 'Şu an',
+        'to' => 'Taşınacağı plan',
+        'credit' => 'Bu dönemin kalanı için alacak',
+        'charge' => 'Yeni plan',
+        'difference' => 'Şimdi ödenecek',
+        'refund_due' => 'Hesaba alacak kaydedildi',
+        'days' => 'Bu dönemden kalan gün',
+        'restarts' => 'Bugün yeni bir dönem başlıyor',
+        'restarts_detail' => 'Faturalama döngüsü değiştiği için yeni plan tam olarak ücretlendirilir ve eski dönemin kullanılmayan kısmı buna mahsup edilir.',
+        'same_term' => 'Yenileme tarihi değişmiyor',
+        'same_term_detail' => 'Döngü aynı kaldığı için yalnızca kalan günlerin farkı alınır ve hizmet her zamanki tarihinde yenilenir.',
+
+        'free' => 'Ödenecek bir şey yok',
+        'free_detail' => 'Kalan günler için iki planın bedeli aynı, bu yüzden geçiş faturasız yapılır.',
+
+        'states' => [
+            'awaiting_payment' => 'Ödeme bekliyor',
+            'authorized' => 'Uygulanmaya hazır',
+            'applying' => 'Uygulanıyor',
+            'completed' => 'Tamamlandı',
+            'failed' => 'Sağlayıcı reddetti',
+            'cancelled' => 'Geri çekildi',
+        ],
+
+        'lines' => [
+            'charge' => ':name, :days gün',
+            'credit' => ':name için alacak, kullanılmayan :days gün',
+            'downgrade_credit' => ':from planından :to planına geçiş',
+        ],
+
+        'errors' => [
+            'not_recurring' => ':name bir döngüye göre faturalanmıyor, bu yüzden tutarın hesaplanacağı bir dönem yok.',
+            'no_term' => ':name için yenileme tarihi yok, bu yüzden orantılanacak bir şey yok.',
+            'not_sold' => ':name, :currency para biriminde satılmıyor. Bu platformda döviz kuru yoktur ve bir hizmet, fiyatı olmayan bir plana taşınamaz.',
+            'same_plan' => 'Bu hizmet zaten o planda.',
+            'not_upgradable' => 'Yalnızca etkin bir hizmet başka bir plana taşınabilir.',
+            'already_requested' => 'Bu hizmet için bekleyen bir plan değişikliği zaten var.',
+            'not_withdrawable' => 'Bu plan değişikliği geri çekilemeyecek kadar ilerledi.',
+        ],
+    ],
 ];

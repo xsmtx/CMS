@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    // The heading on every danger zone in the product. A primitive's
+    // own word, so it lives at the top level rather than under a screen.
+    'danger_zone' => 'Tehlikeli bölge',
+
     'common' => [
         'close' => 'Kapat',
         'select_all' => 'Bu sayfadaki bütün :noun kayıtlarını seç',
@@ -646,6 +650,7 @@ return [
         'email' => 'E-posta',
         'service_addons' => 'Hizmet Eklentileri',
         'domain_registrations' => 'Alan Adı Kayıtları',
+        'plan_changes' => 'Plan değişiklikleri',
         'cancellation_requests' => 'İptal Talepleri',
         'organizations' => 'Organizasyonlar',
         'resellers' => 'Bayiler',

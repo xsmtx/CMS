@@ -11,6 +11,7 @@ use App\Domain\Operations\OperationType;
 use App\Domain\Provisioning\Contracts\ProvisioningModule;
 use App\Domain\Provisioning\ServiceOperation;
 use App\Domain\Provisioning\ServiceStatus;
+use App\Domain\Provisioning\UpgradeState;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Provisioning\ServiceActionRequest;
 use App\Infrastructure\Crm\Models\Customer;
@@ -20,6 +21,7 @@ use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\Models\ServiceEvent;
 use App\Infrastructure\Provisioning\Models\ServiceOption;
 use App\Infrastructure\Provisioning\Models\ServicePlacement;
+use App\Infrastructure\Provisioning\Models\ServiceUpgrade;
 use App\Infrastructure\Provisioning\ModuleRegistry;
 use App\Support\Correlation\CorrelationContext;
 use App\Support\Identity\CurrentActor;
@@ -138,8 +140,20 @@ final class ServiceController extends Controller
                 ),
             ],
             'placement' => $this->placement($service),
+            /*
+             * The plans this service could move to, and the one open request
+             * if there is one. Read here rather than on a screen of its own,
+             * because a plan change is a thing somebody does *to a service*
+             * and a second screen would be a second place to look for it.
+             */
+            'upgrade' => [
+                'targets' => ServiceUpgradeController::targetsFor($service),
+                'open' => $this->openUpgrade($service),
+            ],
             'can' => [
                 'update' => $this->actor->can('update', $service),
+                'upgrade' => $this->actor->can('upgrade', $service)
+                    && $service->status === ServiceStatus::Active,
                 'provision' => $this->actor->can('provision', $service)
                     && $service->status->canProvision(),
                 'suspend' => $this->actor->can('suspend', $service)
@@ -223,6 +237,44 @@ final class ServiceController extends Controller
         $transitions->handle($service, $target, $this->actor->model(), $request->input('reason'));
 
         return back()->with('status', __('provisioning.services.saved'));
+    }
+
+    /**
+     * The one plan change in flight, if there is one.
+     *
+     * At most one by construction: `RequestUpgrade` refuses a second while
+     * one is open, because two would race each other to the provider and the
+     * second was priced against a term the first is about to change.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function openUpgrade(Service $service): ?array
+    {
+        $upgrade = ServiceUpgrade::query()
+            ->where('service_id', $service->id)
+            ->whereIn('state', [
+                UpgradeState::AwaitingPayment->value,
+                UpgradeState::Authorized->value,
+                UpgradeState::Applying->value,
+            ])
+            ->latest()
+            ->first();
+
+        if (! $upgrade instanceof ServiceUpgrade) {
+            return null;
+        }
+
+        return [
+            'id' => $upgrade->id,
+            'to' => $upgrade->to_product_name,
+            'cycleLabel' => (string) __($upgrade->to_cycle->labelKey()),
+            'status' => $upgrade->state->value,
+            'statusLabel' => (string) __($upgrade->state->labelKey()),
+            'tone' => $upgrade->state->tone(),
+            'difference' => $upgrade->difference()->format(app()->getLocale()),
+            'invoiceId' => $upgrade->invoice_id,
+            'canWithdraw' => $upgrade->state->isWithdrawable(),
+        ];
     }
 
     /**

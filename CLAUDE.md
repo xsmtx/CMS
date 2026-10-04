@@ -4565,3 +4565,80 @@ classes somebody has to disambiguate on every line. The same collision
 `container_id`/`contained_id` — which is what `ResourceGraph::attach()`'s named
 arguments are called. A test querying the table directly wants the column
 names.
+
+**This product has been audited against WHMCS**
+(`docs/architecture/whmcs-parity-plan.md`). Most of the panel is already here
+and better specified; eleven things had no answer, and seven more are
+deliberately absent with the decision written beside each so nobody re-opens
+them by accident.
+
+**Upgrades and downgrades were the largest gap.** `PackageChange` and
+`ProvisioningModule::changePackage()` had existed since Phase 6 and **nothing
+called them on a service** — an account could be created and terminated and
+never moved. Worth knowing before writing a contract for a new phase: grep for
+one written for an old one and never used.
+
+**Two amounts, computed separately, whose difference is the total.** The credit
+for the unused remainder and the charge for the new plan over that same
+remainder are each one integer division, and the invoice carries both — so the
+lines add up to the figure charged by construction rather than by arithmetic
+nobody checked. Computing one net figure and then inventing two lines to
+explain it is how a customer finds the explanation and the total disagree by a
+penny.
+
+**Days, not thirtieths.** A term is measured from the dates the service
+actually has. Prorating by a nominal month is the approximation that makes
+February's customers pay for a day that does not exist.
+
+**A cycle change restarts the term and that changes what is charged.** Monthly
+to annual is a new year beginning today, so the charge is the **whole** new
+price while the credit is still only the unused remainder of the old month.
+Prorating the annual price over twenty-three days would hand somebody a year of
+hosting for two pounds. `restarts_term` is frozen on the row because the
+numbers alone do not say which arithmetic happened.
+
+**The catalogue price goes on the service, never the prorated one.** The
+frozen `to_recurring_minor` is what the *part term* cost; writing it onto the
+service would bill the customer a part-month for ever.
+
+**`renewal_invoiced_through` is cleared on a cycle change, not moved.** The old
+value is how far the **old** cycle had been invoiced, and a new term has been
+invoiced for none of it.
+
+**A prorated invoice line carries no period**, which is what keeps
+`AdvanceRenewalDates` away from it. A prorated line is not a term being bought,
+and advancing the renewal date on it would give the customer the remainder of
+their old term twice.
+
+**The money moves before the account does.** `ApplyPaidUpgrades` listens for
+`PaymentReceived` exactly as the renewal listener does, and for the same
+reason: an upgrade applied when the invoice was *raised* would be the
+difference given away to anybody who asked and never paid.
+
+**A downgrade is credited, never refunded**, and the credit is written when the
+move happens rather than when it is asked for — a credit for a move that has
+not happened is money given away for nothing. `AddCredit` rather than a refund,
+because money that has been taken is not sent back by a panel (ADR 0024).
+
+**One open request per service.** Two would race each other to the provider,
+and the second was priced against a term the first is about to change.
+
+**`IssueInvoice` freezes a document; it does not price one.** An invoice
+created with zero totals and never totalled from its lines owes nothing — and
+the symptom is a payment refused for *exceeding the balance*, four layers away
+from the mistake. Whatever raises an invoice directly writes
+`subtotal_minor` and `total_minor` itself, which is what the renewal sweep
+already did and what this had to learn.
+
+**A named argument after a positional one is a fatal, not a warning.**
+`RecordPayment::handle($invoice, $amount, 'manual', actor: $x)` is "Named
+parameter $actor overwrites previous argument" — the signature had changed to
+take a request object, and the error names the parameter rather than the
+arity.
+
+**`DangerZone`'s heading was hard-coded English and no caller ever passed
+one**, so every Turkish screen in the product with a danger zone said "Danger
+zone" in the middle of itself. Found by looking at one. A primitive's own
+default is wording like any other: it takes the three-argument
+`t(key, {}, 'English')` form, because a primitive can be mounted where no
+translations block was rendered at all.

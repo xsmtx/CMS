@@ -19,12 +19,25 @@
  * and it is the screen's choice because only the screen knows what the action
  * costs.
  */
-import AppIcon from './AppIcon.vue'
+import { computed } from 'vue'
 
-withDefaults(defineProps<{ title?: string; description?: string }>(), {
-  title: 'Danger zone',
+import AppIcon from './AppIcon.vue'
+import { useTranslations } from '../composables/useTranslations'
+
+const props = withDefaults(defineProps<{ title?: string; description?: string }>(), {
+  title: undefined,
   description: undefined,
 })
+
+const { t } = useTranslations()
+
+/*
+ * The heading was a hard-coded English default and no caller ever passed one,
+ * so every Turkish screen with a danger zone said "Danger zone" in the middle
+ * of itself. The three-argument form, because a primitive can be mounted
+ * where no translations block was rendered at all.
+ */
+const heading = computed(() => props.title ?? t('ui.danger_zone', {}, 'Danger zone'))
 </script>
 
 <template>
@@ -42,7 +55,7 @@ withDefaults(defineProps<{ title?: string; description?: string }>(), {
         <AppIcon name="warning" :size="17" />
       </span>
       <div class="min-w-0">
-        <h2 id="danger-zone" class="text-title text-danger font-semibold">{{ title }}</h2>
+        <h2 id="danger-zone" class="text-title text-danger font-semibold">{{ heading }}</h2>
         <p v-if="description" class="text-content-muted text-chrome mt-0.5">{{ description }}</p>
       </div>
     </header>

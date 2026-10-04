@@ -219,6 +219,7 @@ it, so the four count columns are empty by construction.
 | [x] | `Admin/Support/Show.vue` (draft buttons) | detail | AI | yes |
 | [x] | `Admin/Vendors/Index.vue` | list | J | yes |
 | [x] | `Admin/Vendors/Licences.vue` | list | J | yes |
+| [x] | `Admin/Services/Upgrades.vue` | list | WHMCS | yes |
 
 The public status page (`themes/storefront/core/views/status.blade.php`) is
 not here and should not be: the storefront is Blade themes and out of the

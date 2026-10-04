@@ -14,6 +14,11 @@
  * 4. **Danger zone** — termination, last on the page, behind a reason and the
  *    service's own name typed out.
  *
+ * Changing plan is a panel on this screen rather than a screen of its own: it
+ * is a thing somebody does *to a service*, and a second screen would be a
+ * second place to look for it. The figure is previewed before anything is
+ * charged, by the same arithmetic that charges it.
+ *
  * Suspending asks for a reason and will not proceed without one. The server
  * accepts an empty one; this screen does not, because the reason is what the
  * customer reads when they ask why their site stopped answering.
@@ -39,7 +44,7 @@ import PageHeader from '../../../Components/PageHeader.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
-import { statusTone } from '../../../status'
+import { asTone, statusTone } from '../../../status'
 
 interface ServiceEvent {
   id: string
@@ -49,6 +54,42 @@ interface ServiceEvent {
   actor: string | null
   message: string | null
   occurredAt: string
+}
+
+interface UpgradeTarget {
+  id: string
+  name: string
+  current: boolean
+  cycles: { value: string; label: string; price: string }[]
+}
+
+interface OpenUpgrade {
+  id: string
+  to: string
+  cycleLabel: string
+  status: string
+  statusLabel: string
+  /** Decided by the server, so `asTone` reads it rather than `statusTone`. */
+  tone: string
+  difference: string
+  invoiceId: string | null
+  canWithdraw: boolean
+}
+
+interface UpgradePreview {
+  product: string
+  productName: string
+  cycle: string
+  cycleLabel: string
+  credit: string
+  charge: string
+  difference: string
+  differenceMinor: number
+  daysRemaining: number
+  termDays: number
+  restartsTerm: boolean
+  isFree: boolean
+  isUpgrade: boolean
 }
 
 interface PlacementFactor {
@@ -98,8 +139,13 @@ const props = defineProps<{
     events: ServiceEvent[]
     transitions: { value: string; label: string }[]
   }
+  upgrade: {
+    targets: UpgradeTarget[]
+    open: OpenUpgrade | null
+  }
   can: {
     update: boolean
+    upgrade: boolean
     provision: boolean
     suspend: boolean
     unsuspend: boolean
@@ -113,6 +159,54 @@ const { t } = useTranslations()
 
 const suspending = ref(false)
 const terminating = ref(false)
+const changingPlan = ref(false)
+const withdrawing = ref(false)
+
+const planForm = useForm({ product: '', cycle: '', note: '' })
+
+/** What the server worked out, kept in the flash bag between the two posts. */
+const preview = computed<UpgradePreview | null>(
+  () =>
+    (page.props.flash as { upgradePreview?: UpgradePreview } | undefined)?.upgradePreview ?? null,
+)
+
+/** The cycles the chosen plan is actually sold in, in this currency. */
+const planCycles = computed(
+  () => props.upgrade.targets.find((target) => target.id === planForm.product)?.cycles ?? [],
+)
+
+/*
+ * Re-point the cycle when the plan changes, or the select keeps a cycle the
+ * new plan is not sold in and the server refuses something the form offered.
+ */
+function choosePlan(value: string): void {
+  planForm.product = value
+  planForm.cycle = planCycles.value[0]?.value ?? ''
+}
+
+function previewPlan(): void {
+  planForm.post(`/admin/services/${props.service.id}/upgrade/preview`, { preserveScroll: true })
+}
+
+function changePlan(): void {
+  planForm.post(`/admin/services/${props.service.id}/upgrade`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      planForm.reset()
+      changingPlan.value = false
+    },
+  })
+}
+
+function withdrawPlan(): void {
+  const open = props.upgrade.open
+
+  withdrawing.value = false
+
+  if (open === null) return
+
+  router.delete(`/admin/services/upgrades/${open.id}`, { preserveScroll: true })
+}
 const terminatingBusy = ref(false)
 const suspendForm = useForm({ operation: 'suspend', reason: '' })
 const statusForm = useForm({
@@ -408,6 +502,163 @@ function formatDate(value: string | null): string {
             because a placement is explained by its objections and not by the
             eight things that were fine.
           -->
+          <!--
+            Changing plan. A panel rather than a screen, because it is a thing
+            somebody does to a service — and the figure is previewed by the
+            same arithmetic that charges it, so what an operator reads and
+            what the customer is invoiced cannot disagree.
+          -->
+          <DetailSection
+            v-if="upgrade.open || (can.upgrade && upgrade.targets.length > 0)"
+            :title="t('provisioning.upgrades.title')"
+            :description="t('provisioning.upgrades.intro')"
+          >
+            <!-- One at a time: a second request would be priced against a
+                 term the first is about to change. -->
+            <div v-if="upgrade.open" class="flex flex-col gap-4">
+              <DescriptionList
+                :items="[
+                  { key: 'to', label: t('provisioning.upgrades.to'), value: upgrade.open.to },
+                  {
+                    key: 'cycle',
+                    label: t('provisioning.upgrades.cycle'),
+                    value: upgrade.open.cycleLabel,
+                  },
+                  {
+                    key: 'difference',
+                    label: t('provisioning.upgrades.difference'),
+                    value: upgrade.open.difference,
+                  },
+                ]"
+              />
+
+              <div class="flex flex-wrap items-center gap-3">
+                <AppStatus :tone="asTone(upgrade.open.tone)" :label="upgrade.open.statusLabel" />
+                <Link
+                  v-if="upgrade.open.invoiceId"
+                  :href="`/admin/invoices/${upgrade.open.invoiceId}`"
+                  class="text-brand text-chrome hover:underline"
+                >
+                  {{ t('provisioning.upgrades.invoice') }}
+                </Link>
+                <AppButton
+                  v-if="upgrade.open.canWithdraw && can.upgrade"
+                  size="sm"
+                  variant="danger-subtle"
+                  @click="withdrawing = true"
+                >
+                  {{ t('provisioning.upgrades.withdraw') }}
+                </AppButton>
+              </div>
+            </div>
+
+            <div v-else-if="!changingPlan">
+              <AppButton variant="secondary" @click="changingPlan = true">
+                {{ t('provisioning.upgrades.request') }}
+              </AppButton>
+            </div>
+
+            <form v-else class="flex max-w-xl flex-col gap-4" @submit.prevent="previewPlan">
+              <AppSelect
+                :model-value="planForm.product"
+                :label="t('provisioning.upgrades.plan')"
+                :options="
+                  upgrade.targets.map((target) => ({
+                    value: target.id,
+                    // Named as the current plan rather than marked with a
+                    // dash: it is still a valid choice, because moving from
+                    // monthly to annual is a change of cycle on the same plan.
+                    label: target.current
+                      ? t('provisioning.upgrades.current', { name: target.name })
+                      : target.name,
+                  }))
+                "
+                :error="planForm.errors.product"
+                @update:model-value="choosePlan(String($event))"
+              />
+
+              <!-- Only the cycles this plan is sold in, in this service's own
+                   currency: there is no exchange rate in this product. -->
+              <AppSelect
+                v-model="planForm.cycle"
+                :label="t('provisioning.upgrades.cycle')"
+                :options="
+                  planCycles.map((cycle) => ({
+                    value: cycle.value,
+                    label: `${cycle.label} · ${cycle.price}`,
+                  }))
+                "
+                :error="planForm.errors.cycle"
+              />
+
+              <AppInput v-model="planForm.note" :label="t('provisioning.upgrades.note')" />
+
+              <div class="flex flex-wrap gap-2">
+                <AppButton type="submit" variant="secondary" :loading="planForm.processing">
+                  {{ t('provisioning.upgrades.request_submit') }}
+                </AppButton>
+                <AppButton variant="ghost" @click="changingPlan = false">
+                  {{ t('ui.confirm.cancel') }}
+                </AppButton>
+              </div>
+
+              <!--
+                The arithmetic, shown before anybody is charged. The two lines
+                are what the invoice will say and they sum to the figure that
+                is charged, by construction.
+              -->
+              <div
+                v-if="preview && preview.product === planForm.product"
+                class="border-line bg-surface-primary flex flex-col gap-3 rounded-lg border p-4"
+              >
+                <DescriptionList
+                  :items="[
+                    {
+                      key: 'days',
+                      label: t('provisioning.upgrades.days'),
+                      value: String(preview.daysRemaining),
+                    },
+                    {
+                      key: 'credit',
+                      label: t('provisioning.upgrades.credit'),
+                      value: preview.credit,
+                    },
+                    {
+                      key: 'charge',
+                      label: t('provisioning.upgrades.charge'),
+                      value: preview.charge,
+                    },
+                    {
+                      key: 'difference',
+                      label: preview.isUpgrade
+                        ? t('provisioning.upgrades.difference')
+                        : t('provisioning.upgrades.refund_due'),
+                      value: preview.difference,
+                    },
+                  ]"
+                />
+
+                <p class="text-content-muted text-chrome max-w-[70ch]">
+                  {{
+                    preview.restartsTerm
+                      ? t('provisioning.upgrades.restarts_detail')
+                      : t('provisioning.upgrades.same_term_detail')
+                  }}
+                </p>
+
+                <p v-if="preview.isFree" class="text-content-muted text-chrome max-w-[70ch]">
+                  {{ t('provisioning.upgrades.free_detail') }}
+                </p>
+
+                <div>
+                  <AppButton variant="primary" :loading="planForm.processing" @click="changePlan">
+                    {{ t('provisioning.upgrades.confirm_submit') }}
+                  </AppButton>
+                </div>
+              </div>
+            </form>
+          </DetailSection>
+
           <DetailSection
             v-if="placement"
             :title="t('provisioning.placement.title')"
@@ -560,5 +811,14 @@ function formatDate(value: string | null): string {
     <p v-if="suspendForm.errors.reason" class="text-danger text-chrome mt-2" role="alert">
       {{ suspendForm.errors.reason }}
     </p>
+    <AppConfirm
+      :open="withdrawing"
+      level="consequential"
+      :title="t('provisioning.upgrades.withdraw')"
+      :description="t('provisioning.upgrades.withdraw_body')"
+      :confirm-label="t('provisioning.upgrades.withdraw')"
+      @close="withdrawing = false"
+      @confirm="withdrawPlan"
+    />
   </AdminLayout>
 </template>

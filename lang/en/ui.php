@@ -8,6 +8,10 @@ declare(strict_types=1);
  * nothing here is operator-private.
  */
 return [
+    // The heading on every danger zone in the product. A primitive's
+    // own word, so it lives at the top level rather than under a screen.
+    'danger_zone' => 'Danger zone',
+
     'common' => [
         'close' => 'Close',
         'select_all' => 'Select every :noun on this page',
@@ -651,6 +655,7 @@ return [
         'email' => 'Email',
         'service_addons' => 'Service Addons',
         'domain_registrations' => 'Domain Registrations',
+        'plan_changes' => 'Plan changes',
         'cancellation_requests' => 'Cancellation Requests',
         'organizations' => 'Organizations',
         'resellers' => 'Resellers',

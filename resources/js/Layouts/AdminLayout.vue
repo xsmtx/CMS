@@ -257,6 +257,11 @@ const groups = computed<NavGroup[]>(() => [
         permission: 'domains.view',
       },
       {
+        label: nav('plan_changes', 'Plan changes'),
+        href: '/admin/services/upgrades',
+        permission: 'services.view',
+      },
+      {
         label: nav('cancellation_requests', 'Cancellation Requests'),
         href: '/admin/cancellations',
         permission: 'services.view',

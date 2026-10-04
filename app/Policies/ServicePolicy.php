@@ -44,4 +44,18 @@ final class ServicePolicy
     {
         return $user->can('services.terminate');
     }
+
+    /**
+     * Moving an account between plans.
+     *
+     * Its own ability rather than `update`, because it raises an invoice:
+     * somebody who may edit a service's notes has not thereby been given the
+     * ability to charge its owner. A policy with no method for an ability is
+     * a denial, which this product has learned twice — so it is declared
+     * here the moment the controller asks for it.
+     */
+    public function upgrade(StaffUser $user): bool
+    {
+        return $user->can('services.upgrade');
+    }
 }

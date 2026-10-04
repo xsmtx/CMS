@@ -426,6 +426,10 @@ return [
             'label' => 'Terminate a service',
             'description' => 'Delete the account at the provider. This cannot be undone.',
         ],
+        'services.upgrade' => [
+            'label' => 'Change a service\'s plan',
+            'description' => 'Move an account to another plan, which raises an invoice for the difference.',
+        ],
         'infrastructure.view' => [
             'label' => 'See servers',
             'description' => 'Read the server list and what is on each one.',
@@ -533,6 +537,10 @@ return [
         'portal.services.view' => [
             'label' => 'See their own services',
             'description' => 'Read the account\'s hosting services.',
+        ],
+        'portal.services.upgrade' => [
+            'label' => 'Ask to change plan',
+            'description' => 'Move a service to another plan and pay the difference.',
         ],
         'portal.domains.view' => [
             'label' => 'See their own domains',

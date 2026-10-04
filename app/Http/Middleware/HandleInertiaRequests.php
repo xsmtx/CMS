@@ -100,6 +100,14 @@ final class HandleInertiaRequests extends Middleware
                 'draft' => fn (): ?array => $request->session()->get('draft'),
                 // A suggestion beside a field, never the stored value.
                 'suggestion' => fn (): ?array => $request->session()->get('suggestion'),
+                /*
+                 * What a plan change would cost, worked out by the same
+                 * arithmetic that charges it. Flashed rather than returned as
+                 * a page prop, because the figure is an answer to a form the
+                 * operator is still filling in — and a GET that computed it
+                 * would put money in the access log.
+                 */
+                'upgradePreview' => fn (): ?array => $request->session()->get('upgradePreview'),
             ],
             'correlationId' => app(CorrelationContext::class)->id(),
 

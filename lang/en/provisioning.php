@@ -292,4 +292,81 @@ return [
         'empty' => 'No addons yet',
         'empty_description' => 'An addon appears here when an order containing one is paid for.',
     ],
+    /*
+     * Moving a service between plans, with a prorated figure.
+     *
+     * The WHMCS screen this product had no answer for until now:
+     * `changePackage()` existed and nothing called it on a service, so an
+     * account could be created and terminated and never moved.
+     */
+    'upgrades' => [
+        'title' => 'Change plan',
+        'intro' => 'Move this service to another plan. What is owed is worked out from the days left in the current term.',
+
+        'queue' => 'Plan changes',
+        'queue_intro' => 'Moves between plans that are waiting on a payment, on a provider, or on somebody.',
+        'empty' => 'Nothing is waiting',
+        'empty_detail' => 'A plan change appears here between being asked for and being carried out. One that went through on the same day never stops here at all.',
+
+        'request' => 'Change plan',
+        'request_submit' => 'Work out what it costs',
+        'confirm_submit' => 'Change it',
+        'withdraw' => 'Withdraw',
+        'current' => ':name (the plan it is on)',
+        // Its own sentence. Reusing the empty state's words here would have
+        // said nothing about what pressing the button does.
+        'withdraw_body' => 'The request is withdrawn and nothing is moved. Any invoice raised for it stays and can be cancelled separately.',
+        'invoice' => 'The invoice',
+
+        // Column headers, each written for the column it is over.
+        'service' => 'Service',
+        'state' => 'State',
+        'requested' => 'Asked',
+        'show_all' => 'Show everything',
+        'show_open' => 'Show what is open',
+
+        'plan' => 'Move to',
+        'cycle' => 'Billed',
+        'note' => 'Note',
+
+        'from' => 'Now on',
+        'to' => 'Moving to',
+        'credit' => 'Credit for the rest of this term',
+        'charge' => 'The new plan',
+        'difference' => 'Due now',
+        'refund_due' => 'Credited to the account',
+        'days' => 'Days left in this term',
+        'restarts' => 'A new term starts today',
+        'restarts_detail' => 'The billing cycle is changing, so the new plan is charged in full and the unused part of the old term is credited against it.',
+        'same_term' => 'The renewal date does not move',
+        'same_term_detail' => 'The cycle is unchanged, so only the difference for the days left is charged and the service renews when it always would have.',
+
+        'free' => 'There is nothing to pay',
+        'free_detail' => 'The two plans cost the same over the days remaining, so the move happens with no invoice.',
+
+        'states' => [
+            'awaiting_payment' => 'Waiting for payment',
+            'authorized' => 'Ready to carry out',
+            'applying' => 'Being carried out',
+            'completed' => 'Done',
+            'failed' => 'The provider refused',
+            'cancelled' => 'Withdrawn',
+        ],
+
+        'lines' => [
+            'charge' => ':name, :days days',
+            'credit' => 'Credit for :name, :days days unused',
+            'downgrade_credit' => 'Moved from :from to :to',
+        ],
+
+        'errors' => [
+            'not_recurring' => ':name is not billed on a cycle, so there is no term to work a figure out from.',
+            'no_term' => ':name has no renewal date, so there is nothing to prorate against.',
+            'not_sold' => ':name is not sold in :currency. There is no exchange rate in this platform and a plan cannot be moved to one it does not have a price in.',
+            'same_plan' => 'That is the plan this service is already on.',
+            'not_upgradable' => 'Only an active service can be moved to another plan.',
+            'already_requested' => 'There is already a plan change waiting on this service.',
+            'not_withdrawable' => 'This plan change has gone too far to be withdrawn.',
+        ],
+    ],
 ];

@@ -224,6 +224,7 @@ final class FrontEndTranslations
         'provisioning.portal',
         'provisioning.services',
         'provisioning.statuses',
+        'provisioning.upgrades',
 
         'support.announcements',
         'support.portal',

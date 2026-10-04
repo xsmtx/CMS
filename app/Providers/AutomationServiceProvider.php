@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Application\Automation\Listeners\AdvanceRenewalDates;
 use App\Application\Health\HealthChecks;
+use App\Application\Provisioning\Listeners\ApplyPaidUpgrades;
 use App\Domain\Billing\Events\PaymentReceived;
 use App\Infrastructure\Health\Checks\CacheCheck;
 use App\Infrastructure\Health\Checks\DatabaseCheck;
@@ -54,5 +55,10 @@ final class AutomationServiceProvider extends ServiceProvider
         // Not the invoice being raised, and not the scheduler: money is the
         // event that means the next term was bought.
         Event::listen(PaymentReceived::class, AdvanceRenewalDates::class);
+
+        // And an upgrade that was paid is what moves the account between
+        // plans. Registered beside the renewal listener because it is the same
+        // decision: the money is the event, not the invoice.
+        Event::listen(PaymentReceived::class, ApplyPaidUpgrades::class);
     }
 }

@@ -419,6 +419,10 @@ return [
             'label' => 'Servisi sonlandır',
             'description' => 'Sağlayıcıdaki hesabı siler. Geri alınamaz.',
         ],
+        'services.upgrade' => [
+            'label' => 'Hizmetin planını değiştir',
+            'description' => 'Bir hesabı başka bir plana taşır; fark için fatura oluşturur.',
+        ],
         'infrastructure.view' => [
             'label' => 'Sunucuları gör',
             'description' => 'Sunucu listesini ve her birinde ne olduğunu okur.',
@@ -526,6 +530,10 @@ return [
         'portal.services.view' => [
             'label' => 'Kendi servislerini gör',
             'description' => 'Hesabın barındırma servislerini okur.',
+        ],
+        'portal.services.upgrade' => [
+            'label' => 'Plan değişikliği iste',
+            'description' => 'Bir hizmeti başka bir plana taşır ve farkı öder.',
         ],
         'portal.domains.view' => [
             'label' => 'Kendi alan adlarını gör',
