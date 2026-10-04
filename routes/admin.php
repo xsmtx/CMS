@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\InvoicePaymentController;
 use App\Http\Controllers\Admin\LeakageController;
 use App\Http\Controllers\Admin\LicenceController;
+use App\Http\Controllers\Admin\LicencePoolController;
 use App\Http\Controllers\Admin\LoadBalancerController;
 use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MarketplaceController;
@@ -642,6 +643,9 @@ Route::middleware(['auth:staff'])->group(function (): void {
      * telemetry this installation already holds, arranged to answer one
      * question.
      */
+    Route::get('intelligence/noisy-neighbours', [NoisyNeighboursController::class, 'index'])
+        ->name('intelligence.noisy_neighbours');
+
     /*
      * Who this business buys from, and what it agreed (§24). Commercial
      * rather than operational, behind the same wall as costs: what a seller
@@ -659,8 +663,27 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::delete('vendors/contracts/{contract}', [VendorController::class, 'destroyContract'])
         ->name('vendors.contracts.destroy');
 
-    Route::get('intelligence/noisy-neighbours', [NoisyNeighboursController::class, 'index'])
-        ->name('intelligence.noisy_neighbours');
+    /*
+     * Operational licences, and which machine is using one (§24). The same
+     * two permissions as vendors: a pool is a thing bought from a vendor
+     * under a contract, and a third pair for one family is a pair nobody
+     * assigns.
+     *
+     * `vendors/licences` is declared **before** `vendors/{vendor}` would
+     * ever be read as a GET, and there is no such route — but the literal
+     * segment coming first is what keeps it that way if one is ever added.
+     */
+    Route::get('vendors/licences', [LicencePoolController::class, 'index'])->name('vendors.licences.index');
+    Route::post('vendors/licences', [LicencePoolController::class, 'store'])->name('vendors.licences.store');
+    Route::put('vendors/licences/{pool}', [LicencePoolController::class, 'update'])
+        ->name('vendors.licences.update');
+    Route::delete('vendors/licences/{pool}', [LicencePoolController::class, 'destroy'])
+        ->name('vendors.licences.destroy');
+
+    Route::post('vendors/licences/{pool}/allocations', [LicencePoolController::class, 'allocate'])
+        ->name('vendors.licences.allocate');
+    Route::delete('vendors/allocations/{allocation}', [LicencePoolController::class, 'release'])
+        ->name('vendors.licences.release');
 
     Route::get('intelligence/leakage', [LeakageController::class, 'index'])
         ->name('intelligence.leakage');

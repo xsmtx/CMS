@@ -198,6 +198,37 @@ it('adds a vendor and a contract from the screen', function (): void {
     expect(Contract::query()->firstOrFail()->amount_minor)->toBe(120000);
 });
 
+it('changes a vendor and a contract from the screen', function (): void {
+    $vendor = aVendor();
+
+    $contract = Contract::factory()->create([
+        'vendor_id' => $vendor->id,
+        'organization_id' => $this->provider->id,
+    ]);
+
+    // Rendering a screen proves its props; only a request proves the payload
+    // the form sends is the payload the controller wants.
+    $this->actingAs($this->admin, 'staff')
+        ->put('/admin/vendors/'.$vendor->id, ['name' => 'Renamed', 'kind' => 'cloud'])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($this->admin, 'staff')
+        ->put('/admin/vendors/contracts/'.$contract->id, [
+            'title' => 'Renegotiated',
+            'term' => 'monthly',
+            'currency_code' => 'EUR',
+            'amount_minor' => 50_00,
+            'auto_renews' => true,
+            'notice_days' => 14,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($vendor->fresh()->name)->toBe('Renamed')
+        ->and($contract->fresh()->notice_days)->toBe(14);
+});
+
 it('refuses to delete a vendor that still has contracts', function (): void {
     $vendor = aVendor();
 

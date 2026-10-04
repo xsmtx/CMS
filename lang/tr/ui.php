@@ -723,6 +723,7 @@ return [
         'customer_health' => 'Müşteri durumu',
         'noisy_neighbours' => 'Gürültücü komşular',
         'vendors' => 'Tedarikçiler',
+        'licences' => 'Lisanslar',
         'utilities' => 'Araçlar',
         'connect' => 'Bağlan',
         'module_queue' => 'Modül Kuyruğu',

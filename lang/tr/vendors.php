@@ -82,6 +82,68 @@ return [
         'overdue' => 'Geçti',
     ],
 
+    'licences' => [
+        'title' => 'Lisanslar',
+        'intro' => 'Toplu alınan lisanslar ve hangi makinelerinizin bunları kullandığı. İlk yarısını tedarikçiniz bilir; ikincisini yalnızca bu kurulum bilir.',
+
+        'empty' => 'Kayıtlı lisans yok',
+        'empty_detail' => 'Toplu aldıklarınızı girin — cPanel, CloudLinux, LiteSpeed, Imunify, Windows — ve her koltuğun hangi makinede olduğunu. Bu ekran, ikisi arasındaki fark için var.',
+
+        'add' => 'Lisans ekle',
+        'add_submit' => 'Ekle',
+        'allocate' => 'Bir makineye ver',
+        'allocate_submit' => 'Ata',
+        'release' => 'Geri al',
+
+        'name' => 'Ne olduğu',
+        'vendor' => 'Kimden alındı',
+        'contract' => 'Hangi sözleşme kapsamında',
+        'contract_hint' => 'İsteğe bağlı. Arkasında kâğıt olmadan kartla alınan lisanslar olağandır.',
+        'for_module' => 'Hangi makineler buna ihtiyaç duyar',
+        'for_module_hint' => 'Bunu çalıştıran bir makinenin yapılandırılacağı sağlama modülü. Belirtmezseniz bu platform hangi makinelerin buna ihtiyacı olduğu konusunda bir iddiada bulunmaz — ve eksik olanların listesini de sunmaz.',
+        'for_module_any' => 'Belirtme',
+        'contract_any' => 'Bir sözleşme kapsamında değil',
+        'for_module_none' => 'Belirtilmemiş',
+        'seats' => 'Alınan koltuk',
+        'unit_price' => 'Koltuk başına fiyat',
+        'currency' => 'Para birimi',
+        'server' => 'Makine',
+        'reason' => 'Neden',
+        'reference' => 'Onların referansı',
+        'reference_hint' => 'Tedarikçinin bu koltuk için kendi satırı. Asla lisans anahtarı değil: buradaki hiçbir şey onu okumaz ve anahtar bir kimlik bilgisidir.',
+
+        'used' => 'Kullanımda',
+        'spare' => 'Boşta',
+        'overage' => 'Aşım',
+        'total' => 'Dönem başına',
+
+        'sections' => [
+            'spare' => 'Parası ödenmiş ve boşta',
+            'spare_detail' => 'Hiçbir şeyin kullanmadığı koltuklar. Ya biri bunları geri verebilir ya da bir makine lisanssız çalışıyordur.',
+            'orphaned' => 'Artık olmayan bir makinede',
+            'orphaned_detail' => 'Aynı para, daha kötü bir hikâyeyle: birileri bunların kullanımda olduğunu sanıyordu.',
+            'missing' => 'Lisanssız çalışıyor',
+            'missing_detail' => 'Bir modül için yapılandırılmış ama o lisans havuzunda koltuğu olmayan makineler. Bu, paraya değil kesintiye mal olan tarafı.',
+            'pools' => 'Alınan her şey',
+        ],
+
+        'reasons' => [
+            'gone' => 'Artık filoda değil',
+            'offline' => 'Kapatılmış',
+        ],
+
+        'nothing_spare' => 'Her koltuk bir makinede.',
+        'nothing_orphaned' => 'Her koltuk hâlâ burada olan bir makinede.',
+        'nothing_missing' => 'Bu platformun görebildiği kadarıyla lisanssız çalışan bir şey yok.',
+
+        'confirm' => [
+            'release_title' => 'Bu koltuk geri alınsın mı?',
+            'release_body' => ':name üzerindeki koltuk boşa çıkar. Makinenin kendisinde hiçbir şey olmaz — burası ne aldığınızın kaydı, bir lisans sunucusu değil.',
+            'delete_title' => 'Bu lisans silinsin mi?',
+            'delete_body' => ':name, koltuk sayısı ve fiyatıyla birlikte gider. Koltukları atanmış bir lisans, onlar geri alınmadan kaldırılamaz.',
+        ],
+    ],
+
     'confirm' => [
         'vendor_title' => 'Bu tedarikçi silinsin mi?',
         'vendor_body' => ':name listeden çıkar. Sözleşmeleri silinmez — sözleşmesi olan bir tedarikçi, önce onlar silinmeden kaldırılamaz.',
@@ -93,5 +155,7 @@ return [
         'not_permitted' => 'Tedarikçilere ve sözleşmelere erişiminiz yok.',
         'ends_before_start' => 'Bir sözleşme, başladıktan sonra bitmelidir.',
         'has_contracts' => 'Bu tedarikçinin hâlâ sözleşmeleri var. Önce onları silin ya da tedarikçiyi bırakın.',
+        'has_allocations' => 'Bu lisansın hâlâ makinelerde koltukları var. Önce onları geri alın.',
+        'already_allocated' => 'O makinede bu lisansın bir koltuğu zaten var.',
     ],
 ];

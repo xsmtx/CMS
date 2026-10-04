@@ -4348,3 +4348,93 @@ boundary is a *subtree*, so a provider sees its reseller's suppliers — which
 is right. What must never happen is the other direction, because what the
 provider pays for transit is the reseller's cost of goods, and that is what
 the test pins.
+
+**Licence pools are the second half of §24, and the screen opens on the
+difference.** Every vendor portal can say how many seats were bought; only
+this installation holds the server list, so only it can say which of them are
+doing anything. Three answers, three different kinds of bad — **idle** seats
+(money for nothing), **orphaned** seats (a seat on a machine that has gone,
+which is the same money with a worse story), and machines **running without
+one** (the only one that costs an outage rather than money). Backup coverage's
+shape, applied to a receipt.
+
+**The gap is asked per pool, and that is what makes it expressive.** A cPanel
+licence and an Imunify licence are both about cPanel machines; asked once
+across every pool, a machine holding a cPanel seat looks fully licensed —
+which is exactly the Imunify renewal nobody noticed had lapsed.
+
+**A pool that names no module produces no gap at all.** Core cannot know which
+machines an Imunify licence belongs on, and a guess would be a list of four
+hundred servers that each need nothing. The same rule the orphan sweep follows
+about an adapter that was never configured.
+
+**Over-allocation is shown, never refused.** A hundred and one machines on a
+hundred seats is real and expensive, and refusing the hundred-and-first
+allocation would hide it from the one person who can fix it. The pool's own
+row carries the negative; the summary clamps it at zero **only** so that one
+pool's overage cannot silently cancel another's genuinely idle seats, and the
+overage has its own figure beside it.
+
+**`server_id` falls to null and `server_name` is copied**, so a seat on a
+machine that has left the fleet stays visible. Cascading would make that money
+invisible at exactly the moment it starts being wasted — and the copied name
+is the only thing left to read, which is ADR 0021 applied to a machine.
+
+**A seat on a machine in maintenance is not wasted.** Somebody took it out of
+rotation this morning and it goes back this afternoon; reporting it as
+orphaned would make the list say something different every hour. Only
+`offline` counts.
+
+**There is no licence-key column, and the request says why.** A key is a
+credential for somebody's production panel, nothing here would ever read one,
+and a column holding it would be a secret stored for no reason. A test asserts
+the column list.
+
+**An allocation is a current fact, not a history.** An append-only table was
+considered and left out: the question this family answers is "what are we
+paying for that nothing is using", which is about now — and the pool's seat
+count is a number an operator edits anyway, so a history of allocations beside
+an unversioned seat count would be half an answer wearing the shape of a whole
+one.
+
+**I overwrote `LicenceController` by writing a new one over it.** That name
+belongs to the screen for *this installation's own* licence (ADR 0041), two
+very different nouns wear the word, and the Write tool said "updated
+successfully" rather than refusing. Phase 7's rule — check whether the file
+exists before writing one under `app/Domain/<Context>/` — is not about
+`app/Domain`. It is about **every directory**, and a controller named after a
+domain noun is where it bites next. `LicencePoolController` now, with the
+reason in its docblock.
+
+Four more from the browser, and the first two are the same two rules again:
+
+- **A column header borrowed from the section heading above it**, for the
+  seventh time. The orphan table's last column said "On a machine that has
+  gone" over the cell that says *which of the two things* happened. It is
+  "Why".
+- **One word reused for three different absences.** "Do not say" is right for
+  the module, where the absence is a claim the platform declines to make; a
+  licence with no contract behind it is simply *not under one*, and a module
+  column left blank needs to say "Not said" rather than read as a fact that
+  failed to load.
+- **`AppStat` is a `<button>` carrying `aria-pressed`.** Four of them for
+  figures that filter nothing — every list was already on the page under its
+  own heading — is four controls that report a pressed state and do nothing.
+  `MetricStrip` is the component for a figure that is not a way in, and its
+  docblock says so.
+- **The strip and the sections were in different orders**, which is the
+  "a strip that is not a legend for what follows it" rule arriving before
+  anybody had read it twice.
+
+**A select that offers a choice the endpoint will refuse is a refusal the form
+could have avoided asking for.** The allocation select listed machines that
+already held a seat of that pool; the pool's payload carries its allocated ids
+now and the select leaves them out — and when that empties the list, the form
+says so instead of drawing an empty required dropdown above an enabled button.
+
+**A helper function in a Pest file is global, and the fatal is what tells
+you.** `aServer()` already existed in `HardwarePartTest`; writing it again
+took the whole suite down rather than one test. `TestHelpersTest` exists for
+this and the redeclaration fatal still gets there first — so a new helper in a
+feature test wants a name with its subject in it (`licensedServer`), not the
+shortest thing that reads well in one file.
