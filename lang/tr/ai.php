@@ -11,7 +11,16 @@ declare(strict_types=1);
  */
 
 return [
+    // Platformun modele kendi işi hakkında söylediği şey; satıcının
+    // yönergesinden önce gelir. Bir bağdaştırıcıda değil burada, çünkü her
+    // sağlayıcıya aynı şey sorulmalı — iki farklı sistem cümlesi, tek bir
+    // ad taşıyan iki ayrı asistan demektir.
+    'system' => 'Bir hosting şirketinin destek ekibine yardım ediyorsun. Bir insanın okuyup düzeltip göndereceği bir taslak yazıyorsun — müşteriyle doğrudan konuşmuyorsun. Olmayan bilgi, fiyat, tarih, politika ya da söz uydurma. Sana verilenlerde olmayan bir şey varsa, kontrol edilmesi gerektiğini yaz.',
+
     'title' => 'Asistan',
+    'saved' => 'Kaydedildi.',
+    'what' => 'Neler yapabilir',
+    'what_hint' => 'Bir sağlayıcı seçilip bir özellik işaretlenmeden hiçbir taslak yazılmaz. Her biri, çalıştığında bu kurulumdan nelerin çıktığını söyler.',
     'intro' => 'Bir model yanıt taslağı yazabilir, bir yazışmayı özetleyebilir ya da kaydın hangi departmana ait olduğunu önerebilir. Hiçbir şey göndermez: her taslak zaten yazacağınız kutuya düşer, siz düzeltir ve gönder’e basarsınız.',
 
     'off' => 'Kurulu bir asistan yok',
@@ -73,12 +82,14 @@ return [
         'title' => 'Asistanın maliyeti',
         'intro' => 'Her çağrı için bir satır. Ne istendiği ve ne tuttuğu — asla ne yazıldığı değil.',
         'empty' => 'Asistan hiç kullanılmamış.',
+        'empty_detail' => 'Birinin istediği her taslak, maliyetiyle birlikte burada görünür.',
         'feature' => 'İstenen',
         'who' => 'İsteyen',
         'model' => 'Model',
         'tokens' => 'Jeton',
         'unreported' => 'Bildirilmedi',
         'when' => 'Ne zaman',
+        'outcome' => 'Sonuç',
         'outcomes' => [
             'answered' => 'Yanıtlandı',
             'refused' => 'Reddedildi',

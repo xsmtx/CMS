@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\Ai\Models;
 
 use App\Domain\Ai\AiFeature;
+use App\Infrastructure\Identity\Models\StaffUser;
 use App\Infrastructure\Organizations\Concerns\BelongsToOrganization;
 use Carbon\CarbonImmutable;
 use Database\Factories\AiUsageFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One call to a provider, and what it cost (ADR 0050).
@@ -61,6 +63,17 @@ final class AiUsage extends Model
         'completion_tokens',
         'outcome',
     ];
+
+    /**
+     * Who asked. Nullable because nothing stops a scheduled draft later, and
+     * a record whose author was invented would be a record that lied.
+     *
+     * @return BelongsTo<StaffUser, $this>
+     */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(StaffUser::class, 'staff_user_id');
+    }
 
     public function tokens(): ?int
     {

@@ -95,6 +95,9 @@ final class HandleInertiaRequests extends Middleware
                 // Flashed once, by the endpoint that records the operator
                 // asking for them. Never stored and never sent again.
                 'credentials' => fn (): ?array => $request->session()->get('credentials'),
+                // A draft a model wrote. Flashed once into the box the
+                // operator was going to type in, and never stored.
+                'draft' => fn (): ?array => $request->session()->get('draft'),
             ],
             'correlationId' => app(CorrelationContext::class)->id(),
 

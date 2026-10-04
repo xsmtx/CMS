@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Application\Access\SyncPermissions;
 use App\Application\Ai\AiProviders;
 use App\Application\Ai\Draft;
 use App\Application\Ai\TicketPrompts;
+use App\Domain\Access\PermissionRegistry;
+use App\Domain\Access\SystemRole;
 use App\Domain\Ai\AiFeature;
 use App\Domain\Ai\AiPrompt;
 use App\Domain\Ai\Exceptions\AiUnavailable;
@@ -21,6 +24,7 @@ use App\Infrastructure\Support\Models\Ticket;
 use App\Infrastructure\Support\Models\TicketReply;
 use App\Support\Organizations\OrganizationContext;
 use Database\Seeders\ProviderOrganizationSeeder;
+use Database\Seeders\SystemRoleSeeder;
 use Tests\Support\FakeAiProvider;
 
 /**
@@ -36,6 +40,8 @@ use Tests\Support\FakeAiProvider;
  */
 beforeEach(function (): void {
     $this->seed(ProviderOrganizationSeeder::class);
+    app(SyncPermissions::class)->handle(app(PermissionRegistry::class));
+    $this->seed(SystemRoleSeeder::class);
 
     $this->provider = Organization::query()
         ->where('type', OrganizationType::Provider->value)
@@ -64,6 +70,17 @@ function aiTicket(): Ticket
         'subject' => 'Site is returning 502',
         'status' => TicketStatus::CustomerReply,
     ]);
+}
+
+/**
+ * The installation's owner, which is what the `owner` middleware asks for.
+ */
+function owningStaff(): StaffUser
+{
+    $owner = StaffUser::factory()->create(['organization_id' => test()->provider->id]);
+    $owner->assignRole(SystemRole::SuperAdmin);
+
+    return $owner->fresh();
 }
 
 function aiEnabled(array $features = [AiFeature::TicketReply]): AiSetting
@@ -257,4 +274,151 @@ it('has no feature that answers a customer by itself', function (): void {
         expect($feature->value)->not->toContain('send')
             ->and($feature->value)->not->toContain('auto');
     }
+});
+
+/**
+ * The screen, and the button on it.
+ *
+ * Rendering proves the props; only a request proves the path the form posts
+ * to is the path the router serves. `AdminActionRoutesTest` states that rule
+ * generally and this is the one endpoint where the answer is text rather than
+ * a redirect to a row.
+ */
+it('offers the draft buttons only for the features the seller turned on', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    $ticket = aiTicket();
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->get('/admin/support/'.$ticket->id)
+        ->assertOk()
+        // Nothing turned on: a control that cannot do anything is a control
+        // that lies, so the screen is told not to draw it.
+        ->assertInertia(fn ($page) => $page
+            ->where('ai.reply', false)
+            ->where('ai.summary', false));
+
+    aiEnabled([AiFeature::TicketSummary]);
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->get('/admin/support/'.$ticket->id)
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('ai.reply', false)
+            ->where('ai.summary', true));
+});
+
+it('hands a draft back to the screen and stores nothing', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    aiEnabled();
+    $ticket = aiTicket();
+
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/draft', ['kind' => 'reply'])
+        ->assertRedirect()
+        ->assertSessionHas('draft');
+
+    // The ticket gained no reply. A draft is not a reply until somebody
+    // sends it, and there is no path from that endpoint to the customer.
+    expect($ticket->refresh()->replies()->count())->toBe(0);
+});
+
+it('answers a refusal on the form rather than with a server error', function (): void {
+    $admin = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $admin->assignRole(SystemRole::Administrator);
+
+    $ticket = aiTicket();
+
+    // The assistant is off, which is every installation until somebody says
+    // otherwise. The operator writes the reply themselves.
+    $this->actingAs($admin->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/draft', ['kind' => 'reply'])
+        ->assertRedirect()
+        ->assertSessionHasErrors('body');
+});
+
+it('refuses a draft to somebody who may not answer the ticket', function (): void {
+    aiEnabled();
+    $ticket = aiTicket();
+
+    $nobody = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+
+    $this->actingAs($nobody->fresh(), 'staff')
+        ->post('/admin/support/'.$ticket->id.'/draft', ['kind' => 'reply'])
+        ->assertForbidden();
+
+    expect(AiUsage::query()->count())->toBe(0);
+});
+
+/**
+ * The settings screen, which is where somebody agrees to this on their
+ * customers' behalf (ADR 0050).
+ */
+it('keeps the settings screen to the installation’s owner', function (): void {
+    $administrator = StaffUser::factory()->create(['organization_id' => $this->provider->id]);
+    $administrator->assignRole(SystemRole::Administrator);
+
+    // An Administrator holds every staff permission by design, which is
+    // exactly why no permission could stand in for this.
+    $this->actingAs($administrator->fresh(), 'staff')
+        ->get('/admin/apps/ai')
+        ->assertForbidden();
+});
+
+it('turns features on one at a time and audits which', function (): void {
+    $owner = owningStaff();
+
+    $this->actingAs($owner, 'staff')
+        ->put('/admin/apps/ai', [
+            'provider' => 'fake',
+            'features' => [AiFeature::TicketSummary->value],
+            'instructions' => 'Answer in Turkish.',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $setting = AiSetting::query()->firstOrFail();
+
+    expect($setting->provider_key)->toBe('fake')
+        ->and($setting->enabled_features)->toBe([AiFeature::TicketSummary->value])
+        ->and($setting->allows(AiFeature::TicketSummary))->toBeTrue()
+        // The one that reaches a customer was not agreed to.
+        ->and($setting->allows(AiFeature::TicketReply))->toBeFalse();
+
+    $audit = AuditLog::query()->where('action', 'ai.settings.updated')->firstOrFail();
+
+    // "The assistant was switched on" would not say which agreement was made.
+    expect($audit->metadata['features'])->toBe(AiFeature::TicketSummary->value);
+});
+
+it('refuses a provider no module answers for, rather than storing it', function (): void {
+    $owner = owningStaff();
+
+    $this->actingAs($owner, 'staff')
+        ->put('/admin/apps/ai', ['provider' => 'a-vendor-nobody-enabled', 'features' => []])
+        ->assertRedirect();
+
+    // A stored key naming nothing would refuse at the reply box, which is the
+    // wrong place to find out.
+    expect(AiSetting::query()->firstOrFail()->provider_key)->toBeNull();
+});
+
+it('turns every feature off when the provider is cleared', function (): void {
+    $owner = owningStaff();
+    aiEnabled([AiFeature::TicketReply, AiFeature::TicketSummary]);
+
+    $this->actingAs($owner, 'staff')
+        ->put('/admin/apps/ai', ['provider' => '', 'features' => [AiFeature::TicketReply->value]])
+        ->assertRedirect();
+
+    // Choosing no provider is choosing no assistant, and leaving the features
+    // ticked underneath would be a screen that disagreed with itself.
+    $setting = AiSetting::query()->firstOrFail();
+
+    expect($setting->provider_key)->toBeNull()
+        ->and($setting->enabled_features)->toBe([])
+        ->and($setting->allows(AiFeature::TicketReply))->toBeFalse();
 });

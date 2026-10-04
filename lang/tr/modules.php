@@ -55,6 +55,10 @@ return [
             'label' => 'Altyapı',
             'description' => 'Sunucuları, adresleri ve onlara bağlı şeyleri keşfeder.',
         ],
+        'ai' => [
+            'label' => 'Yapay zekâ sağlayıcısı',
+            'description' => 'Yanıt ve özet taslakları yazar. Bir kaydın içeriği bu sağlayıcıya gönderilir ve siz bir özelliği açmadan hiçbir taslak yazılmaz.',
+        ],
         'addon' => [
             'label' => 'Eklenti',
             'description' => 'Yukarıdakilerden birkaçı. Neyi kaydettiğini okuyun.',

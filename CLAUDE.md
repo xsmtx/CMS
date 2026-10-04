@@ -4104,3 +4104,75 @@ reason the English message exists at all.
 ancestor.** `catch (CreditRefused|PaymentRefused $refusal)` could only call
 `getMessage()`, because `PaymentRefused` is a `PlatformException` with no key.
 Split, so the one that can be worded is.
+
+**An assistant is in, and it never acts** (ADR 0050,
+`docs/architecture/ai-and-mcp-plan.md`). `AiProvider` is one method, a module
+implements it, and core registers none — the one registry in this product
+that starts empty, because every other begins with something core ships
+("an operator does it by hand" has to be a real answer) and there is no
+hand-operated AI vendor.
+
+**Every adapter before this one read a machine. This is the first where being
+wrong is a sentence in the seller's name, sent to their customer.** That is
+the decision core refused eight times already — no tax rates, no SLA
+percentage, no dunning constants — with a larger blast radius, so every
+feature produces a draft that lands where the operator was going to type and
+a human presses send. There is no code path from a completion to an outbox,
+which is the point: adding one would be a visible change to ADR 0050 rather
+than a setting somebody flips.
+
+**The second fact is quieter and decides as much: a ticket is a customer's
+words and a provider is a third party.** So it is off until somebody turns it
+on, per feature, on an **owner-only** screen — for the reason the tax screen
+is owner-only (ADR 0045): an Administrator holds every staff permission by
+design, so no permission could mean "the person who decides whether our
+customers' words are sent to a vendor".
+
+**`TicketPrompts` is the only thing that decides what leaves, assembled field
+by field.** A prompt built by serialising a model would carry whatever column
+the next phase adds and nobody would know until it turned up in a vendor's
+logs — `SecretRedactor` is the net, not the plan. **An internal note never
+leaves**: a colleague writing "charge them for the call" wrote it for the
+people in this installation, and a draft quoting it back is the version that
+ends up in a complaint. That guard was checked against its own bug before
+being trusted.
+
+**The usage row stores what a call cost and never what it said.** A draft
+nobody sent is not worth keeping and one that was sent is already the reply;
+keeping both would put customers' correspondence in a second table that no
+retention policy covers and no erasure request finds. The audit row names the
+feature and the provider and stops there, for the reason the abuse desk's
+evidence capture already needed.
+
+**`ModuleType::Ai` is its own type for the reason `Infrastructure` is.** The
+type is the thing most operators read before installing, and this word is a
+sentence about consequence: *this package sends what your customers wrote to
+somebody else.* Filing it under `addon` would hide the only fact that decides
+whether it may be installed at all. Same reasoning put `ExtensionPoint::AiProvider`
+beside `InfrastructureAdapter` rather than inside it.
+
+**SDK 1.12 is the borderline bump, and `Sdk.php` now documents the case.**
+`aiProviders()` is on the `Module` **interface** as well as `BaseModule`, so a
+module extending `BaseModule` — the documented path, and what every module in
+`modules/` does — gains the default and has nothing to look at, while one
+implementing the interface directly would not compile.
+
+**Rector infers the wrong return type for a Pest expectation closure**, twice
+in one session: `fn ($e) => expect(...)` gains `: Expectation`, which resolves
+to `Pest\Mixins\Expectation` while the call returns `Pest\Expectation`, and
+every one of those tests then fails with a `TypeError`. Give the closure a
+block body and `: void` instead — Rector leaves it alone and the assertion is
+unchanged.
+
+**Three headings that each repeated the field under them, one of them the page
+title.** `DetailSection` per field looks tidy in a template and reads as
+stuttering on screen: Provider / Provider, Assistant / Assistant, How it
+should write / How it should write. One section for one form, with every
+field carrying its own label and hint, is what every other settings screen
+here does.
+
+**`EmptyState` takes `variant="plain"`, not `plain`, and `description` is
+required.** `vue-tsc` caught it, which is the `ComponentPropsTest` class of
+bug caught one layer earlier — an unknown prop on a primitive falls through
+silently, and this one would have rendered a boxed empty state with no
+sentence in it.

@@ -164,6 +164,12 @@ final class AppsController extends Controller
              * a setting a day-to-day administrator should meet by accident.
              */
             $this->area('billing_settings', '/admin/billing/settings'),
+            /*
+             * The assistant, for the reason tax is here: no permission
+             * could mean "the person who decides whether our customers'
+             * words are sent to a vendor" (ADR 0050).
+             */
+            $this->area('ai', '/admin/apps/ai'),
             $this->area('licence', '/admin/licence'),
             $this->area('import', '/admin/import'),
         ];

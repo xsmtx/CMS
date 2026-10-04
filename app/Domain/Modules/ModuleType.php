@@ -40,6 +40,17 @@ enum ModuleType: string
      */
     case Infrastructure = 'infrastructure';
 
+    /**
+     * Answers a prompt (ADR 0050).
+     *
+     * Its own type for the reason `infrastructure` is one: the type is the
+     * thing most operators read before installing, and this word is a
+     * sentence about consequence — **this package sends what your customers
+     * wrote to somebody else.** Filing it under `addon` would hide the only
+     * fact that decides whether it may be installed at all.
+     */
+    case Ai = 'ai';
+
     public function labelKey(): string
     {
         return 'modules.types.'.str_replace('-', '_', $this->value).'.label';
@@ -82,6 +93,7 @@ enum ModuleType: string
             self::Fraud => [ExtensionPoint::RiskEvaluator, ...$common],
             self::Tax => [ExtensionPoint::TaxCalculator, ...$common],
             self::Infrastructure => [ExtensionPoint::InfrastructureAdapter, ...$common],
+            self::Ai => [ExtensionPoint::AiProvider, ...$common],
             self::Report, self::AdminWidget, self::ClientWidget => $common,
             self::Addon => ExtensionPoint::cases(),
         };

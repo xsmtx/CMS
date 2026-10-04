@@ -1,0 +1,41 @@
+{
+    "slug": "ai-anthropic",
+    "name": "Claude",
+    "type": "ai",
+    "version": "1.0.0",
+    "description": "Lets an operator ask a model to draft a ticket reply or summarise a thread. Nothing is ever sent to a customer: every draft lands in the box somebody was going to type in. What leaves this installation is the ticket's subject, the customer's name and the conversation — never an internal note, a tax id or a credential.",
+    "provider": "InfraCMS",
+    "sdk": ">=1.12",
+    "platform": "*",
+    "namespace": "InfraCMS\\AiAnthropic",
+    "entrypoint": "AnthropicModule",
+    "dependencies": [],
+    "migrations": false,
+    "translations": false,
+    "config": [
+        {
+            "key": "model",
+            "label": "Model",
+            "type": "text",
+            "required": false,
+            "default": "claude-sonnet-5",
+            "hint": "Which model answers. A smaller one is cheaper and is usually enough for a summary."
+        },
+        {
+            "key": "base_url",
+            "label": "API address",
+            "type": "text",
+            "required": false,
+            "default": "https://api.anthropic.com",
+            "hint": "Leave as it is unless you route through a proxy of your own."
+        },
+        {
+            "key": "timeout",
+            "label": "Timeout (seconds)",
+            "type": "text",
+            "required": false,
+            "default": "30",
+            "hint": "A draft is written while somebody waits, so this is short on purpose. If it runs out, write the reply yourself."
+        }
+    ]
+}

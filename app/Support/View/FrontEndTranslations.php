@@ -135,6 +135,10 @@ final class FrontEndTranslations
         // The whole group: it is one audience — the person whose
         // devices these are — and the Security screen draws all of it.
         'identity.devices',
+        // The assistant's own words: the two buttons, the sentence
+        // that says a model wrote what is in the box, and the refusals
+        // that all mean "write it yourself".
+        'ai',
         'api.tokens',
         'api.scopes',
         'api.webhooks',

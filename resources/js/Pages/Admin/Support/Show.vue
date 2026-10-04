@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
+import AppAlert from '../../../Components/AppAlert.vue'
 import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppCheckbox from '../../../Components/AppCheckbox.vue'
@@ -65,8 +66,13 @@ const props = defineProps<{
     priorities: { value: string; label: string }[]
   }
   can: { manage: boolean }
+  // Whether this seller has turned the assistant on for replies. Sent per
+  // feature rather than as one flag, because drafting what a customer reads
+  // and summarising for a colleague are different decisions (ADR 0050).
+  ai: { reply: boolean; summary: boolean }
 }>()
 
+const page = usePage()
 const { t } = useTranslations()
 
 const replyForm = useForm({ body: '', internal: false })
@@ -96,6 +102,36 @@ const settingsForm = useForm({
 })
 
 const showCanned = ref(false)
+
+/*
+ * The draft, which is flashed rather than stored: a draft is not a reply
+ * until somebody sends it, and a table of drafts nobody sent would be a
+ * second copy of customers' correspondence (ADR 0050).
+ */
+const drafting = ref(false)
+
+const draft = computed(() => page.props.flash.draft ?? null)
+
+function askForDraft(kind: 'reply' | 'summary'): void {
+  drafting.value = true
+
+  router.post(
+    `/admin/support/${props.ticket.id}/draft`,
+    { kind },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        drafting.value = false
+      },
+      onSuccess: () => {
+        // Into the box the operator was going to type in. Appended rather
+        // than replacing, for the reason `insert()` appends a canned reply:
+        // somebody who has already started typing has not asked to lose it.
+        if (draft.value !== null) insert(draft.value.text)
+      },
+    },
+  )
+}
 
 function send(): void {
   replyForm.post(`/admin/support/${props.ticket.id}/replies`, {
@@ -211,8 +247,38 @@ function formatDateTime(value: string | null): string {
         </ul>
 
         <DetailSection v-if="can.manage" :title="t('ui.ticket.reply')">
-          <template v-if="options.canned.length > 0" #actions>
-            <AppButton size="sm" variant="ghost" @click="showCanned = !showCanned">
+          <template #actions>
+            <!--
+              Beside the predefined replies, because that is what a draft is:
+              a canned reply that happens to have been written for this
+              ticket. Absent rather than disabled where the seller has not
+              turned it on — a control that cannot do anything is a control
+              that lies.
+            -->
+            <AppButton
+              v-if="ai.summary"
+              size="sm"
+              variant="ghost"
+              :loading="drafting"
+              @click="askForDraft('summary')"
+            >
+              {{ t('ai.summarise') }}
+            </AppButton>
+            <AppButton
+              v-if="ai.reply"
+              size="sm"
+              variant="ghost"
+              :loading="drafting"
+              @click="askForDraft('reply')"
+            >
+              {{ t('ai.draft') }}
+            </AppButton>
+            <AppButton
+              v-if="options.canned.length > 0"
+              size="sm"
+              variant="ghost"
+              @click="showCanned = !showCanned"
+            >
               {{ t('ui.ticket.canned') }}
             </AppButton>
           </template>
@@ -223,6 +289,14 @@ function formatDateTime(value: string | null): string {
             :error="replyForm.errors.body"
             :rows="6"
           />
+
+          <!--
+            Said rather than assumed: what is in the box was written by a
+            model, and the operator is the one sending it.
+          -->
+          <AppAlert v-if="draft" tone="info" class="mt-3">
+            {{ t('ai.drafted', { model: draft.model }) }}
+          </AppAlert>
 
           <div class="mt-3">
             <AppCheckbox

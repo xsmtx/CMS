@@ -6,6 +6,7 @@ use App\Domain\Identity\Guard;
 use App\Http\Controllers\Admin\AbuseController;
 use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AddressingController;
+use App\Http\Controllers\Admin\AiController;
 use App\Http\Controllers\Admin\AlertController;
 use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
@@ -196,6 +197,13 @@ Route::middleware(['auth:staff'])->group(function (): void {
     Route::get('support/{ticket}', [TicketController::class, 'show'])->name('support.show');
     Route::post('support/{ticket}/replies', [TicketController::class, 'reply'])
         ->name('support.reply');
+    /*
+     * Ask for a draft (ADR 0050). It answers with text and writes nothing;
+     * the operator edits it and presses send, or does not. Behind the same
+     * policy as replying, because drafting a reply is reading the ticket.
+     */
+    Route::post('support/{ticket}/draft', [TicketController::class, 'draft'])->name('support.draft');
+
     Route::put('support/{ticket}', [TicketController::class, 'update'])->name('support.update');
 
     Route::get('content/announcements', [ContentController::class, 'announcements'])
@@ -921,6 +929,15 @@ Route::middleware(['auth:staff'])->group(function (): void {
         Route::delete('tax/rules/{rule}', [TaxController::class, 'destroy'])
             ->name('tax.rules.destroy');
         Route::put('tax/settings', [TaxController::class, 'settings'])->name('tax.settings');
+
+        /*
+         * The assistant (ADR 0050). Owner-only for the reason tax is: an
+         * Administrator holds every staff permission by design, so no
+         * permission could mean "the person who decides whether our
+         * customers' words are sent to a vendor".
+         */
+        Route::get('apps/ai', [AiController::class, 'index'])->name('apps.ai');
+        Route::put('apps/ai', [AiController::class, 'update'])->name('apps.ai.update');
 
         /*
          * Billing terms and document numbering. Owner only for the same

@@ -11,7 +11,18 @@ declare(strict_types=1);
  */
 
 return [
+    /*
+     * What the platform tells the model about its own job, before the
+     * seller's instructions. Here rather than in an adapter so that every
+     * provider is asked the same thing — two adapters with two system
+     * sentences would be two assistants wearing one name.
+     */
+    'system' => 'You are helping a hosting company’s support staff. You are writing a draft that a human will read, edit and send — you are never talking to the customer directly. Do not invent facts, prices, dates, policies or promises. If something is not in what you were given, say that it needs checking.',
+
     'title' => 'Assistant',
+    'saved' => 'Saved.',
+    'what' => 'What it may do',
+    'what_hint' => 'Nothing is drafted until a provider is chosen and a feature is ticked. Each one says what leaves this installation when it runs.',
     'intro' => 'A model can draft a reply, summarise a thread or suggest where a ticket belongs. It never sends anything: every draft lands in the box you were going to type in, and you edit it and press send.',
 
     'off' => 'No assistant is set up',
@@ -78,12 +89,14 @@ return [
         'title' => 'What the assistant has cost',
         'intro' => 'One row per call. What was asked for and what it cost — never what was written.',
         'empty' => 'The assistant has not been used.',
+        'empty_detail' => 'Every draft anybody asks for will appear here, with what it cost.',
         'feature' => 'Asked for',
         'who' => 'Who asked',
         'model' => 'Model',
         'tokens' => 'Tokens',
         'unreported' => 'Not reported',
         'when' => 'When',
+        'outcome' => 'Outcome',
         'outcomes' => [
             'answered' => 'Answered',
             'refused' => 'Refused',

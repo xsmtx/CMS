@@ -56,6 +56,12 @@ return [
             'description' => 'When an invoice falls due, what being late costs, and what a document number looks like.',
             'unit' => '',
         ],
+        'ai' => [
+            'label' => 'Assistant',
+            // What it does and what that costs you, in one sentence.
+            'description' => 'Whether a model may draft replies, and what a ticket sends to the vendor when it does.',
+            'unit' => '',
+        ],
         'licence' => [
             'label' => 'Licence',
             'description' => 'What this installation is licensed to do, and when it last spoke to the vendor.',

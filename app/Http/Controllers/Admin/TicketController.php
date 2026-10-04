@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Application\Ai\AiSettings;
+use App\Application\Ai\Draft;
+use App\Application\Ai\TicketPrompts;
 use App\Application\Content\VisibleContent;
 use App\Application\Crm\SearchCustomers;
 use App\Application\Support\OpenTicket;
@@ -13,6 +16,8 @@ use App\Application\Support\StoreAttachment;
 use App\Application\Support\SupportStatistics;
 use App\Application\Support\TicketMarkdown;
 use App\Application\Support\TransitionTicket;
+use App\Domain\Ai\AiFeature;
+use App\Domain\Ai\Exceptions\AiUnavailable;
 use App\Domain\Support\ArticleVisibility;
 use App\Domain\Support\TicketPriority;
 use App\Domain\Support\TicketStatus;
@@ -281,9 +286,11 @@ final class TicketController extends Controller
         return to_route('admin.support.show', $ticket)->with('status', __('support.tickets_opened'));
     }
 
-    public function show(Ticket $ticket, TicketMarkdown $markdown): Response
+    public function show(Ticket $ticket, TicketMarkdown $markdown, AiSettings $settings): Response
     {
         $this->authorize('view', $ticket);
+
+        $assistant = $settings->forOrganization($ticket->organization_id);
 
         $ticket->load([
             ...Customer::displayNameWith('customer'), 'contact', 'department', 'assignee',
@@ -368,6 +375,17 @@ final class TicketController extends Controller
                 )),
             ],
             'can' => ['manage' => $this->actor->can('update', $ticket)],
+            /*
+             * Per feature rather than one flag: drafting what a customer
+             * reads and summarising for a colleague are different
+             * decisions, and a screen that offered both off one switch
+             * would be offering the first to somebody who only agreed to
+             * the second (ADR 0050).
+             */
+            'ai' => [
+                'reply' => $assistant->allows(AiFeature::TicketReply),
+                'summary' => $assistant->allows(AiFeature::TicketSummary),
+            ],
         ]);
     }
 
@@ -390,6 +408,52 @@ final class TicketController extends Controller
         }
 
         return back()->with('status', __($internal ? 'support.tickets.noted' : 'support.tickets.replied'));
+    }
+
+    /**
+     * Ask for a draft (ADR 0050).
+     *
+     * It answers with text and writes nothing. The draft goes back to the
+     * screen, into the box the operator was going to type in, and they edit
+     * it and press send — or do not. **There is no path from here to the
+     * customer**, which is the whole of ADR 0050 expressed as the absence of
+     * a line of code.
+     *
+     * `authorize('update')` because drafting a reply is reading the ticket
+     * and nothing more: somebody who may answer it may ask for help wording
+     * the answer, and a permission of its own would be a permission that only
+     * confuses.
+     *
+     * A refusal comes back as a sentence on the form rather than a server
+     * error — the Modules screen's rule. Every one of them means "write it
+     * yourself", and none of them is an outage.
+     */
+    public function draft(Request $request, Ticket $ticket, Draft $drafts, TicketPrompts $prompts): RedirectResponse
+    {
+        $this->authorize('update', $ticket);
+
+        /** @var StaffUser $author */
+        $author = $this->actor->model();
+
+        $summarising = $request->string('kind')->toString() === 'summary';
+
+        try {
+            $completion = $drafts->write(
+                $summarising ? $prompts->summary($ticket) : $prompts->reply($ticket),
+                $author,
+            );
+        } catch (AiUnavailable $refusal) {
+            return back()->withErrors(['body' => $refusal->worded()])->withInput();
+        }
+
+        // Flashed rather than saved: a draft is not a reply until somebody
+        // sends it, and a table of drafts nobody sent would be a second copy
+        // of customers' correspondence (ADR 0050).
+        return back()->with('draft', [
+            'text' => $completion->text,
+            'model' => $completion->model,
+            'kind' => $summarising ? 'summary' : 'reply',
+        ]);
     }
 
     public function update(

@@ -48,6 +48,11 @@ return [
             'description' => 'Faturanın vadesi, gecikmenin bedeli ve belge numarasının biçimi.',
             'unit' => '',
         ],
+        'ai' => [
+            'label' => 'Asistan',
+            'description' => 'Bir modelin yanıt taslakları yazıp yazamayacağı ve yazdığında bir kaydın sağlayıcıya ne gönderdiği.',
+            'unit' => '',
+        ],
         'licence' => [
             'label' => 'Lisans',
             'description' => 'Bu kurulumun neye lisanslı olduğu ve sağlayıcıyla en son ne zaman konuştuğu.',

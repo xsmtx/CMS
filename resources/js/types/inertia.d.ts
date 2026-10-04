@@ -67,6 +67,13 @@ export interface FlashProps {
    * for them. Never persisted and never sent again.
    */
   credentials?: { username: string | null; password: string | null } | null
+  /**
+   * A draft a model wrote, flashed once into the box the operator was going
+   * to type in. Never persisted: a draft is not a reply until somebody sends
+   * it, and a table of drafts nobody sent would be a second copy of
+   * customers' correspondence (ADR 0050).
+   */
+  draft?: { text: string; model: string; kind: string } | null
 }
 
 /**

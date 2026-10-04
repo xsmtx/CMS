@@ -55,6 +55,12 @@ return [
             'label' => 'Infrastructure',
             'description' => 'Discovers servers, addresses and the things that hang off them.',
         ],
+        'ai' => [
+            'label' => 'AI provider',
+            // The sentence an operator needs before installing one, said
+            // plainly rather than softened.
+            'description' => 'Drafts replies and summaries. What a ticket contains is sent to this vendor, and nothing is drafted until you turn a feature on.',
+        ],
         'addon' => [
             'label' => 'Addon',
             'description' => 'Several of the above. Read what it registers.',
