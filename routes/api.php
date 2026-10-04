@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\GatewayWebhookController;
+use App\Http\Controllers\Api\McpController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\DomainController;
 use App\Http\Controllers\Api\V1\HealthController;
@@ -242,6 +243,25 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         });
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| MCP
+|--------------------------------------------------------------------------
+|
+| Deliberately outside `v1` (ADR 0051): this is not REST and does not version
+| with the REST surface. The protocol carries its own revision in
+| `initialize`, and `tools/list` is its own answer to the question
+| `openapi.json` answers — which is why MCP is absent from that document
+| rather than described in it twice.
+|
+| Authenticated with a staff token, read only, every tool behind the scope it
+| declares. `McpSurfaceTest` is what keeps the second half true.
+|
+*/
+Route::post('mcp', McpController::class)
+    ->middleware([RecordApiRequest::class, AuthenticateStaffApiToken::class, 'throttle:api'])
+    ->name('mcp');
 
 /*
 |--------------------------------------------------------------------------

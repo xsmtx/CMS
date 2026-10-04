@@ -1,6 +1,6 @@
 # AI assistance and MCP
 
-Status: planned
+Status: complete
 Date: 2026-10-04
 Decides: ADR 0050 (AI assists, never acts), ADR 0051 (MCP is a third surface)
 Asked for: the owner, outside the lettered roadmap
@@ -154,6 +154,21 @@ because `AuthenticateStaffApiToken` calls the same boundary middleware
 everything else does. Nothing about MCP is allowed to be the one surface that
 resolves identity differently — that divergence is how an API becomes the way
 in, and it would be worse here.
+
+---
+
+## 4a. Where it stands (2026-10-04)
+
+All six steps are in.
+
+| Step | State |
+| --- | --- |
+| 1. ADR 0050 and ADR 0051 | **in** |
+| 2. The AI seam, the vault key, the usage row, one module | **in** — `modules/infracms/ai-anthropic` |
+| 3. Drafting a ticket reply | **in**, with the settings screen that turns it on |
+| 4. Summarising a thread | **in**. Triage and incident drafts are declared and not wired to a screen yet |
+| 5. The MCP server | **in** — ten read tools, `McpSurfaceTest` keeps them read |
+| 6. `platform:openapi` unaffected | **in** — and a test confirms MCP stays out of it |
 
 ---
 
