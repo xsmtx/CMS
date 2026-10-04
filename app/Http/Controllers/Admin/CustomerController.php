@@ -13,12 +13,14 @@ use App\Domain\Crm\CustomerStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Crm\AnonymizeCustomerRequest;
 use App\Http\Requests\Crm\CustomerRequest;
+use App\Infrastructure\Billing\Models\BillableItem;
 use App\Infrastructure\Crm\Models\Address;
 use App\Infrastructure\Crm\Models\Customer;
 use App\Infrastructure\Crm\Models\CustomFieldDefinition;
 use App\Infrastructure\Crm\Models\Note;
 use App\Infrastructure\Crm\Models\Tag;
 use App\Infrastructure\Identity\Models\Contact;
+use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Shared\Models\CurrencyRecord;
 use App\Support\Identity\CurrentActor;
 use Illuminate\Http\JsonResponse;
@@ -150,8 +152,27 @@ final class CustomerController extends Controller
                 'createdAt' => $note->created_at?->toIso8601String(),
             ])->all(),
             'customFields' => $this->customFieldSchema($customer),
+            /*
+             * One-off charges waiting for the next invoice
+             * (`whmcs-parity-plan.md` §2.2). On the customer's own screen
+             * because that is where somebody records an hour of work — and
+             * the services are here too, so a charge can name one.
+             */
+            'billables' => $this->billables($customer),
+            'services' => $customer->services()
+                ->orderBy('name')
+                ->get()
+                ->map(static fn (Service $service): array => [
+                    'value' => $service->id,
+                    'label' => $service->name,
+                ])
+                ->all(),
             'can' => [
                 'update' => $this->actor->can('update', $customer),
+                // Recording a charge is billing rather than CRM: somebody who
+                // may edit a customer's address has not thereby been given
+                // the ability to put money on their next invoice.
+                'bill' => $this->actor->can('billing.invoices.manage'),
                 'export' => $this->actor->can('export', $customer),
                 'anonymize' => $this->actor->can('anonymize', $customer),
                 'impersonate' => $this->actor->can('identity.contacts.impersonate'),
@@ -223,6 +244,37 @@ final class CustomerController extends Controller
         );
 
         return to_route('admin.customers.show', $customer)->with('status', __('crm.customer_anonymized'));
+    }
+
+    /**
+     * What is waiting, and what has already gone on an invoice.
+     *
+     * Both, because the question an operator asks on this panel is "did that
+     * get billed" as often as "what is outstanding" — and a list that dropped
+     * the charged ones would answer only one of them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function billables(Customer $customer): array
+    {
+        return array_values(BillableItem::query()
+            ->with('service')
+            ->where('customer_id', $customer->id)
+            ->latest()
+            ->limit(100)
+            ->get()
+            ->map(static fn (BillableItem $item): array => [
+                'id' => $item->id,
+                'description' => $item->description,
+                'service' => $item->service?->name,
+                'quantity' => $item->quantity,
+                'unitPrice' => $item->unitPrice()->format(app()->getLocale()),
+                'total' => $item->total()->format(app()->getLocale()),
+                'chargeOn' => $item->charge_on?->toDateString(),
+                'chargedAt' => $item->charged_at?->toIso8601String(),
+                'note' => $item->note,
+            ])
+            ->all());
     }
 
     /**

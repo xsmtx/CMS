@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ApiActivityController;
 use App\Http\Controllers\Admin\AppsController;
 use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\BackupCoverageController;
+use App\Http\Controllers\Admin\BillableItemController;
 use App\Http\Controllers\Admin\BillingSettingsController;
 use App\Http\Controllers\Admin\CancellationController;
 use App\Http\Controllers\Admin\CannedResponseController;
@@ -137,6 +138,16 @@ Route::middleware(['auth:staff'])->group(function (): void {
 
     Route::get('customers/{customer}/export', [CustomerController::class, 'export'])
         ->name('customers.export');
+    /*
+     * One-off charges waiting for the next invoice. On the customer's own
+     * routes because the panel is on their screen, and behind
+     * `billing.invoices.manage` rather than a CRM permission.
+     */
+    Route::post('customers/{customer}/billables', [BillableItemController::class, 'store'])
+        ->name('customers.billables.store');
+    Route::delete('billables/{item}', [BillableItemController::class, 'destroy'])
+        ->name('billables.destroy');
+
     Route::post('customers/{customer}/anonymize', [CustomerController::class, 'anonymize'])
         ->name('customers.anonymize');
 

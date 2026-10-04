@@ -317,4 +317,49 @@ return [
         'empty' => 'Nothing has arrived',
         'empty_description' => "A row appears here the moment a gateway calls this installation's webhook.",
     ],
+    /*
+     * One-off charges waiting for the next invoice
+     * (`whmcs-parity-plan.md` §2.2).
+     */
+    'billables' => [
+        'title' => 'One-off charges',
+        'intro' => 'Charges waiting for this customer\'s next invoice. Nothing is billed until one is raised, and an invoice is raised for these alone if nothing else is due.',
+
+        'empty' => 'Nothing is waiting',
+        'empty_detail' => 'An hour of work, a part, a charge somebody negotiated. It goes on the next invoice rather than on one that has already been issued.',
+
+        'add' => 'Add a charge',
+        'add_submit' => 'Add it',
+        'remove' => 'Take it off',
+
+        'description' => 'What it is for',
+        'quantity' => 'How many',
+        'unit_price' => 'Each',
+        'service' => 'Which service',
+        'service_any' => 'Not about one',
+        'charge_on' => 'Not before',
+        'charge_on_hint' => 'Leave it empty for the next invoice, whenever that is. A date means wait until then.',
+        'note' => 'Note',
+
+        'total' => 'Total',
+        'waiting' => 'Waiting',
+        'charged' => 'Charged',
+        'charged_on' => 'Invoiced',
+
+        // Named rather than left blank, so an invoice raised only for one-off
+        // charges says in the run record why it exists.
+        'run_label' => 'One-off charges',
+
+        'confirm' => [
+            'remove_title' => 'Take this charge off?',
+            'remove_body' => ':name is deleted and will not appear on any invoice. Nothing has been billed for it yet.',
+        ],
+
+        'errors' => [
+            'no_quantity' => 'A charge has to be for at least one of something.',
+            'wrong_currency' => 'This customer is billed in :expected, and a charge in :given would wait for an invoice that never comes. There is no exchange rate in this platform.',
+            'not_their_service' => 'That service belongs to another customer.',
+            'already_charged' => 'This charge is already on an invoice. An invoice is frozen once it is issued, so the correction is a credit note.',
+        ],
+    ],
 ];

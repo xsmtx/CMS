@@ -4642,3 +4642,52 @@ zone" in the middle of itself. Found by looking at one. A primitive's own
 default is wording like any other: it takes the three-argument
 `t(key, {}, 'English')` form, because a primitive can be mounted where no
 translations block was rendered at all.
+
+**One-off charges are in** (`whmcs-parity-plan.md` §2.2). An hour of migration
+work, a hardware part, a charge somebody negotiated — this product had no way
+to put anything on a future invoice at all.
+
+**The shape is `usage_snapshots`, deliberately.** A charge is **quoted** by an
+invoice line and the row is stamped with that line, which is what makes it
+impossible to charge twice and what makes it safe inside a run that may be
+retried. An invoice is frozen at issue (ADR 0023), so a charge that arrived
+afterwards belongs on the next one rather than edited onto that one.
+
+**`charge_on` is "not before", never "on".** Null means the next invoice
+whenever it comes. A date means wait; the sweep still decides when an invoice
+is raised.
+
+**The renewal sweep raises one for a customer whose only due charge is a
+one-off**, and folds the charges into a renewal invoice where there is one — so
+a customer with both pays once. Without the first half, an hour of work
+recorded in March waits for a renewal that may not be coming, which is the
+shape of a charge somebody recorded and nobody was ever billed for.
+
+**No currency field on the form.** It is the customer's own: a charge in
+another would wait for an invoice that never comes, and there is no exchange
+rate in this product to rescue it.
+
+**`unit_amount_minor` is signed**, which most money columns here are not. A
+negotiated reduction is a one-off charge of a negative amount; a credit note is
+the wrong document for something that has not been invoiced yet.
+
+**No tax column, and that is the renewal sweep's decision rather than an
+omission.** A renewal invoice in this product carries none, and one taxed line
+among untaxed ones would be a document nobody can reconcile. When renewals
+learn to tax, this follows automatically because it is the same invoice.
+
+**`AppTableRow` used without importing it renders an unknown element**, and the
+`<td>`s escape the table: the header drew four columns on the right while every
+row packed its cells to the left at its own width. `vue-tsc` passed, eslint
+passed, the feature test passed — an unregistered component in a template is
+not a type error, and only the screenshot showed it. When a table looks
+unaligned, check the import before the columns.
+
+**A pre-existing `formatDate()` on the customer screen followed the operating
+system**, like the three DCIM pages before it. Found on the same pass. It is
+worth grepping `toLocaleDateString()` and `toLocaleString()` with no argument
+across `resources/js` the next time one of these turns up.
+
+**A bare date under a status word reads as the day it happened.** "Waiting"
+above `01.01.2027` is the day the charge is waiting *for*, and it needed the
+label to say so.

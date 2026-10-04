@@ -304,4 +304,43 @@ return [
         'empty' => 'Henüz bir şey gelmedi',
         'empty_description' => 'Bir ağ geçidi bu kurulumun webhook adresini çağırdığı anda burada bir satır belirir.',
     ],
+    'billables' => [
+        'title' => 'Tek seferlik ücretler',
+        'intro' => 'Bu müşterinin bir sonraki faturasını bekleyen ücretler. Fatura kesilene kadar hiçbir şey faturalanmaz; başka bir şey vadesi gelmemişse yalnızca bunlar için fatura kesilir.',
+
+        'empty' => 'Bekleyen bir şey yok',
+        'empty_detail' => 'Bir saatlik iş, bir parça, görüşülerek belirlenmiş bir ücret. Zaten kesilmiş bir faturaya değil, bir sonraki faturaya girer.',
+
+        'add' => 'Ücret ekle',
+        'add_submit' => 'Ekle',
+        'remove' => 'Listeden çıkar',
+
+        'description' => 'Ne için',
+        'quantity' => 'Adet',
+        'unit_price' => 'Birim fiyat',
+        'service' => 'Hangi hizmet',
+        'service_any' => 'Bir hizmetle ilgili değil',
+        'charge_on' => 'Şu tarihten önce değil',
+        'charge_on_hint' => 'Bir sonraki fatura için boş bırakın. Tarih verirseniz o tarihe kadar beklenir.',
+        'note' => 'Not',
+
+        'total' => 'Toplam',
+        'waiting' => 'Bekliyor',
+        'charged' => 'Faturalandı',
+        'charged_on' => 'Faturalandığı tarih',
+
+        'run_label' => 'Tek seferlik ücretler',
+
+        'confirm' => [
+            'remove_title' => 'Bu ücret listeden çıkarılsın mı?',
+            'remove_body' => ':name silinir ve hiçbir faturada görünmez. Bunun için henüz faturalandırma yapılmadı.',
+        ],
+
+        'errors' => [
+            'no_quantity' => 'Bir ücret en az bir adet için olmalıdır.',
+            'wrong_currency' => 'Bu müşteri :expected para biriminde faturalanıyor; :given cinsinden bir ücret hiç gelmeyecek bir faturayı bekler. Bu platformda döviz kuru yoktur.',
+            'not_their_service' => 'O hizmet başka bir müşteriye ait.',
+            'already_charged' => 'Bu ücret zaten bir faturada. Fatura kesildikten sonra dondurulur; düzeltme bir alacak dekontudur.',
+        ],
+    ],
 ];

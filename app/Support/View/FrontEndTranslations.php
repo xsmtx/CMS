@@ -45,6 +45,7 @@ final class FrontEndTranslations
         'apps.description',
         'apps.sections',
 
+        'billing.billables',
         'billing.credit_notes',
         'billing.details_saved',
         'billing.gateways',

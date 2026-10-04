@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Automation\Runs;
 
 use App\Application\Billing\IssueInvoice;
+use App\Application\Billing\QuoteBillableItems;
 use App\Application\Billing\QuoteUsage;
 use App\Application\Shared\AllocateNumber;
 use App\Domain\Automation\Contracts\AutomationRun;
@@ -24,6 +25,7 @@ use App\Infrastructure\Provisioning\Models\Service;
 use App\Infrastructure\Provisioning\Models\ServiceAddon;
 use App\Support\Organizations\OrganizationContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
@@ -69,6 +71,7 @@ final class GenerateRenewalInvoices implements AutomationRun
         private readonly AllocateNumber $numbers,
         private readonly IssueInvoice $issuer,
         private readonly QuoteUsage $usage,
+        private readonly QuoteBillableItems $billables,
     ) {}
 
     public function handle(): RunSummary
@@ -93,11 +96,31 @@ final class GenerateRenewalInvoices implements AutomationRun
             $groups[$this->groupFor($domain->customer_id, $domain->currency_code, $domain->id)]['domains'][] = $domain;
         }
 
+        /*
+         * A customer whose only due charge is a one-off still gets an invoice
+         * (`whmcs-parity-plan.md` §2.2). Without this an hour of migration
+         * work recorded in March would wait for a renewal that may not be
+         * coming — which is the shape of a charge somebody recorded and
+         * nobody was ever billed for.
+         *
+         * Added to the groups rather than invoiced separately, so a customer
+         * who *does* have a renewal gets one invoice and pays once.
+         */
+        foreach ($this->billables->waiting() as $waiting) {
+            $key = $this->groupFor($waiting['customer_id'], $waiting['currency_code'], 'billables');
+
+            if (! array_key_exists($key, $groups)) {
+                $summary = $summary->examining();
+                $groups[$key] = ['billables' => $waiting];
+            }
+        }
+
         foreach ($groups as $group) {
             $summary = $summary->merge($this->invoiceFor(
                 $group['services'] ?? [],
                 $group['domains'] ?? [],
                 $group['addons'] ?? [],
+                $group['billables'] ?? null,
             ));
         }
 
@@ -142,25 +165,33 @@ final class GenerateRenewalInvoices implements AutomationRun
      * @param  list<Service>  $services
      * @param  list<Domain>  $domains
      * @param  list<ServiceAddon>  $addons
+     * @param  array{customer_id: string, currency_code: string}|null  $billables
      */
-    private function invoiceFor(array $services, array $domains, array $addons = []): RunSummary
-    {
+    private function invoiceFor(
+        array $services,
+        array $domains,
+        array $addons = [],
+        ?array $billables = null,
+    ): RunSummary {
         $first = $services[0] ?? $domains[0] ?? $addons[0] ?? null;
 
-        if ($first === null) {
+        if ($first === null && $billables === null) {
             return new RunSummary;
         }
 
-        $label = implode(', ', [
+        $label = implode(', ', array_filter([
             ...array_map(static fn (Service $service): string => $service->name, $services),
             ...array_map(static fn (ServiceAddon $addon): string => $addon->name, $addons),
             ...array_map(static fn (Domain $domain): string => $domain->name, $domains),
-        ]);
+            // Named rather than left blank, so an invoice raised only for
+            // one-off charges says in the run record why it exists.
+            $first instanceof Model ? null : (string) __('billing.billables.run_label'),
+        ]));
 
         try {
             $invoice = $this->organizations->withoutBoundary(
                 fn (): Invoice => DB::transaction(
-                    fn (): Invoice => $this->write($first, $services, $domains, $addons),
+                    fn (): Invoice => $this->write($first, $services, $domains, $addons, $billables),
                 ),
             );
 
@@ -179,7 +210,7 @@ final class GenerateRenewalInvoices implements AutomationRun
             return (new RunSummary)->failing(new RunItem(
                 ItemOutcome::Failed,
                 Service::class,
-                $first->id,
+                $first instanceof Model ? $first->id : ($billables['customer_id'] ?? ''),
                 $label,
                 $exception->getMessage(),
             ));
@@ -190,15 +221,30 @@ final class GenerateRenewalInvoices implements AutomationRun
      * @param  list<Service>  $services
      * @param  list<Domain>  $domains
      * @param  list<ServiceAddon>  $addons
+     * @param  array{customer_id: string, currency_code: string}|null  $billables
      */
-    private function write(Service|Domain|ServiceAddon $first, array $services, array $domains, array $addons = []): Invoice
-    {
-        $currency = $first->currency_code;
+    private function write(
+        Service|Domain|ServiceAddon|null $first,
+        array $services,
+        array $domains,
+        array $addons = [],
+        ?array $billables = null,
+    ): Invoice {
+        /*
+         * A customer whose only due charge is a one-off has no renewal row to
+         * take the organization and the currency from, so they come from the
+         * waiting entry instead.
+         */
+        $customer = $first instanceof Model ? $first->customer_id : ($billables['customer_id'] ?? '');
+        $currency = $first instanceof Model ? $first->currency_code : ($billables['currency_code'] ?? '');
+        $organizationId = $first instanceof Model
+            ? $first->organization_id
+            : $this->organizationOf($customer);
 
         $invoice = Invoice::query()->create([
-            'organization_id' => $first->organization_id,
+            'organization_id' => $organizationId,
             'number' => 'DRAFT-'.Str::upper(Str::random(10)),
-            'customer_id' => $first->customer_id,
+            'customer_id' => $customer,
             'status' => InvoiceStatus::Draft->value,
             'currency_code' => $currency,
             'subtotal_minor' => 0,
@@ -278,6 +324,15 @@ final class GenerateRenewalInvoices implements AutomationRun
             $domain->forceFill(['renewal_invoiced_through' => $domain->expires_on])->save();
         }
 
+        /*
+         * The one-off charges this customer has waiting, after everything
+         * that renews. A customer reads their hosting first and the extra
+         * things second, which is also the order they happened in.
+         */
+        $billed = $this->billables->handle($invoice, $customer, $position);
+        $subtotal = $subtotal->plus($billed['total']);
+        $position += $billed['lines'];
+
         // No tax here on purpose. Tax is a contract with a dull default
         // (ADR 0022) and a renewal is priced exactly as the original was;
         // applying a rate that changed since would produce a total the
@@ -294,6 +349,24 @@ final class GenerateRenewalInvoices implements AutomationRun
         ])->save();
 
         return $invoice;
+    }
+
+    /**
+     * Whose organization a customer is in.
+     *
+     * Only reached for an invoice raised purely for one-off charges, where
+     * there is no renewal row to read it from. A customer is an organization
+     * of its own in this product, so this is the customer's own id rather
+     * than the seller's.
+     */
+    private function organizationOf(string $customerId): string
+    {
+        $customer = Customer::query()
+            ->withoutGlobalScope('organization')
+            ->whereKey($customerId)
+            ->first();
+
+        return $customer instanceof Customer ? $customer->organization_id : '';
     }
 
     private function line(

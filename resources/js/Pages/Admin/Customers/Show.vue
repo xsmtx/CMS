@@ -12,7 +12,7 @@
  * 3. **Danger zone** — erasing personal data, last on the page, behind a
  *    reason and the client's name typed out.
  */
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 
 import AppAlert from '../../../Components/AppAlert.vue'
@@ -20,20 +20,37 @@ import AppBadge from '../../../Components/AppBadge.vue'
 import AppButton from '../../../Components/AppButton.vue'
 import AppConfirm from '../../../Components/AppConfirm.vue'
 import AppCopy from '../../../Components/AppCopy.vue'
+import AppInput from '../../../Components/AppInput.vue'
 import AppMenu from '../../../Components/AppMenu.vue'
+import AppSelect from '../../../Components/AppSelect.vue'
 import AppStatus from '../../../Components/AppStatus.vue'
 import AppTable from '../../../Components/AppTable.vue'
+import AppTableRow from '../../../Components/AppTableRow.vue'
 import AppTabs from '../../../Components/AppTabs.vue'
 import DangerZone from '../../../Components/DangerZone.vue'
 import DangerZoneRow from '../../../Components/DangerZoneRow.vue'
 import DescriptionList, { type DescriptionItem } from '../../../Components/DescriptionList.vue'
 import DetailSection from '../../../Components/DetailSection.vue'
 import EmptyState from '../../../Components/EmptyState.vue'
+import MoneyInput from '../../../Components/MoneyInput.vue'
 import PageHeader from '../../../Components/PageHeader.vue'
 import { type TableColumn } from '../../../Components/tableContext'
 import { useTranslations } from '../../../composables/useTranslations'
 import AdminLayout from '../../../Layouts/AdminLayout.vue'
 import { statusTone } from '../../../status'
+
+interface BillableRow {
+  id: string
+  description: string
+  service: string | null
+  quantity: number
+  unitPrice: string
+  total: string
+  chargeOn: string | null
+  /** Null while it is waiting; an instant once an invoice quoted it. */
+  chargedAt: string | null
+  note: string | null
+}
 
 interface ContactRow {
   id: string
@@ -71,10 +88,20 @@ const props = defineProps<{
     createdAt: string
   }[]
   customFields: { key: string; label: string; value: unknown }[]
-  can: { update: boolean; export: boolean; anonymize: boolean; impersonate: boolean }
+  billables: BillableRow[]
+  services: { value: string; label: string }[]
+  can: {
+    update: boolean
+    export: boolean
+    anonymize: boolean
+    impersonate: boolean
+    bill: boolean
+  }
 }>()
 
 const { t } = useTranslations()
+
+const locale = computed(() => usePage().props.locale ?? 'en')
 
 const tab = ref('overview')
 
@@ -82,7 +109,62 @@ const tabs = computed(() => [
   { key: 'overview', label: t('ui.client.tab_overview') },
   { key: 'contacts', label: t('ui.client.tab_contacts'), count: props.contacts.length },
   { key: 'notes', label: t('ui.client.tab_notes'), count: props.notes.length },
+  // Only what is still waiting is counted: a tab showing "19" because
+  // nineteen charges were billed over two years says nothing an operator
+  // opens it for.
+  { key: 'billables', label: t('billing.billables.title'), count: waitingCount.value },
 ])
+
+// --- one-off charges ---------------------------------------------------------
+
+const addingCharge = ref(false)
+const removingCharge = ref<BillableRow | null>(null)
+
+const chargeForm = useForm({
+  description: '',
+  quantity: 1,
+  unit_amount_minor: 0,
+  service: '',
+  charge_on: '',
+  note: '',
+})
+
+const waitingCount = computed(
+  () => props.billables.filter((item) => item.chargedAt === null).length,
+)
+
+const serviceOptions = computed(() => [
+  { value: '', label: t('billing.billables.service_any') },
+  ...props.services,
+])
+
+const BILLABLE_COLUMNS: TableColumn[] = [
+  { key: 'description', label: t('billing.billables.description') },
+  { key: 'quantity', label: t('billing.billables.quantity'), numeric: true },
+  { key: 'total', label: t('billing.billables.total'), numeric: true },
+  { key: 'state', label: t('ui.client.status') },
+  { key: 'actions', label: '' },
+]
+
+function saveCharge(): void {
+  chargeForm.post(`/admin/customers/${props.customer.id}/billables`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      chargeForm.reset()
+      addingCharge.value = false
+    },
+  })
+}
+
+function removeCharge(): void {
+  const item = removingCharge.value
+
+  removingCharge.value = null
+
+  if (item === null) return
+
+  router.delete(`/admin/billables/${item.id}`, { preserveScroll: true })
+}
 
 // --- facts -------------------------------------------------------------------
 
@@ -124,12 +206,17 @@ const latestNotes = computed(() =>
     .slice(0, 3),
 )
 
+/*
+ * The reader's own locale, not the operating system's. `toLocaleDateString()`
+ * with no argument follows the machine, which is invisible on `23.09.2026`
+ * and glaring the moment a month name appears.
+ */
 function formatDate(value: string | null): string {
-  return value ? new Date(value).toLocaleDateString() : '—'
+  return value ? new Date(value).toLocaleDateString(locale.value) : '—'
 }
 
 function formatTime(value: string | null): string {
-  return value ? new Date(value).toLocaleString() : t('ui.common.never')
+  return value ? new Date(value).toLocaleString(locale.value) : t('ui.common.never')
 }
 
 // --- contacts ----------------------------------------------------------------
@@ -467,7 +554,7 @@ function eraseData(reason: string | null): void {
 
         <!-- Notes -->
         <DetailSection
-          v-else
+          v-else-if="active === 'notes'"
           :title="t('ui.client.tab_notes')"
           :description="t('ui.client.notes_description')"
         >
@@ -494,6 +581,133 @@ function eraseData(reason: string | null): void {
             :description="t('ui.client.no_notes_detail')"
           />
         </DetailSection>
+        <!--
+          One-off charges (`whmcs-parity-plan.md` §2.2). On this screen because
+          it is where somebody records an hour of work — and nothing is billed
+          until an invoice is raised, which the renewal sweep does.
+        -->
+        <div v-else-if="active === 'billables'" class="flex flex-col gap-8">
+          <DetailSection
+            :title="t('billing.billables.title')"
+            :description="t('billing.billables.intro')"
+          >
+            <template v-if="can.bill" #actions>
+              <AppButton variant="secondary" icon="add" @click="addingCharge = !addingCharge">
+                {{ t('billing.billables.add') }}
+              </AppButton>
+            </template>
+
+            <form
+              v-if="addingCharge && can.bill"
+              class="mb-6 flex max-w-xl flex-col gap-4"
+              @submit.prevent="saveCharge"
+            >
+              <AppInput
+                v-model="chargeForm.description"
+                :label="t('billing.billables.description')"
+                :error="chargeForm.errors.description"
+              />
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <AppInput
+                  v-model="chargeForm.quantity"
+                  type="number"
+                  :label="t('billing.billables.quantity')"
+                  :error="chargeForm.errors.quantity"
+                />
+                <!--
+                  No currency field: it is the customer's own. A charge in
+                  another would wait for an invoice that never comes, and there
+                  is no exchange rate in this product to rescue it.
+                -->
+                <MoneyInput
+                  v-model="chargeForm.unit_amount_minor"
+                  :label="`${t('billing.billables.unit_price')} · ${customer.currencyCode}`"
+                  :exponent="2"
+                  :error="chargeForm.errors.unit_amount_minor"
+                />
+              </div>
+
+              <AppSelect
+                v-model="chargeForm.service"
+                :label="t('billing.billables.service')"
+                :options="serviceOptions"
+                :error="chargeForm.errors.service"
+              />
+
+              <AppInput
+                v-model="chargeForm.charge_on"
+                type="date"
+                :label="t('billing.billables.charge_on')"
+                :hint="t('billing.billables.charge_on_hint')"
+                :error="chargeForm.errors.charge_on"
+              />
+
+              <AppInput v-model="chargeForm.note" :label="t('billing.billables.note')" />
+
+              <div class="flex gap-2">
+                <AppButton type="submit" variant="primary" :loading="chargeForm.processing">
+                  {{ t('billing.billables.add_submit') }}
+                </AppButton>
+                <AppButton variant="ghost" @click="addingCharge = false">
+                  {{ t('ui.confirm.cancel') }}
+                </AppButton>
+              </div>
+            </form>
+
+            <EmptyState
+              v-if="billables.length === 0"
+              variant="plain"
+              icon="billing"
+              :title="t('billing.billables.empty')"
+              :description="t('billing.billables.empty_detail')"
+            />
+
+            <AppTable v-else name="billables" :columns="BILLABLE_COLUMNS">
+              <AppTableRow v-for="item in billables" :key="item.id">
+                <td data-col="description">
+                  <span class="font-medium">{{ item.description }}</span>
+                  <span v-if="item.service" class="text-content-subtle text-chrome block">
+                    {{ item.service }}
+                  </span>
+                </td>
+                <td data-col="quantity" class="numeric">
+                  {{ item.quantity }} × {{ item.unitPrice }}
+                </td>
+                <td data-col="total" class="numeric">{{ item.total }}</td>
+                <td data-col="state">
+                  <!--
+                    Waiting or billed, which is the question this panel is
+                    opened for as often as "what is outstanding".
+                  -->
+                  <AppStatus
+                    :tone="item.chargedAt === null ? 'warning' : 'healthy'"
+                    :label="
+                      item.chargedAt === null
+                        ? t('billing.billables.waiting')
+                        : t('billing.billables.charged')
+                    "
+                  />
+                  <!--
+                    Labelled, not a bare date: "Waiting" above `01.01.2027`
+                    reads as the day it happened rather than the day it is
+                    waiting for.
+                  -->
+                  <span v-if="item.chargeOn" class="text-content-subtle text-chrome block">
+                    {{ t('billing.billables.charge_on') }} · {{ formatDate(item.chargeOn) }}
+                  </span>
+                </td>
+                <td data-col="actions" class="text-right">
+                  <span v-if="can.bill && item.chargedAt === null" class="row-actions">
+                    <AppButton size="sm" variant="danger-subtle" @click="removingCharge = item">
+                      {{ t('billing.billables.remove') }}
+                    </AppButton>
+                  </span>
+                </td>
+              </AppTableRow>
+            </AppTable>
+          </DetailSection>
+        </div>
       </template>
     </AppTabs>
 
@@ -544,5 +758,16 @@ function eraseData(reason: string | null): void {
     <p v-if="erasureForm.errors.reason" class="text-danger text-chrome mt-2" role="alert">
       {{ erasureForm.errors.reason }}
     </p>
+    <AppConfirm
+      :open="removingCharge !== null"
+      level="consequential"
+      :title="t('billing.billables.confirm.remove_title')"
+      :description="
+        t('billing.billables.confirm.remove_body', { name: removingCharge?.description ?? '' })
+      "
+      :confirm-label="t('billing.billables.remove')"
+      @close="removingCharge = null"
+      @confirm="removeCharge"
+    />
   </AdminLayout>
 </template>
